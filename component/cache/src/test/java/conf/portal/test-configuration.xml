@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+
+   <component>
+      <key>org.exoplatform.services.cache.test.MBeanServerLocator</key>
+      <type>org.exoplatform.services.cache.test.MBeanServerLocator</type>
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.log.LogConfigurationInitializer</key>
+      <type>org.exoplatform.services.log.LogConfigurationInitializer</type>
+      <init-params />
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.cache.CacheService</key>
+      <type>org.exoplatform.services.cache.impl.CacheServiceImpl</type>
+      <!--
+      <component-plugins>
+         <component-plugin>
+            <name>distributed.cache.listener</name>
+            <set-method>setDistributedCacheListener</set-method>
+            <type>org.exoplatform.services.cache.impl.DistributedCacheListener</type>
+            <description>this listener will synchronize the cache item on put, remove, clear</description>
+         </component-plugin>
+      </component-plugins>
+      -->
+      <init-params>
+         <object-param>
+            <name>cache.config.default</name>
+            <description>The default cache configuration</description>
+            <object type="org.exoplatform.services.cache.ExoCacheConfig">
+               <field name="name">
+                  <string>default</string>
+               </field>
+               <field name="maxSize">
+                  <int>100</int>
+               </field>
+               <field name="liveTime">
+                  <long>300</long>
+               </field>
+               <field name="distributed">
+                  <boolean>false</boolean>
+               </field>
+            </object>
+         </object-param>
+         <object-param>
+            <name>nocache</name>
+            <description>The default cache configuration</description>
+            <object type="org.exoplatform.services.cache.ExoCacheConfig">
+               <field name="name">
+                  <string>nocache</string>
+               </field>
+               <field name="maxSize">
+                  <int>5</int>
+               </field>
+               <field name="liveTime">
+                  <long>0</long>
+               </field>
+               <field name="distributed">
+                  <boolean>false</boolean>
+               </field>
+            </object>
+         </object-param>
+         <object-param>
+            <name>cacheLiveTime2s</name>
+            <description>The default cache configuration</description>
+            <object type="org.exoplatform.services.cache.ExoCacheConfig">
+               <field name="name">
+                  <string>cacheLiveTime2s</string>
+               </field>
+               <field name="maxSize">
+                  <int>5</int>
+               </field>
+               <field name="liveTime">
+                  <long>2</long>
+               </field>
+               <field name="distributed">
+                  <boolean>false</boolean>
+               </field>
+            </object>
+         </object-param>
+         <object-param>
+            <name>cacheMaxSize0</name>
+            <description>The default cache configuration</description>
+            <object type="org.exoplatform.services.cache.ExoCacheConfig">
+               <field name="name">
+                  <string>cacheMaxSize0</string>
+               </field>
+               <field name="maxSize">
+                  <int>0</int>
+               </field>
+               <field name="liveTime">
+                  <long>4</long>
+               </field>
+               <field name="distributed">
+                  <boolean>false</boolean>
+               </field>
+            </object>
+         </object-param>
+
+         <object-param>
+            <name>fifocache</name>
+            <description>The default cache configuration</description>
+            <object type="org.exoplatform.services.cache.ExoCacheConfig">
+               <field name="name">
+                  <string>fifocache</string>
+               </field>
+               <field name="maxSize">
+                  <int>3</int>
+               </field>
+               <field name="liveTime">
+                  <long>4</long>
+               </field>
+               <field name="distributed">
+                  <boolean>false</boolean>
+               </field>
+               <field name="implementation">
+                  <string>org.exoplatform.services.cache.FIFOExoCache</string>
+               </field>
+            </object>
+         </object-param>
+      </init-params>
+   </component>
+
+   <component>
+      <key>org.exoplatform.container.PropertyManagerManaged</key>
+      <type>org.exoplatform.container.PropertyManagerManaged</type>
+   </component>
+
+   <external-component-plugins>
+      <target-component>org.exoplatform.services.cache.CacheService</target-component>
+      <component-plugin>
+         <name>addExoCacheConfig</name>
+         <set-method>addExoCacheConfig</set-method>
+         <type>org.exoplatform.services.cache.ExoCacheConfigPlugin</type>
+         <description>add FIFOExoCache configuration component plugin </description>
+         <init-params>
+            <object-param>
+               <name>simpleCachePlugin</name>
+               <description>The default cache configuration</description>
+               <object type="org.exoplatform.services.cache.ExoCacheConfig">
+                  <field name="name">
+                     <string>simpleCachePlugin</string>
+                  </field>
+                  <field name="maxSize">
+                     <int>8</int>
+                  </field>
+                  <field name="liveTime">
+                     <long>5</long>
+                  </field>
+                  <field name="distributed">
+                     <boolean>false</boolean>
+                  </field>
+                  <field name="implementation">
+                     <string>org.exoplatform.services.cache.SimpleExoCache</string>
+                  </field>
+               </object>
+            </object-param>
+
+            <object-param>
+               <name>fifoCachePlugin</name>
+               <description>The default cache configuration</description>
+               <object type="org.exoplatform.services.cache.ExoCacheConfig">
+                  <field name="name">
+                     <string>fifoCachePlugin</string>
+                  </field>
+                  <field name="maxSize">
+                     <int>6</int>
+                  </field>
+                  <field name="liveTime">
+                     <long>10</long>
+                  </field>
+                  <field name="distributed">
+                     <boolean>false</boolean>
+                  </field>
+                  <field name="implementation">
+                     <string>org.exoplatform.services.cache.FIFOExoCache</string>
+                  </field>
+               </object>
+            </object-param>
+
+            <object-param>
+               <name>TestLogEnabledCachePlugin</name>
+               <description>The log enabled cache configuration for tests</description>
+               <object type="org.exoplatform.services.cache.ExoCacheConfig">
+                  <field name="name">
+                     <string>TestLogCache</string>
+                  </field>
+                  <field name="maxSize">
+                     <int>100</int>
+                  </field>
+                  <field name="liveTime">
+                     <long>10</long>
+                  </field>
+                  <field name="logEnabled">
+                     <boolean>true</boolean>
+                  </field>
+                  <field name="implementation">
+                     <string>org.exoplatform.services.cache.SimpleExoCache</string>
+                  </field>
+               </object>
+            </object-param>
+
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
+</configuration>

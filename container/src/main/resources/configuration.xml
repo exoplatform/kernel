@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+
+  <container-lifecycle-plugin>
+    <type>component.type</type>
+    <init-params>
+      <value-param>
+        <name>name</name>
+        <description>description</description>
+        <value>a value</value>
+      </value-param>
+    </init-params>
+  </container-lifecycle-plugin>
+    
+  <component-lifecycle-plugin>
+    <type>component.type</type>
+    <manageable-components>
+      <component-type>component.type</component-type>
+      <component-type>component.type</component-type>
+      <component-type>component.type</component-type>
+    </manageable-components>
+    <init-params>
+      <value-param>
+        <name>name</name>
+        <description>description</description>
+        <value>a value</value>
+      </value-param>
+    </init-params>
+  </component-lifecycle-plugin>
+
+  <component>
+    <key>org.exoplatform.services.templates.velocity.VelocityService</key>
+    <type>org.exoplatform.services.templates.velocity.impl.VelocityServiceImpl</type>
+    <component-plugins>
+      <component-plugin>
+        <name>name plugin 1</name>
+        <set-method>class.type</set-method>
+        <type>class.type</type>
+        <description>description</description>
+        <init-params>
+          <value-param>
+            <name>name</name>
+            <description>description</description>
+            <value>a value</value>
+          </value-param>
+        </init-params>
+      </component-plugin>
+    </component-plugins>
+
+    <init-params>
+      <value-param>
+        <name>name</name>
+        <description>description</description>
+        <value>a value</value>
+      </value-param>
+    </init-params>
+  </component>
+  
+  <import>1</import>
+  <import>2</import>
+  <remove-configuration>1</remove-configuration>
+  <remove-configuration>2</remove-configuration>
+</configuration>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+
+   <component>
+      <key>org.exoplatform.services.net.NetService</key>
+      <type>org.exoplatform.services.net.impl.NetServiceImpl</type>
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.compress.CompressData</key>
+      <type>org.exoplatform.services.compress.CompressData</type>
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.listener.ListenerService</key>
+      <type>org.exoplatform.services.listener.ListenerService</type>
+      <component-plugins>
+         <component-plugin>
+            <name>new.bean</name>
+            <set-method>addListener</set-method>
+            <type>org.exoplatform.services.listener.BeanListener</type>
+            <description>add new listener to listener service</description>
+         </component-plugin>
+      </component-plugins>
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.mail.MailService</key>
+      <type>org.exoplatform.services.mail.impl.MailServiceImpl</type>
+      <init-params>
+         <properties-param>
+            <name>config</name>
+            <property name="mail.smtp.host" value="PC01" />
+            <property name="mail.smtp.port" value="25" />
+            <property name="mail.transport.protocol" value="smtp" />
+
+            <property name="mail.smtp.auth" value="false" />
+            <property name="mail.smtp.auth.username" value="exo" />
+            <property name="mail.smtp.auth.password" value="exo" />
+         </properties-param>
+      </init-params>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.scheduler.impl.QuartzSheduler</type>
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.scheduler.JobSchedulerService</key>
+      <type>org.exoplatform.services.scheduler.impl.JobSchedulerServiceImpl</type>
+      <component-plugins>
+         <component-plugin>
+            <name>JobContextConfigListener</name>
+            <set-method>addGlobalJobListener</set-method>
+            <type>org.exoplatform.services.scheduler.impl.JobEnvironmentConfigListener</type>
+            <description>description</description>
+         </component-plugin>
+
+         <component-plugin>
+            <name>QueueTask</name>
+            <set-method>addPeriodJob</set-method>
+            <type>org.exoplatform.services.scheduler.PeriodJob</type>
+            <description>add QueueTaskJob to the JobSchedulerService</description>
+            <init-params>
+               <properties-param>
+                  <name>job.info</name>
+                  <description>Queue Task Job</description>
+                  <property name="jobName" value="queueTask" />
+                  <property name="groupName" value="queueTask" />
+                  <property name="job" value="org.exoplatform.services.scheduler.impl.QueueTaskJob" />
+
+                  <property name="repeatCount" value="0" />
+                  <property name="period" value="10000" />
+                  <property name="startTime" value="+0" />
+                  <property name="endTime" value="" />
+               </properties-param>
+            </init-params>
+         </component-plugin>
+      </component-plugins>
+      <init-params>
+         <value-param>
+            <name>data.version</name>
+            <description>The current data version of the plugin module</description>
+            <value>1.1</value>
+         </value-param>
+      </init-params>
+   </component>
+
+   <component>
+      <key>org.exoplatform.services.scheduler.QueueTasks</key>
+      <type>org.exoplatform.services.scheduler.QueueTasks</type>
+   </component>
+
+   <external-component-plugins>
+      <target-component>org.exoplatform.services.listener.ListenerService</target-component>
+      <component-plugin>
+         <name>set.value.bean</name>
+         <set-method>addListener</set-method>
+         <type>org.exoplatform.services.listener.SetValueBeanListener</type>
+         <description>set value listener</description>
+      </component-plugin>
+   </external-component-plugins>
+
+   <!-- Disabled this as only one job is expected to be defined in the tests 
+
+   <external-component-plugins>
+      <target-component>org.exoplatform.services.scheduler.JobSchedulerService</target-component>
+      <component-plugin>
+         <name>AddJob</name>
+         <set-method>addPeriodJob</set-method>
+         <type>org.exoplatform.services.scheduler.PeriodJob</type>
+         <description>add a job to the JobSchedulerService</description>
+         <init-params>
+            <properties-param>
+               <name>job.info</name>
+               <description>Default Hibernate Service</description>
+               <property name="jobName" value="job" />
+               <property name="groupName" value="group" />
+               <property name="job" value="org.exoplatform.services.scheduler.test.AJob" />
+
+               <property name="repeatCount" value="1" />
+               <property name="period" value="10" />
+               <property name="startTime" value="+0" />
+               <property name="endTime" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
+
+   <external-component-plugins>
+      <target-component>org.exoplatform.services.scheduler.JobSchedulerService</target-component>
+      <component-plugin>
+         <name>AddCronJob</name>
+         <set-method>addCronJob</set-method>
+         <type>org.exoplatform.services.scheduler.CronJob</type>
+         <description>add a cron job to the JobSchedulerService</description>
+         <init-params>
+            <properties-param>
+               <name>cronjob.info</name>
+               <description>A test cron job</description>
+               <property name="jobName" value="job" />
+               <property name="groupName" value="group" />
+               <property name="job" value="org.exoplatform.services.scheduler.test.AJob" />
+               <property name="expression" value="0 15 10 ? * *" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
+   -->
+
+   <external-component-plugins>
+      <target-component>org.exoplatform.services.scheduler.JobSchedulerService</target-component>
+      <component-plugin>
+         <name>AddJob</name>
+         <set-method>addPeriodJob</set-method>
+         <type>org.exoplatform.services.scheduler.PeriodJob</type>
+         <description>add a job to the JobSchedulerService</description>
+         <init-params>
+            <properties-param>
+               <name>job.info</name>
+               <description>Test QueueTaks</description>
+               <property name="jobName" value="TestQueueTask" />
+               <property name="groupName" value="QueueTask" />
+               <property name="job" value="org.exoplatform.services.scheduler.impl.QueueTaskJob" />
+
+               <property name="repeatCount" value="0" />
+               <property name="period" value="1000" />
+               <property name="startTime" value="+0" />
+               <property name="endTime" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
+</configuration>

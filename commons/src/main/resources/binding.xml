@@ -1,0 +1,93 @@
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<binding>
+
+  <mapping class="org.exoplatform.commons.xml.data.XMLBaseObject" abstract="true">
+    <value name="string" usage="optional" get-method="getString" set-method="setString"/>
+    <value name="int"  usage="optional" get-method="getInt" set-method="setInt"/>
+    <value name="long"  usage="optional" get-method="getLong" set-method="setLong"/>
+    <value name="double"  usage="optional" get-method="getDouble" set-method="setDouble" />
+    <value name="boolean"  usage="optional" get-method="getBoolean" set-method="setBoolean"/>
+    <value name="date"  usage="optional" get-method="getDate" set-method="setDate"/>
+    <structure map-as="org.exoplatform.commons.xml.data.XMLMap" usage="optional"
+               get-method="getMap" set-method="setMap"/>
+    <structure map-as="org.exoplatform.commons.xml.data.XMLCollection" usage="optional"
+               get-method="getCollection" set-method="setCollection"/>
+    <structure map-as="org.exoplatform.commons.xml.data.XMLNativeArray" usage="optional"
+               get-method="getNativeArray" set-method="setNativeArray"/>
+    <structure map-as="org.exoplatform.commons.xml.data.XMLObject" usage="optional"
+               get-method="getObject" set-method="setObject"/>
+  </mapping>
+
+  <mapping name="key" 
+           class="org.exoplatform.commons.xml.data.XMLKey" 
+           enstends="org.exoplatform.commons.xml.data.XMLBaseObject">
+    <structure map-as="org.exoplatform.commons.xml.data.XMLBaseObject"/>
+  </mapping>
+
+  <mapping name="value" 
+           class="org.exoplatform.commons.xml.data.XMLValue" 
+           enstends="org.exoplatform.commons.xml.data.XMLBaseObject">
+    <structure map-as="org.exoplatform.commons.xml.data.XMLBaseObject"/>
+  </mapping>
+
+  <mapping name="entry" class="org.exoplatform.commons.xml.data.XMLEntry">
+    <structure get-method="getKey" set-method="setKey" 
+               map-as="org.exoplatform.commons.xml.data.XMLKey"/>
+    <structure get-method="getValue" set-method="setValue" 
+               map-as="org.exoplatform.commons.xml.data.XMLValue"/>
+  </mapping>
+
+  <mapping name="map" label="map" class="org.exoplatform.commons.xml.data.XMLMap">
+    <value name="type"  get-method="getType" set-method="setType" style="attribute"/>
+    <collection item-type="org.exoplatform.commons.xml.data.XMLEntry" 
+                add-method="addEntry" iter-method="getEntryIterator"/>
+  </mapping>
+
+  <mapping name="collection" class="org.exoplatform.commons.xml.data.XMLCollection">
+    <value name="type"  get-method="getType" set-method="setType" style="attribute"/>
+    <collection item-type="org.exoplatform.commons.xml.data.XMLValue" 
+                add-method="addValue" iter-method="getIterator"/>
+  </mapping>
+
+  <mapping name="native-array"
+           class="org.exoplatform.commons.xml.data.XMLNativeArray" 
+           enstends="org.exoplatform.commons.xml.data.XMLBaseObject"
+           get-method="getArray" set-method="setArray">
+    <value name="type" field="type" style="attribute"/>
+    <value name="array"  usage="optional" style="element"
+           get-method="getArray" set-method="setArray"/>
+  </mapping>
+
+  <mapping name="field" label="field" 
+           class="org.exoplatform.commons.xml.data.XMLField" 
+           enstends="org.exoplatform.commons.xml.data.XMLBaseObject">
+    <value name="name" field="name" style="attribute"/>
+    <structure map-as="org.exoplatform.commons.xml.data.XMLBaseObject"/>
+  </mapping>
+
+  <mapping name="object" label="object" class="org.exoplatform.commons.xml.data.XMLObject">
+    <value name="type" field="type" style="attribute"/>
+    <collection item-type="org.exoplatform.commons.xml.data.XMLField" 
+                add-method="addField" iter-method="getFieldIterator"/>
+  </mapping>
+
+</binding>

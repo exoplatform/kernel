@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration>
+
+  <component>
+    <key>component</key>
+    <type>type</type>
+    <init-params>
+      <value-param>
+        <name>a</name>
+        <value>a_value</value>
+      </value-param>
+      <value-param>
+        <name>b</name>
+        <value>${b_value}</value>
+      </value-param>
+      <value-param>
+        <name>c</name>
+        <value>${c_value}</value>
+      </value-param>
+      <value-param>
+        <name>d</name>
+        <value>_${d_value}_</value>
+      </value-param>
+      <properties-param>
+        <name>e</name>
+        <property name="e_a" value="a_value"/>
+        <property name="e_b" value="${b_value}"/>
+        <property name="e_c" value="${c_value}"/>
+        <property name="e_d" value="_${d_value}_"/>
+      </properties-param>
+      <object-param>
+        <name>f</name>
+        <object type="org.exoplatform.xml.test.Person">
+          <field name="address_a"><string>a_value</string></field>
+          <field name="address_b"><string>${b_value}</string></field>
+          <field name="address_c"><string>${c_value}</string></field>
+          <field name="address_d"><string>_${d_value}_</string></field>
+          <field name="male_a"><boolean>true</boolean></field>
+          <field name="male_b"><boolean>false</boolean></field>
+          <field name="male_c"><boolean>${true_value}</boolean></field>
+          <field name="male_d"><boolean>${false_value}</boolean></field>
+          <field name="male_e"><boolean>${TRUE_value}</boolean></field>
+          <field name="male_f"><boolean>${FALSE_value}</boolean></field>
+          <field name="age_a"><int>4</int></field>
+          <field name="age_b"><int>${integer_value}</int></field>
+          <field name="weight_a"><int>40</int></field>
+          <field name="weight_b"><int>${long_value}</int></field>
+          <field name="size_a"><double>172.4</double></field>
+          <field name="size_b"><double>${double_value}</double></field>
+<!--
+          <field  name="name"><string>default</string></field>
+          <field  name="maxSize"><int>300</int></field>
+          <field  name="liveTime"><long>-1</long></field>
+          <field  name="distributed"><boolean>false</boolean></field>
+-->
+        </object>
+      </object-param>
+    </init-params>
+  </component>
+
+</configuration>

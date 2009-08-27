@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+     targetNamespace="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+     elementFormDefault="qualified"
+     attributeFormDefault="unqualified"
+     version="1.0">
+
+    <xsd:element name="configuration" type="configurationType"/>
+
+    <xsd:complexType abstract="true" name="baseObjectType">
+        <xsd:choice>
+            <xsd:element name="string" type="xsd:string"/>
+            <xsd:element name="int" type="xsd:int"/>
+            <xsd:element name="long" type="xsd:long"/>
+            <xsd:element name="boolean" type="xsd:boolean"/>
+            <xsd:element name="date" type="xsd:date"/>
+            <xsd:element name="double" type="xsd:double"/>
+            <xsd:element name="map" type="mapType"/>
+            <xsd:element name="collection" type="collectionType"/>
+            <xsd:element name="native-array" type="nativeArraytype"/>
+            <xsd:element name="object" type="objectType"/>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="valueType">
+        <xsd:complexContent>
+            <xsd:extension base="baseObjectType"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="entryType">
+        <xsd:sequence>
+            <xsd:element name="key" type="baseObjectType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="value" type="baseObjectType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="mapType">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="entry" type="entryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="collectionType">
+        <xsd:sequence>
+            <xsd:element name="value" type="valueType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="xsd:string"/>
+        <xsd:attribute name="item-type" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="nativeArraytype">
+        <xsd:complexContent>
+            <xsd:extension base="baseObjectType">
+                <xsd:sequence>
+                    <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+                    <xsd:element name="array" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="fieldType">
+        <xsd:complexContent >
+            <xsd:extension base="baseObjectType">
+                <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="objectType">
+        <xsd:sequence>
+            <xsd:element name="field" type="fieldType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="propertyType">
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="value" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="paramType" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="valueParamType">
+       <xsd:complexContent>
+           <xsd:extension base="paramType">
+               <xsd:sequence>
+                   <xsd:element name="value" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               </xsd:sequence>
+           </xsd:extension>
+       </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="valuesParamType">
+        <xsd:complexContent>
+            <xsd:extension base="paramType">
+                <xsd:sequence>
+                    <xsd:element name="value" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="propertiesParamType">
+        <xsd:complexContent>
+            <xsd:extension base="paramType">
+                <xsd:sequence>
+                    <xsd:element name="property" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="objectParamType">
+        <xsd:complexContent>
+            <xsd:extension base="paramType">
+                <xsd:sequence>
+                    <xsd:element name="object" type="objectType" minOccurs="1" maxOccurs="1"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="initParamsType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="object-param" type="objectParamType"/>
+            <xsd:element name="properties-param" type="propertiesParamType"/>
+            <xsd:element name="value-param" type="valueParamType"/>
+            <xsd:element name="values-param" type="valuesParamType"/>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="componentPluginType">
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="set-method" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="priority" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="externalComponentPluginType">
+        <xsd:sequence>
+            <xsd:element name="target-component" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="component-plugin" type="componentPluginType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="containerLifecyclePluginType">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="manageableComponentsType">
+        <xsd:sequence>
+            <xsd:element name="component-type" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="componentLifecyclePluginType">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="manageable-components" type="manageableComponentsType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="componentType">
+        <xsd:sequence>
+            <xsd:element name="key" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="jmx-name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="show-deploy-info" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="multi-instance" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="component-plugins" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="component-plugin" type="componentPluginType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="configurationType">
+        <xsd:sequence>
+            <xsd:element name="container-lifecycle-plugin" type="containerLifecyclePluginType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="component-lifecycle-plugin" type="componentLifecyclePluginType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="component" type="componentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="external-component-plugins" type="externalComponentPluginType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="import" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="remove-configuration" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

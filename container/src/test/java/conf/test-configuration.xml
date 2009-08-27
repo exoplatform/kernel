@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+
+   <!-- ============================================================================= -->
+   <!--    U N I T     C O N F I G U R A T I O N                                      -->
+   <!-- ============================================================================= -->
+
+   <component>
+      <key>MockService</key>
+      <type>org.exoplatform.mocks.MockService</type>
+      <component-plugins>
+         <component-plugin>
+            <name>internal.component.plugin.1</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.mocks.MockServicePlugin</type>
+            <description>test internal plugin</description>
+            <init-params>
+               <value-param>
+                  <name>name</name>
+                  <description>description</description>
+                  <value>a value</value>
+               </value-param>
+            </init-params>
+         </component-plugin>
+      </component-plugins>
+
+      <!--
+      <plugins>
+         <plugin>
+            <name>internal.plugin.1</name>
+            <type>org.exoplatform.mocks.MockServicePlugin</type>
+            <description>test internal plugin</description>
+            <init-params>
+               <value-param>
+                  <name>name</name>
+                  <description>description</description>
+                  <value>a value</value>
+               </value-param>
+            </init-params>
+         </plugin>
+      </plugins>
+
+      <listeners>
+         <listener>
+            <name>internal.listener.1</name>
+            <type>org.exoplatform.mocks.MockServiceListener</type>
+            <description>test internal listener</description>
+            <init-params>
+               <value-param>
+                  <name>name</name>
+                  <description>description</description>
+                  <value>a value</value>
+               </value-param>
+            </init-params>
+         </listener>
+      </listeners>
+      -->
+
+      <init-params>
+         <value-param>
+            <name>new.user.configuration</name>
+            <description>Configure role , group for the new user</description>
+            <value>this is a test</value>
+         </value-param>
+      </init-params>
+   </component>
+
+   <component>
+      <type>org.exoplatform.mocks.PriorityService</type>
+   </component>
+   <external-component-plugins>
+      <target-component>org.exoplatform.mocks.PriorityService</target-component>
+      <component-plugin>
+         <name>PluginPriority3</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.mocks.PluginPriority3</type>
+         <description>PluginPriority3 description</description>
+      </component-plugin>
+   </external-component-plugins>
+   <external-component-plugins>
+      <target-component>org.exoplatform.mocks.PriorityService</target-component>
+      <component-plugin>
+         <name>PluginPriority1</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.mocks.PluginPriority1</type>
+         <description>PluginPriority1 description</description>
+         <priority>1</priority>
+      </component-plugin>
+      <component-plugin>
+         <name>PluginPriority2</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.mocks.PluginPriority2</type>
+         <description>PluginPriority2 description</description>
+         <priority>2</priority>
+      </component-plugin>
+   </external-component-plugins>
+
+   <external-component-plugins>
+      <target-component>MockService</target-component>
+      <component-plugin>
+         <name>external.component.plugin.1</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.mocks.MockServicePlugin</type>
+         <description>test external plugin</description>
+         <priority>1</priority>
+         <init-params>
+            <value-param>
+               <name>name</name>
+               <description>description</description>
+               <value>a value</value>
+            </value-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
+
+   <!--
+   <external-plugins>
+      <target-component>MockService</target-component>
+      <plugin>
+         <name>external.plugin.1</name>
+         <type>org.exoplatform.mocks.MockServicePlugin</type>
+         <description>test external plugin</description>
+         <init-params>
+            <value-param>
+               <name>name</name>
+               <description>description</description>
+               <value>a value</value>
+            </value-param>
+         </init-params>
+      </plugin>
+   </external-plugins>
+
+   <external-listeners>
+      <target-component>MockService</target-component>
+      <listener>
+         <name>external.listener.1</name>
+         <type>org.exoplatform.mocks.MockServiceListener</type>
+         <description>test external listener</description>
+         <init-params>
+            <value-param>
+               <name>name</name>
+               <description>description</description>
+               <value>a value</value>
+            </value-param>
+         </init-params>
+      </listener>
+   </external-listeners>
+   -->
+</configuration>
