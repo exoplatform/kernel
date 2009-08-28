@@ -86,7 +86,7 @@
          <dependency>
             <groupId>org.exoplatform.tool</groupId>
             <artifactId>exo.tool.framework.junit</artifactId>
-            <version>1.1</version>
+            <version>1.2.0</version>
          </dependency>
 
          <dependency>
