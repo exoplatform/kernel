@@ -24,8 +24,8 @@
 
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
-      <artifactId>config</artifactId>
-      <version>2.2-SNAPSHOT</version>
+      <artifactId>kernel-parent</artifactId>
+      <version>2.2.0-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.component.command</artifactId>
