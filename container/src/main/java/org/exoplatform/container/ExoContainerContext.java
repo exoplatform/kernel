@@ -55,6 +55,45 @@ public final class ExoContainerContext implements java.io.Serializable
       return container;
    }
 
+   /**
+    * @return if the embedded container is a {@link PortalContainer}, it will return the name the
+    * portal container otherwise it will return <code>null</code>
+    */
+   public String getPortalContainerName()
+   {
+      if (container instanceof PortalContainer)
+      {
+         return ((PortalContainer)container).getName();
+      }
+      return null;
+   }
+
+   /**
+    * @return if the embedded container is a {@link PortalContainer}, it will return the name 
+    * of the rest context name related to the portal container otherwise it will return the default name
+    */
+   public String getRestContextName()
+   {
+      if (container instanceof PortalContainer)
+      {
+         return ((PortalContainer)container).getRestContextName();
+      }
+      return PortalContainer.DEFAULT_REST_CONTEXT_NAME;
+   }
+
+   /**
+    * @return if the embedded container is a {@link PortalContainer}, it will return the name 
+    * of the realm name related to the portal container otherwise it will return the default name
+    */
+   public String getRealmName()
+   {
+      if (container instanceof PortalContainer)
+      {
+         return ((PortalContainer)container).getRealmName();
+      }
+      return PortalContainer.DEFAULT_REALM_NAME;
+   }
+
    public String getName()
    {
       return name;

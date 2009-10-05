@@ -74,7 +74,9 @@ public class ContainerUtil
          // deploy them to a temp dir and include both jars, the one in sar and tmp
          // dir,
          // in the class path. It cause the configuration run twice
-         int index = key.lastIndexOf("exo-");
+         int index1 = key.lastIndexOf("exo-");
+         int index2 = key.lastIndexOf("exo.");
+         int index = index1 < index2 ? index2 : index1; 
          if (index >= 0)
             key = key.substring(index);
          map.put(key, url);

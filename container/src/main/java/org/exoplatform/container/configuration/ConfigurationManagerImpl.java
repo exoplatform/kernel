@@ -18,8 +18,14 @@
  */
 package org.exoplatform.container.configuration;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +52,10 @@ public class ConfigurationManagerImpl implements ConfigurationManager
    final static public String LOG_DEBUG_PROPERTY = "org.exoplatform.container.configuration.debug";
 
    final static public boolean LOG_DEBUG = System.getProperty(LOG_DEBUG_PROPERTY) != null;
+
+   private static final String EXO_CONTAINER_PROP_NAME = "container.name.suffix";
+
+   private static final Log log = ExoLogger.getLogger(ConfigurationManagerImpl.class);
 
    protected Configuration configurations_;
 
@@ -88,6 +98,13 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       return configurations_;
    }
 
+   public void addConfiguration(ServletContext context, String url) throws Exception
+   {
+      if (url == null)
+         return;
+      addConfiguration(context, getURL(context, url));
+   }
+
    public void addConfiguration(String url) throws Exception
    {
       if (url == null)
@@ -107,9 +124,13 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    public void addConfiguration(URL url) throws Exception
    {
+      addConfiguration(scontext_, url);
+   }
 
+   private void addConfiguration(ServletContext context, URL url) throws Exception
+   {
       if (LOG_DEBUG)
-         System.out.println("Add configuration " + url);
+         log.info("Add configuration " + url);
       if (url == null)
          return;
       try
@@ -154,20 +175,18 @@ public class ConfigurationManagerImpl implements ConfigurationManager
                   conf = unmarshaller.unmarshall(urlObject);
                   configurations_.mergeConfiguration(conf);
                   if (LOG_DEBUG)
-                     System.out.println("\timport " + urlObject);
+                     log.info("\timport " + urlObject);
                }
                else
                {
-                  System.err.println("WARNING: Couldn't process the URL for " + uri + " configuration file ignored ");
+                  log.warn("Couldn't process the URL for " + uri + " configuration file ignored ");
                }
             }
          }
       }
       catch (Exception ex)
       {
-         // System .err.println("Error: " + ex.getMessage());
-         System.err.println("ERROR: cannot process the configuration " + url);
-         ex.printStackTrace();
+         log.error("Cannot process the configuration " + url, ex);
       }
       finally
       {
@@ -247,6 +266,11 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    public URL getURL(String url) throws Exception
    {
+      return getURL(scontext_, url);
+   }
+
+   private URL getURL(ServletContext context, String url) throws Exception
+   {
       if (url.startsWith("jar:"))
       {
          String path = removePrefix("jar:/", url);
@@ -262,9 +286,9 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       else if (url.startsWith("war:"))
       {
          String path = removePrefix("war:", url);
-         if (scontext_ != null)
+         if (context != null)
          {
-            return scontext_.getResource(WAR_CONF_LOCATION + path);
+            return context.getResource(WAR_CONF_LOCATION + path);
          }
          if (scontextClassLoader_ != null)
          {
@@ -324,7 +348,21 @@ public class ConfigurationManagerImpl implements ConfigurationManager
             {
                String value = null;
                String key = input.substring(start + 2, i);
-               value = System.getProperty(key);
+               if (key.equals(EXO_CONTAINER_PROP_NAME))
+               {
+                  // The requested key is the name of current container
+                  ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+                  if (container instanceof PortalContainer)
+                  {
+                     // The current container is a portal container
+                     RootContainer rootContainer = (RootContainer)ExoContainerContext.getTopContainer();
+                     value = rootContainer.isPortalContainerConfigAware() ? "_" + container.getContext().getName() : "";
+                  }
+               }
+               else
+               {
+                  value = System.getProperty(key);
+               }
                if (value != null)
                {
                   properties = true;
