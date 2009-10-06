@@ -363,4 +363,15 @@ class PortalContainerContext implements ServletContext
    {
       getPortalContext().setAttribute(name, object);
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getContextPath()
+   {
+      StringBuilder result = new StringBuilder();
+      result.append('/');
+      result.append(container.getName());
+      return result.toString();
+   }
 }

@@ -210,5 +210,10 @@ public class TestPortalContainerInitTaskContextComparator extends TestCase
 
       }
 
+      public String getContextPath()
+      {
+         return null;
+      }
+
    }   
 }

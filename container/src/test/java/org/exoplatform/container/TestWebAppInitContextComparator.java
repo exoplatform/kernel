@@ -208,5 +208,10 @@ public class TestWebAppInitContextComparator extends TestCase
 
       }
 
+      public String getContextPath()
+      {
+         return null;
+      }
+
    }
 }
