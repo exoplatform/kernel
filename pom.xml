@@ -54,6 +54,7 @@
       <module>component/remote</module>
       <module>component/cache</module>
       <module>component/command</module>
+      <module>packaging/module</module>
    </modules>
 
    <dependencyManagement>
