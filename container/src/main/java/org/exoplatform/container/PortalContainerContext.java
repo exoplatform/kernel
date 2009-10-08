@@ -369,9 +369,6 @@ class PortalContainerContext implements ServletContext
     */
    public String getContextPath()
    {
-      StringBuilder result = new StringBuilder();
-      result.append('/');
-      result.append(container.getName());
-      return result.toString();
+      return getPortalContext().getContextPath();
    }
 }
