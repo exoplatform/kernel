@@ -221,29 +221,4 @@
       </dependency>
    </dependencies>
 
-   <build>
-      <!--resources>
-         <resource>
-            <directory>src/main/java</directory>
-            <includes>
-               <include>**/*.properties</include>
-               <include>**/*.xml</include>
-               <include>**/*.drl</include>
-               <include>**/*.xsd</include>
-            </includes>
-         </resource>
-      </resources>
-      <testResources>
-         <testResource>
-            <directory>src/test/java</directory>
-            <includes>
-               <include>**/*.properties</include>
-               <include>**/*.xml</include>
-               <include>**/*.drl</include>
-               <include>**/*.xsd</include>
-            </includes>
-         </testResource>
-      </testResources-->
-   </build>
-
 </project>
