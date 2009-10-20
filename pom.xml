@@ -222,7 +222,7 @@
    </dependencies>
 
    <build>
-      <resources>
+      <!--resources>
          <resource>
             <directory>src/main/java</directory>
             <includes>
@@ -243,7 +243,7 @@
                <include>**/*.xsd</include>
             </includes>
          </testResource>
-      </testResources>
+      </testResources-->
    </build>
 
 </project>

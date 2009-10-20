@@ -112,7 +112,7 @@ public class TestIOUtil extends TestCase
       try
       {
          Thread.currentThread().setContextClassLoader(newCL);
-         String content = IOUtil.getResourceAsString("org/exoplatform/commons/utils/Simple.properties");
+         String content = IOUtil.getResourceAsString("Simple.properties");
          assertEquals("resource_content", content);
       }
       finally
