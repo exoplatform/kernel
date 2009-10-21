@@ -63,6 +63,11 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
 
    private ConfigurationManagerImpl configurationManager;
 
+   /**
+    * Private StandaloneContainer constructor.
+    *
+    * @param configClassLoader ClassLoader 
+    */
    private StandaloneContainer(ClassLoader configClassLoader)
    {
       super(new MX4JComponentAdapterFactory(), null);
@@ -72,10 +77,10 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    }
 
    /**
-    * Shortcut for getInstance(null, null)
+    * Shortcut for getInstance(null, null).
     * 
     * @return the StandaloneContainer instance
-    * @throws Exception
+    * @throws Exception if error occurs
     */
    public static StandaloneContainer getInstance() throws Exception
    {
@@ -83,10 +88,11 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    }
 
    /**
-    * Shortcut for getInstance(configClassLoader, null)
+    * Shortcut for getInstance(configClassLoader, null).
     * 
+    * @param configClassLoader ClassLoader
     * @return the StandaloneContainer instance
-    * @throws Exception
+    * @throws Exception if error occurs
     */
    public static StandaloneContainer getInstance(ClassLoader configClassLoader) throws Exception
    {
@@ -94,10 +100,11 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    }
 
    /**
-    * Shortcut for getInstance(null, components)
+    * Shortcut for getInstance(null, components).
     * 
+    * @param components Object[][]
     * @return the StandaloneContainer instance
-    * @throws Exception
+    * @throws Exception if error occurs
     */
    public static StandaloneContainer getInstance(Object[][] components) throws Exception
    {
@@ -107,12 +114,12 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    /**
     * A way to inject externally instantiated objects to container before it
     * starts Object[][] components - an array of components in form: {{"name1",
-    * component1}, {"name2", component2}, ...}
+    * component1}, {"name2", component2}, ...}.
     * 
-    * @param configClassLoader
-    * @param components
+    * @param configClassLoader ClassLoader 
+    * @param components Object[][] 
     * @return the StandaloneContainer instance
-    * @throws Exception
+    * @throws Exception if error occurs
     */
    public static StandaloneContainer getInstance(ClassLoader configClassLoader, Object[][] components) throws Exception
    {
@@ -151,38 +158,64 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       }
    }
 
+   /**
+    * Add configuration URL. Plugable way of configuration. Add the configuration to existing configurations set.
+    *
+    * @param url, URL of location to configuration file
+    * @throws MalformedURLException if path is wrong
+    */
    public static void addConfigurationURL(String url) throws MalformedURLException
    {
       if ((url == null) || (url.length() == 0))
          return;
       URL confURL = new URL(url);
       configurationURL = fileExists(confURL) ? confURL : null;
-      // container.getContext().setAttribute(CONFIGURATION_URL_ATTR,
-      // configurationURL);
    }
 
+   /**
+    * Set configuration URL. The configuration should contains all required components configured.
+    *
+    * @param url, URL of location to configuration file
+    * @throws MalformedURLException if path is wrong
+    */
    public static void setConfigurationURL(String url) throws MalformedURLException
    {
       useDefault = false;
       addConfigurationURL(url);
    }
 
+   /**
+    * Add configuration path. Plugable way of configuration. Add the configuration to existing configurations set.
+    *
+    * @param path, path to configuration file
+    * @throws MalformedURLException if path is wrong
+    */
    public static void addConfigurationPath(String path) throws MalformedURLException
    {
       if ((path == null) || (path.length() == 0))
          return;
       URL confURL = new File(path).getAbsoluteFile().toURL();
       configurationURL = fileExists(confURL) ? confURL : null;
-      // container.getContext().setAttribute(CONFIGURATION_URL_ATTR,
-      // configurationURL);
    }
 
+   /**
+    * Set configuration path. The configuration should contains all required components configured.  
+    *
+    * @param path, path to configuration file  
+    * @throws MalformedURLException if path is wrong
+    */
    public static void setConfigurationPath(String path) throws MalformedURLException
    {
       useDefault = false;
       addConfigurationPath(path);
    }
 
+   /**
+    * Ccreate SessionContainer.
+    *
+    * @param id String 
+    * @return SessionContainer instance
+    */
    public SessionContainer createSessionContainer(String id)
    {
       SessionContainer scontainer = getSessionManager().getSessionContainer(id);
@@ -194,32 +227,42 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       return scontainer;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public SessionContainer createSessionContainer(String id, String owner)
    {
       return createSessionContainer(id);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public List<SessionContainer> getLiveSessions()
    {
       return getSessionManager().getLiveSessions();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void removeSessionContainer(String sessionID)
    {
       getSessionManager().removeSessionContainer(sessionID);
    }
 
    /**
-    * @return configurationURL
+    * Get configurationURL.
+    *
+    * @return URL
     */
    public URL getConfigurationURL()
    {
       return configurationURL;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.defaults.DefaultPicoContainer#stop()
+   /**
+    * {@inheritDoc}
     */
    public void stop()
    {
@@ -229,6 +272,9 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
 
    // -------------- Helpers ----------
 
+   /**
+    * {@inheritDoc}
+    */
    public SessionManager getSessionManager()
    {
       if (smanager_ == null)
@@ -250,7 +296,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    }
 
    /**
-    * implements strategy of choosing configuration for this container
+    * Implements strategy of choosing configuration for this container.
     * 
     * @throws MalformedURLException
     * @throws ConfigurationException
@@ -284,12 +330,9 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       }
       catch (Exception ex)
       {
+         System.err.println("Error of default config init: ");
+         ex.printStackTrace();
       }
-   }
-
-   private static URL configurationURL()
-   {
-      return (URL)container.getContext().getAttribute(CONFIGURATION_URL_ATTR);
    }
 
    private void populate(URL conf) throws Exception
