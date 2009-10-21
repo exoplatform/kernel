@@ -330,8 +330,9 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       }
       catch (Exception ex)
       {
-         System.err.println("Error of default config init: ");
-         ex.printStackTrace();
+         // TODO https://jira.jboss.org/jira/browse/EXOJCR-198
+         //System.err.println("Error of default config init: ");
+         //ex.printStackTrace();
       }
    }
 
