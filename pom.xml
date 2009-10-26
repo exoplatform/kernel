@@ -48,12 +48,12 @@
    </scm>
 
    <modules>
-      <module>container</module>
-      <module>commons</module>
-      <module>component/common</module>
-      <module>component/remote</module>
-      <module>component/cache</module>
-      <module>component/command</module>
+      <module>exo.kernel.container</module>
+      <module>exo.kernel.commons</module>
+      <module>exo.kernel.component.common</module>
+      <module>exo.kernel.component.remote</module>
+      <module>exo.kernel.component.cache</module>
+      <module>exo.kernel.component.command</module>
       <module>packaging/module</module>
    </modules>
 
