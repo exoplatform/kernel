@@ -36,12 +36,10 @@ public class QName
 
    protected final int hashCode;
 
-   // [PN] 05.02.07 use of canonical representation for the string values
-   // see: http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html#intern()
    public QName(String namespace, String name)
    {
       this.namespace = (namespace != null ? namespace : "").intern();
-      this.name = (name != null ? name : ""); // [PN] 28.01.08 .intern()
+      this.name = (name != null ? name : "");
 
       this.stringName = ("[" + this.namespace + "]" + this.name);
 
