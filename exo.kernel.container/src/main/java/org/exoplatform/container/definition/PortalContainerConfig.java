@@ -219,6 +219,31 @@ public class PortalContainerConfig implements Startable
    }
 
    /**
+    * Gives the portal container names for which the web application is available if several
+    * portal container are available only the fist one will be returned
+    * @param contextName the context name of the web application
+    * @return the portal container names for which the web application is available
+    */
+   public String getPortalContainerName(String contextName)
+   {
+      if (contextName == null)
+      {
+         throw new IllegalArgumentException("The context name cannot be null");
+      }
+      if (portalContainerNames.contains(contextName))
+      {
+         // The given context name is a context name of a portal container
+         return contextName;
+      }
+      final List<String> result = scopes.get(contextName);
+      if (result == null || result.isEmpty())
+      {
+         // we assume the old behavior is expected         
+         return defaultPortalContainerName;
+      }
+      return result.get(0);
+   }
+   /**
     * Gives all the dependencies related to the given portal container
     * @param portalContainerName the name of the portal container for which we want the dependencies
     * @return a list of sorted context names

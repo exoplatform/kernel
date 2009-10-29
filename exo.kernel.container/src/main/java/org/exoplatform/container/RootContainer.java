@@ -566,18 +566,10 @@ public class RootContainer extends ExoContainer
       {
          while ((context = queue.poll()) != null)
          {
-            if (context.getServletContextName().equals(portalContainer.getName()))
-            {
-               context.getTask().execute(portalContainer.getPortalContext(), portalContainer);
-            }
-            else
-            {
-               // The current servlet context is not the context of the portal
-               // Set the context classloader of the related web application
-               Thread.currentThread().setContextClassLoader(context.getWebappClassLoader());
-               hasChanged = true;
-               context.getTask().execute(context.getServletContext(), portalContainer);
-            }
+            // Set the context classloader of the related web application
+            Thread.currentThread().setContextClassLoader(context.getWebappClassLoader());
+            hasChanged = true;
+            context.getTask().execute(context.getServletContext(), portalContainer);
          }
       }
       finally

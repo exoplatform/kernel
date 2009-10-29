@@ -319,7 +319,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     */
    public static PortalContainer getInstance()
    {
-      PortalContainer container = (PortalContainer)currentContainer_.get();
+      PortalContainer container = getInstanceIfPresent();
       if (container == null)
       {
          container = RootContainer.getInstance().getPortalContainer(DEFAULT_PORTAL_CONTAINER_NAME);
@@ -334,7 +334,27 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     */
    public static PortalContainer getInstanceIfPresent()
    {
-      return currentContainer_.get();
+      PortalContainer pc = currentContainer_.get();
+      if (pc != null) 
+      {
+         ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+         if (container != pc)
+         {
+            // Clean the value of currentContainer_ since it should be equals to 
+            // ExoContainerContext.getCurrentContainerIfPresent()
+            if (container instanceof PortalContainer)
+            {
+               // The current container is a PortalContainer, this value will replace the old one
+               currentContainer_.set(pc = (PortalContainer)container);
+            }
+            else
+            {
+               // The current container is not a PortalContainer, the old value must be removed
+               currentContainer_.set(pc = null);
+            }
+         }
+      }
+      return pc;
    }
 
    /**
@@ -402,9 +422,9 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       {
          return null;
       }
-      List<String> portalContainerNames = CONFIG.getPortalContainerNames(context.getServletContextName());
+      String portalContainerName = CONFIG.getPortalContainerName(context.getServletContextName());
       RootContainer root = RootContainer.getInstance();
-      return root.getPortalContainer(portalContainerNames.get(0));
+      return root.getPortalContainer(portalContainerName);
    }
 
    /**
@@ -425,14 +445,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       }
       else
       {
-         PortalContainer pContainer = PortalContainer.getInstanceIfPresent();
-         if (pContainer == null)
-         {
-            if (log.isDebugEnabled())
-               log.debug("No portal container has been set in the ThreadLoal of PortalContainer");
-            pContainer = PortalContainer.getInstance(context);
-         }
-         return pContainer;
+         return PortalContainer.getInstance(context);
       }
    }
 
@@ -560,7 +573,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    public static Object getComponent(Class key)
    {
-      PortalContainer pcontainer = (PortalContainer)currentContainer_.get();
+      PortalContainer pcontainer = getInstanceIfPresent();
       return pcontainer.getComponentInstanceOfType(key);
    }
 
