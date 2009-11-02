@@ -93,8 +93,6 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       }
    }
 
-   private static ThreadLocal<PortalContainer> currentContainer_ = new ThreadLocal<PortalContainer>();
-
    private volatile boolean started_;
 
    private PortalContainerInfo pinfo_;
@@ -323,38 +321,24 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       if (container == null)
       {
          container = RootContainer.getInstance().getPortalContainer(DEFAULT_PORTAL_CONTAINER_NAME);
-         currentContainer_.set(container);
+         PortalContainer.setInstance(container);
       }
       return container;
    }
 
    /**
-    * @return the current instance of {@link PortalContainer} that has been stored into the related
-    * {@link ThreadLocal}. If no value has been set, it will return <code>null</code>
+    * @return the current instance of {@link ExoContainer} that has been stored into the
+    * {@link ThreadLocal} of {@link ExoContainerContext}. If no {@link PortalContainer} has been set, 
+    * it will return <code>null</code>
     */
    public static PortalContainer getInstanceIfPresent()
    {
-      PortalContainer pc = currentContainer_.get();
-      if (pc != null) 
+      ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+      if (container instanceof PortalContainer) 
       {
-         ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
-         if (container != pc)
-         {
-            // Clean the value of currentContainer_ since it should be equals to 
-            // ExoContainerContext.getCurrentContainerIfPresent()
-            if (container instanceof PortalContainer)
-            {
-               // The current container is a PortalContainer, this value will replace the old one
-               currentContainer_.set(pc = (PortalContainer)container);
-            }
-            else
-            {
-               // The current container is not a PortalContainer, the old value must be removed
-               currentContainer_.set(pc = null);
-            }
-         }
+         return (PortalContainer)container;
       }
-      return pc;
+      return null;
    }
 
    /**
@@ -436,17 +420,12 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     */
    public static PortalContainer getCurrentInstance(ServletContext context)
    {
-      final ExoContainer container = ExoContainerContext.getCurrentContainer();
-      if (container instanceof PortalContainer)
-      {
-         if (log.isDebugEnabled())
-            log.debug("A portal container has been set in the ThreadLocal of ExoContainerContext");
-         return (PortalContainer)container;
-      }
-      else
+      final PortalContainer container = getInstanceIfPresent();
+      if (container == null)
       {
          return PortalContainer.getInstance(context);
       }
+      return container;
    }
 
    /**
@@ -567,7 +546,6 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    public static void setInstance(PortalContainer instance)
    {
-      currentContainer_.set(instance);
       ExoContainerContext.setCurrentContainer(instance);
    }
 
