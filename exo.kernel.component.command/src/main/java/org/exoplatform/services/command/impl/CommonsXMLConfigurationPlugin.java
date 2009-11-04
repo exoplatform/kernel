@@ -23,6 +23,8 @@ import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.net.URL;
 
@@ -40,6 +42,8 @@ public class CommonsXMLConfigurationPlugin extends BaseComponentPlugin
 {
 
    // protected Catalog defaultCatalog;
+   
+   private static Log log = ExoLogger.getLogger(CommonsXMLConfigurationPlugin.class);
 
    public CommonsXMLConfigurationPlugin(InitParams params, ConfigurationManager configurationManager) throws Exception
    {
@@ -56,7 +60,7 @@ public class CommonsXMLConfigurationPlugin extends BaseComponentPlugin
             res = configurationManager.getResource(path);
          if (res == null)
             throw new Exception("Resource not found " + path);
-         System.out.println("Catalog configuration found at " + res);
+         log.info("Catalog configuration found at " + res);
          parser.parse(res);
       }
 

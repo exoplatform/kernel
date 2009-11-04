@@ -71,23 +71,16 @@ public class ConfigurationUnmarshaller
          this.valid = true;
       }
 
-      private void log(String prefix, SAXParseException e)
-      {
-         System.err.println(prefix + " in document " + url + "  at (" + e.getLineNumber() + "," + e.getColumnNumber()
-            + ") :" + e.getMessage());
-      }
-
       public void warning(SAXParseException exception) throws SAXException
       {
-         log("Warning", exception);
+         log.warn(exception.getMessage(), exception);
       }
 
       public void error(SAXParseException exception) throws SAXException
       {
          if (exception.getMessage().equals("cvc-elt.1: Cannot find the declaration of element 'configuration'."))
          {
-            System.out
-               .println("The document "
+            log.info("The document "
                   + url
                   + " does not contain a schema declaration, it should have an "
                   + "XML declaration similar to\n"
@@ -98,14 +91,16 @@ public class ConfigurationUnmarshaller
          }
          else
          {
-            log("Error", exception);
+            log.error("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
+                     + ") :" + exception.getMessage());
          }
          valid = false;
       }
 
       public void fatalError(SAXParseException exception) throws SAXException
       {
-         log("Fatal error", exception);
+         log.fatal("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
+            + ") :" + exception.getMessage());
          valid = false;
       }
    }
@@ -138,7 +133,7 @@ public class ConfigurationUnmarshaller
          }
          catch (SAXException e)
          {
-            System.err.print("Got a sax exception when doing XSD validation");
+            log.error("Got a sax exception when doing XSD validation");
             e.printStackTrace(System.err);
             return false;
          }
@@ -160,14 +155,14 @@ public class ConfigurationUnmarshaller
             out.write(bytes, 0, s);
           }
           String s = out.toString();
-          System.out.println("s = " + s);
+          log.info("s = " + s);
       */
 
       //
       boolean valid = isValid(url);
       if (!valid)
       {
-         System.out.println("The configuration file " + url + " was not found valid according to its XSD");
+         log.info("The configuration file " + url + " was not found valid according to its XSD");
       }
 
       // The buffer
