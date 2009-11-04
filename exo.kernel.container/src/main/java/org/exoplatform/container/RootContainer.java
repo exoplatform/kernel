@@ -428,7 +428,6 @@ public class RootContainer extends ExoContainer
                else
                {
                   booting = true;
-                  log.info("Booting root container with id " + RootContainer.class.hashCode() + "");
                   log.info("Building root container");
                   long time = -System.currentTimeMillis();
                   result = buildRootContainer();
