@@ -155,7 +155,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobInfo jobinfo = getJobInfo(jinfo);
       CronTrigger trigger =
          new CronTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJobName(), jobinfo.getGroupName(),
-            exp);
+			exp);
       JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
       job.setDescription(jobinfo.getDescription());
       scheduler_.addJob(job, true);
@@ -173,7 +173,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobInfo jobinfo = getJobInfo(jinfo);
       CronTrigger trigger =
          new CronTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJobName(), jobinfo.getGroupName(),
-            exp);
+			exp);
       JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
       job.setJobDataMap(jdatamap);
       job.setDescription(jobinfo.getDescription());
