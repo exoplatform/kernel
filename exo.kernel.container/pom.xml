@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>2.2.0-Beta03</version>
+      <version>2.2.0-Beta04-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.container</artifactId>
