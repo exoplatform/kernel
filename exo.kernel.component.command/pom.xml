@@ -34,12 +34,14 @@
    <description>exoplatform command services implementation</description>
 
    <dependencies>
-
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.common</artifactId>
+         <artifactId>exo.kernel.commons</artifactId>
       </dependency>
-
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.container</artifactId>
+      </dependency>
       <dependency>
          <groupId>commons-chain</groupId>
          <artifactId>commons-chain</artifactId>
@@ -49,6 +51,14 @@
                <artifactId>xml-apis</artifactId>
             </exclusion>
          </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>commons-digester</groupId>
+         <artifactId>commons-digester</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>xml-apis</groupId>
+         <artifactId>xml-apis</artifactId>
       </dependency>
    </dependencies>
 </project>

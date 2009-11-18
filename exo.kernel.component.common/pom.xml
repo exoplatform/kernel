@@ -35,15 +35,21 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.exoplatform.tool</groupId>
+         <artifactId>exo.tool.framework.junit</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
       </dependency>
-
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons</artifactId>
+      </dependency>
       <dependency>
          <groupId>javax.activation</groupId>
          <artifactId>activation</artifactId>
       </dependency>
-
       <dependency>
          <groupId>jotm</groupId>
          <artifactId>jotm</artifactId>
@@ -58,23 +64,23 @@
             </exclusion>
          </exclusions>
       </dependency>
-
       <dependency>
          <groupId>javax.resource</groupId>
          <artifactId>connector-api</artifactId>
          <scope>provided</scope>
       </dependency>
-
       <dependency>
          <groupId>quartz</groupId>
          <artifactId>quartz</artifactId>
       </dependency>
-
+      <dependency>
+         <groupId>picocontainer</groupId>
+         <artifactId>picocontainer</artifactId>
+      </dependency>
       <dependency>
          <groupId>javax.mail</groupId>
          <artifactId>mail</artifactId>
       </dependency>
-
       <dependency>
          <groupId>javax.transaction</groupId>
          <artifactId>jta</artifactId>

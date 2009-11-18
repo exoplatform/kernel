@@ -35,17 +35,16 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.exoplatform.tool</groupId>
+         <artifactId>exo.tool.framework.junit</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
       </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.remote</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.common</artifactId>
+         <artifactId>exo.kernel.commons</artifactId>
       </dependency>
    </dependencies>
 </project>
-
