@@ -13,6 +13,18 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.exoplatform.tool</groupId>
+         <artifactId>exo.tool.framework.junit</artifactId>
+      </dependency>      
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons</artifactId>
+      </dependency>   
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.container</artifactId>
+      </dependency>         
+      <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.cache</artifactId>
       </dependency>
@@ -20,9 +32,5 @@
          <groupId>org.jboss.cache</groupId>
          <artifactId>jbosscache-core</artifactId>
        </dependency>
-       <dependency>
-          <groupId>jgroups</groupId>
-          <artifactId>jgroups</artifactId>
-       </dependency>    
    </dependencies>
 </project>
