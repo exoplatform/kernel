@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration>
+  
+  <component>
+    <key>org.exoplatform.services.cache.CacheService</key>
+    <type>org.exoplatform.services.cache.impl.CacheServiceImpl</type>
+
+  	<init-params>
+      <object-param>
+        <name>cache.config.default</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field  name="name"><string>default</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+        </object>
+      </object-param>
+      <object-param>
+        <name>test-multi-threading</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.impl.jboss.fifo.FIFOExoCacheConfig">
+          <field  name="name"><string>test-multi-threading</string></field>
+          <field  name="maxNodes"><int>-1</int></field>
+          <field  name="minTimeToLive"><long>0</long></field>
+        </object>        
+      </object-param>      
+      <object-param>
+        <name>cacheDistributed</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field  name="name"><string>cacheDistributed</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+          <field  name="distributed"><boolean>true</boolean></field>
+        </object>
+      </object-param>                
+      <object-param>
+        <name>test-default-impl</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field  name="name"><string>test-default-impl</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+        </object>
+      </object-param>                
+      <object-param>
+        <name>test-custom-impl-with-old-config</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field  name="name"><string>test-custom-impl-with-old-config</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+          <field  name="implementation"><string>TEST</string></field>
+        </object>
+      </object-param>                
+      <object-param>
+        <name>test-custom-impl-with-new-config</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.impl.jboss.TestExoCacheConfig">
+          <field  name="name"><string>test-custom-impl-with-new-config</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+        </object>
+      </object-param>
+       <object-param>
+        <name>test-fifo-with-old-config</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field name="name"><string>test-fifo-with-old-config</string></field>
+          <field name="maxSize"><int>5</int></field>
+          <field name="liveTime"><long>1</long></field>
+          <field name="implementation"><string>FIFO</string></field>
+        </object>
+      </object-param>      
+       <object-param>
+        <name>test-fifo</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.impl.jboss.fifo.FIFOExoCacheConfig">
+          <field  name="name"><string>test-fifo</string></field>
+          <field  name="maxNodes"><int>5</int></field>
+          <field  name="minTimeToLive"><long>1000</long></field>
+        </object>
+      </object-param>    
+      <object-param>
+        <name>test-lru-with-old-config</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field name="name"><string>test-lru-with-old-config</string></field>
+          <field name="maxSize"><int>5</int></field>
+          <field name="liveTime"><long>1</long></field>
+          <field name="implementation"><string>LRU</string></field>
+        </object>
+      </object-param> 
+       <object-param>
+        <name>test-lru</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.impl.jboss.lru.LRUExoCacheConfig">
+          <field name="name"><string>test-lru</string></field>
+          <field name="maxNodes"><int>5</int></field>
+          <field name="minTimeToLive"><long>1000</long></field>
+          <field name="maxAge"><long>2000</long></field>
+          <field name="timeToLive"><long>1500</long></field>
+        </object>
+      </object-param>                                  
+    </init-params>	
+  </component>  
+  
+  <component>
+    <key>org.exoplatform.services.cache.ExoCacheFactory</key>
+    <type>org.exoplatform.services.cache.impl.jboss.ExoCacheFactoryImpl</type>
+    <init-params>
+      <value-param>
+        <name>cache.config.template</name>
+        <value>jar:/conf/portal/cache-configuration-template.xml</value>
+      </value-param>
+    </init-params>
+  </component>  
+    
+  <external-component-plugins>
+    <target-component>org.exoplatform.services.cache.ExoCacheFactory</target-component>
+    <component-plugin>
+      <name>addConfig</name>
+      <set-method>addConfig</set-method>
+      <type>org.exoplatform.services.cache.impl.jboss.ExoCacheFactoryConfigPlugin</type>
+      <description>add Custom Configurations</description>
+      <init-params>	
+	      <value-param>
+	        <name>myCustomCache</name>
+	        <value>jar:/conf/portal/distributed-cache-configuration-template.xml</value>
+	      </value-param>    		          
+      </init-params>	
+    </component-plugin>    
+    <component-plugin>
+      <name>addCreator</name>
+      <set-method>addCreator</set-method>
+      <type>org.exoplatform.services.cache.impl.jboss.ExoCacheCreatorPlugin</type>
+      <description>add Exo Cache Creator</description>
+      <init-params>	
+	      <object-param>
+		        <name>Test</name>
+		        <description>The cache creator for testing purpose</description>
+		        <object type="org.exoplatform.services.cache.impl.jboss.TestExoCacheCreator"></object>
+		    </object-param>      
+	      <object-param>
+		        <name>FIFO</name>
+		        <description>The fifo cache creator</description>
+		        <object type="org.exoplatform.services.cache.impl.jboss.fifo.FIFOExoCacheCreator"></object>
+		    </object-param>
+	      <object-param>
+		        <name>LRU</name>
+		        <description>The lru cache creator</description>
+		        <object type="org.exoplatform.services.cache.impl.jboss.lru.LRUExoCacheCreator">
+		        	<field name="defaultTimeToLive"><long>1500</long></field>
+		        	<field name="defaultMaxAge"><long>2000</long></field>	
+		        </object>
+		    </object-param>  		          
+      </init-params>	
+    </component-plugin>
+  </external-component-plugins>  
+</configuration>
