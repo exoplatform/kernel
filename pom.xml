@@ -53,7 +53,7 @@
       <module>exo.kernel.component.common</module>
       <module>exo.kernel.component.remote</module>
       <module>exo.kernel.component.cache</module>
-      <module>exo.kernel.component.ext.cache</module>
+      <!--module>exo.kernel.component.ext.cache</module-->
       <module>exo.kernel.component.command</module>
       <module>packaging/module</module>
    </modules>
