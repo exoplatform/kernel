@@ -62,17 +62,6 @@ public class TestExoCacheCreator implements ExoCacheCreator
 
       }
 
-      public void clearCache() throws Exception
-      {
-         // TODO Auto-generated method stub
-
-      }
-
-      public Object get(Serializable name) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
 
       public int getCacheHit()
       {
@@ -139,29 +128,6 @@ public class TestExoCacheCreator implements ExoCacheCreator
          return false;
       }
 
-      public void put(Serializable name, Object obj) throws Exception
-      {
-         // TODO Auto-generated method stub
-
-      }
-
-      public void putMap(Map<Serializable, Object> objs) throws Exception
-      {
-         // TODO Auto-generated method stub
-
-      }
-
-      public Object remove(Serializable name) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public List removeCachedObjects() throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
 
       public void select(CachedObjectSelector selector) throws Exception
       {
@@ -209,6 +175,42 @@ public class TestExoCacheCreator implements ExoCacheCreator
       {
          // TODO Auto-generated method stub
 
+      }
+
+      public void clearCache()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public Object get(Serializable key)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void put(Serializable key, Object value) throws NullPointerException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void putMap(Map objs) throws NullPointerException, IllegalArgumentException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public Object remove(Serializable key) throws NullPointerException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public List removeCachedObjects()
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
 
    }
