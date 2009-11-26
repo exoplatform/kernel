@@ -20,6 +20,7 @@ package org.exoplatform.services.cache.impl.jboss;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.cache.CacheListener;
+import org.exoplatform.services.cache.CacheListenerContext;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.CachedObjectSelector;
 import org.exoplatform.services.cache.ExoCache;
@@ -614,6 +615,31 @@ public class TestAbstractExoCache extends BasicTestCase
       }
 
       public void onRemove(ExoCache cache, Serializable key, Object obj) throws Exception
+      {
+         remove++;
+      }
+
+      public void onClearCache(CacheListenerContext context) throws Exception
+      {
+         clearCache++;
+      }
+
+      public void onExpire(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      {
+         expire++;
+      }
+
+      public void onGet(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      {
+         get++;
+      }
+
+      public void onPut(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      {
+         put++;
+      }
+
+      public void onRemove(CacheListenerContext context, Serializable key, Object obj) throws Exception
       {
          remove++;
       }
