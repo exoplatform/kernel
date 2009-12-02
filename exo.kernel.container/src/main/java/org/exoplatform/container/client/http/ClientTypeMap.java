@@ -94,7 +94,7 @@ public class ClientTypeMap
             String preferredMimeType = (String)preferredMimeTypeExp.evaluate(node, XPathConstants.STRING);
             String renderer = (String)rendererExp.evaluate(node, XPathConstants.STRING);
             HttpClientType clientInfo;
-            if (renderer != null || renderer.length() > 0)
+            if (renderer != null && renderer.length() > 0)
             {
                clientInfo = new HttpClientType(name, userAgentPattern, preferredMimeType, renderer);
             }
