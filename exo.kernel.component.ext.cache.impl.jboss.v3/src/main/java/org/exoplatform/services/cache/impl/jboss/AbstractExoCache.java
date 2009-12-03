@@ -77,20 +77,13 @@ public abstract class AbstractExoCache implements ExoCache
 
    private final CopyOnWriteArrayList<CacheListener> listeners;
 
-   protected final Cache<Serializable, Object> cache;
-
-   protected final boolean isCacheSPI;
+   protected final CacheSPI<Serializable, Object> cache;
 
    @SuppressWarnings("unchecked")
-   public AbstractExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache)
+   public AbstractExoCache(ExoCacheConfig config, CacheSPI<Serializable, Object> cache)
    {
       this.cache = cache;
-      this.isCacheSPI = cache instanceof CacheSPI;
       this.listeners = new CopyOnWriteArrayList<CacheListener>();
-      if (!isCacheSPI)
-      {
-         LOG.warn("The cache is not an instance of CacheSPI, the cache size will be evaluated but won't be accurate");
-      }
       setDistributed(config.isDistributed());
       setLabel(config.getLabel());
       setName(config.getName());
@@ -169,11 +162,7 @@ public abstract class AbstractExoCache implements ExoCache
    @SuppressWarnings("unchecked")
    public int getCacheSize()
    {
-      if (isCacheSPI)
-      {
-         return ((CacheSPI)cache).getNumberOfNodes();
-      }
-      return size.intValue();
+      return cache.getNumberOfNodes();
    }
 
    /**
@@ -281,8 +270,6 @@ public abstract class AbstractExoCache implements ExoCache
       }
       catch (Exception e)
       {
-         if (!isCacheSPI)
-            size.addAndGet(-total);
          cache.endBatch(false);
          throw e;
       }
@@ -515,10 +502,6 @@ public abstract class AbstractExoCache implements ExoCache
             // algorithms
             onExpire(getKey(ne.getFqn()), null);
          }
-         else if (!isCacheSPI)
-         {
-            size.decrementAndGet();
-         }
       }
 
       @NodeRemoved
@@ -533,19 +516,12 @@ public abstract class AbstractExoCache implements ExoCache
                onRemove(key, node.get(key));
             }
          }
-         else if (!isCacheSPI)
-         {
-            size.decrementAndGet();
-         }
       }
 
       @NodeCreated
       public void nodeCreated(NodeEvent ne)
       {
-         if (!ne.isPre() && !isCacheSPI)
-         {
-            size.incrementAndGet();
-         }
+         size.incrementAndGet();
       }
 
       @SuppressWarnings("unchecked")
