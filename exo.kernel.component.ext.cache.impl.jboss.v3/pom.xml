@@ -7,7 +7,7 @@
       <version>2.2.0-Beta05-SNAPSHOT</version>
    </parent>
 
-   <artifactId>exo.kernel.component.ext.cache</artifactId>
+   <artifactId>exo.kernel.component.ext.cache.impl.jboss.v3</artifactId>
 
    <description>JBoss Cache Implementation for the Cache Service</description>
 
