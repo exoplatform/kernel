@@ -42,7 +42,7 @@ public class ExpireKeyStartWithSelector<K extends Serializable, V> implements Ca
       return false;
    }
 
-   public void onSelect(ExoCache<? extends K, ? extends V> cache, K key, ObjectCacheInfo<? extends V> ocinfo)
+   public void onSelect(ExoCache<? extends K, ? extends V> cache, K key, ObjectCacheInfo<? extends V> ocinfo) throws Exception
    {
       cache.remove(key);
    }

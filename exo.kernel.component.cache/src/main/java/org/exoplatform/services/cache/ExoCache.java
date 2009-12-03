@@ -70,7 +70,7 @@ public interface ExoCache<K extends Serializable, V>
     * @param key the cache key
     * @return the cached value which may be evaluated to null
     */
-   public V get(Serializable key);
+   public V get(Serializable key) throws Exception;
 
    /**
     * Removes an entry from the cache.
@@ -79,7 +79,7 @@ public interface ExoCache<K extends Serializable, V>
     * @return the previously cached value or null if no entry existed or that entry value was evaluated to null
     * @throws NullPointerException if the provided key is null
     */
-   public V remove(Serializable key) throws NullPointerException;
+   public V remove(Serializable key) throws Exception;
 
    /**
     * Performs a put in the cache.
@@ -88,7 +88,7 @@ public interface ExoCache<K extends Serializable, V>
     * @param value the cached value
     * @throws NullPointerException if the key is null
     */
-   public void put(K key, V value) throws NullPointerException;
+   public void put(K key, V value) throws Exception;
 
    /**
     * Performs a put of all the entries provided by the map argument.
@@ -104,7 +104,7 @@ public interface ExoCache<K extends Serializable, V>
     */
    @Managed
    @ManagedDescription("Evict all entries of the cache")
-   public void clearCache();
+   public void clearCache() throws Exception;
 
    /**
     * Selects a subset of the cache.
@@ -198,7 +198,7 @@ public interface ExoCache<K extends Serializable, V>
     * @return the list of cached objects
     * @throws Exception any exception
     */
-   public List<? extends V> removeCachedObjects();
+   public List<? extends V> removeCachedObjects() throws Exception;
 
    /**
     * Add a listener.
