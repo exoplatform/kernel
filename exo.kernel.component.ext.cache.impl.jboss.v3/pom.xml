@@ -8,7 +8,7 @@
    </parent>
 
    <artifactId>exo.kernel.component.ext.cache.impl.jboss.v3</artifactId>
-
+   <name>eXo Kernel :: Cache Extension :: JBoss Cache Implementation</name>
    <description>JBoss Cache Implementation for the Cache Service</description>
 
    <dependencies>

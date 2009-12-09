@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
-import java.io.Serializable;
-
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.jboss.cache.Cache;
+
+import java.io.Serializable;
 
 /**
  * This class is used to create the cache according to the given 
@@ -43,7 +43,7 @@ public interface ExoCacheCreator
     * @param cache the cache to initialize
     * @exception ExoCacheInitException if an exception happens while initializing the cache
     */
-   public ExoCache create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException;
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException;
 
    /**
     * Returns the type of {@link org.exoplatform.services.cache.ExoCacheConfig} expected by the creator  

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.cache.impl.jboss.fifo;
 
-import java.io.Serializable;
-
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.services.cache.ExoCache;
@@ -33,6 +31,8 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.FIFOAlgorithmConfig;
+
+import java.io.Serializable;
 
 /**
  * The FIFO Implementation of an {@link org.exoplatform.services.cache.impl.jboss.ExoCacheCreator}
@@ -68,7 +68,7 @@ public class FIFOExoCacheCreator implements ExoCacheCreator
    /**
     * {@inheritDoc}
     */
-   public ExoCache create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException
    {
       if (config instanceof FIFOExoCacheConfig)
       {
@@ -85,7 +85,7 @@ public class FIFOExoCacheCreator implements ExoCacheCreator
    /**
     * Creates a new ExoCache instance with the relevant parameters
     */
-   private ExoCache create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, long minTimeToLive)
+   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, long minTimeToLive)
       throws ExoCacheInitException
    {
       final Configuration configuration = cache.getConfiguration();
@@ -97,7 +97,7 @@ public class FIFOExoCacheCreator implements ExoCacheCreator
       final EvictionConfig evictionConfig = configuration.getEvictionConfig();
       evictionConfig.setDefaultEvictionRegionConfig(erc);
 
-      return new AbstractExoCache(config, cache)
+      return new AbstractExoCache<Serializable, Object>(config, cache)
       {
 
          public void setMaxSize(int max)

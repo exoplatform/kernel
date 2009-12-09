@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.cache.impl.jboss.lfu;
 
-import java.io.Serializable;
-
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
@@ -34,6 +32,8 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.LFUAlgorithmConfig;
+
+import java.io.Serializable;
 
 /**
  * The LFU Implementation of an {@link org.exoplatform.services.cache.impl.jboss.ExoCacheCreator}
@@ -58,7 +58,7 @@ public class LFUExoCacheCreator implements ExoCacheCreator
    /**
     * {@inheritDoc}
     */
-   public ExoCache create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException
    {
       if (config instanceof LFUExoCacheConfig)
       {
@@ -75,7 +75,7 @@ public class LFUExoCacheCreator implements ExoCacheCreator
    /**
     * Creates a new ExoCache instance with the relevant parameters
     */
-   private ExoCache create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, int minNodes,
+   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, int minNodes,
       long minTimeToLive) throws ExoCacheInitException
    {
       final Configuration configuration = cache.getConfiguration();
@@ -108,7 +108,7 @@ public class LFUExoCacheCreator implements ExoCacheCreator
    /**
     * The LRU implementation of an ExoCache
     */
-   public static class LFUExoCache extends AbstractExoCache
+   public static class LFUExoCache extends AbstractExoCache<Serializable, Object>
    {
 
       private final LFUAlgorithmConfig lfu;

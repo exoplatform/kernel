@@ -52,7 +52,7 @@ public class TestAbstractExoCache extends BasicTestCase
 
    CacheService service;
 
-   AbstractExoCache cache;
+   AbstractExoCache<Serializable, Object> cache;
 
    ExoCacheFactory factory;
 
@@ -64,7 +64,7 @@ public class TestAbstractExoCache extends BasicTestCase
    public void setUp() throws Exception
    {
       this.service = (CacheService)PortalContainer.getInstance().getComponentInstanceOfType(CacheService.class);
-      this.cache = (AbstractExoCache)service.getCacheInstance("myCache");
+      this.cache = (AbstractExoCache<Serializable, Object>)service.getCacheInstance("myCache");
       this.factory = (ExoCacheFactory)PortalContainer.getInstance().getComponentInstanceOfType(ExoCacheFactory.class);
    }
 
@@ -130,6 +130,8 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(2, cache.getCacheSize());
       values = new HashMap<Serializable, Object>()
       {
+         private static final long serialVersionUID = 1L;
+
          public Set<Entry<Serializable, Object>> entrySet()
          {
             Set<Entry<Serializable, Object>> set = new LinkedHashSet<Entry<Serializable, Object>>(super.entrySet());
@@ -156,14 +158,7 @@ public class TestAbstractExoCache extends BasicTestCase
       };
       values.put(new MyKey("e"), "e");
       values.put(new MyKey("d"), "d");
-      try
-      {
-         cache.putMap(values);
-         assertTrue("An error was expected", false);
-      }
-      catch (Exception e)
-      {
-      }
+      cache.putMap(values);
       assertEquals(2, cache.getCacheSize());
    }
 
@@ -202,17 +197,17 @@ public class TestAbstractExoCache extends BasicTestCase
       cache.put(new MyKey("b"), 2);
       cache.put(new MyKey("c"), 3);
       final AtomicInteger count = new AtomicInteger();
-      CachedObjectSelector selector = new CachedObjectSelector()
+      CachedObjectSelector<Serializable, Object> selector = new CachedObjectSelector<Serializable, Object>()
       {
 
-         public void onSelect(ExoCache cache, Serializable key, ObjectCacheInfo ocinfo) throws Exception
+         public void onSelect(ExoCache<? extends Serializable, ? extends Object> cache, Serializable key, ObjectCacheInfo<? extends Object> ocinfo) throws Exception
          {
             assertTrue(key.equals(new MyKey("a")) || key.equals(new MyKey("b")) || key.equals(new MyKey("c")));
             assertTrue(ocinfo.get().equals(1) || ocinfo.get().equals(2) || ocinfo.get().equals(3));
             count.incrementAndGet();
          }
 
-         public boolean select(Serializable key, ObjectCacheInfo ocinfo)
+         public boolean select(Serializable key, ObjectCacheInfo<? extends Object> ocinfo)
          {
             return true;
          }
@@ -234,6 +229,7 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(2, cache.getCacheMiss() - misses);
    }
 
+   @SuppressWarnings("unchecked")
    public void testDistributedCache() throws Exception
    {
       ExoCacheConfig config = new ExoCacheConfig();
@@ -246,13 +242,13 @@ public class TestAbstractExoCache extends BasicTestCase
       config2.setMaxSize(5);
       config2.setLiveTime(1000);
       config2.setDistributed(true);
-      AbstractExoCache cache1 = (AbstractExoCache)factory.createCache(config);
+      AbstractExoCache<Serializable, Object> cache1 = (AbstractExoCache<Serializable, Object>)factory.createCache(config);
       MyCacheListener listener1 = new MyCacheListener();
       cache1.addCacheListener(listener1);
-      AbstractExoCache cache2 = (AbstractExoCache)factory.createCache(config);
+      AbstractExoCache<Serializable, Object> cache2 = (AbstractExoCache<Serializable, Object>)factory.createCache(config);
       MyCacheListener listener2 = new MyCacheListener();
       cache2.addCacheListener(listener2);
-      AbstractExoCache cache3 = (AbstractExoCache)factory.createCache(config2);
+      AbstractExoCache<Serializable, Object> cache3 = (AbstractExoCache<Serializable, Object>)factory.createCache(config2);
       MyCacheListener listener3 = new MyCacheListener();
       cache3.addCacheListener(listener3);
       try
@@ -351,6 +347,8 @@ public class TestAbstractExoCache extends BasicTestCase
          assertEquals(0, listener3.clearCache);
          values = new HashMap<Serializable, Object>()
          {
+            private static final long serialVersionUID = 1L;
+
             public Set<Entry<Serializable, Object>> entrySet()
             {
                Set<Entry<Serializable, Object>> set = new LinkedHashSet<Entry<Serializable, Object>>(super.entrySet());
@@ -377,14 +375,7 @@ public class TestAbstractExoCache extends BasicTestCase
          };
          values.put(new MyKey("e"), "e");
          values.put(new MyKey("d"), "d");
-         try
-         {
-            cache1.putMap(values);
-            assertTrue("An error was expected", false);
-         }
-         catch (Exception e)
-         {
-         }
+         cache1.putMap(values);
          assertEquals(2, cache1.getCacheSize());
          assertEquals(2, cache2.getCacheSize());
          assertEquals(5, listener1.put);
@@ -410,7 +401,8 @@ public class TestAbstractExoCache extends BasicTestCase
 
    public void testMultiThreading() throws Exception
    {
-      final ExoCache cache = service.getCacheInstance("test-multi-threading");
+      long time = System.currentTimeMillis();
+      final ExoCache<Serializable, Object> cache = service.getCacheInstance("test-multi-threading");
       final int totalElement = 100;
       final int totalTimes = 100;
       int reader = 20;
@@ -444,11 +436,14 @@ public class TestAbstractExoCache extends BasicTestCase
                      }
                      sleep(50);
                   }
-                  doneSignal.countDown();
                }
                catch (Exception e)
                {
                   errors.add(e);
+               }
+               finally
+               {
+                  doneSignal.countDown();
                }
             }
          };
@@ -472,11 +467,14 @@ public class TestAbstractExoCache extends BasicTestCase
                      }
                      sleep(50);
                   }
-                  doneSignal.countDown();
                }
                catch (Exception e)
                {
                   errors.add(e);
+               }
+               finally
+               {
+                  doneSignal.countDown();
                }
             }
          };
@@ -499,11 +497,14 @@ public class TestAbstractExoCache extends BasicTestCase
                      }
                      sleep(50);
                   }
-                  doneSignal.countDown();
                }
                catch (Exception e)
                {
                   errors.add(e);
+               }
+               finally
+               {
+                  doneSignal.countDown();
                }
             }
          };
@@ -534,11 +535,14 @@ public class TestAbstractExoCache extends BasicTestCase
                      }
                      sleep(50);
                   }
-                  doneSignal2.countDown();
                }
                catch (Exception e)
                {
                   errors.add(e);
+               }
+               finally
+               {
+                  doneSignal2.countDown();
                }
             }
          };
@@ -558,11 +562,14 @@ public class TestAbstractExoCache extends BasicTestCase
                      sleep(150);
                      cache.clearCache();
                   }
-                  doneSignal2.countDown();
                }
                catch (Exception e)
                {
                   errors.add(e);
+               }
+               finally
+               {
+                  doneSignal2.countDown();
                }
             }
          };
@@ -578,10 +585,10 @@ public class TestAbstractExoCache extends BasicTestCase
          }
          throw errors.get(0);
       }
-
+      System.out.println("Total Time = " + (System.currentTimeMillis() - time));
    }
 
-   public static class MyCacheListener implements CacheListener
+   public static class MyCacheListener implements CacheListener<Serializable, Object>
    {
 
       public int clearCache;
@@ -594,27 +601,27 @@ public class TestAbstractExoCache extends BasicTestCase
 
       public int remove;
 
-      public void onClearCache(ExoCache cache) throws Exception
+      public void onClearCache(ExoCache<Serializable, Object> cache) throws Exception
       {
          clearCache++;
       }
 
-      public void onExpire(ExoCache cache, Serializable key, Object obj) throws Exception
+      public void onExpire(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
       {
          expire++;
       }
 
-      public void onGet(ExoCache cache, Serializable key, Object obj) throws Exception
+      public void onGet(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
       {
          get++;
       }
 
-      public void onPut(ExoCache cache, Serializable key, Object obj) throws Exception
+      public void onPut(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
       {
          put++;
       }
 
-      public void onRemove(ExoCache cache, Serializable key, Object obj) throws Exception
+      public void onRemove(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
       {
          remove++;
       }
@@ -647,6 +654,7 @@ public class TestAbstractExoCache extends BasicTestCase
 
    public static class MyKey implements Serializable
    {
+      private static final long serialVersionUID = 1L;
       public String value;
 
       public MyKey(String value)
