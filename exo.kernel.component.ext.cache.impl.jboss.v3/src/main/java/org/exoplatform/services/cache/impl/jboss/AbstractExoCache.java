@@ -106,7 +106,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void clearCache() throws Exception
+   public void clearCache()
    {
       final Node<K, V> rootNode = cache.getRoot();
       for (Node<K, V> node : rootNode.getChildren())
@@ -124,7 +124,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     * {@inheritDoc}
     */
    @SuppressWarnings("unchecked")
-   public V get(Serializable name) throws Exception
+   public V get(Serializable name)
    {
       if (name == null)
       {
@@ -231,7 +231,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void put(K key, V value) throws Exception
+   public void put(K key, V value) throws NullPointerException
    {
       if (key == null)
       {
@@ -244,7 +244,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * Only puts the data into the cache nothing more
     */
-   private V putOnly(K key, V value) throws Exception
+   private V putOnly(K key, V value)
    {
       return cache.put(getFqn(key), key, value);
    }
@@ -296,7 +296,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     * {@inheritDoc}
     */
    @SuppressWarnings("unchecked")
-   public V remove(Serializable name) throws Exception
+   public V remove(Serializable name) throws NullPointerException
    {
       if (name == null)
       {
@@ -319,7 +319,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public List<V> removeCachedObjects() throws Exception
+   public List<V> removeCachedObjects()
    {
       final List<V> list = getCachedObjects();
       clearCache();
