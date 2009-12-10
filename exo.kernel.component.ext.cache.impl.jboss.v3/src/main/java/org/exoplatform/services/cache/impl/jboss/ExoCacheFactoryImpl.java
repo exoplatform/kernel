@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -41,6 +35,12 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.config.Configuration.CacheMode;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class is the JBoss Cache implementation of the {@link org.exoplatform.services.cache.ExoCacheFactory}
@@ -112,13 +112,13 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * 2. If no specific location has been defined, we use the default configuration which is
     * "${CACHE_CONFIG_TEMPLATE_KEY}"
     */
-   public ExoCache createCache(ExoCacheConfig config) throws ExoCacheInitException
+   public ExoCache<Serializable, Object> createCache(ExoCacheConfig config) throws ExoCacheInitException
    {
       final String region = config.getName();
       final String customConfig = mappingCacheNameConfig.get(region);
       final Cache<Serializable, Object> cache;
       final CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
-      final ExoCache eXoCache;
+      final ExoCache<Serializable, Object> eXoCache;
       try
       {
          if (customConfig != null)
@@ -230,7 +230,13 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    {
       final Configuration config = cache.getConfiguration();
       // Reset the eviction policies 
-      final EvictionConfig evictionConfig = config.getEvictionConfig();
+      EvictionConfig evictionConfig = config.getEvictionConfig();
+      if (evictionConfig == null)
+      {
+         // If not eviction config exists, we create an empty one
+         evictionConfig = new EvictionConfig();
+         config.setEvictionConfig(evictionConfig);
+      }
       evictionConfig.setEvictionRegionConfigs(new LinkedList<EvictionRegionConfig>());
       // Rename the cluster name
       String clusterName = config.getClusterName();
