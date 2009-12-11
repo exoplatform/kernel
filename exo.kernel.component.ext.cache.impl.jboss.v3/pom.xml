@@ -46,6 +46,16 @@
 							<name>java.net.preferIPv4Stack</name>
 							<value>true</value>
 						</property>
+						<!-- Avoid the firewall -->
+						<property>
+							<name>bind.address</name>
+							<value>127.0.0.1</value>
+						</property>
+						<property>
+							<name>jgroups.stack</name>
+							<value>udp</value>
+						</property>
+
 					</systemProperties>
 				</configuration>
 			</plugin>
