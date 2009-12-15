@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configuration
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+      xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+
+   <component>
+      <key>InjectingBean</key>
+      <type>org.exoplatform.kernel.demos.mc.InjectingBean</type>
+   </component>
+   <component>
+      <key>InjectingBean2</key>
+      <type>org.exoplatform.kernel.demos.mc.InjectingBean</type>
+   </component>
+   <component>
+      <key>InjectingBean3</key>
+      <type>org.exoplatform.kernel.demos.mc.InjectingBean</type>
+   </component>
+   <component>
+      <key>InjectingBean4</key>
+      <type>org.exoplatform.kernel.demos.mc.InjectingBean</type>
+   </component>
+   <component>
+      <key>ExternallyControlledInjectingBean</key>
+      <type>org.exoplatform.kernel.demos.mc.ExternallyControlledInjectingBean</type>
+   </component>
+</configuration>

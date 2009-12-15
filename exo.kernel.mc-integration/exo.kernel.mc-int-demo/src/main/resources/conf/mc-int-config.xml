@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <bean name="InjectingBean2">
+      <!-- No leading or trailing white space allowed in annotation element -->
+      <annotation>@org.exoplatform.container.mc.impl.InterceptMC(injectionMode=org.exoplatform.container.mc.impl.MCInjectionMode.STANDARD)</annotation>
+   </bean>
+   <bean name="InjectingBean3">
+      <annotation>@org.exoplatform.container.mc.impl.InterceptMC(injectionMode=org.exoplatform.container.mc.impl.MCInjectionMode.ALL)</annotation>
+   </bean>
+   <bean name="InjectingBean4" class="org.exoplatform.kernel.demos.mc.InjectingBean">
+      <!-- NO ANNOTATION -->
+   </bean>
+   <bean name="ExternallyControlledInjectingBean">
+      <annotation>@org.exoplatform.container.mc.impl.InterceptMC</annotation>
+      <property name="transactionManager"><inject/></property>
+      <property name="bean"><inject bean="InjectedBean"/></property>
+      <property name="bindingsMap">
+         <map keyClass="java.lang.Class" valueClass="java.lang.Object">
+            <entry>
+               <key>org.jboss.dependency.spi.Controller</key>
+               <value><inject bean="jboss.kernel:service=KernelController"/></value>
+            </entry>
+         </map>
+      </property>
+      <property name="stringValue"><inject bean="InjectedBean" property="someString"/></property>
+      <!-- You can't use nested properties for injected properties (i.e. bean), as property injection order is random -->
+      <!--property name="bean.anotherProperty">Test value</property-->
+      <property name="config.someProperty">Test value</property>
+      <install method="initialize">
+         <parameter class="java.lang.String">parameter1</parameter>
+         <parameter class="java.lang.String">parameter2</parameter>
+         <parameter class="org.jboss.dependency.spi.Controller">
+            <inject bean="jboss.kernel:service=KernelController"/>
+         </parameter>
+      </install>
+   </bean>
+</deployment>

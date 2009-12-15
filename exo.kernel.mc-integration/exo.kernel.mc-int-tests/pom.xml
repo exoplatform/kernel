@@ -1,0 +1,98 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>mc-integration-parent</artifactId>
+      <version>2.2.0-Beta05-SNAPSHOT</version>
+   </parent>
+
+   <artifactId>exo.kernel.mc-int-tests</artifactId>
+   <packaging>war</packaging>
+
+   <name>eXo Kernel :: MC Kernel Integration :: Tests</name>
+   <description>MC Kernel Integration Tests</description>
+
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>4.7</version>
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.container</artifactId> 
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.mc-int-demo</artifactId>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <!-- In version 2.1-alpha-1, this was incorrectly named warSourceExcludes -->
+               <!--packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes-->
+               <packagingIncludes>WEB-INF/lib/junit-*.jar,WEB-INF/classes/**</packagingIncludes>
+               <archive>
+                  <manifest>
+                     <addClasspath>false</addClasspath>
+                     <!-- Doesn't seem to be working: -->
+                     <!--classpathPrefix>gatein.ear/lib/</classpathPrefix-->
+                  </manifest>
+               </archive>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <skip>true</skip>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <profiles>
+      <profile>
+         <id>tests</id>
+         <build>
+            <finalName>eXo-kernel-integration-tests-${project.version}</finalName>
+            <defaultGoal>integration-test</defaultGoal> 
+            <plugins>               
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                     <excludes>
+                        <exclude>**/it/Test*.java</exclude>
+                     </excludes>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                           <goal>test</goal>
+                        </goals>
+                        <configuration>
+                           <skip>false</skip>
+                           <excludes>
+                              <exclude>none</exclude>
+                           </excludes>
+                           <includes>
+                              <include>**/it/Test*.java</include>
+                           </includes>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin> 
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+</project>

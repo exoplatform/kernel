@@ -55,6 +55,7 @@
       <module>exo.kernel.component.cache</module>
       <module>exo.kernel.component.ext.cache.impl.jboss.v3</module>
       <module>exo.kernel.component.command</module>
+      <module>exo.kernel.mc-integration</module>
       <module>packaging/module</module>
    </modules>
 

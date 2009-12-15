@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.mc.MCIntegrationContainer;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Parameter;
 import org.picocontainer.PicoContainer;
@@ -26,7 +27,6 @@ import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.PicoVisitor;
 import org.picocontainer.defaults.AbstractPicoVisitor;
 import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.DefaultPicoContainer;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 import java.util.List;
@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class CachingContainer extends DefaultPicoContainer
+public class CachingContainer extends MCIntegrationContainer
 {
 
    private final ConcurrentMap<Class, ComponentAdapter> adapterByType =

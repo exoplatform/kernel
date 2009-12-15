@@ -1,0 +1,92 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>kernel-parent</artifactId>
+      <version>2.2.0-Beta05-SNAPSHOT</version>
+   </parent>
+
+   <artifactId>mc-integration-parent</artifactId>
+   <packaging>pom</packaging>
+
+   <name>eXo Kernel :: MC Kernel Integration</name>
+   <description>MC Kernel Integration</description>
+
+   <properties>
+      <!--version.parent>2.2.0-Beta05-SNAPSHOT</version.parent-->
+      <version.jboss.mc>2.0.6.GA</version.jboss.mc>
+      <version.jboss.mc-int>2.2.0.Alpha2</version.jboss.mc-int>
+      <version.jboss.classloader>2.0.7.GA</version.jboss.classloader>
+
+   </properties>
+   <modules>
+      <module>exo.kernel.mc-int</module>
+      <module>exo.kernel.mc-kernel-extras</module>
+      <module>exo.kernel.mc-int-demo</module>
+      <module>exo.kernel.mc-int-tests</module>
+   </modules>
+
+   <dependencyManagement>
+      <dependencies>
+        <dependency>
+           <groupId>org.exoplatform.kernel</groupId>
+           <artifactId>exo.kernel.commons</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.exoplatform.kernel</groupId>
+           <artifactId>exo.kernel.container</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.exoplatform.kernel</groupId>
+           <artifactId>exo.kernel.mc-int</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.exoplatform.kernel</groupId>
+           <artifactId>exo.kernel.mc-int-demo</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+         <dependency>
+           <groupId>org.exoplatform.kernel</groupId>
+           <artifactId>exo.kernel.mc-kernel-extras</artifactId>
+           <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.microcontainer</groupId>
+            <artifactId>jboss-dependency</artifactId>
+            <version>${version.jboss.mc}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.microcontainer</groupId>
+            <artifactId>jboss-kernel</artifactId>
+            <version>${version.jboss.mc}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.microcontainer</groupId>
+            <artifactId>jboss-aop-mc-int</artifactId>
+            <version>${version.jboss.mc}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.mc-int</groupId>
+            <artifactId>jboss-mc-int-common</artifactId>
+            <version>${version.jboss.mc-int}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.mc-int</groupId>
+            <artifactId>jboss-mc-int-servlet</artifactId>
+            <version>${version.jboss.mc-int}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.cl</groupId>
+            <artifactId>jboss-classloader</artifactId>
+            <version>${version.jboss.classloader}</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+</project>

@@ -17,7 +17,9 @@
 package org.exoplatform.container.web;
 
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.util.EnvSpecific;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -45,7 +47,16 @@ public class PortalContainerCreator implements ServletContextListener
     */
    public void contextInitialized(ServletContextEvent event)
    {
-      RootContainer rootContainer = RootContainer.getInstance();
-      rootContainer.createPortalContainers();
+      ServletContext ctx = event.getServletContext();
+      try
+      {
+         EnvSpecific.initThreadEnv(ctx);
+         RootContainer rootContainer = RootContainer.getInstance();
+         rootContainer.createPortalContainers();
+      }
+      finally
+      {
+         EnvSpecific.cleanupThreadEnv(ctx);
+      }
    }
 }
