@@ -127,7 +127,7 @@ public class MCIntegrationInvoker
          catch (ClassNotFoundException ignored)
          {
             permFailure = true;
-            log.warn("MC integration not available in this environment (missing class: "
+            log.debug("MC integration not available in this environment (missing class: "
                   + ignored.getMessage() + ")");
 
             return null;
