@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.jmx;
 
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -32,6 +33,7 @@ import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBeanInfo;
@@ -55,8 +57,20 @@ public class ManagementContextImpl implements ManagementContext
    /** . */
    final MBeanServer server;
 
+   /** An optional container setup when the management context is attached to a container. */
+   ManageableContainer container;
+
+   public ManagementContextImpl()
+   {
+      this(MBeanServerFactory.createMBeanServer(), new HashMap<String, String>());
+   }
+
    public ManagementContextImpl(MBeanServer server, Map<String, String> scopingProperties)
    {
+      if (server == null)
+      {
+         throw new NullPointerException();
+      }
       this.registrations = new HashMap<Object, ObjectName>();
       this.parent = null;
       this.scopingProperties = scopingProperties;
@@ -65,10 +79,19 @@ public class ManagementContextImpl implements ManagementContext
 
    public ManagementContextImpl(ManagementContextImpl parent, Map<String, String> scopingProperties)
    {
+      if (parent == null)
+      {
+         throw new NullPointerException();
+      }
       this.registrations = new HashMap<Object, ObjectName>();
       this.parent = parent;
       this.scopingProperties = scopingProperties;
       this.server = parent.server;
+   }
+
+   public ManagementContext getParent()
+   {
+      return parent;
    }
 
    public void register(Object o)
@@ -253,5 +276,26 @@ public class ManagementContextImpl implements ManagementContext
             throw new RuntimeException("Failed to register MBean '" + name + " due to " + e.getMessage(), e);
          }
       }
+   }
+
+   public ExoContainer findContainer()
+   {
+      for (ManagementContextImpl current = this;true;current = current.parent)
+      {
+         if (current.container instanceof ExoContainer)
+         {
+            return (ExoContainer)current.container;
+         }
+         else if (current.parent == null)
+         {
+            return null;
+         }
+      }
+   }
+
+   @Override
+   public String toString()
+   {
+      return "ManagementContextImpl[container=" + container + "]";
    }
 }

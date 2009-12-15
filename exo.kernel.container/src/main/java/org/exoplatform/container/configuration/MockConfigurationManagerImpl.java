@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.configuration;
 
+import org.exoplatform.container.ExoContainer;
+
 import java.net.URL;
 
 import javax.servlet.ServletContext;
@@ -36,7 +38,7 @@ public class MockConfigurationManagerImpl extends ConfigurationManagerImpl
 
    public MockConfigurationManagerImpl(ServletContext context) throws Exception
    {
-      super(context);
+      super(context, ExoContainer.getProfiles());
       confDir_ = System.getProperty("mock.portal.dir") + "/WEB-INF";
    }
 

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
@@ -28,7 +29,9 @@ import org.exoplatform.container.util.ContainerUtil;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS .
@@ -71,7 +74,9 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    private StandaloneContainer(ClassLoader configClassLoader)
    {
       super(new MX4JComponentAdapterFactory(), null);
-      configurationManager = new ConfigurationManagerImpl(configClassLoader);
+
+      //
+      configurationManager = new ConfigurationManagerImpl(configClassLoader, ExoContainer.getProfiles());
       this.registerComponentInstance(ConfigurationManager.class, configurationManager);
       registerComponentImplementation(SessionManagerImpl.class);
    }

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd">
+
+    <component>
+        <type>org.exoplatform.services.portletcontainer.PortletContainerConf</type>
+        <init-params>
+            <object-param>
+                <name>conf</name>
+                <object type="org.exoplatform.services.portletcontainer.PortletContainer">
+                    <field name="global">
+                        <object type="org.exoplatform.services.portletcontainer.config.Global">
+                            <field name="name"><string>ExoPortletContainer</string></field>
+                            <field name="description">
+                                <string>A JSR 286 compliant portlet container </string>
+                            </field>
+                            <field name="majorVersion"><int>2</int></field>
+                            <field name="minorVersion"><int>0</int></field>
+                        </object>
+                    </field>
+                    <field name="bundle">
+                        <object type="org.exoplatform.services.portletcontainer.config.DelegatedBundle">
+                            <field name="enable"><string>true</string></field>
+                        </object>
+                    </field>
+                    <field name="cache">
+                        <object type="org.exoplatform.services.portletcontainer.config.Cache">
+                            <field name="enable"><string>true</string></field>
+                        </object>
+                    </field>
+                    <field name="supportedContent">
+                        <collection type="java.util.ArrayList">
+                            <value>
+                                <object	type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"><string>text/html</string></field>
+                                </object>
+                            </value>
+                            <value>
+                                <object type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"> <string>text/wml</string> </field>
+                                </object>
+                            </value>
+                            <value>
+                                <object type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"> <string>audio/x-mpeg</string></field>
+                                </object>
+                            </value>
+                            <value>
+                                <object	type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"> <string>image/bmp</string> </field>
+                                </object>
+                            </value>
+                            <value>
+                                <object type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"> <string>image/jpg</string> </field>
+                                </object>
+                            </value>
+                            <value>
+                                <object type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"> <string>image/jpeg</string> </field>
+                                </object>
+                            </value>
+                            <value>
+                                <object type="org.exoplatform.services.portletcontainer.config.SupportedContent">
+                                    <field name="name"> <string>image/gif</string> </field>
+                                </object>
+                            </value>
+                        </collection>
+                    </field>
+                    <field name="customMode">
+                        <collection type="java.util.ArrayList">
+                            <value>
+                                <object type="org.exoplatform.services.portletcontainer.config.CustomMode">
+                                    <field name="name"> <string>config</string> </field>
+                                    <field name="description">
+                                        <collection type="java.util.ArrayList">
+                                            <value>
+                                                <object type="org.exoplatform.services.portletcontainer.config.Description">
+                                                    <field name="lang"> <string>en</string></field>
+                                                    <field name="description"><string>to let admin config portlets </string> </field>
+                                                </object>
+                                            </value>
+                                            <value>
+                                                <object type="org.exoplatform.services.portletcontainer.config.Description">
+                                                    <field
+                                                        name="lang">
+                                                        <string>
+                                                            fr
+                                                        </string>
+                                                    </field>
+                                                    <field
+                                                        name="description">
+                                                        <string>
+                                                            permet de
+                                                            configurer
+                                                            les portlets
+                                                        </string>
+                                                    </field>
+                                                </object>
+                                            </value>
+                                        </collection>
+                                    </field>
+                                </object>
+                            </value>
+                        </collection>
+                    </field>
+                    <field name="properties">
+                        <collection type="java.util.ArrayList">
+                            <value>
+                                <object
+                                    type="org.exoplatform.services.portletcontainer.config.Properties">
+                                    <field name="description">
+                                        <string>
+                                            a testing property
+                                        </string>
+                                    </field>
+                                    <field name="name">
+                                        <string>test</string>
+                                    </field>
+                                    <field name="value">
+                                        <string>test_value</string>
+                                    </field>
+                                </object>
+                            </value>
+                        </collection>
+                    </field>
+                </object>
+            </object-param>
+        </init-params>
+    </component>
+    
+</configuration>

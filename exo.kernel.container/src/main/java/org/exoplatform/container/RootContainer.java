@@ -23,7 +23,6 @@ import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.container.configuration.MockConfigurationManagerImpl;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.definition.PortalContainerDefinition;
-import org.exoplatform.container.jmx.ManagementContextImpl;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.monitor.jvm.OperatingSystemInfo;
 import org.exoplatform.container.util.ContainerUtil;
@@ -39,7 +38,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -84,6 +83,8 @@ public class RootContainer extends ExoContainer
 
    private final J2EEServerInfo serverenv_ = new J2EEServerInfo();
 
+   private final Set<String> profiles;
+
    /**
     * The list of all the tasks to execute while initializing the corresponding portal containers
     */
@@ -97,8 +98,27 @@ public class RootContainer extends ExoContainer
 
    public RootContainer()
    {
-      super(new ManagementContextImpl(findMBeanServer(), new HashMap<String, String>()));
+      super(findMBeanServer());
+
+      //
+      Set<String> profiles = new HashSet<String>();
+
+      // Add the profile defined by the server name
+      String envProfile = serverenv_.getServerName();
+      if (envProfile != null)
+      {
+         profiles.add(envProfile);
+      }
+
+      // Obtain profile list by runtime properties
+      profiles.addAll(ExoContainer.getProfiles());
+
+      // Lof the active profiles
+      log.info("Active profiles " + profiles);
+
+      //
       Runtime.getRuntime().addShutdownHook(new ShutdownThread(this));
+      this.profiles= profiles;
       this.registerComponentInstance(J2EEServerInfo.class, serverenv_);
    }
 
@@ -259,7 +279,7 @@ public class RootContainer extends ExoContainer
          // Set the full classloader of the portal container
          Thread.currentThread().setContextClassLoader(pcontainer.getPortalClassLoader());
          hasChanged = true;
-         ConfigurationManagerImpl cService = new ConfigurationManagerImpl(pcontainer.getPortalContext());
+         ConfigurationManagerImpl cService = new ConfigurationManagerImpl(pcontainer.getPortalContext(), profiles);
 
          // add configs from services
          try
@@ -273,7 +293,7 @@ public class RootContainer extends ExoContainer
 
          // Add configuration that depends on the environment
          String uri;
-         if (Environnment.isJBoss())
+         if (serverenv_.isJBoss())
          {
             uri = "conf/portal/jboss-configuration.xml";
          }
@@ -379,7 +399,7 @@ public class RootContainer extends ExoContainer
       try
       {
          RootContainer rootContainer = new RootContainer();
-         ConfigurationManagerImpl service = new ConfigurationManagerImpl();
+         ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles);
          service.addConfiguration(ContainerUtil.getConfigurationURL("conf/configuration.xml"));
          if (System.getProperty("maven.exoplatform.dir") != null)
          {
@@ -400,6 +420,7 @@ public class RootContainer extends ExoContainer
       }
       catch (Exception e)
       {
+         e.printStackTrace();
          log.error("Could not build root container", e);
          return null;
       }
@@ -428,20 +449,27 @@ public class RootContainer extends ExoContainer
                else
                {
                   booting = true;
-                  log.info("Building root container");
-                  long time = -System.currentTimeMillis();
-                  result = buildRootContainer();
-                  if (result != null)
+                  try
                   {
-                     time += System.currentTimeMillis();
-                     log.info("Root container is built (build time " + time + "ms)");
-                     ExoContainerContext.setTopContainer(result);
-                     singleton_ = result;
-                     log.info("Root container booted");
+                     log.info("Building root container");
+                     long time = -System.currentTimeMillis();
+                     result = buildRootContainer();
+                     if (result != null)
+                     {
+                        time += System.currentTimeMillis();
+                        log.info("Root container is built (build time " + time + "ms)");
+                        ExoContainerContext.setTopContainer(result);
+                        singleton_ = result;
+                        log.info("Root container booted");
+                     }
+                     else
+                     {
+                        log.error("Failed to boot root container");
+                     }
                   }
-                  else
+                  finally
                   {
-                     log.error("Failed to boot root container");
+                     booting = false;
                   }
                }
             }
@@ -638,7 +666,7 @@ public class RootContainer extends ExoContainer
        * Executes the task
        * 
        * @param context the servlet context of the web application
-       * @param container The portal container on which we would like to execute the task
+       * @param portalContainer The portal container on which we would like to execute the task
        */
       public void execute(ServletContext context, PortalContainer portalContainer);
 

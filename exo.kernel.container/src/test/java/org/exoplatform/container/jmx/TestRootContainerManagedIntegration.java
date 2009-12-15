@@ -19,6 +19,7 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.jmx.support.ManagedComponentRequestLifeCycle;
 import org.exoplatform.container.jmx.support.ManagedDependent;
 import org.exoplatform.container.jmx.support.ManagedManagementAware;
 import org.exoplatform.container.jmx.support.ManagedWithObjectNameTemplate;
@@ -103,5 +104,19 @@ public class TestRootContainerManagedIntegration extends AbstractTestContainer
       ManagedManagementAware aware = (ManagedManagementAware)container.getComponentInstance("ManagedManagementAware");
       aware.context.register(new ManagedWithObjectNameTemplate("juu"));
       container.getMBeanServer().getObjectInstance(new ObjectName("exo:object=\"juu\""));
+   }
+
+   public void testRootManagedRequestLifeCycle() throws Exception
+   {
+      RootContainer container = createRootContainer("configuration5.xml");
+      ManagedComponentRequestLifeCycle component = (ManagedComponentRequestLifeCycle)container.getComponentInstanceOfType(ManagedComponentRequestLifeCycle.class);
+      assertNotNull(component);
+      MBeanServer server = container.getMBeanServer();
+      server.invoke(new ObjectName("exo:object=ManagedComponentRequestLifeCycle"), "foo", new Object[0], new String[0]);
+      assertEquals(1, component.startCount);
+      assertEquals(1, component.fooCount);
+      assertEquals(1, component.endCount);
+      assertSame(container, component.startContainer);
+      assertSame(container, component.endContainer);
    }
 }

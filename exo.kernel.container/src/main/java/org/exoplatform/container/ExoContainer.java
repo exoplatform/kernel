@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.ManageableContainer;
@@ -29,11 +30,15 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 
+import javax.management.MBeanServer;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
@@ -41,6 +46,32 @@ import java.util.Map;
  */
 public class ExoContainer extends ManageableContainer
 {
+
+   /**
+    * Returns an unmodifable set of profiles defined by the value returned by invoking
+    * {@link PropertyManager#getProperty(String)} with the {@link org.exoplatform.commons.utils.PropertyManager#RUNTIME_PROFILES}
+    * property.
+    *
+    * @return the set of profiles
+    */
+   public static Set<String> getProfiles()
+   {
+      //
+      Set<String> profiles = new HashSet<String>();
+
+      // Obtain profile list by runtime properties
+      String profileList = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
+      if (profileList != null)
+      {
+         for (String profile : profileList.split(","))
+         {
+            profiles.add(profile.trim());
+         }
+      }
+
+      //
+      return Collections.unmodifiableSet(profiles);
+   }
 
    Log log = ExoLogger.getLogger(ExoContainer.class);
 
@@ -53,9 +84,17 @@ public class ExoContainer extends ManageableContainer
 
    protected PicoContainer parent;
 
-   public ExoContainer(ManagementContextImpl managementContext)
+   public ExoContainer()
    {
-      super(managementContext);
+      super(new ManagementContextImpl());
+
+      //
+
+   }
+
+   public ExoContainer(MBeanServer mbeanServer)
+   {
+      super(new ManagementContextImpl(mbeanServer, new HashMap<String, String>()));
       context = new ExoContainerContext(this);
       context.setName(this.getClass().getName());
       registerComponentInstance(context);

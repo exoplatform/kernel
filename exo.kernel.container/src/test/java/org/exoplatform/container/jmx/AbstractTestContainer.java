@@ -21,8 +21,7 @@ package org.exoplatform.container.jmx;
 import junit.framework.TestCase;
 
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.exoplatform.container.support.ContainerBuilder;
 
 import java.net.URL;
 
@@ -32,27 +31,10 @@ import java.net.URL;
  */
 public class AbstractTestContainer extends TestCase
 {
-
    public RootContainer createRootContainer(String relativeConfigurationFile)
    {
-      try
-      {
-         RootContainer container = new RootContainer();
-         ConfigurationManager manager = new ConfigurationManagerImpl();
-         URL url = AbstractTestContainer.class.getResource(relativeConfigurationFile);
-         assertNotNull(url);
-         manager.addConfiguration(url);
-         container.registerComponentInstance(ConfigurationManager.class, manager);
-         container.initContainer();
-         container.start();
-         return container;
-      }
-      catch (Exception e)
-      {
-         AssertionError err = new AssertionError("Could not start root container");
-         err.initCause(e);
-         throw err;
-      }
+      URL url = getClass().getResource(relativeConfigurationFile);
+      assertNotNull(url);
+      return new ContainerBuilder().withRoot(url).build();
    }
-
 }

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.jmx;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.jmx.annotations.NamingContext;
@@ -30,6 +32,7 @@ import javax.management.MBeanException;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.RuntimeOperationsException;
 import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import javax.management.modelmbean.ModelMBeanInfo;
@@ -65,6 +68,28 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
 
       //
       setManagedResource(mr, "ObjectReference");
+   }
+
+   @Override
+   public Object invoke(String opName, Object[] opArgs, String[] sig) throws MBeanException, ReflectionException
+   {
+      final ExoContainer container = context.findContainer();
+      if (container != null)
+      {
+         RequestLifeCycle.begin(container);
+         try
+         {
+            return super.invoke(opName, opArgs, sig);
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+      else
+      {
+         return super.invoke(opName, opArgs, sig);
+      }
    }
 
    @Override
@@ -147,6 +172,12 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
    }
 
    //
+
+
+   public ManagementContext getManagementContext()
+   {
+      return context;
+   }
 
    public Object getManagedResource()
    {

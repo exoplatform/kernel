@@ -38,6 +38,12 @@ public class PropertyManager
    public static final String DEVELOPING = "exo.product.developing";
 
    /** . */
+   public static final String RUNTIME_PROFILES = "exo.profiles";
+
+   /** . */
+   public static final String PROPERTIES_URL = "exo.properties.url";
+
+   /** . */
    private static final ConcurrentMap<String, String> cache = new ConcurrentHashMap<String, String>();
 
    /** This is read only once at startup. */

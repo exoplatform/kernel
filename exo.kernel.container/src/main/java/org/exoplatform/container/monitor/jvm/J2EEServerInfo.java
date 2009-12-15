@@ -187,4 +187,9 @@ public class J2EEServerInfo
    {
       return appDeployDirecotry_;
    }
+
+   public boolean isJBoss()
+   {
+      return "jboss".equals(serverName_);
+   }
 }

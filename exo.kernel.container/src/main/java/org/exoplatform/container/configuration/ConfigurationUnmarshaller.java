@@ -24,6 +24,8 @@ import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
+import org.w3c.dom.Document;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -32,13 +34,21 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
@@ -86,8 +96,8 @@ public class ConfigurationUnmarshaller
                   + "XML declaration similar to\n"
                   + "<configuration\n"
                   + "   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                  + "   xsi:schemaLocation=\"http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd\"\n"
-                  + "   xmlns=\"http://www.exoplaform.org/xml/ns/kernel_1_0.xsd\">");
+                  + "   xsi:schemaLocation=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\"\n"
+                  + "   xmlns=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\">");
          }
          else
          {
@@ -105,6 +115,19 @@ public class ConfigurationUnmarshaller
       }
    }
 
+   /** . */
+   private final Set<String> profiles;
+
+   public ConfigurationUnmarshaller(Set<String> profiles)
+   {
+      this.profiles = profiles;
+   }
+
+   public ConfigurationUnmarshaller()
+   {
+      this.profiles = Collections.emptySet();
+   }
+
    /**
     * Returns true if the configuration file is valid according to its schema declaration. If the file
     * does not have any schema declaration, the file will be reported as valid.
@@ -116,71 +139,104 @@ public class ConfigurationUnmarshaller
     */
    public boolean isValid(URL url) throws NullPointerException, IOException
    {
-      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      URL schemaURL = getClass().getResource("kernel-configuration_1_0.xsd");
-      if (schemaURL != null)
-      {
-         try
-         {
-            Schema schema = factory.newSchema(schemaURL);
-            Validator validator = schema.newValidator();
-            Reporter reporter = new Reporter(url);
-            validator.setErrorHandler(reporter);
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      String[] schemas = {
+         Namespaces.KERNEL_1_0_URI,
+         Namespaces.KERNEL_1_1_URI
+      };
+      factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+      factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", schemas);
+      factory.setNamespaceAware(true);
+      factory.setValidating(true);
 
-            // Validate the document
-            validator.validate(new StreamSource(url.openStream()));
-            return reporter.valid;
-         }
-         catch (SAXException e)
-         {
-            log.error("Got a sax exception when doing XSD validation");
-            e.printStackTrace(System.err);
-            return false;
-         }
-      }
-      else
+      try
       {
-         return true;
+         DocumentBuilder builder = factory.newDocumentBuilder();
+         Reporter reporter = new Reporter(url);
+         builder.setErrorHandler(reporter);
+         builder.setEntityResolver(Namespaces.resolver);
+         builder.parse(url.openStream());
+         return reporter.valid;
+      }
+      catch (ParserConfigurationException e)
+      {
+         log.error("Got a parser configuration exception when doing XSD validation");
+         return false;
+      }
+      catch (SAXException e)
+      {
+         log.error("Got a sax exception when doing XSD validation");
+         return false;
       }
    }
 
    public Configuration unmarshall(URL url) throws Exception
    {
-
-      /*
-          byte[] bytes = new byte[256];
-          InputStream in = url.openStream();
-          ByteArrayOutputStream out = new ByteArrayOutputStream();
-          for (int s = in.read(bytes);s != -1;s = in.read(bytes)) {
-            out.write(bytes, 0, s);
-          }
-          String s = out.toString();
-          log.info("s = " + s);
-      */
-
-      //
       boolean valid = isValid(url);
       if (!valid)
       {
          log.info("The configuration file " + url + " was not found valid according to its XSD");
       }
 
-      // The buffer
-      StringWriter buffer = new StringWriter();
+      //
+      DocumentBuilderFactory factory = null;
+      try
+      {
+         // With Java 6, it's safer to precise the builder factory class name as it may result:
+         // java.lang.AbstractMethodError: org.apache.xerces.dom.DeferredDocumentImpl.getXmlStandalone()Z
+	      // at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.setDocumentInfo(Unknown Source) 
+         Method dbfniMethod = DocumentBuilderFactory.class.getMethod("newInstance", String.class, ClassLoader.class);
+         factory = (DocumentBuilderFactory)dbfniMethod.invoke(null, "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl", Thread.currentThread().getContextClassLoader());
+      }
+      catch (InvocationTargetException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof FactoryConfigurationError)
+         {
+            // do nothing and let try to instantiate later
+            log.debug("Was not able to find document builder factory class in Java > 5, will use default", cause);
+         }
+         else
+         {
+            // Rethrow
+            throw e;
+         }
+      }
+      catch (NoSuchMethodException e)
+      {
+         // Java < 6
+      }
 
-      // Create a sax transformer result that will serialize the output
+      //
+      if (factory == null)
+      {
+         factory = DocumentBuilderFactory.newInstance();
+      }
+
+      //
+      factory.setNamespaceAware(true);
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      Document doc = builder.parse(url.openStream());
+
+      // Filter DOM
+      ProfileDOMFilter filter = new ProfileDOMFilter(profiles);
+      filter.process(doc.getDocumentElement());
+
+      // SAX event stream -> String
+      StringWriter buffer = new StringWriter();
       SAXTransformerFactory tf = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-      final TransformerHandler hd = tf.newTransformerHandler();
-      hd.setResult(new StreamResult(buffer));
+      TransformerHandler hd = tf.newTransformerHandler();
+      StreamResult result = new StreamResult(buffer);
+      hd.setResult(result);
       Transformer serializer = tf.newTransformer();
       serializer.setOutputProperty(OutputKeys.ENCODING, "UTF8");
       serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-      // Perform
-      InputSource source = new InputSource(url.openStream());
-      SAXParserFactory spf = SAXParserFactory.newInstance();
-      SAXParser saxParser = spf.newSAXParser();
-      saxParser.parse(source, new NoKernelNamespaceSAXFilter(hd));
+      // Transform -> SAX event stream
+      SAXResult saxResult = new SAXResult(new NoKernelNamespaceSAXFilter(hd));
+
+      // DOM -> Transform
+      serializer.transform(new DOMSource(doc), saxResult);
 
       // Reuse the parsed document
       String document = buffer.toString();
@@ -193,5 +249,4 @@ public class ConfigurationUnmarshaller
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
       return (Configuration)uctx.unmarshalDocument(new StringReader(document), null);
    }
-
 }

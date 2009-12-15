@@ -32,8 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 
@@ -67,6 +69,9 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    private boolean validateSchema = true;
 
+   /** . */
+   private final Set<String> profiles;
+
    /** The URL of the current document being unmarshalled. */
    private static final ThreadLocal<URL> currentURL = new ThreadLocal<URL>();
 
@@ -81,16 +86,24 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    public ConfigurationManagerImpl()
    {
+      this.profiles = Collections.emptySet();
    }
 
-   public ConfigurationManagerImpl(ServletContext context)
+   public ConfigurationManagerImpl(Set<String> profiles)
+   {
+      this.profiles = profiles;
+   }
+
+   public ConfigurationManagerImpl(ServletContext context, Set<String> profiles)
    {
       scontext_ = context;
+      this.profiles = profiles;
    }
 
-   public ConfigurationManagerImpl(ClassLoader loader)
+   public ConfigurationManagerImpl(ClassLoader loader, Set<String> profiles)
    {
       scontextClassLoader_ = loader;
+      this.profiles = profiles;
    }
 
    public Configuration getConfiguration()
@@ -156,7 +169,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       //
       try
       {
-         ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller();
+         ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller(profiles);
          Configuration conf = unmarshaller.unmarshall(url);
 
          if (configurations_ == null)

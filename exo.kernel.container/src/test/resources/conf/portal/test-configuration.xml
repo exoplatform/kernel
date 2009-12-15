@@ -33,7 +33,7 @@
          <object-param>
             <name>new.user.configuration</name>
             <description>Configure role , group for the new user</description>
-            <object type="org.exoplatform.container.configuration.test.ConfigParam">
+            <object type="org.exoplatform.container.configuration.ConfigParam">
                <field name="role">
                   <collection type="java.util.ArrayList">
                      <value>
@@ -48,7 +48,7 @@
                <field name="group">
                   <collection type="java.util.ArrayList">
                      <value>
-                        <object type="org.exoplatform.container.configuration.test.ConfigParam$Group">
+                        <object type="org.exoplatform.container.configuration.ConfigParam$Group">
                            <field name="name">
                               <string>portal</string>
                            </field>

@@ -19,6 +19,7 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.CachingContainer;
+import org.exoplatform.management.ManagementContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoRegistrationException;
@@ -54,6 +55,7 @@ public class ManageableContainer extends CachingContainer
    {
       super(getComponentAdapterFactory(new MX4JComponentAdapterFactory()));
       this.managementContext = managementContext;
+      managementContext.container = this;
       init(null);
    }
 
@@ -97,8 +99,14 @@ public class ManageableContainer extends CachingContainer
          if (parentManagementContext != null)
          {
             managementContext = new ManagementContextImpl(parentManagementContext, new HashMap<String, String>());
+            managementContext.container  = this;
          }
       }
+   }
+
+   public ManagementContext getManagementContext()
+   {
+      return managementContext;
    }
 
    public final MBeanServer getMBeanServer()

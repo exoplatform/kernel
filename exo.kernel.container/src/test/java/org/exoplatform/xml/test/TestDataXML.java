@@ -50,7 +50,7 @@ public class TestDataXML extends TestCase
       String projectdir = System.getProperty("basedir");
       IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
-      Object obj = uctx.unmarshalDocument(new FileInputStream(projectdir + "/src/main/resources/object.xml"), null);
+      Object obj = uctx.unmarshalDocument(new FileInputStream(projectdir + "/src/test/resources/object.xml"), null);
       System.out.print(obj);
 
       IMarshallingContext mctx = bfact.createMarshallingContext();
