@@ -47,7 +47,7 @@ import javax.servlet.ServletContext;
  */
 @Managed
 @NamingContext(@Property(key = "portal", value = "{Name}"))
-@NameTemplate(@Property(key = "container", value = "portal"))
+@NameTemplate({@Property(key = "container", value = "portal"),@Property(key = "name", value = "{Name}")})
 public class PortalContainer extends ExoContainer implements SessionManagerContainer
 {
 
