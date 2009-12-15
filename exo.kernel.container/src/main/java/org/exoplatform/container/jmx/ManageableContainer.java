@@ -20,14 +20,22 @@ package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.CachingContainer;
 import org.exoplatform.management.ManagementContext;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.annotations.ManagedName;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
+import org.picocontainer.PicoException;
 import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.MBeanAttributeInfo;
@@ -75,6 +83,22 @@ public class ManageableContainer extends CachingContainer
    {
       super(getComponentAdapterFactory(componentAdapterFactory));
       init(null);
+   }
+
+   @Managed
+   @ManagedName("RegisteredComponentNames")
+   @ManagedDescription("Return the list of the registered component names")
+   public Set<String> getRegisteredComponentNames() throws PicoException
+   {
+      Set<String> names = new HashSet<String>();
+      Collection<ComponentAdapter> adapters = getComponentAdapters();
+      for (ComponentAdapter adapter : adapters)
+      {
+         Object key = adapter.getComponentKey();
+         String name = String.valueOf(key);
+         names.add(name);
+      }
+      return names;
    }
 
    private static ManageableComponentAdapterFactory getComponentAdapterFactory(
