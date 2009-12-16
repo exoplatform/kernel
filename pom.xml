@@ -30,7 +30,7 @@
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.2.0-Beta05</version>
+   <version>2.2.0-Beta06-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
@@ -42,9 +42,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/tags/2.2.0-Beta05</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/tags/2.2.0-Beta05</developerConnection>
-      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/tags/2.2.0-Beta05</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/trunk</developerConnection>
+      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/trunk</url>
    </scm>
 
    <modules>
