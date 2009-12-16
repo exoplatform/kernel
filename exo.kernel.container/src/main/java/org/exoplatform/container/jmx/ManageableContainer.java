@@ -122,7 +122,7 @@ public class ManageableContainer extends CachingContainer
          ManagementContextImpl parentManagementContext = ((ManageableContainer)parent).managementContext;
          if (parentManagementContext != null)
          {
-            managementContext = new ManagementContextImpl(parentManagementContext, new HashMap<String, String>());
+            managementContext = new ManagementContextImpl(parentManagementContext);
             managementContext.container  = this;
          }
       }

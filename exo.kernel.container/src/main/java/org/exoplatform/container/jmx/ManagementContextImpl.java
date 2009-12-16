@@ -25,6 +25,7 @@ import org.exoplatform.management.jmx.annotations.NameTemplate;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class ManagementContextImpl implements ManagementContext
 {
 
    /** . */
-   private Map<String, String> scopingProperties;
+   Map<String, String> scopingProperties;
 
    /** The registrations done by this mbean. */
    private final Map<Object, ObjectName> registrations;
@@ -62,10 +63,10 @@ public class ManagementContextImpl implements ManagementContext
 
    public ManagementContextImpl()
    {
-      this(MBeanServerFactory.createMBeanServer(), new HashMap<String, String>());
+      this(MBeanServerFactory.createMBeanServer());
    }
 
-   public ManagementContextImpl(MBeanServer server, Map<String, String> scopingProperties)
+   public ManagementContextImpl(MBeanServer server)
    {
       if (server == null)
       {
@@ -73,11 +74,16 @@ public class ManagementContextImpl implements ManagementContext
       }
       this.registrations = new HashMap<Object, ObjectName>();
       this.parent = null;
-      this.scopingProperties = scopingProperties;
+
+      // This is the root container that never have scoping properties
+      // Also without that we would have an NPE when the portal container are registered
+      // as the scoping properties would not exist since the root container would not be yet
+      
+      this.scopingProperties = Collections.emptyMap();
       this.server = server;
    }
 
-   public ManagementContextImpl(ManagementContextImpl parent, Map<String, String> scopingProperties)
+   public ManagementContextImpl(ManagementContextImpl parent)
    {
       if (parent == null)
       {
@@ -85,7 +91,7 @@ public class ManagementContextImpl implements ManagementContext
       }
       this.registrations = new HashMap<Object, ObjectName>();
       this.parent = parent;
-      this.scopingProperties = scopingProperties;
+      this.scopingProperties = null;
       this.server = parent.server;
    }
 
@@ -216,7 +222,10 @@ public class ManagementContextImpl implements ManagementContext
                }
                for (ManagementContextImpl current = this; current != null; current = current.parent)
                {
-                  props.putAll(current.scopingProperties);
+                  if (current.scopingProperties != null)
+                  {
+                     props.putAll(current.scopingProperties);
+                  }
                }
                on = JMX.createObjectName(on.getDomain(), props);
                attemptToRegister(on, mbean);

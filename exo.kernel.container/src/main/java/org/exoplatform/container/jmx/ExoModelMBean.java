@@ -24,7 +24,7 @@ import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.management.InstanceNotFoundException;
@@ -116,17 +116,20 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
       PropertiesInfo info = PropertiesInfo.resolve(mr.getClass(), NamingContext.class);
 
       //
-      Map<String, String> scopingProperties = new HashMap<String, String>();
-      if (info != null)
+      Map<String, String> scopingProperties = info != null ? info.resolve(mr) : Collections.<String, String>emptyMap();
+
+      //
+      if (mr instanceof ManageableContainer)
       {
-         for (PropertyInfo property : info.getProperties())
-         {
-            scopingProperties.put(property.getKey(), property.resolveValue(mr));
-         }
+         context = ((ManageableContainer)mr).managementContext;
+      }
+      else
+      {
+         context = new ManagementContextImpl(parentContext);
       }
 
       //
-      context = new ManagementContextImpl(parentContext, scopingProperties);
+      context.scopingProperties = scopingProperties;
 
       //
       if (mr instanceof ManagementAware)

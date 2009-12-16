@@ -94,7 +94,7 @@ public class ExoContainer extends ManageableContainer
 
    public ExoContainer(MBeanServer mbeanServer)
    {
-      super(new ManagementContextImpl(mbeanServer, new HashMap<String, String>()));
+      super(new ManagementContextImpl(mbeanServer));
       context = new ExoContainerContext(this);
       context.setName(this.getClass().getName());
       registerComponentInstance(context);
