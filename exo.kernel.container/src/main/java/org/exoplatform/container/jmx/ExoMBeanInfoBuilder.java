@@ -18,10 +18,10 @@
  */
 package org.exoplatform.container.jmx;
 
-import org.exoplatform.container.management.ManagedMethodMetaData;
-import org.exoplatform.container.management.ManagedMethodParameterMetaData;
-import org.exoplatform.container.management.ManagedPropertyMetaData;
-import org.exoplatform.container.management.ManagedTypeMetaData;
+import org.exoplatform.management.spi.ManagedMethodMetaData;
+import org.exoplatform.management.spi.ManagedMethodParameterMetaData;
+import org.exoplatform.management.spi.ManagedPropertyMetaData;
+import org.exoplatform.management.spi.ManagedTypeMetaData;
 import org.exoplatform.container.management.MetaDataBuilder;
 
 import java.lang.reflect.Method;

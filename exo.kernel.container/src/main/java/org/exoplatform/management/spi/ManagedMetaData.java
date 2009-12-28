@@ -16,29 +16,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.management;
+package org.exoplatform.management.spi;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManagedParameterMetaData extends ManagedMetaData
+public class ManagedMetaData
 {
 
    /** . */
-   private String name;
+   private String description;
 
-   public ManagedParameterMetaData()
+   public String getDescription()
    {
+      return description;
    }
 
-   public String getName()
+   public void setDescription(String description)
    {
-      return name;
-   }
-
-   public void setName(String name)
-   {
-      this.name = name;
+      this.description = description;
    }
 }

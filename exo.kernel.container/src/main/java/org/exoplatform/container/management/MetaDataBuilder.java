@@ -22,6 +22,11 @@ import org.exoplatform.commons.reflect.AnnotationIntrospector;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
+import org.exoplatform.management.spi.ManagedMethodMetaData;
+import org.exoplatform.management.spi.ManagedMethodParameterMetaData;
+import org.exoplatform.management.spi.ManagedParameterMetaData;
+import org.exoplatform.management.spi.ManagedPropertyMetaData;
+import org.exoplatform.management.spi.ManagedTypeMetaData;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

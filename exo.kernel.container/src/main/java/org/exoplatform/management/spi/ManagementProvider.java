@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.container.management.spi;
+package org.exoplatform.management.spi;
 
-import org.exoplatform.container.management.ManagedTypeMetaData;
+import org.exoplatform.management.spi.ManagedTypeMetaData;
 
 /**
  * This interface is implemented by a management provider such a JMX.

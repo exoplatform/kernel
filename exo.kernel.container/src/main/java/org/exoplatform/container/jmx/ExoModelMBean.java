@@ -18,7 +18,7 @@
  */
 package org.exoplatform.container.jmx;
 
-import org.exoplatform.container.management.spi.ManagementProviderContext;
+import org.exoplatform.management.spi.ManagementProviderContext;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.jmx.annotations.NamingContext;

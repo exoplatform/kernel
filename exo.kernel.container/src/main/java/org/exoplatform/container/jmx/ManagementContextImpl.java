@@ -20,9 +20,9 @@ package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
-import org.exoplatform.container.management.ManagedTypeMetaData;
+import org.exoplatform.management.spi.ManagedTypeMetaData;
 import org.exoplatform.container.management.MetaDataBuilder;
-import org.exoplatform.container.management.spi.ManagementProviderContext;
+import org.exoplatform.management.spi.ManagementProviderContext;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
 

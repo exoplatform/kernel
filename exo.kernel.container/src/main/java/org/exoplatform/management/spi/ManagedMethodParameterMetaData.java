@@ -16,25 +16,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.management;
+package org.exoplatform.management.spi;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManagedMetaData
+public class ManagedMethodParameterMetaData extends ManagedParameterMetaData
 {
 
    /** . */
-   private String description;
+   private final int index;
 
-   public String getDescription()
+   /**
+    * Build a managed method parameter meta data.
+    *
+    * @param index the parameter index
+    * @throws IllegalArgumentException if the index is negative
+    */
+   public ManagedMethodParameterMetaData(int index) throws IllegalArgumentException
    {
-      return description;
+      if (index < 0)
+      {
+         throw new IllegalArgumentException("Non negative index value accepted " + index);
+      }
+      this.index = index;
    }
 
-   public void setDescription(String description)
+   public int getIndex()
    {
-      this.description = description;
+      return index;
    }
 }

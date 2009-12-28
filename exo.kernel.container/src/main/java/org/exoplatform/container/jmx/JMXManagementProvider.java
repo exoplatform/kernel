@@ -16,9 +16,9 @@
  */
 package org.exoplatform.container.jmx;
 
-import org.exoplatform.container.management.ManagedTypeMetaData;
-import org.exoplatform.container.management.spi.ManagementProvider;
-import org.exoplatform.container.management.spi.ManagementProviderContext;
+import org.exoplatform.management.spi.ManagedTypeMetaData;
+import org.exoplatform.management.spi.ManagementProvider;
+import org.exoplatform.management.spi.ManagementProviderContext;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 
 import javax.management.InstanceAlreadyExistsException;
