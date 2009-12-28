@@ -19,11 +19,14 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.CachingContainer;
+import org.exoplatform.container.management.KernelManagementContext;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
+import org.exoplatform.management.spi.ManagementProvider;
+import org.exoplatform.management.spi.jmx.JMXManagementProvider;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
@@ -33,6 +36,7 @@ import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -101,7 +105,7 @@ public class ManageableContainer extends CachingContainer
          server = manageableParent.server;
       } else {
          server = findMBeanServer();
-         managementContext = new ManagementContextImpl(new JMXManagementProvider(server));
+         managementContext = new ManagementContextImpl(new KernelManagementContext(Collections.<ManagementProvider>singleton(new JMXManagementProvider(server))));
       }
 
       //

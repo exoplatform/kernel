@@ -16,29 +16,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.configuration;
+package org.exoplatform.container.management;
 
-import org.exoplatform.container.xml.Component;
-import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.management.spi.jmx.JMXManagementProvider;
+import org.exoplatform.management.spi.ManagementProvider;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class TestComponentPluginProfile extends AbstractProfileTest
+public class KernelManagementContext
 {
 
-   public void testNoProfile() throws Exception
+   /** . */
+   private final Set<ManagementProvider> providers;
+
+   public KernelManagementContext()
    {
-      Configuration config = getConfiguration("component-plugin-configuration.xml");
-      Component component = config.getComponent("Component");
-      assertEquals(1, component.getComponentPlugins().size());
+     providers = Collections.<ManagementProvider>singleton(new JMXManagementProvider());
    }
 
-   public void testFooProfile() throws Exception
+   public KernelManagementContext(Set<ManagementProvider> providers)
    {
-      Configuration config = getConfiguration("component-plugin-configuration.xml", "foo");
-      Component component = config.getComponent("Component");
-      assertEquals(2, component.getComponentPlugins().size());
+      this.providers = providers;
+   }
+
+   public Collection<ManagementProvider> getProviders() {
+      return providers;
    }
 }

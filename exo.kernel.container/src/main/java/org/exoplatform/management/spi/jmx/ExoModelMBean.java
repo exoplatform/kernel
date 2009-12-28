@@ -16,15 +16,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.jmx;
+package org.exoplatform.management.spi.jmx;
 
 import org.exoplatform.management.spi.ManagementProviderContext;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.jmx.annotations.NamingContext;
-
-import java.util.Collections;
-import java.util.Map;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -44,25 +41,22 @@ import javax.management.modelmbean.RequiredModelMBean;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ExoModelMBean extends RequiredModelMBean implements ManagementContext
+public class ExoModelMBean extends RequiredModelMBean
 {
 
    /** . */
    private Object mr;
 
    /** . */
-   private ManagementProviderContext parentContext;
+   private final ManagementProviderContext context;
 
-   /** . */
-   private ManagementProviderContext context;
-
-   public ExoModelMBean(ManagementProviderContext parentContext, Object mr, ModelMBeanInfo mbi) throws MBeanException,
+   public ExoModelMBean(ManagementProviderContext context, Object mr, ModelMBeanInfo mbi) throws MBeanException,
       RuntimeOperationsException, InstanceNotFoundException, InvalidTargetObjectTypeException
    {
       super(mbi);
 
       //
-      this.parentContext = parentContext;
+      this.context = context;
       this.mr = mr;
 
       //
@@ -107,16 +101,10 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
       PropertiesInfo info = PropertiesInfo.resolve(mr.getClass(), NamingContext.class);
 
       //
-      Map<String, String> scopingProperties = info != null ? info.resolve(mr) : Collections.<String, String>emptyMap();
+      MBeanScopingData scopingProperties = info != null ? info.resolve(mr) : new MBeanScopingData();
 
       //
-      context = parentContext.createContext(mr, scopingProperties);
-
-      //
-      if (mr instanceof ManagementAware)
-      {
-         ((ManagementAware)mr).setContext(this);
-      }
+      context.setScopingData(MBeanScopingData.class, scopingProperties);
 
       //
       if (mr instanceof MBeanRegistration)

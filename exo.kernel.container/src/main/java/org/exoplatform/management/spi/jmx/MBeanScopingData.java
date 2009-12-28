@@ -16,29 +16,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.configuration;
+package org.exoplatform.management.spi.jmx;
 
-import org.exoplatform.container.xml.Component;
-import org.exoplatform.container.xml.Configuration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class TestComponentPluginProfile extends AbstractProfileTest
+public class MBeanScopingData extends HashMap<String, String>
 {
-
-   public void testNoProfile() throws Exception
+   public MBeanScopingData(int initialCapacity, float loadFactor)
    {
-      Configuration config = getConfiguration("component-plugin-configuration.xml");
-      Component component = config.getComponent("Component");
-      assertEquals(1, component.getComponentPlugins().size());
+      super(initialCapacity, loadFactor);
    }
 
-   public void testFooProfile() throws Exception
+   public MBeanScopingData(int initialCapacity)
    {
-      Configuration config = getConfiguration("component-plugin-configuration.xml", "foo");
-      Component component = config.getComponent("Component");
-      assertEquals(2, component.getComponentPlugins().size());
+      super(initialCapacity);
+   }
+
+   public MBeanScopingData()
+   {
+   }
+
+   public MBeanScopingData(Map<? extends String, ? extends String> m)
+   {
+      super(m);
    }
 }
