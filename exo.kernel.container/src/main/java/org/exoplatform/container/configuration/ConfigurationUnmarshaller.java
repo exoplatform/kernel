@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.configuration;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -172,10 +173,13 @@ public class ConfigurationUnmarshaller
 
    public Configuration unmarshall(URL url) throws Exception
    {
-      boolean valid = isValid(url);
-      if (!valid)
+      if (PropertyManager.isDevelopping())
       {
-         log.info("The configuration file " + url + " was not found valid according to its XSD");
+        boolean valid = isValid(url);
+        if (!valid)
+        {
+           log.info("The configuration file " + url + " was not found valid according to its XSD");
+        }
       }
 
       //
