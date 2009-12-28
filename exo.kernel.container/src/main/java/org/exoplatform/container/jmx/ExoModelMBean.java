@@ -18,8 +18,7 @@
  */
 package org.exoplatform.container.jmx;
 
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.component.RequestLifeCycle;
+import org.exoplatform.container.management.spi.ManagementProviderContext;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.jmx.annotations.NamingContext;
@@ -52,12 +51,12 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
    private Object mr;
 
    /** . */
-   private ManagementContextImpl parentContext;
+   private ManagementProviderContext parentContext;
 
    /** . */
-   private ManagementContextImpl context;
+   private ManagementProviderContext context;
 
-   public ExoModelMBean(ManagementContextImpl parentContext, Object mr, ModelMBeanInfo mbi) throws MBeanException,
+   public ExoModelMBean(ManagementProviderContext parentContext, Object mr, ModelMBeanInfo mbi) throws MBeanException,
       RuntimeOperationsException, InstanceNotFoundException, InvalidTargetObjectTypeException
    {
       super(mbi);
@@ -73,22 +72,14 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
    @Override
    public Object invoke(String opName, Object[] opArgs, String[] sig) throws MBeanException, ReflectionException
    {
-      final ExoContainer container = context.findContainer();
-      if (container != null)
-      {
-         RequestLifeCycle.begin(container);
-         try
-         {
-            return super.invoke(opName, opArgs, sig);
-         }
-         finally
-         {
-            RequestLifeCycle.end();
-         }
-      }
-      else
+      context.beforeInvoke(mr);
+      try
       {
          return super.invoke(opName, opArgs, sig);
+      }
+      finally
+      {
+         context.afterInvoke(mr);
       }
    }
 
@@ -119,17 +110,7 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
       Map<String, String> scopingProperties = info != null ? info.resolve(mr) : Collections.<String, String>emptyMap();
 
       //
-      if (mr instanceof ManageableContainer)
-      {
-         context = ((ManageableContainer)mr).managementContext;
-      }
-      else
-      {
-         context = new ManagementContextImpl(parentContext);
-      }
-
-      //
-      context.scopingProperties = scopingProperties;
+      context = parentContext.createContext(mr, scopingProperties);
 
       //
       if (mr instanceof ManagementAware)
@@ -176,15 +157,9 @@ public class ExoModelMBean extends RequiredModelMBean implements ManagementConte
 
    //
 
-
    public ManagementContext getManagementContext()
    {
       return context;
-   }
-
-   public Object getManagedResource()
-   {
-      return mr;
    }
 
    //

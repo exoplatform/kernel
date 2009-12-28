@@ -18,6 +18,7 @@ package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.management.ManagedTypeMetaData;
 import org.exoplatform.container.management.spi.ManagementProvider;
+import org.exoplatform.container.management.spi.ManagementProviderContext;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -51,7 +52,7 @@ public class JMXManagementProvider implements ManagementProvider
       this.server = server;
    }
 
-   public Object manage(ManagementContextImpl context, Object managedResource, ManagedTypeMetaData metaData)
+   public Object manage(ManagementProviderContext context, Object managedResource, ManagedTypeMetaData metaData)
    {
       ExoModelMBean mbean = null;
       try

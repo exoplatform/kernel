@@ -16,18 +16,32 @@
  */
 package org.exoplatform.container.management.spi;
 
-import org.exoplatform.container.jmx.ManagementContextImpl;
 import org.exoplatform.container.management.ManagedTypeMetaData;
 
 /**
+ * This interface is implemented by a management provider such a JMX.
+ *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
 public interface ManagementProvider
 {
 
-   Object manage(ManagementContextImpl context, Object managedResource, ManagedTypeMetaData metaData);
+   /**
+    * Instruct the management provider to manage the provided resource with the specified meta data.
+    *
+    * @param context the context
+    * @param managedResource the managed resource
+    * @param metaData the meta data describing the management interface
+    * @return the key under which the resource is registered
+    */
+   Object manage(ManagementProviderContext context, Object managedResource, ManagedTypeMetaData metaData);
 
+   /**
+    * Instruct the management provider to remove the specifed resource from management.
+    *
+    * @param key the key under which the resource is registered
+    */
    void unmanage(Object key);
 
 }

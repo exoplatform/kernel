@@ -19,8 +19,10 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.container.management.ManagedTypeMetaData;
 import org.exoplatform.container.management.MetaDataBuilder;
+import org.exoplatform.container.management.spi.ManagementProviderContext;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
 
@@ -34,7 +36,7 @@ import java.util.Map;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManagementContextImpl implements ManagementContext
+public class ManagementContextImpl implements ManagementContext, ManagementProviderContext
 {
 
    /** . */
@@ -89,6 +91,25 @@ public class ManagementContextImpl implements ManagementContext
    public ManagementContext getParent()
    {
       return parent;
+   }
+
+   public ManagementProviderContext createContext(Object managedResource, Map<String, String> scopingProperties)
+   {
+      ManagementContextImpl context;
+      if (managedResource instanceof ManageableContainer)
+      {
+         context = ((ManageableContainer)managedResource).managementContext;
+      }
+      else
+      {
+         context = new ManagementContextImpl(this);
+      }
+
+      //
+      context.scopingProperties = scopingProperties;
+
+      //
+      return context;
    }
 
    public void register(Object o)
@@ -176,6 +197,20 @@ public class ManagementContextImpl implements ManagementContext
             return null;
          }
       }
+   }
+
+   public void beforeInvoke(Object managedResource)
+   {
+      ExoContainer container = findContainer();
+      if (container != null)
+      {
+         RequestLifeCycle.begin(container);
+      }
+   }
+
+   public void afterInvoke(Object managedResource)
+   {
+      RequestLifeCycle.end();
    }
 
    @Override
