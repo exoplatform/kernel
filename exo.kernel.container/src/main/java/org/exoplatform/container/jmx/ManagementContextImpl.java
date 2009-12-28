@@ -19,25 +19,16 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.management.ManagedTypeMetaData;
+import org.exoplatform.container.management.MetaDataBuilder;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.modelmbean.ModelMBeanInfo;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -50,29 +41,29 @@ public class ManagementContextImpl implements ManagementContext
    Map<String, String> scopingProperties;
 
    /** The registrations done by this mbean. */
-   private final Map<Object, ObjectName> registrations;
+   private final Map<Object, Object> registrations;
 
    /** . */
    private final ManagementContextImpl parent;
 
    /** . */
-   final MBeanServer server;
+   final JMXManagementProvider provider;
 
    /** An optional container setup when the management context is attached to a container. */
    ManageableContainer container;
 
    public ManagementContextImpl()
    {
-      this(MBeanServerFactory.createMBeanServer());
+      this(new JMXManagementProvider());
    }
 
-   public ManagementContextImpl(MBeanServer server)
+   public ManagementContextImpl(JMXManagementProvider provider)
    {
-      if (server == null)
+      if (provider == null)
       {
          throw new NullPointerException();
       }
-      this.registrations = new HashMap<Object, ObjectName>();
+      this.registrations = new HashMap<Object, Object>();
       this.parent = null;
 
       // This is the root container that never have scoping properties
@@ -80,7 +71,7 @@ public class ManagementContextImpl implements ManagementContext
       // as the scoping properties would not exist since the root container would not be yet
       
       this.scopingProperties = Collections.emptyMap();
-      this.server = server;
+      this.provider = provider;
    }
 
    public ManagementContextImpl(ManagementContextImpl parent)
@@ -89,10 +80,10 @@ public class ManagementContextImpl implements ManagementContext
       {
          throw new NullPointerException();
       }
-      this.registrations = new HashMap<Object, ObjectName>();
+      this.registrations = new HashMap<Object, Object>();
       this.parent = parent;
       this.scopingProperties = null;
-      this.server = parent.server;
+      this.provider = parent.provider;
    }
 
    public ManagementContext getParent()
@@ -102,35 +93,17 @@ public class ManagementContextImpl implements ManagementContext
 
    public void register(Object o)
    {
-      ObjectName name = manageMBean(o);
-      if (name != null)
-      {
-         registrations.put(o, name);
-      }
-   }
-
-   public void unregister(Object o)
-   {
-      ObjectName name = registrations.remove(o);
-      if (name != null)
-      {
-         unmanageMBean(name);
-      }
-   }
-
-   private ExoModelMBean createExoMBean(Object bean)
-   {
       Object view = null;
 
       // Apply managed by annotation
-      ManagedBy managedBy = bean.getClass().getAnnotation(ManagedBy.class);
+      ManagedBy managedBy = o.getClass().getAnnotation(ManagedBy.class);
       if (managedBy != null)
       {
          try
          {
             Class managedByClass = managedBy.value();
-            Constructor<?> blah = managedByClass.getConstructor(bean.getClass());
-            view = blah.newInstance(bean);
+            Constructor<?> blah = managedByClass.getConstructor(o.getClass());
+            view = blah.newInstance(o);
          }
          catch (NoSuchMethodException e)
          {
@@ -151,140 +124,43 @@ public class ManagementContextImpl implements ManagementContext
       }
       else
       {
-         view = bean;
+         view = o;
       }
 
       //
-      if (view != null)
-      {
-         ExoMBeanInfoBuilder infoBuilder = new ExoMBeanInfoBuilder(view.getClass());
-         if (infoBuilder.isBuildable())
-         {
-            try
+      if (view != null) {
+
+         MetaDataBuilder builder = new MetaDataBuilder(view.getClass());
+         if (builder.isBuildable()) {
+            ManagedTypeMetaData metaData = builder.build();
+            Object name = provider.manage(this, view, metaData);
+            if (name != null)
             {
-               ModelMBeanInfo info = infoBuilder.build();
-               return new ExoModelMBean(this, view, info);
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
+               registrations.put(o, name);
             }
          }
-      }
-
-      //
-      return null;
-   }
-
-   public ObjectName manageMBean(Object bean)
-   {
-
-      //
-      ExoModelMBean mbean = createExoMBean(bean);
-
-      //
-      if (mbean != null)
-      {
-         Object mr = mbean.getManagedResource();
-         ObjectName on = null;
-         PropertiesInfo oni = PropertiesInfo.resolve(mr.getClass(), NameTemplate.class);
-         if (oni != null)
-         {
-            try
-            {
-               Map<String, String> foo = oni.resolve(mr);
-               on = JMX.createObjectName("exo", foo);
-            }
-            catch (MalformedObjectNameException e)
-            {
-               e.printStackTrace();
-            }
-         }
-
-         //
-         if (on != null)
-         {
-            // Merge with the container hierarchy context
-            try
-            {
-               Map<String, String> props = new Hashtable<String, String>();
-
-               // Julien : I know it's does not look great but it's necessary
-               // for compiling under Java 5 and Java 6 properly. The methods
-               // ObjectName#getKeyPropertyList() returns an Hashtable with Java 5
-               // and a Hashtable<String, String> with Java 6.
-               for (Object o : on.getKeyPropertyList().entrySet())
-               {
-                  Map.Entry entry = (Map.Entry)o;
-                  String key = (String)entry.getKey();
-                  String value = (String)entry.getValue();
-                  props.put(key, value);
-               }
-               for (ManagementContextImpl current = this; current != null; current = current.parent)
-               {
-                  if (current.scopingProperties != null)
-                  {
-                     props.putAll(current.scopingProperties);
-                  }
-               }
-               on = JMX.createObjectName(on.getDomain(), props);
-               attemptToRegister(on, mbean);
-               return on;
-            }
-            catch (MalformedObjectNameException e)
-            {
-               e.printStackTrace();
-            }
-         }
-      }
-
-      //
-      return null;
-   }
-
-   public void unmanageMBean(ObjectName name)
-   {
-      try
-      {
-         server.unregisterMBean(name);
-      }
-      catch (InstanceNotFoundException e)
-      {
-         e.printStackTrace();
-      }
-      catch (MBeanRegistrationException e)
-      {
-         e.printStackTrace();
       }
    }
 
-   synchronized void attemptToRegister(ObjectName name, Object mbean)
+   public void unregister(Object o)
    {
-      synchronized (server)
+      Object name = registrations.remove(o);
+      if (name != null)
       {
-         try
-         {
-            server.registerMBean(mbean, name);
-         }
-         catch (InstanceAlreadyExistsException e)
-         {
-            try
-            {
+         provider.unmanage(name);
+      }
+   }
 
-               server.unregisterMBean(name);
-               server.registerMBean(mbean, name);
-
-            }
-            catch (Exception e1)
-            {
-               throw new RuntimeException("Failed to register MBean '" + name + " due to " + e.getMessage(), e);
-            }
-         }
-         catch (Exception e)
+   public Map<String, String> getScopingProperties() {
+      Map<String, String> props = new HashMap<String, String>();
+      for (ManagementContextImpl current = this; current != null; current = current.parent)
+      {
+         if (current.scopingProperties != null)
          {
-            throw new RuntimeException("Failed to register MBean '" + name + " due to " + e.getMessage(), e);
+            props.putAll(current.scopingProperties);
          }
       }
+      return props;
    }
 
    public ExoContainer findContainer()

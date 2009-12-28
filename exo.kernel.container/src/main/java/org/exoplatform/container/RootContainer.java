@@ -35,7 +35,6 @@ import org.exoplatform.test.mocks.servlet.MockServletContext;
 import org.picocontainer.ComponentAdapter;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -47,7 +46,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
-import javax.management.MBeanServer;
 import javax.servlet.ServletContext;
 
 /**
@@ -58,17 +56,6 @@ import javax.servlet.ServletContext;
 @NamingContext(@Property(key = "container", value = "root"))
 public class RootContainer extends ExoContainer
 {
-
-   private static MBeanServer findMBeanServer()
-   {
-      J2EEServerInfo serverenv_ = new J2EEServerInfo();
-      MBeanServer server = serverenv_.getMBeanServer();
-      if (server == null)
-      {
-         server = ManagementFactory.getPlatformMBeanServer();
-      }
-      return server;
-   }
 
    /** The field is volatile to properly implement the double checked locking pattern. */
    private static volatile RootContainer singleton_;
@@ -98,9 +85,6 @@ public class RootContainer extends ExoContainer
 
    public RootContainer()
    {
-      super(findMBeanServer());
-
-      //
       Set<String> profiles = new HashSet<String>();
 
       // Add the profile defined by the server name

@@ -61,7 +61,7 @@ public class ExoMBeanInfoBuilder
       }
    }
 
-   private MetaDataBuilder metaDataBuilder;
+   private ManagedTypeMetaData typeMD;
 
    /**
     * Create a new builder.
@@ -71,12 +71,12 @@ public class ExoMBeanInfoBuilder
     */
    public ExoMBeanInfoBuilder(Class clazz) throws IllegalArgumentException
    {
-      this.metaDataBuilder = new MetaDataBuilder(clazz);
+      this.typeMD = new MetaDataBuilder(clazz).build();
    }
 
-   public boolean isBuildable()
+   public ExoMBeanInfoBuilder(ManagedTypeMetaData typeMD) throws IllegalArgumentException
    {
-      return metaDataBuilder.isBuildable();
+      this.typeMD = typeMD;
    }
 
    private ModelMBeanOperationInfo buildOperationInfo(Method method, String description, Role role,
@@ -126,9 +126,6 @@ public class ExoMBeanInfoBuilder
     */
    public ModelMBeanInfo build() throws IllegalStateException
    {
-      ManagedTypeMetaData typeMD = metaDataBuilder.build();
-
-      //
       String mbeanDescription = "Exo model mbean";
       if (typeMD.getDescription() != null)
       {

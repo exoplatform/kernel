@@ -22,7 +22,6 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.ManageableContainer;
-import org.exoplatform.container.jmx.ManagementContextImpl;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
@@ -30,7 +29,6 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 
-import javax.management.MBeanServer;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,15 +84,6 @@ public class ExoContainer extends ManageableContainer
 
    public ExoContainer()
    {
-      super(new ManagementContextImpl());
-
-      //
-
-   }
-
-   public ExoContainer(MBeanServer mbeanServer)
-   {
-      super(new ManagementContextImpl(mbeanServer));
       context = new ExoContainerContext(this);
       context.setName(this.getClass().getName());
       registerComponentInstance(context);
