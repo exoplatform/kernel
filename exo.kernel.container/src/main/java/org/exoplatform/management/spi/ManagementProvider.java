@@ -16,15 +16,14 @@
  */
 package org.exoplatform.management.spi;
 
-import org.exoplatform.management.spi.ManagedTypeMetaData;
-
 /**
  * This interface is implemented by a management provider such a JMX.
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
+ * @param <S> the scope type
  */
-public interface ManagementProvider
+public interface ManagementProvider<S>
 {
 
    /**

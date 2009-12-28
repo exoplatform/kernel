@@ -28,8 +28,10 @@ import org.exoplatform.management.annotations.ManagedBy;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -172,16 +174,16 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       }
    }
 
-   public Map<String, String> getScopingProperties() {
-      Map<String, String> props = new HashMap<String, String>();
+   public List<Map<String, String>> getScopingProperties() {
+      ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
       for (ManagementContextImpl current = this; current != null; current = current.parent)
       {
          if (current.scopingProperties != null)
          {
-            props.putAll(current.scopingProperties);
+            list.add(current.scopingProperties);
          }
       }
-      return props;
+      return list;
    }
 
    public ExoContainer findContainer()

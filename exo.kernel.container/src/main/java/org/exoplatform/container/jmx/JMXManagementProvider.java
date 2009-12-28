@@ -31,6 +31,7 @@ import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBeanInfo;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.List;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -91,6 +92,13 @@ public class JMXManagementProvider implements ManagementProvider
             {
                Map<String, String> props = new Hashtable<String, String>();
 
+               // Merge scoping properties
+               List<Map<String, String>> list = context.getScopingProperties();
+               for (Map<String, String> scopingProperties : list)
+               {
+                  props.putAll(scopingProperties);
+               }
+
                // Julien : I know it's does not look great but it's necessary
                // for compiling under Java 5 and Java 6 properly. The methods
                // ObjectName#getKeyPropertyList() returns an Hashtable with Java 5
@@ -102,12 +110,6 @@ public class JMXManagementProvider implements ManagementProvider
                   String value = (String)entry.getValue();
                   props.put(key, value);
                }
-
-               //
-               Map<String, String> scopingProperties = context.getScopingProperties();
-
-               // Merge with scoping properties
-               props.putAll(scopingProperties);
 
                //
                on = JMX.createObjectName(on.getDomain(), props);

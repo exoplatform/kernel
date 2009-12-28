@@ -18,6 +18,7 @@ package org.exoplatform.management.spi;
 
 import org.exoplatform.management.ManagementContext;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ public interface ManagementProviderContext extends ManagementContext
     *
     * @return the scoping properties
     */
-   Map<String, String> getScopingProperties();
+   List<Map<String, String>> getScopingProperties();
 
    /**
     * Before a managed resource is invoked by the management layer.
