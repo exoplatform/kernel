@@ -16,9 +16,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.jmx;
+package org.exoplatform.container.management;
 
 import org.exoplatform.container.CachingContainer;
+import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.Managed;
@@ -35,7 +36,6 @@ import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 

@@ -21,6 +21,7 @@ package org.exoplatform.container.jmx;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.support.SimpleManagementAware;
+import org.exoplatform.container.management.ManagementContextImpl;
 import org.exoplatform.container.support.ContainerBuilder;
 
 import java.net.URL;

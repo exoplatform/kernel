@@ -21,7 +21,7 @@ package org.exoplatform.container;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.jmx.ManageableContainer;
+import org.exoplatform.container.management.ManageableContainer;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
