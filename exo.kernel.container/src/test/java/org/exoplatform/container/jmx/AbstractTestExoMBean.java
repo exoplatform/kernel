@@ -19,7 +19,7 @@
 package org.exoplatform.container.jmx;
 
 import junit.framework.TestCase;
-import org.exoplatform.management.spi.jmx.ExoMBeanInfoBuilder;
+import org.exoplatform.management.jmx.impl.ExoMBeanInfoBuilder;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;

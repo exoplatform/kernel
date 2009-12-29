@@ -23,7 +23,9 @@ import org.exoplatform.management.ManagementContext;
 import java.util.List;
 
 /**
- * The contract between a management provider and the kernel.
+ * The managed resource provided by the kernel to a management provider. It gives access
+ * to the resource itself, the meta data of the managed resource, the attached scoped data
+ * and the before/after invoke contract when a resource is invoked from the management layer.
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
@@ -57,7 +59,7 @@ public interface ManagedResource extends ManagementContext
    <S> List<S> getScopingData(Class<S> scopeType);
 
    /**
-    * Callback made by the provie to the resource to signal that scopgin data is used for the managed resource.
+    * Callback made by the provider to the resource to signal that scoping data that is used for the managed resource.
     *
     * @param scopeType the scope type
     * @param <S> the generic type of the scope type

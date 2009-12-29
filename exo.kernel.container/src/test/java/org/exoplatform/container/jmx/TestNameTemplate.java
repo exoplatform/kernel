@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.management.spi.jmx.ObjectNameBuilder;
+import org.exoplatform.management.jmx.impl.ObjectNameBuilder;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
