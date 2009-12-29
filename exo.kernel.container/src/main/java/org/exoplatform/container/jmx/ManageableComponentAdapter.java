@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.jmx;
 
+import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.ComponentAdapter;
@@ -74,8 +75,16 @@ public class ManageableComponentAdapter implements ComponentAdapter
          //
          if (container.managementContext != null)
          {
+            // Registry the instance against the management context
             log.debug("==> add " + instance + " to a mbean server");
             container.managementContext.register(instance);
+
+            // Register if it is a management provider
+            if (instance instanceof ManagementProvider)
+            {
+               ManagementProvider provider = (ManagementProvider)instance;
+               container.managementContext.kernelContext.addProvider(provider);
+            }
          }
       }
       return instance;

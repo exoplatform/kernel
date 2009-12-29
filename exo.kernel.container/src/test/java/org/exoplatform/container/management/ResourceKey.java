@@ -16,36 +16,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.exoplatform.container.management;
-
-import org.exoplatform.management.spi.jmx.JMXManagementProvider;
-import org.exoplatform.management.spi.ManagementProvider;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class KernelManagementContext
+public class ResourceKey
 {
-
-   /** . */
-   private final Set<ManagementProvider> providers;
-
-   public KernelManagementContext()
-   {
-     providers = Collections.<ManagementProvider>singleton(new JMXManagementProvider());
-   }
-
-   public KernelManagementContext(Set<ManagementProvider> providers)
-   {
-      this.providers = providers;
-   }
-
-   public Collection<ManagementProvider> getProviders() {
-      return providers;
-   }
 }

@@ -21,7 +21,6 @@ package org.exoplatform.management.spi;
 import org.exoplatform.management.ManagementContext;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The contract between a management provider and the kernel.
@@ -35,6 +34,8 @@ public interface ManagementProviderContext extends ManagementContext
    /**
     * Returns the scoping properties of the context;
     *
+    * @param scopeType the scope type
+    * @param <S> the generic type of the scope type
     * @return the scoping properties
     */
    <S> List<S> getScopingProperties(Class<S> scopeType);
@@ -43,6 +44,8 @@ public interface ManagementProviderContext extends ManagementContext
     * Callback to obtain a management provider context for the specified managed resource scoped with
     * the provided properties.
     *
+    * @param scopeType the scope type
+    * @param <S> the generic type of the scope type
     * @param scopingProperties the scoping properties
     */
    <S> void setScopingData(Class<S> scopeType, S scopingProperties);

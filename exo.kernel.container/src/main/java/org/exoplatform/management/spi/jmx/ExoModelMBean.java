@@ -142,23 +142,4 @@ public class ExoModelMBean extends RequiredModelMBean
       //
       super.postDeregister();
    }
-
-   //
-
-   public ManagementContext getManagementContext()
-   {
-      return context;
-   }
-
-   //
-
-   public void register(Object o) throws IllegalArgumentException, NullPointerException
-   {
-      context.register(o);
-   }
-
-   public void unregister(Object o) throws IllegalArgumentException, NullPointerException
-   {
-      context.unregister(o);
-   }
 }

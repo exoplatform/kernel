@@ -16,33 +16,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.management.spi;
+package org.exoplatform.container.management;
+
+import org.exoplatform.management.ManagementAware;
+import org.exoplatform.management.ManagementContext;
+import org.exoplatform.management.annotations.Managed;
 
 /**
- * This interface is implemented by a management provider such a JMX.
- *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
- * @param <S> the scope type
  */
-public interface ManagementProvider<S>
+@Managed
+public class Foo implements ManagementAware
 {
 
-   /**
-    * Instruct the management provider to manage the provided resource with the specified meta data.
-    *
-    * @param context the context
-    * @param source the resource to manage
-    * @param metaData the meta data describing the management interface
-    * @return the key under which the resource is registered
-    */
-   Object manage(ManagementProviderContext context, Object source, ManagedTypeMetaData metaData);
+   /** . */
+   private ManagementContext context;
 
-   /**
-    * Instruct the management provider to remove the specifed resource from management.
-    *
-    * @param key the key under which the resource is registered
-    */
-   void unmanage(Object key);
+   final Bar bar = new Bar();
+
+   public void setContext(ManagementContext context)
+   {
+      this.context = context;
+   }
+
+   public boolean isAware()
+   {
+      return context != null;
+   }
+
+   public void deploy()
+   {
+      context.register(bar);
+   }
+
+   public void undeploy()
+   {
+      context.unregister(bar);
+   }
 
 }

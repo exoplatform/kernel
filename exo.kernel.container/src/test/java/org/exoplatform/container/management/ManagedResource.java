@@ -16,33 +16,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.management.spi;
+
+package org.exoplatform.container.management;
+
+import org.exoplatform.management.spi.ManagedTypeMetaData;
+import org.exoplatform.management.spi.ManagementProviderContext;
 
 /**
- * This interface is implemented by a management provider such a JMX.
- *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
- * @param <S> the scope type
  */
-public interface ManagementProvider<S>
+public class ManagedResource
 {
 
-   /**
-    * Instruct the management provider to manage the provided resource with the specified meta data.
-    *
-    * @param context the context
-    * @param source the resource to manage
-    * @param metaData the meta data describing the management interface
-    * @return the key under which the resource is registered
-    */
-   Object manage(ManagementProviderContext context, Object source, ManagedTypeMetaData metaData);
+   final ResourceKey key;
 
-   /**
-    * Instruct the management provider to remove the specifed resource from management.
-    *
-    * @param key the key under which the resource is registered
-    */
-   void unmanage(Object key);
+   /** . */
+   final Object resource;
 
+   /** . */
+   final ManagementProviderContext context;
+
+   /** . */
+   final ManagedTypeMetaData metaData;
+
+   /** . */
+   final ScopedData data;
+
+   public ManagedResource(Object resource, ManagementProviderContext context, ManagedTypeMetaData metaData)
+   {
+      this.key = new ResourceKey();
+      this.resource = resource;
+      this.context = context;
+      this.metaData = metaData;
+      this.data = new ScopedData();
+   }
+
+   public void register()
+   {
+      context.setScopingData(ScopedData.class, data);
+   }
 }

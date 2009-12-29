@@ -20,7 +20,6 @@ package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
-import org.exoplatform.container.management.KernelManagementContext;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.spi.ManagedTypeMetaData;
 import org.exoplatform.container.management.MetaDataBuilder;
@@ -58,6 +57,12 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
    /** . */
    final KernelManagementContext kernelContext;
 
+   /** . */
+   private final Object resource;
+
+   /** . */
+   private final ManagedTypeMetaData typeMD;
+
    /** An optional container setup when the management context is attached to a container. */
    ManageableContainer container;
 
@@ -77,9 +82,16 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       
       this.scopingProperties = new HashMap<Class<?>, Object>();
       this.kernelContext = kernelContext;
+      this.resource = null;
+      this.typeMD = null;
    }
 
    public ManagementContextImpl(ManagementContextImpl parent)
+   {
+      this(parent, null, null);
+   }
+
+   public ManagementContextImpl(ManagementContextImpl parent, Object resource, ManagedTypeMetaData typeMD)
    {
       if (parent == null)
       {
@@ -90,6 +102,8 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       this.parent = parent;
       this.scopingProperties = new HashMap<Class<?>, Object>();
       this.kernelContext = parent.kernelContext;
+      this.resource = resource;
+      this.typeMD = typeMD;
    }
 
    public ManagementContext getParent()
@@ -153,7 +167,7 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
             }
             else
             {
-               viewContext = new ManagementContextImpl(this);
+               viewContext = new ManagementContextImpl(this, view, metaData);
             }
 
             //
@@ -237,5 +251,22 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
    public String toString()
    {
       return "ManagementContextImpl[container=" + container + "]";
+   }
+
+   void install(ManagementProvider provider) {
+      if (resource != null&& typeMD != null)
+      {
+         Object name = provider.manage(this, resource, typeMD);
+         if (name != null)
+         {
+            bilto.put(provider, name);
+         }
+      }
+
+      // Install for all
+      for (ManagementContextImpl registration : registrations.values())
+      {
+         registration.install(provider);
+      }
    }
 }

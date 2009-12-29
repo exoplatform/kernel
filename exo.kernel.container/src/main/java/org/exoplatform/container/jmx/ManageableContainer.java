@@ -19,7 +19,6 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.container.CachingContainer;
-import org.exoplatform.container.management.KernelManagementContext;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.Managed;
@@ -104,8 +103,14 @@ public class ManageableContainer extends CachingContainer
          // Get server from parent
          server = manageableParent.server;
       } else {
+         KernelManagementContext kernelCtx = new KernelManagementContext();
+
+         //
          server = findMBeanServer();
-         managementContext = new ManagementContextImpl(new KernelManagementContext(Collections.<ManagementProvider>singleton(new JMXManagementProvider(server))));
+         managementContext = kernelCtx.root;
+
+         //
+         kernelCtx.addProvider(new JMXManagementProvider(server));
       }
 
       //
@@ -165,6 +170,13 @@ public class ManageableContainer extends CachingContainer
       if (managementContext != null)
       {
          managementContext.register(componentInstance);
+
+         // Register if it is a management provider
+         if (componentInstance instanceof ManagementProvider)
+         {
+            ManagementProvider provider = (ManagementProvider)componentInstance;
+            managementContext.kernelContext.addProvider(provider);
+         }
       }
       return adapter;
    }
