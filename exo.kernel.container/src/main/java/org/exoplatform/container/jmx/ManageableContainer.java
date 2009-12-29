@@ -97,13 +97,13 @@ public class ManageableContainer extends CachingContainer
          ManagementContextImpl parentManagementContext = manageableParent.managementContext;
          if (parentManagementContext != null)
          {
-            managementContext = new ManagementContextImpl(parentManagementContext);
+            managementContext = new ManagementContextImpl(parentManagementContext, this);
          }
 
          // Get server from parent
          server = manageableParent.server;
       } else {
-         KernelManagementContext kernelCtx = new KernelManagementContext();
+         KernelManagementContext kernelCtx = new KernelManagementContext(this);
 
          //
          server = findMBeanServer();
@@ -112,9 +112,6 @@ public class ManageableContainer extends CachingContainer
          //
          kernelCtx.addProvider(new JMXManagementProvider(server));
       }
-
-      //
-      this.managementContext.container  = this;
    }
 
    public ManageableContainer(ComponentAdapterFactory componentAdapterFactory)

@@ -28,27 +28,42 @@ import java.util.List;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public interface ManagementProviderContext extends ManagementContext
+public interface ManagedResource extends ManagementContext
 {
 
    /**
-    * Returns the scoping properties of the context;
+    * The resource implementation.
+    *
+    * @return the resource
+    */
+   Object getResource();
+
+   /**
+    * Returns the resource meta data.
+    *
+    * @return the meta data
+    */
+   ManagedTypeMetaData getMetaData();
+
+   /**
+    * Returns the scoping data of the context. The list contains the scoping properties
+    * registered by the provider if a call has been made to the {@link #setScopingData(Class, Object)}
+    * method plus the scoping properties of the parent context.
     *
     * @param scopeType the scope type
     * @param <S> the generic type of the scope type
     * @return the scoping properties
     */
-   <S> List<S> getScopingProperties(Class<S> scopeType);
+   <S> List<S> getScopingData(Class<S> scopeType);
 
    /**
-    * Callback to obtain a management provider context for the specified managed resource scoped with
-    * the provided properties.
+    * Callback made by the provie to the resource to signal that scopgin data is used for the managed resource.
     *
     * @param scopeType the scope type
     * @param <S> the generic type of the scope type
-    * @param scopingProperties the scoping properties
+    * @param scopingData the scoping data
     */
-   <S> void setScopingData(Class<S> scopeType, S scopingProperties);
+   <S> void setScopingData(Class<S> scopeType, S scopingData);
 
    /**
     * Before a managed resource is invoked by the management layer.

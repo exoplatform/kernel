@@ -18,9 +18,8 @@
  */
 package org.exoplatform.management.spi.jmx;
 
-import org.exoplatform.management.spi.ManagedTypeMetaData;
+import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.spi.ManagementProvider;
-import org.exoplatform.management.spi.ManagementProviderContext;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -55,14 +54,14 @@ public class JMXManagementProvider implements ManagementProvider
       this.server = server;
    }
 
-   public Object manage(ManagementProviderContext context, Object managedResource, ManagedTypeMetaData metaData)
+   public Object manage(ManagedResource context)
    {
       ExoModelMBean mbean = null;
       try
       {
-         ExoMBeanInfoBuilder infoBuilder = new ExoMBeanInfoBuilder(metaData);
+         ExoMBeanInfoBuilder infoBuilder = new ExoMBeanInfoBuilder(context.getMetaData());
          ModelMBeanInfo info = infoBuilder.build();
-         mbean = new ExoModelMBean(context, managedResource, info);
+         mbean = new ExoModelMBean(context, context.getResource(), info);
       }
       catch (Exception e)
       {
@@ -73,12 +72,12 @@ public class JMXManagementProvider implements ManagementProvider
       if (mbean != null)
       {
          ObjectName on = null;
-         PropertiesInfo oni = PropertiesInfo.resolve(managedResource.getClass(), NameTemplate.class);
+         PropertiesInfo oni = PropertiesInfo.resolve(context.getResource().getClass(), NameTemplate.class);
          if (oni != null)
          {
             try
             {
-               Map<String, String> foo = oni.resolve(managedResource);
+               Map<String, String> foo = oni.resolve(context.getResource());
                on = JMX.createObjectName("exo", foo);
             }
             catch (MalformedObjectNameException e)
@@ -95,10 +94,10 @@ public class JMXManagementProvider implements ManagementProvider
                Map<String, String> props = new Hashtable<String, String>();
 
                // Merge scoping properties
-               List<MBeanScopingData> list = context.getScopingProperties(MBeanScopingData.class);
-               for (MBeanScopingData scopingProperties : list)
+               List<MBeanScopingData> list = context.getScopingData(MBeanScopingData.class);
+               for (MBeanScopingData scopingData : list)
                {
-                  props.putAll(scopingProperties);
+                  props.putAll(scopingData);
                }
 
                // Julien : I know it's does not look great but it's necessary

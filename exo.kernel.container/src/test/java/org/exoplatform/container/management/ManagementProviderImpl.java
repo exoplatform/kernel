@@ -19,9 +19,8 @@
 
 package org.exoplatform.container.management;
 
-import org.exoplatform.management.spi.ManagedTypeMetaData;
-import org.exoplatform.management.spi.ManagementProvider;
-import org.exoplatform.management.spi.ManagementProviderContext;
+import org.exoplatform.management.spi.*;
+import org.exoplatform.management.spi.ManagedResource;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,20 +34,20 @@ public class ManagementProviderImpl implements ManagementProvider
 {
 
    /** . */
-   final List<ManagedResource> resources = new ArrayList<ManagedResource>();
+   final List<org.exoplatform.container.management.ManagedResource> resources = new ArrayList<org.exoplatform.container.management.ManagedResource>();
 
-   public Object manage(ManagementProviderContext context, Object resource, ManagedTypeMetaData metaData)
+   public Object manage(ManagedResource context)
    {
-      ManagedResource mr = new ManagedResource(resource, context, metaData);
+      org.exoplatform.container.management.ManagedResource mr = new org.exoplatform.container.management.ManagedResource(context.getResource(), context, context.getMetaData());
       resources.add(mr);
       return mr.key;
    }
 
    public void unmanage(Object key)
    {
-      for (Iterator<ManagedResource> i = resources.iterator();i.hasNext();)
+      for (Iterator<org.exoplatform.container.management.ManagedResource> i = resources.iterator();i.hasNext();)
       {
-         ManagedResource mr = i.next();
+         org.exoplatform.container.management.ManagedResource mr = i.next();
          if (mr.key == key)
          {
             i.remove();

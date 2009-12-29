@@ -37,10 +37,16 @@ public class KernelManagementContext
    /** . */
    private final Set<ManagementProvider> providers;
 
-   public KernelManagementContext()
+   /** . */
+   private final ManageableContainer container;
+
+   public KernelManagementContext(ManageableContainer container)
    {
-      this.root = new ManagementContextImpl(this);
       this.providers = new HashSet<ManagementProvider>();
+      this.container = container;
+
+      // Done last as we pass 'this' as argument
+      this.root = new ManagementContextImpl(this, container);
    }
 
    public synchronized Collection<ManagementProvider> getProviders() {

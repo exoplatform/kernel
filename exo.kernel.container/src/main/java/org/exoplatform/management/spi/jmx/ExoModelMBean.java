@@ -18,9 +18,8 @@
  */
 package org.exoplatform.management.spi.jmx;
 
-import org.exoplatform.management.spi.ManagementProviderContext;
+import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.ManagementAware;
-import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 
 import javax.management.InstanceNotFoundException;
@@ -48,9 +47,9 @@ public class ExoModelMBean extends RequiredModelMBean
    private Object mr;
 
    /** . */
-   private final ManagementProviderContext context;
+   private final ManagedResource context;
 
-   public ExoModelMBean(ManagementProviderContext context, Object mr, ModelMBeanInfo mbi) throws MBeanException,
+   public ExoModelMBean(ManagedResource context, Object mr, ModelMBeanInfo mbi) throws MBeanException,
       RuntimeOperationsException, InstanceNotFoundException, InvalidTargetObjectTypeException
    {
       super(mbi);
@@ -101,10 +100,10 @@ public class ExoModelMBean extends RequiredModelMBean
       PropertiesInfo info = PropertiesInfo.resolve(mr.getClass(), NamingContext.class);
 
       //
-      MBeanScopingData scopingProperties = info != null ? info.resolve(mr) : new MBeanScopingData();
+      MBeanScopingData scopingData = info != null ? info.resolve(mr) : new MBeanScopingData();
 
       //
-      context.setScopingData(MBeanScopingData.class, scopingProperties);
+      context.setScopingData(MBeanScopingData.class, scopingData);
 
       //
       if (mr instanceof MBeanRegistration)

@@ -23,20 +23,19 @@ package org.exoplatform.management.spi;
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
- * @param <S> the scope type
  */
-public interface ManagementProvider<S>
+public interface ManagementProvider
 {
 
    /**
-    * Instruct the management provider to manage the provided resource with the specified meta data.
+    * Instruct the management provider to manage the provided managed resource. If any registration is done
+    * the provider should return an unique key that will be used later for unregistration purpose in the
+    * {@link #unmanage(Object)} method. If no registration is performed then null should be returned.
     *
-    * @param context the context
-    * @param source the resource to manage
-    * @param metaData the meta data describing the management interface
+    * @param managedResource the managed resource
     * @return the key under which the resource is registered
     */
-   Object manage(ManagementProviderContext context, Object source, ManagedTypeMetaData metaData);
+   Object manage(ManagedResource managedResource);
 
    /**
     * Instruct the management provider to remove the specifed resource from management.

@@ -26,7 +26,6 @@ import org.exoplatform.container.support.ContainerBuilder;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -48,15 +47,15 @@ public class TestManagementProvider extends TestCase
       URL url = getClass().getResource("configuration1.xml");
       RootContainer container = new ContainerBuilder().withRoot(url).build();
       ManagementProviderImpl provider = (ManagementProviderImpl)container.getComponentInstanceOfType(ManagementProviderImpl.class);
-      assertEquals(0, provider.resources.size());
+      assertEquals(1, provider.resources.size());
       Object foo = container.getComponentInstance("Foo");
       assertNotNull(foo);
-      assertEquals(1, provider.resources.size());
-      ManagedResource fooMR = provider.resources.get(0);
+      assertEquals(2, provider.resources.size());
+      ManagedResource fooMR = provider.resources.get(1);
       assertSame(foo, fooMR.resource);
-      assertEquals(Collections.<ScopedData>emptyList(), fooMR.context.getScopingProperties(ScopedData.class));
+      assertEquals(Collections.<ScopedData>emptyList(), fooMR.context.getScopingData(ScopedData.class));
       fooMR.register();
-      assertEquals(Collections.singletonList(fooMR.data), fooMR.context.getScopingProperties(ScopedData.class));
+      assertEquals(Collections.singletonList(fooMR.data), fooMR.context.getScopingData(ScopedData.class));
    }
 
    public void testManagedRegistrationBeforeProviderRegistration()
@@ -69,12 +68,12 @@ public class TestManagementProvider extends TestCase
       assertNotNull(foo);
       provider = new ManagementProviderImpl();
       container.registerComponentInstance(provider);
-      assertEquals(1, provider.resources.size());
-      ManagedResource fooMR = provider.resources.get(0);
+      assertEquals(2, provider.resources.size());
+      ManagedResource fooMR = provider.resources.get(1);
       assertSame(foo, fooMR.resource);
-      assertEquals(Collections.<ScopedData>emptyList(), fooMR.context.getScopingProperties(ScopedData.class));
+      assertEquals(Collections.<ScopedData>emptyList(), fooMR.context.getScopingData(ScopedData.class));
       fooMR.register();
-      assertEquals(Collections.singletonList(fooMR.data), fooMR.context.getScopingProperties(ScopedData.class));
+      assertEquals(Collections.singletonList(fooMR.data), fooMR.context.getScopingData(ScopedData.class));
    }
 
    public void testManagementAware()
@@ -83,21 +82,22 @@ public class TestManagementProvider extends TestCase
       RootContainer container = new ContainerBuilder().withRoot(url).build();
       ManagementProviderImpl provider = (ManagementProviderImpl)container.getComponentInstanceOfType(ManagementProviderImpl.class);
       Foo foo = (Foo)container.getComponentInstance("Foo");
-      assertEquals(1, provider.resources.size());
-      ManagedResource fooMR = provider.resources.get(0);
+      assertEquals(2, provider.resources.size());
+      ManagedResource fooMR = provider.resources.get(1);
       fooMR.register();
       assertTrue(foo.isAware());
 
       //
       foo.deploy();
-      assertEquals(2, provider.resources.size());
-      ManagedResource barMR = provider.resources.get(1);
+      assertEquals(3, provider.resources.size());
+      ManagedResource barMR = provider.resources.get(2);
       assertSame(foo.bar, barMR.resource);
       barMR.register();
-      assertEquals(Arrays.asList(barMR.data, fooMR.data), barMR.context.getScopingProperties(ScopedData.class));
+      assertEquals(Arrays.asList(barMR.data, fooMR.data), barMR.context.getScopingData(ScopedData.class));
 
       //
       foo.undeploy();
-      assertEquals(Arrays.asList(fooMR), provider.resources);
+      assertEquals(2, provider.resources.size());
+      assertEquals(fooMR, provider.resources.get(1));
    }
 }

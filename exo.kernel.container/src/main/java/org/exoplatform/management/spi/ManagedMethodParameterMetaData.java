@@ -19,6 +19,8 @@
 package org.exoplatform.management.spi;
 
 /**
+ * Meta data that describes the parameter of a managed method.
+ *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */

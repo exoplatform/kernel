@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Meta data that describes a managed type.
+ *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */

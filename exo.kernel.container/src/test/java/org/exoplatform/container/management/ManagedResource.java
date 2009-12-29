@@ -20,7 +20,6 @@
 package org.exoplatform.container.management;
 
 import org.exoplatform.management.spi.ManagedTypeMetaData;
-import org.exoplatform.management.spi.ManagementProviderContext;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -35,7 +34,7 @@ public class ManagedResource
    final Object resource;
 
    /** . */
-   final ManagementProviderContext context;
+   final org.exoplatform.management.spi.ManagedResource context;
 
    /** . */
    final ManagedTypeMetaData metaData;
@@ -43,7 +42,7 @@ public class ManagedResource
    /** . */
    final ScopedData data;
 
-   public ManagedResource(Object resource, ManagementProviderContext context, ManagedTypeMetaData metaData)
+   public ManagedResource(Object resource, org.exoplatform.management.spi.ManagedResource context, ManagedTypeMetaData metaData)
    {
       this.key = new ResourceKey();
       this.resource = resource;

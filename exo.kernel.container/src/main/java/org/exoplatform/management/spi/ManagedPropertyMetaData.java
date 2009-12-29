@@ -21,6 +21,8 @@ package org.exoplatform.management.spi;
 import java.lang.reflect.Method;
 
 /**
+ * Meta data that describes a managed property.
+ *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */

@@ -21,10 +21,10 @@ package org.exoplatform.container.jmx;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.management.ManagementAware;
+import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.spi.ManagedTypeMetaData;
 import org.exoplatform.container.management.MetaDataBuilder;
 import org.exoplatform.management.spi.ManagementProvider;
-import org.exoplatform.management.spi.ManagementProviderContext;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
 
@@ -39,11 +39,11 @@ import java.util.Map;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManagementContextImpl implements ManagementContext, ManagementProviderContext
+public class ManagementContextImpl implements ManagementContext, ManagedResource
 {
 
    /** . */
-   private final Map<Class<?>, Object> scopingProperties;
+   private final Map<Class<?>, Object> scopingDataList;
 
    /** The registrations done by this mbean. */
    private final Map<Object, ManagementContextImpl> registrations;
@@ -64,31 +64,70 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
    private final ManagedTypeMetaData typeMD;
 
    /** An optional container setup when the management context is attached to a container. */
-   ManageableContainer container;
+   private final ManageableContainer container;
 
-   public ManagementContextImpl(KernelManagementContext kernelContext)
+   public ManagementContextImpl(KernelManagementContext kernelContext, ManageableContainer container)
    {
       if (kernelContext == null)
       {
          throw new NullPointerException();
       }
+      if (container == null)
+      {
+         throw new NullPointerException();
+      }
+      
+      //
+      Object resource = null;
+      ManagedTypeMetaData typeMD = null;
+      MetaDataBuilder builder = new MetaDataBuilder(container.getClass());
+      if (builder.isBuildable())
+      {
+         resource = container;
+         typeMD = builder.build();
+      }
+
+      //
       this.bilto = new HashMap<ManagementProvider, Object>();
       this.registrations = new HashMap<Object, ManagementContextImpl>();
       this.parent = null;
-
-      // This is the root container that never have scoping properties
-      // Also without that we would have an NPE when the portal container are registered
-      // as the scoping properties would not exist since the root container would not be yet
-      
-      this.scopingProperties = new HashMap<Class<?>, Object>();
+      this.scopingDataList = new HashMap<Class<?>, Object>();
       this.kernelContext = kernelContext;
-      this.resource = null;
-      this.typeMD = null;
+      this.resource = resource;
+      this.typeMD = typeMD;
+      this.container = container;
    }
 
-   public ManagementContextImpl(ManagementContextImpl parent)
+   public ManagementContextImpl(ManagementContextImpl parent, ManageableContainer container)
    {
-      this(parent, null, null);
+      if (parent == null)
+      {
+         throw new NullPointerException();
+      }
+      if (container == null)
+      {
+         throw new NullPointerException();
+      }
+
+      //
+      Object resource = null;
+      ManagedTypeMetaData typeMD = null;
+      MetaDataBuilder builder = new MetaDataBuilder(container.getClass());
+      if (builder.isBuildable())
+      {
+         resource = container;
+         typeMD = builder.build();
+      }
+
+      //
+      this.bilto = new HashMap<ManagementProvider, Object>();
+      this.registrations = new HashMap<Object, ManagementContextImpl>();
+      this.parent = parent;
+      this.scopingDataList = new HashMap<Class<?>, Object>();
+      this.kernelContext = parent.kernelContext;
+      this.resource = resource;
+      this.typeMD = typeMD;
+      this.container = container;
    }
 
    public ManagementContextImpl(ManagementContextImpl parent, Object resource, ManagedTypeMetaData typeMD)
@@ -97,13 +136,20 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       {
          throw new NullPointerException();
       }
+      if ((resource != null && typeMD == null) && (resource == null && typeMD != null))
+      {
+         throw new IllegalArgumentException("Can't have resource null and meta data not null or the converse");
+      }
+
+      //
       this.bilto = new HashMap<ManagementProvider, Object>();
       this.registrations = new HashMap<Object, ManagementContextImpl>();
       this.parent = parent;
-      this.scopingProperties = new HashMap<Class<?>, Object>();
+      this.scopingDataList = new HashMap<Class<?>, Object>();
       this.kernelContext = parent.kernelContext;
       this.resource = resource;
       this.typeMD = typeMD;
+      this.container = null;
    }
 
    public ManagementContext getParent()
@@ -111,14 +157,14 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       return parent;
    }
 
-   public <S> void setScopingData(Class<S> scopeType, S scopingProperties)
+   public <S> void setScopingData(Class<S> scopeType, S scopingData)
    {
-      this.scopingProperties.put(scopeType, scopingProperties);
+      this.scopingDataList.put(scopeType, scopingData);
    }
 
    public void register(Object o)
    {
-      Object view = null;
+      Object resource = null;
 
       // Apply managed by annotation
       ManagedBy managedBy = o.getClass().getAnnotation(ManagedBy.class);
@@ -128,7 +174,7 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
          {
             Class managedByClass = managedBy.value();
             Constructor<?> blah = managedByClass.getConstructor(o.getClass());
-            view = blah.newInstance(o);
+            resource = blah.newInstance(o);
          }
          catch (NoSuchMethodException e)
          {
@@ -149,44 +195,44 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       }
       else
       {
-         view = o;
+         resource = o;
       }
 
       //
-      if (view != null) {
+      if (resource != null) {
 
-         MetaDataBuilder builder = new MetaDataBuilder(view.getClass());
+         MetaDataBuilder builder = new MetaDataBuilder(resource.getClass());
          if (builder.isBuildable()) {
             ManagedTypeMetaData metaData = builder.build();
 
             //
-            ManagementContextImpl viewContext;
-            if (view instanceof ManageableContainer)
+            ManagementContextImpl managementContext;
+            if (resource instanceof ManageableContainer)
             {
-               viewContext = ((ManageableContainer)view).managementContext;
+               managementContext = ((ManageableContainer)resource).managementContext;
             }
             else
             {
-               viewContext = new ManagementContextImpl(this, view, metaData);
+               managementContext = new ManagementContextImpl(this, resource, metaData);
             }
 
             //
-            registrations.put(view, viewContext);
+            registrations.put(resource, managementContext);
 
             //
             for (ManagementProvider provider : kernelContext.getProviders())
             {
-               Object name = provider.manage(this, view, metaData);
+               Object name = provider.manage(managementContext);
                if (name != null)
                {
-                  viewContext.bilto.put(provider, name);
+                  managementContext.bilto.put(provider, name);
                }
             }
 
             // Allow for more resource management
-            if (view instanceof ManagementAware)
+            if (resource instanceof ManagementAware)
             {
-               ((ManagementAware)view).setContext(viewContext);
+               ((ManagementAware)resource).setContext(managementContext);
             }
          }
       }
@@ -203,12 +249,12 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       }
    }
 
-   public <S> List<S> getScopingProperties(Class<S> scopeType)
+   public <S> List<S> getScopingData(Class<S> scopeType)
    {
       ArrayList<S> list = new ArrayList<S>();
       for (ManagementContextImpl current = this; current != null; current = current.parent)
       {
-         Object scopedData = current.scopingProperties.get(scopeType);
+         Object scopedData = current.scopingDataList.get(scopeType);
          if (scopedData != null)
          {
             // It must be that type since we put it
@@ -253,10 +299,20 @@ public class ManagementContextImpl implements ManagementContext, ManagementProvi
       return "ManagementContextImpl[container=" + container + "]";
    }
 
+   public Object getResource()
+   {
+      return resource;
+   }
+
+   public ManagedTypeMetaData getMetaData()
+   {
+      return typeMD;
+   }
+
    void install(ManagementProvider provider) {
       if (resource != null&& typeMD != null)
       {
-         Object name = provider.manage(this, resource, typeMD);
+         Object name = provider.manage(this);
          if (name != null)
          {
             bilto.put(provider, name);
