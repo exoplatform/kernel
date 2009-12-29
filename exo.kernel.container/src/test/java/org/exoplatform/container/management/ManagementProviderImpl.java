@@ -34,18 +34,22 @@ public class ManagementProviderImpl implements ManagementProvider
 {
 
    /** . */
-   final List<org.exoplatform.container.management.ManagedResource> resources = new ArrayList<org.exoplatform.container.management.ManagedResource>();
+   final List<org.exoplatform.container.management.ManagedResource> managedResources = new ArrayList<org.exoplatform.container.management.ManagedResource>();
+
+   /** . */
+   final List<Object> resources = new ArrayList<Object>();
 
    public Object manage(ManagedResource context)
    {
       org.exoplatform.container.management.ManagedResource mr = new org.exoplatform.container.management.ManagedResource(context.getResource(), context, context.getMetaData());
-      resources.add(mr);
+      managedResources.add(mr);
+      resources.add(mr.resource);
       return mr.key;
    }
 
    public void unmanage(Object key)
    {
-      for (Iterator<org.exoplatform.container.management.ManagedResource> i = resources.iterator();i.hasNext();)
+      for (Iterator<org.exoplatform.container.management.ManagedResource> i = managedResources.iterator();i.hasNext();)
       {
          org.exoplatform.container.management.ManagedResource mr = i.next();
          if (mr.key == key)

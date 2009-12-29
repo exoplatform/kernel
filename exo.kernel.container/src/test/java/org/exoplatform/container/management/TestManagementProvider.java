@@ -20,6 +20,7 @@
 package org.exoplatform.container.management;
 
 import junit.framework.TestCase;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.support.ContainerBuilder;
 
@@ -47,11 +48,11 @@ public class TestManagementProvider extends TestCase
       URL url = getClass().getResource("configuration1.xml");
       RootContainer container = new ContainerBuilder().withRoot(url).build();
       ManagementProviderImpl provider = (ManagementProviderImpl)container.getComponentInstanceOfType(ManagementProviderImpl.class);
-      assertEquals(1, provider.resources.size());
+      assertEquals(1, provider.managedResources.size());
       Object foo = container.getComponentInstance("Foo");
       assertNotNull(foo);
-      assertEquals(2, provider.resources.size());
-      ManagedResource fooMR = provider.resources.get(1);
+      assertEquals(2, provider.managedResources.size());
+      ManagedResource fooMR = provider.managedResources.get(1);
       assertSame(foo, fooMR.resource);
       assertEquals(Collections.<ScopedData>emptyList(), fooMR.context.getScopingData(ScopedData.class));
       fooMR.register();
@@ -68,8 +69,8 @@ public class TestManagementProvider extends TestCase
       assertNotNull(foo);
       provider = new ManagementProviderImpl();
       container.registerComponentInstance(provider);
-      assertEquals(2, provider.resources.size());
-      ManagedResource fooMR = provider.resources.get(1);
+      assertEquals(2, provider.managedResources.size());
+      ManagedResource fooMR = provider.managedResources.get(1);
       assertSame(foo, fooMR.resource);
       assertEquals(Collections.<ScopedData>emptyList(), fooMR.context.getScopingData(ScopedData.class));
       fooMR.register();
@@ -82,22 +83,54 @@ public class TestManagementProvider extends TestCase
       RootContainer container = new ContainerBuilder().withRoot(url).build();
       ManagementProviderImpl provider = (ManagementProviderImpl)container.getComponentInstanceOfType(ManagementProviderImpl.class);
       Foo foo = (Foo)container.getComponentInstance("Foo");
-      assertEquals(2, provider.resources.size());
-      ManagedResource fooMR = provider.resources.get(1);
+      assertEquals(2, provider.managedResources.size());
+      ManagedResource fooMR = provider.managedResources.get(1);
       fooMR.register();
       assertTrue(foo.isAware());
 
       //
       foo.deploy();
-      assertEquals(3, provider.resources.size());
-      ManagedResource barMR = provider.resources.get(2);
+      assertEquals(3, provider.managedResources.size());
+      ManagedResource barMR = provider.managedResources.get(2);
       assertSame(foo.bar, barMR.resource);
       barMR.register();
       assertEquals(Arrays.asList(barMR.data, fooMR.data), barMR.context.getScopingData(ScopedData.class));
 
       //
       foo.undeploy();
-      assertEquals(2, provider.resources.size());
-      assertEquals(fooMR, provider.resources.get(1));
+      assertEquals(2, provider.managedResources.size());
+      assertEquals(fooMR, provider.managedResources.get(1));
+   }
+
+   public void testContainerScopedRegistration()
+   {
+      URL rootURL = getClass().getResource("root-configuration.xml");
+      URL portal1URL = getClass().getResource("portal-configuration1.xml");
+      URL portal2URL = getClass().getResource("portal-configuration2.xml");
+      RootContainer root = new ContainerBuilder().withRoot(rootURL).withPortal("portal1", portal1URL).withPortal("portal2", portal2URL).build();
+      Foo fooRoot = (Foo)root.getComponentInstanceOfType(Foo.class);
+      ManagementProviderImpl provider = (ManagementProviderImpl)root.getComponentInstanceOfType(ManagementProviderImpl.class);
+      PortalContainer portal1 = root.getPortalContainer("portal1");
+      Foo fooPortal1 = (Foo)portal1.getComponentInstanceOfType(Foo.class);
+      ManagementProviderImpl provider1 = (ManagementProviderImpl)portal1.getComponentInstanceOfType(ManagementProviderImpl.class);
+      PortalContainer portal2 = root.getPortalContainer("portal2");
+      Foo fooPortal2 = (Foo)portal2.getComponentInstanceOfType(Foo.class);
+      ManagementProviderImpl provider2 = (ManagementProviderImpl)portal2.getComponentInstanceOfType(ManagementProviderImpl.class);
+
+      //
+      assertEquals(6, provider.managedResources.size());
+      assertTrue(provider.resources.contains(root));
+      assertTrue(provider.resources.contains(root));
+      assertTrue(provider.resources.contains(portal1));
+      assertTrue(provider.resources.contains(portal2));
+      assertTrue(provider.resources.contains(fooRoot));
+      assertTrue(provider.resources.contains(fooPortal1));
+      assertTrue(provider.resources.contains(fooPortal2));
+      assertEquals(2, provider1.managedResources.size());
+      assertEquals(portal1, provider1.managedResources.get(0).resource);
+      assertEquals(fooPortal1, provider1.managedResources.get(1).resource);
+      assertEquals(2, provider2.managedResources.size());
+      assertEquals(portal2, provider2.managedResources.get(0).resource);
+      assertEquals(fooPortal2, provider2.managedResources.get(1).resource);
    }
 }

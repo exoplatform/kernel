@@ -23,7 +23,6 @@ import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.spi.ManagedTypeMetaData;
-import org.exoplatform.container.management.MetaDataBuilder;
 import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
@@ -49,13 +48,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    private final Map<Object, ManagementContextImpl> registrations;
 
    /** . */
-   final Map<ManagementProvider, Object> bilto;
+   final Map<ManagementProvider, Object> managedSet;
 
    /** . */
    private final ManagementContextImpl parent;
-
-   /** . */
-   final KernelManagementContext kernelContext;
 
    /** . */
    private final Object resource;
@@ -64,14 +60,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    private final ManagedTypeMetaData typeMD;
 
    /** An optional container setup when the management context is attached to a container. */
-   private final ManageableContainer container;
+   final ManageableContainer container;
 
-   public ManagementContextImpl(KernelManagementContext kernelContext, ManageableContainer container)
+   public ManagementContextImpl(ManageableContainer container)
    {
-      if (kernelContext == null)
-      {
-         throw new NullPointerException();
-      }
       if (container == null)
       {
          throw new NullPointerException();
@@ -88,11 +80,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
 
       //
-      this.bilto = new HashMap<ManagementProvider, Object>();
+      this.managedSet = new HashMap<ManagementProvider, Object>();
       this.registrations = new HashMap<Object, ManagementContextImpl>();
       this.parent = null;
       this.scopingDataList = new HashMap<Class<?>, Object>();
-      this.kernelContext = kernelContext;
       this.resource = resource;
       this.typeMD = typeMD;
       this.container = container;
@@ -120,11 +111,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
 
       //
-      this.bilto = new HashMap<ManagementProvider, Object>();
+      this.managedSet = new HashMap<ManagementProvider, Object>();
       this.registrations = new HashMap<Object, ManagementContextImpl>();
       this.parent = parent;
       this.scopingDataList = new HashMap<Class<?>, Object>();
-      this.kernelContext = parent.kernelContext;
       this.resource = resource;
       this.typeMD = typeMD;
       this.container = container;
@@ -142,11 +132,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
 
       //
-      this.bilto = new HashMap<ManagementProvider, Object>();
+      this.managedSet = new HashMap<ManagementProvider, Object>();
       this.registrations = new HashMap<Object, ManagementContextImpl>();
       this.parent = parent;
       this.scopingDataList = new HashMap<Class<?>, Object>();
-      this.kernelContext = parent.kernelContext;
       this.resource = resource;
       this.typeMD = typeMD;
       this.container = null;
@@ -220,12 +209,15 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
             registrations.put(resource, managementContext);
 
             //
-            for (ManagementProvider provider : kernelContext.getProviders())
+            ManageableContainer container = findContainer();
+
+            // Install for all the providers related
+            for (ManagementProvider provider : container.getProviders())
             {
                Object name = provider.manage(managementContext);
                if (name != null)
                {
-                  managementContext.bilto.put(provider, name);
+                  managementContext.managedSet.put(provider, name);
                }
             }
 
@@ -243,7 +235,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       ManagementContextImpl context = registrations.remove(o);
       if (context != null)
       {
-         for (Map.Entry<ManagementProvider, Object> entry : context.bilto.entrySet()) {
+         for (Map.Entry<ManagementProvider, Object> entry : context.managedSet.entrySet()) {
             entry.getKey().unmanage(entry.getValue());
          }
       }
@@ -310,16 +302,18 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    }
 
    void install(ManagementProvider provider) {
+
+      // Install the current resource if necessary
       if (resource != null&& typeMD != null)
       {
          Object name = provider.manage(this);
          if (name != null)
          {
-            bilto.put(provider, name);
+            managedSet.put(provider, name);
          }
       }
 
-      // Install for all
+      // Install thie children except the container ones
       for (ManagementContextImpl registration : registrations.values())
       {
          registration.install(provider);

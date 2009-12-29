@@ -30,19 +30,27 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * An helper for building a root container and a portal container. I have done several attempt to make easily
- * and safe root/portal container boot for unit test. This one is my best attempt so far.
+ * <p>An helper for building a root container and a portal container. I have done several attempt to make easily
+ * and safe root/portal container boot for unit test. This one is my best attempt so far.</p>
+ *
+ * <p>Note that the portal container are booted in the order they are declared first.</p>
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
 public class ContainerBuilder
 {
+
+   /** A hack used during the boot of a portal container. */
+   private final ThreadLocal<String> bootedPortalName = new ThreadLocal<String>();
 
    /** . */
    private ClassLoader loader;
@@ -51,7 +59,7 @@ public class ContainerBuilder
    private List<URL> configURLs;
 
    /** . */
-   private List<URL> portalConfigURLs;
+   private LinkedHashMap<String, List<URL>> portalConfigURLs;
 
    /** . */
    private Set<String> profiles;
@@ -60,7 +68,7 @@ public class ContainerBuilder
    {
       this.loader = Thread.currentThread().getContextClassLoader();
       this.configURLs = new ArrayList<URL>();
-      this.portalConfigURLs = new ArrayList<URL>();
+      this.portalConfigURLs = new LinkedHashMap<String, List<URL>>();
    }
 
    public ContainerBuilder withRoot(String configPath)
@@ -77,13 +85,44 @@ public class ContainerBuilder
 
    public ContainerBuilder withPortal(String configPath)
    {
-      portalConfigURLs.addAll(urls(configPath));
+      return withPortal("portal", configPath);
+   }
+
+   public ContainerBuilder withPortal(String portalName, String configPath)
+   {
+      for (URL configURL : urls(configPath))
+      {
+         withPortal(portalName, configURL);
+      }
       return this;
    }
 
    public ContainerBuilder withPortal(URL configURL)
    {
-      portalConfigURLs.add(configURL);
+      return withPortal("portal", configURL);
+   }
+
+   public ContainerBuilder withPortal(String portalName, URL configURL)
+   {
+      List<URL> urls = portalConfigURLs.get(portalName);
+      if (urls == null)
+      {
+         urls = new ArrayList<URL>();
+         portalConfigURLs.put(portalName, urls);
+      }
+      urls.add(configURL);
+      return this;
+   }
+
+   public ContainerBuilder withLoader(ClassLoader loader)
+   {
+      this.loader = loader;
+      return this;
+   }
+
+   public ContainerBuilder profiledBy(String ... profiles)
+   {
+      this.profiles = Tools.set(profiles);
       return this;
    }
 
@@ -99,18 +138,6 @@ public class ContainerBuilder
          err.initCause(e);
          throw err;
       }
-   }
-
-   public ContainerBuilder withLoader(ClassLoader loader)
-   {
-      this.loader = loader;
-      return this;
-   }
-
-   public ContainerBuilder profiledBy(String ... profiles)
-   {
-      this.profiles = Tools.set(profiles);
-      return this;
    }
 
    public RootContainer build()
@@ -178,7 +205,8 @@ public class ContainerBuilder
             }
             else if ("conf/portal/configuration.xml".equals(name))
             {
-               return Collections.enumeration(portalConfigURLs);
+               String portalName = bootedPortalName.get();
+               return Collections.enumeration(portalConfigURLs.get(portalName));
             }
             else if ("conf/portal/test-configuration.xml".equals(name))
             {
@@ -204,9 +232,17 @@ public class ContainerBuilder
          root = RootContainer.getInstance();
 
          //
-         if (portalConfigURLs.size() > 0)
+         for (String portalName : portalConfigURLs.keySet())
          {
-            root.getPortalContainer("portal");
+            try
+            {
+               bootedPortalName.set(portalName);
+               root.getPortalContainer(portalName);
+            }
+            finally
+            {
+               bootedPortalName.set(null);
+            }
          }
       }
       finally

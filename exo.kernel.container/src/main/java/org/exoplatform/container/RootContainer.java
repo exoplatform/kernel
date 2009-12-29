@@ -333,7 +333,7 @@ public class RootContainer extends ExoContainer
          pcontainer.start();
 
          // Register the portal as an mbean
-         managementContext.register(pcontainer);
+         getManagementContext().register(pcontainer);
 
          //
          executeInitTasks(pcontainer, PortalContainerPostInitTask.TYPE);

@@ -55,4 +55,10 @@ public class ManagedResource
    {
       context.setScopingData(ScopedData.class, data);
    }
+
+   @Override
+   public String toString()
+   {
+      return "ManagedResource[key=" + key + ",resource=" + resource + "]";
+   }
 }

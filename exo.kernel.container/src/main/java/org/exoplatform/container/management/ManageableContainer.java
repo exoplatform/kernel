@@ -36,6 +36,7 @@ import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,14 +61,19 @@ public class ManageableContainer extends CachingContainer
    }
 
    /** . */
-   private static final ThreadLocal<ManageableComponentAdapterFactory> hack =
-      new ThreadLocal<ManageableComponentAdapterFactory>();
+   private static final ThreadLocal<ManageableComponentAdapterFactory> hack = new ThreadLocal<ManageableComponentAdapterFactory>();
 
    /** . */
-   protected ManagementContextImpl managementContext;
+   final ManagementContextImpl managementContext;
 
    /** . */
-   protected MBeanServer server;
+   private MBeanServer server;
+
+   /** . */
+   private final Set<ManagementProvider> providers;
+
+   /** . */
+   private final ManageableContainer parent;
 
    public ManageableContainer()
    {
@@ -88,29 +94,32 @@ public class ManageableContainer extends CachingContainer
       factory.container = this;
       hack.set(null);
 
-      // Reference the same mbean server that the parent has
+      // The synchronized wrapper, here will not impact runtime performances
+      // so it's fine
+      this.providers = Collections.synchronizedSet(new HashSet<ManagementProvider>());
+
+      //
+      ManagementContextImpl parentCtx = null;
       if (parent instanceof ManageableContainer)
       {
          ManageableContainer manageableParent = (ManageableContainer)parent;
+         parentCtx = manageableParent.managementContext;
+      }
 
-         //
-         ManagementContextImpl parentManagementContext = manageableParent.managementContext;
-         if (parentManagementContext != null)
-         {
-            managementContext = new ManagementContextImpl(parentManagementContext, this);
-         }
+      //
+      this.parent = parent instanceof ManageableContainer ? (ManageableContainer)parent : null;
 
-         // Get server from parent
-         server = manageableParent.server;
-      } else {
-         KernelManagementContext kernelCtx = new KernelManagementContext(this);
-
-         //
+      //
+      if (parentCtx != null)
+      {
+         server = parentCtx.container.server;
+         managementContext = new ManagementContextImpl(parentCtx, this);
+      }
+      else
+      {
          server = findMBeanServer();
-         managementContext = kernelCtx.root;
-
-         //
-         kernelCtx.addProvider(new JMXManagementProvider(server));
+         managementContext = new ManagementContextImpl(this);
+         addProvider(new JMXManagementProvider(server));
       }
    }
 
@@ -172,9 +181,50 @@ public class ManageableContainer extends CachingContainer
          if (componentInstance instanceof ManagementProvider)
          {
             ManagementProvider provider = (ManagementProvider)componentInstance;
-            managementContext.kernelContext.addProvider(provider);
+            addProvider(provider);
          }
       }
       return adapter;
+   }
+
+   /**
+    * Returns the list of the providers which are relevant for this container.
+    *
+    * @return the providers
+    */
+   Collection<ManagementProvider> getProviders()
+   {
+      HashSet<ManagementProvider> allProviders = new HashSet<ManagementProvider>();
+      computeAllProviders(allProviders);
+      return allProviders;
+   }
+
+   private void computeAllProviders(Set<ManagementProvider> allProviders)
+   {
+      if (parent != null)
+      {
+         parent.computeAllProviders(allProviders);
+      }
+
+      //
+      allProviders.addAll(providers);
+   }
+
+   boolean addProvider(ManagementProvider provider)
+   {
+      // Prevent double registration just in case...
+      if (providers.contains(provider))
+      {
+         return false;
+      }
+
+      //
+      providers.add(provider);
+
+      // Perform registration of already registered managed components
+      managementContext.install(provider);
+
+      //
+      return true;
    }
 }

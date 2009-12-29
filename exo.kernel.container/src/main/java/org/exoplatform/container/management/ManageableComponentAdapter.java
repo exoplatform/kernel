@@ -83,7 +83,7 @@ public class ManageableComponentAdapter implements ComponentAdapter
             if (instance instanceof ManagementProvider)
             {
                ManagementProvider provider = (ManagementProvider)instance;
-               container.managementContext.kernelContext.addProvider(provider);
+               container.addProvider(provider);
             }
          }
       }
