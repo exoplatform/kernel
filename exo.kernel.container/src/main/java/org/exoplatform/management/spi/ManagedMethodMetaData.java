@@ -18,6 +18,8 @@
  */
 package org.exoplatform.management.spi;
 
+import org.exoplatform.management.annotations.ImpactType;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,22 +41,41 @@ public class ManagedMethodMetaData extends ManagedMetaData
    /** . */
    private final Map<Integer, ManagedMethodParameterMetaData> parameters;
 
+   /** . */
+   private final ImpactType impact;
+
    /**
     * Build a new instance.
     *
     * @param method the method
-    * @throws NullPointerException if the method is null
+    * @param impactType the access mode
+    * @throws NullPointerException if the method is null or the impact is null
     */
-   public ManagedMethodMetaData(Method method) throws NullPointerException
+   public ManagedMethodMetaData(Method method, ImpactType impactType) throws NullPointerException
    {
       if (method == null)
+      {
+         throw new NullPointerException();
+      }
+      if (impactType == null)
       {
          throw new NullPointerException();
       }
 
       //
       this.method = method;
+      this.impact = impactType;
       this.parameters = new HashMap<Integer, ManagedMethodParameterMetaData>();
+   }
+
+   public String getName()
+   {
+      return method.getName();
+   }
+
+   public ImpactType getImpact()
+   {
+      return impact;
    }
 
    public Method getMethod()

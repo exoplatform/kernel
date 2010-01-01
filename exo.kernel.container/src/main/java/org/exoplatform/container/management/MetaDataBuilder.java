@@ -19,6 +19,8 @@
 package org.exoplatform.container.management;
 
 import org.exoplatform.commons.reflect.AnnotationIntrospector;
+import org.exoplatform.management.annotations.Impact;
+import org.exoplatform.management.annotations.ImpactType;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
@@ -131,8 +133,12 @@ public class MetaDataBuilder
          ManagedDescription methodDescriptionAnn = methodDescriptions.get(method);
          String methodDescription = methodDescriptionAnn != null ? methodDescriptionAnn.value() : null;
 
+         //
+         Impact impactAnn = method.getAnnotation(Impact.class);
+         ImpactType impactType = impactAnn != null ? impactAnn.value() : ImpactType.WRITE;
+
          // Build the default mbean info
-         ManagedMethodMetaData managedMethod = new ManagedMethodMetaData(method);
+         ManagedMethodMetaData managedMethod = new ManagedMethodMetaData(method, impactType);
          managedMethod.setDescription(methodDescription);
 
          // Overload with annotations meta data

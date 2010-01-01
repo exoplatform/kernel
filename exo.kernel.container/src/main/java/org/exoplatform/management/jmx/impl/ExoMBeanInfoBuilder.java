@@ -18,6 +18,7 @@
  */
 package org.exoplatform.management.jmx.impl;
 
+import org.exoplatform.management.annotations.ImpactType;
 import org.exoplatform.management.spi.ManagedMethodMetaData;
 import org.exoplatform.management.spi.ManagedMethodParameterMetaData;
 import org.exoplatform.management.spi.ManagedPropertyMetaData;
@@ -33,6 +34,7 @@ import java.util.Map;
 
 import javax.management.Descriptor;
 import javax.management.IntrospectionException;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.modelmbean.ModelMBeanAttributeInfo;
 import javax.management.modelmbean.ModelMBeanConstructorInfo;
@@ -80,7 +82,7 @@ public class ExoMBeanInfoBuilder
    }
 
    private ModelMBeanOperationInfo buildOperationInfo(Method method, String description, Role role,
-      Collection<ManagedMethodParameterMetaData> parametersMD)
+      Collection<ManagedMethodParameterMetaData> parametersMD, ImpactType impactType)
    {
       ModelMBeanOperationInfo operationInfo = new ModelMBeanOperationInfo(description, method);
 
@@ -110,12 +112,27 @@ public class ExoMBeanInfoBuilder
       }
 
       //
+      int jmxImpact;
+      switch (impactType)
+      {
+         case READ:
+            jmxImpact = MBeanOperationInfo.INFO;
+            break;
+         case IDEMPOTENT_WRITE:
+         case WRITE:
+            jmxImpact = MBeanOperationInfo.ACTION;
+            break;
+         default:
+            throw new AssertionError();
+      }
+
+      //
       Descriptor operationDescriptor = operationInfo.getDescriptor();
       operationDescriptor.setField("role", role.name);
 
       //
       return new ModelMBeanOperationInfo(operationInfo.getName(), description, parameterInfos, operationInfo
-         .getReturnType(), operationInfo.getImpact(), operationDescriptor);
+         .getReturnType(), jmxImpact, operationDescriptor);
    }
 
    /**
@@ -137,7 +154,7 @@ public class ExoMBeanInfoBuilder
       for (ManagedMethodMetaData methodMD : typeMD.getMethods())
       {
          ModelMBeanOperationInfo operationInfo =
-            buildOperationInfo(methodMD.getMethod(), methodMD.getDescription(), Role.OP, methodMD.getParameters());
+            buildOperationInfo(methodMD.getMethod(), methodMD.getDescription(), Role.OP, methodMD.getParameters(), methodMD.getImpact());
          operations.add(operationInfo);
       }
 
@@ -165,7 +182,7 @@ public class ExoMBeanInfoBuilder
             }
             Collection<ManagedMethodParameterMetaData> blah = Collections.emptyList();
             ModelMBeanOperationInfo operationInfo =
-               buildOperationInfo(getter, propertyMD.getGetterDescription(), role, blah);
+               buildOperationInfo(getter, propertyMD.getGetterDescription(), role, blah, ImpactType.READ);
             operations.add(operationInfo);
          }
 
@@ -178,7 +195,7 @@ public class ExoMBeanInfoBuilder
             s.setName(propertyMD.getSetterParameter().getName());
             Collection<ManagedMethodParameterMetaData> blah = Collections.singletonList(s);
             ModelMBeanOperationInfo operationInfo =
-               buildOperationInfo(setter, propertyMD.getSetterDescription(), Role.SET, blah);
+               buildOperationInfo(setter, propertyMD.getSetterDescription(), Role.SET, blah, ImpactType.IDEMPOTENT_WRITE);
             operations.add(operationInfo);
          }
 

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.jmx;
 
+import org.exoplatform.management.annotations.Impact;
+import org.exoplatform.management.annotations.ImpactType;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
@@ -186,6 +188,53 @@ public class TestExoMBeanOperation extends AbstractTestExoMBean
       public String op2(Integer arg)
       {
          return Integer.toString(arg);
+      }
+   }
+
+   public void test6() throws Exception
+   {
+      Bean bean = register("domain:name=mbean", MBean6.class);
+      MBeanOperationInfo[] operationInfos = bean.info.getOperations();
+      assertNotNull(operationInfos);
+      assertEquals(4, operationInfos.length);
+      MBeanOperationInfo readInfo = bean.info.getOperation("read");
+      assertNotNull(readInfo);
+      assertEquals(MBeanOperationInfo.INFO, readInfo.getImpact());
+      MBeanOperationInfo writeInfo = bean.info.getOperation("write");
+      assertNotNull(writeInfo);
+      assertEquals(MBeanOperationInfo.ACTION, writeInfo.getImpact());
+      MBeanOperationInfo idempotentWriteInfo = bean.info.getOperation("idempotentWrite");
+      assertNotNull(idempotentWriteInfo);
+      assertEquals(MBeanOperationInfo.ACTION, idempotentWriteInfo.getImpact());
+      MBeanOperationInfo defaultImpactInfo = bean.info.getOperation("defaultImpact");
+      assertNotNull(defaultImpactInfo);
+      assertEquals(MBeanOperationInfo.ACTION, defaultImpactInfo.getImpact());
+   }
+
+   @Managed
+   public static class MBean6
+   {
+      @Managed
+      @Impact(ImpactType.READ)
+      public void read()
+      {
+      }
+
+      @Managed
+      @Impact(ImpactType.WRITE)
+      public void write()
+      {
+      }
+
+      @Managed
+      @Impact(ImpactType.IDEMPOTENT_WRITE)
+      public void idempotentWrite()
+      {
+      }
+
+      @Managed
+      public void defaultImpact()
+      {
       }
    }
 }
