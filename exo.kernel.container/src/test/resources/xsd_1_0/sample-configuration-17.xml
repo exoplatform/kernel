@@ -32,8 +32,7 @@
         <name>configuration</name>
         <object type="org.exoplatform.services.organization.idm.Config">
           <field name="typeMappings">
-            <map>
-              <type>java.util.HashMap</type>
+            <map type="java">
               <entry>
                 <key><string>/</string></key>
                 <value><string>root</string></value>
@@ -44,5 +43,45 @@
       </object-param>
     </init-params>
   </component>
+
+  <component>
+  <key>org.exoplatform.services.naming.InitialContextInitializer</key>
+  <type>org.exoplatform.services.naming.InitialContextInitializer</type>
+  <init-params>
+    <object-param>
+      <name>configuration</name>
+      <object type="package.name">
+        <field  name="string"><string>This is a string</string></field>
+        <field  name="int"><int>1234</int></field>
+        <field  name="long"><long>123456</long></field>
+        <field  name="double"><double>1.1234</double></field>
+        <field  name="boolean"><boolean>true</boolean></field>
+        <field  name="name">
+          <object type="package.name">
+            <field  name="nested 1"><string>value</string></field>
+            <field  name="nested 2"><int>1234</int></field>
+          </object>
+        </field>
+        <field  name="map">
+          <map type="java.util.HashMap">
+            <entry>
+              <key><string>akey</string></key>
+              <value><string>a value</string></value>
+            </entry>
+            <entry>
+              <key><int>1234</int></key>
+              <value><string>a value</string></value>
+            </entry>
+          </map>
+        </field>
+        <field  name="list">
+          <collection type="java.util.ArrayList">
+            <value><string>a value</string></value>
+          </collection>
+        </field>
+      </object>
+    </object-param>
+  </init-params>
+</component>
 
 </configuration>
