@@ -9,7 +9,7 @@
 
     <xsd:element name="configuration" type="configurationType"/>
 
-    <xsd:complexType abstract="true" name="baseObjectType">
+    <xsd:complexType name="baseObjectType">
         <xsd:choice>
             <xsd:element name="string" type="xsd:string"/>
             <xsd:element name="int" type="xsd:int"/>
