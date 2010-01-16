@@ -48,11 +48,14 @@ import javax.transaction.xa.Xid;
  *         Azarenkov</a>
  * @version $Id: $
  */
-
 public class TransactionServiceJotmImpl implements TransactionService
 {
 
    protected static Log log = ExoLogger.getLogger("transaction.TransactionServiceJotmImpl");
+
+   public static final String TRACK_WITHOT_TRANSACTION_PARAM = "track-without-transaction";
+
+   private boolean trackWithoutTransaction = true;
 
    private Current current;
 
@@ -65,10 +68,20 @@ public class TransactionServiceJotmImpl implements TransactionService
          current = new Current(tm);
 
          // Change the timeout only if JOTM is not initialized yet
-         if (params != null && params.getValueParam("timeout") != null)
+         if (params != null)
          {
-            int t = Integer.parseInt(params.getValueParam("timeout").getValue());
-            current.setDefaultTimeout(t);
+            if (params.getValueParam("timeout") != null)
+            {
+
+               int t = Integer.parseInt(params.getValueParam("timeout").getValue());
+               current.setDefaultTimeout(t);
+            }
+
+            if (params.getValueParam(TRACK_WITHOT_TRANSACTION_PARAM) != null)
+            {
+               trackWithoutTransaction =
+                  Boolean.parseBoolean(params.getValueParam(TRACK_WITHOT_TRANSACTION_PARAM).getValue());
+            }
          }
       }
       else
@@ -77,33 +90,24 @@ public class TransactionServiceJotmImpl implements TransactionService
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.transaction.TransactionService#getTransactionManager
-    * ()
+   /**
+    * {@inheritDoc}
     */
    public TransactionManager getTransactionManager()
    {
       return current;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.transaction.TransactionService#getUserTransaction
-    * ()
+   /**
+    * {@inheritDoc}
     */
    public UserTransaction getUserTransaction()
    {
       return current;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.transaction.TransactionService#enlistResource(
-    * javax.transaction.xa.XAResource)
+   /**
+    * {@inheritDoc}
     */
    public void enlistResource(ExoResource exores) throws RollbackException, SystemException
    {
@@ -112,20 +116,22 @@ public class TransactionServiceJotmImpl implements TransactionService
       exores.setPayload(entry);
       Transaction tx = getTransactionManager().getTransaction();
       if (tx != null)
+      {
          current.getTransaction().enlistResource(xares);
-      else
+      }
+      else if (trackWithoutTransaction)
+      {
          current.connectionOpened(entry);
 
-      //
-      entry.jotmResourceList = popThreadLocalRMEventList();
-      pushThreadLocalRMEventList(entry.jotmResourceList);
+         // actual only if current.connectionOpened(entry);
+         // otherwise NPE inside the JOTM's Current 
+         entry.jotmResourceList = popThreadLocalRMEventList();
+         pushThreadLocalRMEventList(entry.jotmResourceList);
+      }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.transaction.TransactionService#delistResource(
-    * javax.transaction.xa.XAResource)
+   /**
+    * {@inheritDoc}
     */
    public void delistResource(ExoResource exores) throws RollbackException, SystemException
    {
@@ -133,42 +139,41 @@ public class TransactionServiceJotmImpl implements TransactionService
       ResourceEntry entry = (ResourceEntry)exores.getPayload();
       Transaction tx = getTransactionManager().getTransaction();
       if (tx != null)
+      {
          current.getTransaction().delistResource(xares, XAResource.TMNOFLAGS);
-      else
+      }
+      else if (trackWithoutTransaction)
+      {
          current.connectionClosed(entry);
 
-      //
-      exores.setPayload(null);
-      if (entry != null && entry.jotmResourceList != null)
-      {
-         entry.jotmResourceList.remove(xares);
+         // actual only if current.connectionClosed(entry);
+         if (entry != null && entry.jotmResourceList != null)
+         {
+            entry.jotmResourceList.remove(xares);
+         }
       }
+
+      exores.setPayload(null);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.transaction.TransactionService#createXid()
+   /**
+    * {@inheritDoc}
     */
    public Xid createXid()
    {
       return new XidImpl();
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.transaction.TransactionService#getDefaultTimeout()
+   /**
+    * {@inheritDoc}
     */
    public int getDefaultTimeout()
    {
       return current.getDefaultTimeout();
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.transaction.TransactionService#setTransactionTimeout
-    * (int)
+   /**
+    * {@inheritDoc}
     */
    public void setTransactionTimeout(int seconds) throws SystemException
    {
