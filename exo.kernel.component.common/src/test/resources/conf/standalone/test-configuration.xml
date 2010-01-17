@@ -163,6 +163,10 @@
             <name>timeout</name>
             <value>5</value>
          </value-param>
+         <value-param>
+            <name>track-without-transaction</name>
+            <value>true</value>
+         </value-param>
       </init-params>
    </component>
 
