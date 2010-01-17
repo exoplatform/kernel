@@ -55,7 +55,7 @@ public class TransactionServiceJotmImpl implements TransactionService
 
    public static final String TRACK_WITHOT_TRANSACTION_PARAM = "track-without-transaction";
 
-   private boolean trackWithoutTransaction = true;
+   private boolean trackWithoutTransaction = false;
 
    private Current current;
 
