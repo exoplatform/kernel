@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.transaction;
 
+import javax.transaction.xa.XAException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -29,24 +31,46 @@ package org.exoplatform.services.transaction;
 public class TransactionException extends Exception
 {
 
+   private final int errcode;
+   
    public TransactionException()
    {
       super();
+      this.errcode = XAException.XA_RBOTHER; 
    }
 
    public TransactionException(String arg0)
    {
       super(arg0);
+      this.errcode = XAException.XA_RBOTHER;
    }
 
    public TransactionException(String arg0, Throwable arg1)
    {
       super(arg0, arg1);
+      this.errcode = XAException.XA_RBOTHER;
    }
 
    public TransactionException(Throwable arg0)
    {
       super(arg0);
+      this.errcode = XAException.XA_RBOTHER;
+   }
+   
+   public TransactionException(int errcode, String arg0)
+   {
+      super(arg0);
+      this.errcode = errcode;
+   }
+   
+   public TransactionException(int errcode, Throwable arg0)
+   {
+      super(arg0);
+      this.errcode = errcode;
    }
 
+   public int getErrorCode()
+   {
+      return errcode;
+   }
 }
