@@ -21,7 +21,7 @@ function getModule(params) {
     addDependency(module.commons).
     addDependency(new Project("picocontainer", "picocontainer", "jar", "1.1")).
 //    addDependency(new Project("org.codehaus.groovy", "groovy-all", "jar", "1.5.6")).
-    addDependency(new Project("commons-beanutils", "commons-beanutils", "jar", "1.8")).
+    addDependency(new Project("commons-beanutils", "commons-beanutils", "jar", "1.8.0")).
     addDependency(new Project("org.jibx", "jibx-run", "jar", "1.2.1")).
     addDependency(new Project("org.jibx", "jibx-bind", "jar", "1.2.1")).
     addDependency(new Project("asm", "asm", "jar", "1.5.3")).
@@ -53,7 +53,7 @@ function getModule(params) {
 
   module.component.remote = 
     new Project("org.exoplatform.kernel", "exo.kernel.component.remote", "jar", module.version). 
-    addDependency(new Project("javagroups", "jgroups-all", "jar", "2.6.13.GA"));
+    addDependency(new Project("jgroups", "jgroups", "jar", "2.6.13.GA"));
   
   return module;
 }
