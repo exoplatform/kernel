@@ -165,7 +165,8 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public void addCronJob(ComponentPlugin plugin) throws Exception
    {
       CronJob cjob = (CronJob)plugin;
-      addCronJob(cjob.getJobInfo(), cjob.getExpression());
+      addCronJob(cjob.getJobInfo(),cjob.getExpression(), cjob.getJobDataMap());
+
    }
 
    public void addCronJob(JobInfo jinfo, String exp, JobDataMap jdatamap) throws Exception
