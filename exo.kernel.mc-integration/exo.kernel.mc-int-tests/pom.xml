@@ -94,5 +94,259 @@
             </plugins>
          </build>
       </profile>
+
+      <profile>
+         <id>tests-with-jboss</id>
+         <build>
+            <finalName>eXo-kernel-integration-tests-${project.version}</finalName>
+            <defaultGoal>integration-test</defaultGoal>
+            <plugins>            
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-enforcer-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>jbossas-check-environment-ready</id>
+                        <goals>
+                           <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                           <rules>
+                              <requireProperty>
+                                 <property>jboss.home</property>
+                                 <message>"You must define the property jboss.home to give the path to the package/pkg built GateIn JBoss instance"</message>
+                              </requireProperty>
+                              <requireFilesExist>
+                                 <files>
+                                    <file>${jboss.home}</file>
+                                 </files>
+                                 <message>"JBossAS directory doesn't exist : ${jboss.home}"</message>
+                              </requireFilesExist>
+                              <requireFilesExist>
+                                 <files>
+                                    <file>${jboss.home}/server/${jboss.conf}/deploy/gatein.ear</file>
+                                 </files>
+                                 <message>"JBossAS directory has no gatein.ear deployed: ${jboss.home}/server/${jboss.conf}/deploy/gatein.ear"</message>
+                              </requireFilesExist>
+                           </rules>
+                           <fail>true</fail>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>            
+
+               <plugin>
+                  <groupId>org.codehaus.cargo</groupId>
+                  <artifactId>cargo-maven2-plugin</artifactId>
+                  <version>1.0</version>
+                  <configuration>
+                     <wait>false</wait>
+                     <container>
+                        <containerId>jboss5x</containerId>
+                        <type>installed</type>
+                        <home>${jboss.home}</home>
+                        <timeout>300000</timeout>
+                        <output>${jboss.home}/server/${jboss.conf}/log/output.log</output>
+                     </container>
+                     <configuration>
+                        <type>existing</type>
+                        <home>${jboss.home}/server/${jboss.conf}</home>
+                        <properties>
+                           <cargo.jboss.configuration>${jboss.conf}</cargo.jboss.configuration>
+                           <cargo.servlet.port>${jboss.port}</cargo.servlet.port>
+                           <cargo.rmi.port>1099</cargo.rmi.port>
+                           <cargo.jvmargs>-Xmx768m -XX:MaxPermSize=128m</cargo.jvmargs>
+                        </properties>
+                        <!--
+                           This module's artifact (.war) gets deployed automatically by cargo,
+                           but we don't use it for integration tests.
+                           We use some previously installed build of the same artifact,
+                           deployed under a different name as part of package/pkg build.
+                           It is bound to a different context than the one deployed by cargo.
+                           We only use cargo to start and stop jboss.
+                         -->
+                        <!--deployables>
+                           <deployable>
+                              <groupId>${project.groupId}</groupId>
+                              <artifactId>${project.artifactId}</artifactId>
+                              <type>${project.packaging}</type>
+                           </deployable>
+                        </deployables-->
+                     </configuration>
+                  </configuration>
+
+                  <executions>
+                     <execution>
+                        <id>start-container</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                           <goal>start</goal>
+                        </goals>
+                     </execution>
+                     <execution>
+                        <id>stop-container</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                           <goal>stop</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                     <excludes>
+                        <exclude>**/it/Test*.java</exclude>
+                     </excludes>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                           <goal>test</goal>
+                        </goals>
+                        <configuration>
+                           <skip>false</skip>
+                           <excludes>
+                              <exclude>none</exclude>
+                           </excludes>
+                           <includes>
+                              <include>**/it/Test*.java</include>
+                           </includes>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+         <properties>
+           <jboss.conf>default</jboss.conf>
+           <jboss.port>8080</jboss.port>
+         </properties>
+      </profile>
+
+      <profile>
+         <id>tests-with-tomcat</id>
+         <build>
+            <finalName>eXo-kernel-integration-tests-${project.version}</finalName>
+            <defaultGoal>integration-test</defaultGoal>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-enforcer-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>tomcat-check-environment-ready</id>
+                        <goals>
+                           <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                           <rules>
+                              <requireProperty>
+                                 <property>tomcat.home</property>
+                                 <message>"You must define the property tomcat.home to give the path to the package/pkg built GateIn Tomcat instance"</message>
+                              </requireProperty>
+                              <requireFilesExist>
+                                 <files>
+                                    <file>${tomcat.home}</file>
+                                 </files>
+                                 <message>"Tomcat directory doesn't exist : ${tomcat.home}"</message>
+                              </requireFilesExist>
+                              <requireFilesExist>
+                                 <files>
+                                    <file>${tomcat.home}/webapps/portal.war</file>
+                                 </files>
+                                 <message>"Tomcat directory has no portal.war deployed: ${tomcat.home}/webapps/portal.war"</message>
+                              </requireFilesExist>
+                           </rules>
+                           <fail>true</fail>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>               
+               <plugin>
+                  <groupId>org.codehaus.cargo</groupId>
+                  <artifactId>cargo-maven2-plugin</artifactId>
+                  <version>1.0</version>
+                  <configuration>
+                     <wait>false</wait>
+                     <container>
+                        <containerId>tomcat6x</containerId>
+                        <type>installed</type>
+                        <home>${tomcat.home}</home>
+                        <timeout>300000</timeout>
+                        <output>${tomcat.home}/logs/output.log</output>
+                     </container>
+                     <configuration>
+                        <type>existing</type>
+                        <home>${tomcat.home}</home>
+                        <properties>
+                           <cargo.servlet.port>${tomcat.port}</cargo.servlet.port>
+                           <cargo.jvmargs>-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Xmx512m -XX:MaxPermSize=128m</cargo.jvmargs>
+                           <cargo.logging>low</cargo.logging>
+                        </properties>
+                        <!--
+                           This module's artifact (.war) gets deployed automatically by cargo,
+                           but we don't use it for integration tests.
+                           We use some previously installed build of the same artifact,
+                           deployed under a different name as part of package/pkg build.
+                           It is bound to a different context than the one deployed by cargo.
+                           We only use cargo to start and stop tomcat.
+                         -->
+                     </configuration>
+                  </configuration>
+
+                  <executions>
+                     <execution>
+                        <id>start-container</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                           <goal>start</goal>
+                        </goals>
+                     </execution>
+                     <execution>
+                        <id>stop-container</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                           <goal>stop</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                     <excludes>
+                        <exclude>**/it/Test*.java</exclude>
+                     </excludes>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                           <goal>test</goal>
+                        </goals>
+                        <configuration>
+                           <skip>false</skip>
+                           <excludes>
+                              <exclude>none</exclude>
+                           </excludes>
+                           <includes>
+                              <include>**/it/Test*.java</include>
+                           </includes>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+         <properties>
+           <tomcat.port>8080</tomcat.port>
+         </properties>
+      </profile>      
    </profiles>
 </project>
