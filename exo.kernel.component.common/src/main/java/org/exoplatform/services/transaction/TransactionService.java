@@ -51,15 +51,15 @@ public interface TransactionService
    int getDefaultTimeout();
 
    /**
-    * sets timeout in seconds
+    * Sets timeout in seconds,
     * 
-    * @param seconds
+    * @param seconds int
     * @throws SystemException
     */
    void setTransactionTimeout(int seconds) throws SystemException;
 
    /**
-    * enlists XA resource in transaction manager
+    * Enlists XA resource in transaction manager.
     * 
     * @param xares XAResource
     * @throws RollbackException
@@ -68,7 +68,7 @@ public interface TransactionService
    void enlistResource(ExoResource xares) throws RollbackException, SystemException;
 
    /**
-    * delists XA resource from transaction manager
+    * Delists XA resource from transaction manager.
     * 
     * @param xares XAResource
     * @throws RollbackException
@@ -77,7 +77,7 @@ public interface TransactionService
    void delistResource(ExoResource xares) throws RollbackException, SystemException;
 
    /**
-    * creates unique XA transaction identifier
+    * Creates unique XA transaction identifier.
     * 
     * @return Xid
     */
