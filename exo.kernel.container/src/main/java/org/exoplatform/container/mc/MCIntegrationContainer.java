@@ -99,7 +99,7 @@ public class MCIntegrationContainer extends DefaultPicoContainer
          }
          catch(Exception ignored)
          {
-            log.warn("MC integration failed - maybe not supported in this environment (component: "
+            log.debug("MC integration failed - maybe not supported in this environment (component: "
                   + componentAdapter.getComponentKey() + ")", ignored);
          }
       }
