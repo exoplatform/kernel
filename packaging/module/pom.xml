@@ -13,6 +13,7 @@
    <properties>
         <exobuild.name>kernel</exobuild.name>
         <exobuild.type>module</exobuild.type>
+        <enforcer.skip>true</enforcer.skip>
    </properties>
 
    <build>
