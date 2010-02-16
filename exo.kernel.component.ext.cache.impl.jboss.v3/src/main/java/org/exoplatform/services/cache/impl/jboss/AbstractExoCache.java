@@ -35,8 +35,9 @@ import org.jboss.cache.NodeSPI;
 import org.jboss.cache.notifications.annotation.NodeEvicted;
 import org.jboss.cache.notifications.annotation.NodeModified;
 import org.jboss.cache.notifications.annotation.NodeRemoved;
-import org.jboss.cache.notifications.event.EventImpl;
-import org.jboss.cache.notifications.event.NodeEvent;
+import org.jboss.cache.notifications.event.NodeEvictedEvent;
+import org.jboss.cache.notifications.event.NodeModifiedEvent;
+import org.jboss.cache.notifications.event.NodeRemovedEvent;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -303,7 +304,9 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          throw new NullPointerException("No null cache key accepted");
       }      
       final Fqn<Serializable> fqn = getFqn(name);
-      final NodeSPI<K, V> node = cache.getNode(fqn);
+      // We use the methods peek and getDirect to avoid going through the interceptor chain
+      // in order to avoid to visit nodes that were about to be evicted      
+      final NodeSPI<K, V> node = cache.peek(fqn, false);
       V result = null;
       if (node != null)
       {
@@ -342,7 +345,9 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
             continue;
          }
          final K key = getKey(node);
-         final V value = node.get(key);
+         // We use the method getDirect to avoid going through the interceptor chain
+         // in order to avoid to visit nodes that were about to be evicted               
+         final V value = ((NodeSPI<K, V>)node).getDirect(key);
          ObjectCacheInfo<V> info = new ObjectCacheInfo<V>()
          {
             public V get()
@@ -527,47 +532,37 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    {
 
       @NodeEvicted
-      public void nodeEvicted(NodeEvent ne)
+      public void nodeEvicted(NodeEvictedEvent ne)
       {
          if (ne.isPre())
          {
-            // Cannot give the value since
-            // since it disturbs the eviction
-            // algorithms
-            onExpire(getKey(ne.getFqn()), null);
+            final NodeSPI<K, V> node = cache.peek(ne.getFqn(), true);
+            final K key = getKey(ne.getFqn());
+            onExpire(key, node == null ? null : node.getDirect(key));
          }
       }
 
+      @SuppressWarnings("unchecked")
       @NodeRemoved
-      public void nodeRemoved(NodeEvent ne)
+      public void nodeRemoved(NodeRemovedEvent ne)
       {
          if (ne.isPre() && !ne.isOriginLocal())
          {
-            final Node<K, V> node = cache.getNode(ne.getFqn());
             final K key = getKey(ne.getFqn());
-            onRemove(key, node.get(key));
+            final Map<K, V> data = ne.getData();
+            onRemove(key, data == null ? null : data.get(key));
          }
       }
 
       @SuppressWarnings("unchecked")
       @NodeModified
-      public void nodeModified(NodeEvent ne)
+      public void nodeModified(NodeModifiedEvent ne)
       {
          if (!ne.isOriginLocal() && !ne.isPre())
          {
             final K key = getKey(ne.getFqn());
-            if (ne instanceof EventImpl)
-            {
-               EventImpl evt = (EventImpl)ne;
-               Map<K, V> data = evt.getData();
-               if (data != null)
-               {
-                  onPut(key, data.get(key));
-                  return;
-               }
-            }
-            final Node<K, V> node = cache.getNode(ne.getFqn());
-            onPut(key, node.get(key));
+            final Map<K, V> data = ne.getData();
+            onPut(key, data == null ? null : data.get(key));
          }
       }
    }

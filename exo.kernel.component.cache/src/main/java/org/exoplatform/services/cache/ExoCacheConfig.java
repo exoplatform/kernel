@@ -43,7 +43,7 @@ public class ExoCacheConfig implements Cloneable
    private int maxSize;
 
    /**
-    * The amount of time (in milliseconds) an element is not written or
+    * The amount of time (in seconds) an element is not written or
     * read before it is evicted.
     */
    private long liveTime;
@@ -105,7 +105,7 @@ public class ExoCacheConfig implements Cloneable
 
    public void setLiveTime(long period)
    {
-      liveTime = period * 1000;
+      liveTime = period;
    }
 
    public boolean isDistributed()

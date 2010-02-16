@@ -236,12 +236,14 @@ public class TestAbstractExoCache extends BasicTestCase
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(5);
-      config.setLiveTime(1000);
+      config.setLiveTime(1);
+      config.setImplementation("LRU");
       config.setDistributed(true);
       ExoCacheConfig config2 = new ExoCacheConfig();
       config2.setName("MyCacheDistributed2");
       config2.setMaxSize(5);
-      config2.setLiveTime(1000);
+      config2.setLiveTime(1);
+      config2.setImplementation("LRU");
       config2.setDistributed(true);
       AbstractExoCache<Serializable, Object> cache1 = (AbstractExoCache<Serializable, Object>)factory.createCache(config);
       MyCacheListener listener1 = new MyCacheListener();
@@ -379,6 +381,7 @@ public class TestAbstractExoCache extends BasicTestCase
          cache1.putMap(values);
          assertEquals(2, cache1.getCacheSize());
          assertEquals(2, cache2.getCacheSize());
+         assertEquals(1, cache3.getCacheSize());
          assertEquals(5, listener1.put);
          assertEquals(5, listener2.put);
          assertEquals(1, listener3.put);
@@ -391,6 +394,28 @@ public class TestAbstractExoCache extends BasicTestCase
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
          assertEquals(0, listener3.clearCache);
+         assertEquals(0, listener1.expire);
+         assertEquals(0, listener2.expire);
+         assertEquals(0, listener3.expire);
+         Thread.sleep(1600);
+         assertEquals(0, cache1.getCacheSize());
+         assertEquals(0, cache2.getCacheSize());
+         assertEquals(0, cache3.getCacheSize());
+         assertEquals(5, listener1.put);
+         assertEquals(5, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(2, listener1.get);
+         assertEquals(4, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(2, listener1.remove);
+         assertEquals(2, listener2.remove);
+         assertEquals(0, listener3.remove);
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+         assertEquals(0, listener3.clearCache);
+         assertEquals(2, listener1.expire);
+         assertEquals(2, listener2.expire);
+         assertEquals(1, listener3.expire);
       }
       finally
       {
