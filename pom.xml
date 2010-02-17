@@ -180,17 +180,17 @@
          <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-bind</artifactId>
-            <version>${jibx.plugin.version}</version>
+            <version>${version.jibx.plugin}</version>
          </dependency>
          <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-extras</artifactId>
-            <version>${jibx.plugin.version}</version>
+            <version>${version.jibx.plugin}</version>
          </dependency>
          <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
-            <version>${jibx.plugin.version}</version>
+            <version>${version.jibx.plugin}</version>
          </dependency>
          <dependency>
             <groupId>jotm</groupId>
