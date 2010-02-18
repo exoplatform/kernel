@@ -1,5 +1,3 @@
-package org.exoplatform.container.definition;
-
 /*
  * Copyright (C) 2003-2010 eXo Platform SAS.
  *
@@ -16,6 +14,8 @@ package org.exoplatform.container.definition;
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see&lt;http://www.gnu.org/licenses/&gt;.
  */
+package org.exoplatform.container.definition;
+
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
@@ -31,7 +31,7 @@ import java.util.List;
 public class TestPortalContainerConfig extends AbstractTestContainer
 {
 
-   public void testInitValues() throws Exception
+   public void testInitValues()
    {
       RootContainer rootContainer = createRootContainer("empty-config.xml");
       PortalContainerConfig config =
@@ -260,7 +260,11 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       }
       finally
       {
-         if (oldPath != null)
+         if (oldPath == null)
+         {
+            System.getProperties().remove(J2EEServerInfo.EXO_CONF_PARAM);
+         }
+         else
          {
             System.setProperty(J2EEServerInfo.EXO_CONF_PARAM, oldPath);
          }

@@ -66,7 +66,7 @@ public class PortalContainerConfig implements Startable
    /**
     * The name of the setting corresponding to the rest context name
     */
-   public static final String REST_CONTEXT_SETTING_NAME = "rest.context";
+   public static final String REST_CONTEXT_SETTING_NAME = "rest";
 
    /**
     * The name of the setting corresponding to the relam name

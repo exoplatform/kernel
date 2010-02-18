@@ -154,6 +154,7 @@ public class RootContainer extends ExoContainer
             {
                MockServletContext scontext = new MockServletContext(name);
                pcontainer = new PortalContainer(this, scontext);
+               PortalContainer.setInstance(pcontainer);
                ConfigurationManagerImpl cService = new MockConfigurationManagerImpl(scontext);
                cService.addConfiguration(ContainerUtil.getConfigurationURL("conf/portal/configuration.xml"));
                cService.addConfiguration(ContainerUtil.getConfigurationURL("conf/portal/test-configuration.xml"));
@@ -161,7 +162,6 @@ public class RootContainer extends ExoContainer
                pcontainer.registerComponentInstance(ConfigurationManager.class, cService);
                pcontainer.initContainer();
                registerComponentInstance(name, pcontainer);
-               PortalContainer.setInstance(pcontainer);
                pcontainer.start();
             }
             catch (Exception ex)
