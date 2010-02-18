@@ -70,7 +70,7 @@ public final class ExoContainerContext implements java.io.Serializable
 
    /**
     * @return if the embedded container is a {@link PortalContainer}, it will return the name 
-    * of the rest context name related to the portal container otherwise it will return the default name
+    * of the rest context related to the portal container otherwise it will return the default name
     */
    public String getRestContextName()
    {
@@ -83,7 +83,7 @@ public final class ExoContainerContext implements java.io.Serializable
 
    /**
     * @return if the embedded container is a {@link PortalContainer}, it will return the name 
-    * of the realm name related to the portal container otherwise it will return the default name
+    * of the realm related to the portal container otherwise it will return the default name
     */
    public String getRealmName()
    {
@@ -94,6 +94,19 @@ public final class ExoContainerContext implements java.io.Serializable
       return PortalContainer.DEFAULT_REALM_NAME;
    }
 
+   /**
+    * @return if the embedded container is a {@link PortalContainer}, it will return the value 
+    * of the setting related to the portal container otherwise it will return <code>null</code>
+    */
+   public Object getSetting(String settingName)
+   {
+      if (container instanceof PortalContainer)
+      {
+         return ((PortalContainer)container).getSetting(settingName);
+      }
+      return null;
+   }
+   
    public String getName()
    {
       return name;

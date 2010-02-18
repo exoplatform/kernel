@@ -18,7 +18,10 @@
  */
 package org.exoplatform.container.xml;
 
-import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 
 /**
  * A deserializer used by JIBX that resolve system properties to allow runtime configuration.
@@ -28,7 +31,18 @@ import org.exoplatform.container.configuration.ConfigurationManagerImpl;
  */
 public class Deserializer
 {
+   /**
+    * The name of the variable to use to get the current container name as a suffix
+    * if the current container is a portal container, the value of the variable
+    * will be "-${portal-container-name}", it will be an empty String otherwise 
+    */
+   public static final String EXO_CONTAINER_PROP_NAME = "container.name.suffix";
 
+   /**
+    * The prefix of the name of all the variables tied to the current portal container
+    */
+   public static final String PORTAL_CONTAINER_VARIABLE_PREFIX = "portal.container.";
+   
    /**
     * Resolve a string value.
     * If the input value is null then the returned value is null.
@@ -38,7 +52,7 @@ public class Deserializer
     */
    public static String resolveString(String s)
    {
-      return ConfigurationManagerImpl.resolveSystemProperties(s);
+      return Deserializer.resolveVariables(s);
    }
 
    /**
@@ -61,7 +75,7 @@ public class Deserializer
       {
          return null;
       }
-      s = ConfigurationManagerImpl.resolveSystemProperties(s);
+      s = Deserializer.resolveVariables(s);
       if (s.equalsIgnoreCase("true"))
       {
          return true;
@@ -91,7 +105,7 @@ public class Deserializer
       {
          return null;
       }
-      s = ConfigurationManagerImpl.resolveSystemProperties(s);
+      s = Deserializer.resolveVariables(s);
       try
       {
          return Integer.parseInt(s);
@@ -120,7 +134,7 @@ public class Deserializer
       {
          return null;
       }
-      s = ConfigurationManagerImpl.resolveSystemProperties(s);
+      s = Deserializer.resolveVariables(s);
       try
       {
          return Long.parseLong(s);
@@ -149,7 +163,7 @@ public class Deserializer
       {
          return null;
       }
-      s = ConfigurationManagerImpl.resolveSystemProperties(s);
+      s = Deserializer.resolveVariables(s);
       try
       {
          return Double.parseDouble(s);
@@ -158,5 +172,92 @@ public class Deserializer
       {
          throw new IllegalArgumentException("Cannot accept integer value " + s, e);
       }
+   }
+
+   /**
+    * Resolve the variables of type ${my.var} for the current context which is composed
+    * of the system properties and the portal container properties
+    * @param input the input value
+    * @return the resolve value
+    */
+   public static String resolveVariables(String input)
+   {
+      final int NORMAL = 0;
+      final int SEEN_DOLLAR = 1;
+      final int IN_BRACKET = 2;
+      if (input == null)
+         return input;
+      char[] chars = input.toCharArray();
+      StringBuffer buffer = new StringBuffer();
+      boolean properties = false;
+      int state = NORMAL;
+      int start = 0;
+      for (int i = 0; i < chars.length; ++i)
+      {
+         char c = chars[i];
+         if (c == '$' && state != IN_BRACKET)
+            state = SEEN_DOLLAR;
+         else if (c == '{' && state == SEEN_DOLLAR)
+         {
+            buffer.append(input.substring(start, i - 1));
+            state = IN_BRACKET;
+            start = i - 1;
+         }
+         else if (state == SEEN_DOLLAR)
+            state = NORMAL;
+         else if (c == '}' && state == IN_BRACKET)
+         {
+            if (start + 2 == i)
+            {
+               buffer.append("${}");
+            }
+            else
+            {
+               String value = null;
+               String key = input.substring(start + 2, i);
+               if (key.equals(Deserializer.EXO_CONTAINER_PROP_NAME))
+               {
+                  // The requested key is the name of current container
+                  ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+                  if (container instanceof PortalContainer)
+                  {
+                     // The current container is a portal container
+                     RootContainer rootContainer = (RootContainer)ExoContainerContext.getTopContainer();
+                     value = rootContainer.isPortalContainerConfigAware() ? "_" + container.getContext().getName() : "";
+                  }
+               }
+               else if (key.startsWith(Deserializer.PORTAL_CONTAINER_VARIABLE_PREFIX))
+               {
+                  // We try to get a value tied to the current portal container.
+                  ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+                  if (container instanceof PortalContainer)
+                  {
+                     // The current container is a portal container
+                     Object oValue =
+                        ((PortalContainer)container).getSetting(key
+                           .substring(Deserializer.PORTAL_CONTAINER_VARIABLE_PREFIX.length()));
+                     value = oValue == null ? null : oValue.toString();
+                  }
+               }
+               else
+               {
+                  value = System.getProperty(key);
+               }
+               if (value != null)
+               {
+                  properties = true;
+                  buffer.append(value);
+               }
+            }
+            start = i + 1;
+            state = NORMAL;
+         }
+      }
+      if (properties == false)
+         return input;
+      if (start != chars.length)
+         buffer.append(input.substring(start, chars.length));
+      return buffer.toString();
+   
    }
 }

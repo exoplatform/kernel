@@ -27,8 +27,6 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,14 +45,9 @@ import javax.servlet.ServletContext;
  */
 @Managed
 @NamingContext(@Property(key = "portal", value = "{Name}"))
-@NameTemplate({@Property(key = "container", value = "portal"),@Property(key = "name", value = "{Name}")})
+@NameTemplate({@Property(key = "container", value = "portal"), @Property(key = "name", value = "{Name}")})
 public class PortalContainer extends ExoContainer implements SessionManagerContainer
 {
-
-   /**
-    * Logger
-    */
-   private static final Log log = ExoLogger.getLogger(PortalContainer.class);
 
    /**
     * The default name of the portal container
@@ -145,7 +138,8 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       pinfo_ = new PortalContainerInfo(portalContext);
       registerComponentInstance(PortalContainerInfo.class, pinfo_);
       this.name = portalContext.getServletContextName();
-      final List<String> dependencies = parent.getPortalContainerConfig().getDependencies(name);
+      final PortalContainerConfig config = parent.getPortalContainerConfig();
+      final List<String> dependencies = config == null ? null : config.getDependencies(name);
       if (dependencies == null || dependencies.isEmpty())
       {
          // No order is required
@@ -334,7 +328,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    public static PortalContainer getInstanceIfPresent()
    {
       ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
-      if (container instanceof PortalContainer) 
+      if (container instanceof PortalContainer)
       {
          return (PortalContainer)container;
       }
@@ -412,7 +406,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
-    * We first try to get the ExoContainer that has been stored in the ThreadLocal
+    * We first try to get the ExoContainer that has been stored into the ThreadLocal
     * if the value is of type PortalContainer, we return it otherwise we get the
     * portal container corresponding the given servlet context
     * 
@@ -429,7 +423,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
-    * Returns the name of the current portal container that has been stored in the ThreadLocal. If no
+    * Returns the name of the current portal container that has been stored into the ThreadLocal. If no
     * value can be found the value of PortalContainer.DEFAULT_PORTAL_CONTAINER_NAME will be used
     */
    public static String getCurrentPortalContainerName()
@@ -447,7 +441,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    /**
     * Returns the name of the current rest context corresponding to the portal container
-    * that has been stored in the ThreadLocal. If no value can be found the value of 
+    * that has been stored into the ThreadLocal. If no value can be found the value of 
     * PortalContainer.DEFAULT_REST_CONTEXT_NAME will be used
     */
    public static String getCurrentRestContextName()
@@ -480,7 +474,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    /**
     * Returns the name of the current realm corresponding to the portal container
-    * that has been stored in the ThreadLocal. If no value can be found the value of 
+    * that has been stored into the ThreadLocal. If no value can be found the value of 
     * PortalContainer.DEFAULT_REALM_NAME will be used
     */
    public static String getCurrentRealmName()
@@ -509,6 +503,43 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    public String getRealmName()
    {
       return getRealmName(getName());
+   }
+
+   /**
+    * Returns the current value of the setting corresponding to the portal container
+    * that has been stored into the ThreadLocal. If no value can be found, <code>null</code> will be
+    * returned
+    * @param settingName the name of the setting wanted
+    */
+   public static Object getCurrentSetting(String settingName)
+   {
+      final String containerName = getCurrentPortalContainerName();
+      return getSetting(containerName, settingName);
+   }
+
+   /**
+    * Returns the value of the setting corresponding to the given portal container name
+    * and the given setting name
+    * @param portalContainerName the name of the portal container for which we want the
+    * name of the value of the setting
+    * @param settingName the name of the setting wanted
+    */
+   public static Object getSetting(String portalContainerName, String settingName)
+   {
+      if (CONFIG == null)
+      {
+         return null;
+      }
+      return CONFIG.getSetting(portalContainerName, settingName);
+   }
+
+   /**
+    * Returns the value of the setting corresponding to the current portal container 
+    * @param settingName the name of the setting wanted
+    */
+   public Object getSetting(String settingName)
+   {
+      return getSetting(getName(), settingName);
    }
 
    /**

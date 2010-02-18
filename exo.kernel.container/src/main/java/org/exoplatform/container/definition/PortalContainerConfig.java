@@ -20,10 +20,19 @@ package org.exoplatform.container.definition;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
+import org.exoplatform.container.util.ContainerUtil;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +53,25 @@ import javax.servlet.ServletContext;
  */
 public class PortalContainerConfig implements Startable
 {
+   /**
+    * The logger
+    */
+   private static final Log log = ExoLogger.getLogger(PortalContainerConfig.class);
+
+   /**
+    * The name of the setting corresponding to the portal container name
+    */
+   public static final String PORTAL_CONTAINER_SETTING_NAME = "name";
+
+   /**
+    * The name of the setting corresponding to the rest context name
+    */
+   public static final String REST_CONTEXT_SETTING_NAME = "rest.context";
+
+   /**
+    * The name of the setting corresponding to the relam name
+    */
+   public static final String REALM_SETTING_NAME = "realm";
 
    /**
     * The default name of a portal container
@@ -96,13 +124,30 @@ public class PortalContainerConfig implements Startable
    private Map<String, PortalContainerDefinition> definitions =
       Collections.unmodifiableMap(new HashMap<String, PortalContainerDefinition>());
 
-   public PortalContainerConfig()
+   /**
+    * The configuration manager
+    */
+   private final ConfigurationManager cm;
+
+   /**
+    * Some info about the current server
+    */
+   private final J2EEServerInfo serverInfo;
+
+   public PortalContainerConfig(ConfigurationManager cm)
    {
-      this(null);
+      this(null, cm, new J2EEServerInfo());
    }
 
-   public PortalContainerConfig(InitParams params)
+   public PortalContainerConfig(ConfigurationManager cm, J2EEServerInfo serverInfo)
    {
+      this(null, cm, serverInfo);
+   }
+
+   public PortalContainerConfig(InitParams params, ConfigurationManager cm, J2EEServerInfo serverInfo)
+   {
+      this.cm = cm;
+      this.serverInfo = serverInfo;
       if (params == null)
       {
          return;
@@ -245,6 +290,7 @@ public class PortalContainerConfig implements Startable
       }
       return result.get(0);
    }
+
    /**
     * Gives all the dependencies related to the given portal container
     * @param portalContainerName the name of the portal container for which we want the dependencies
@@ -254,6 +300,28 @@ public class PortalContainerConfig implements Startable
    {
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
       return definition == null ? null : definition.getDependencies();
+   }
+
+   /**
+    * Give the value of a given setting for a given portal container name
+    * @param portalContainerName the name of the portal container for which we want the value of the
+    * setting
+    * @param settingName the name of the setting that we seek
+    * @return the value of the setting, <code>null</code> if it cans not be found.
+    */
+   public Object getSetting(String portalContainerName, String settingName)
+   {
+      if (settingName == null)
+      {
+         throw new IllegalArgumentException("The setting name cannot be null");
+      }
+      final PortalContainerDefinition definition = definitions.get(portalContainerName);
+      if (definition == null)
+      {
+         return null;
+      }
+      final Map<String, Object> settings = definition.getSettings();
+      return settings == null ? null : settings.get(settingName);
    }
 
    /**
@@ -361,7 +429,7 @@ public class PortalContainerConfig implements Startable
    private void registerDependencies(PortalContainerDefinition definition, Map<String, List<String>> scopes)
    {
       final List<String> dependencies = definition.getDependencies();
-      if (definition == null || dependencies.isEmpty())
+      if (dependencies == null || dependencies.isEmpty())
       {
          return;
       }
@@ -385,6 +453,121 @@ public class PortalContainerConfig implements Startable
          lPortalContainerNames.add(definition.getName());
          scopes.put(context, Collections.unmodifiableList(lPortalContainerNames));
       }
+   }
+
+   /**
+    * Initialize all the settings tied to the corresponding portal container. It will first initialize
+    * a new {@link Map} of settings from the settings retrieved from PortalContainerDefinition.getSettings(),
+    * then it will add the external settings corresponding the properties file found at the path
+    *  PortalContainerDefinition.getExternalSettingsPath(), if such file exists. If the same key has been
+    *  defined in both, the value defined in the external settings will be kept. Then we will add the main
+    *  settings such as the portal container name, the realm name and the rest context name.
+    * @param def the {@link PortalContainerDefinition} from which we have the extract the settings and in
+    * which we have to re-inject the final settings
+    */
+   private void initializeSettings(PortalContainerDefinition def)
+   {
+      final Map<String, Object> settings = new HashMap<String, Object>();
+      // We first load the settings of the PortalContainerDefinition if they exist
+      final Map<String, Object> tmpSettings = def.getSettings();
+      if (tmpSettings != null && !tmpSettings.isEmpty())
+      {
+         settings.putAll(tmpSettings);
+      }
+      // We then load the external settings, if they exists
+      String path = def.getExternalSettingsPath();
+      if (path != null && (path = path.trim()).length() > 0)
+      {
+         try
+         {
+            URL url = null;
+            if (path.indexOf(':') == -1)
+            {
+               // We first check if the file is not in eXo configuration directory
+               String fullPath = serverInfo.getExoConfigurationDirectory() + "/portal/" + def.getName() + "/" + path;
+               File file = new File(fullPath);
+               if (file.exists())
+               {
+                  // The file exists so we will use it
+                  url = file.toURI().toURL();
+               }
+            }
+            if (url == null)
+            {
+               // We assume that the path is an eXo standard path
+               url = cm.getURL(path);
+            }
+            // We load the properties from the url found
+            final Map<String, String> props = ContainerUtil.loadProperties(url);
+            if (props != null && !props.isEmpty())
+            {
+               if (settings.isEmpty())
+               {
+                  // No settings exist so we can add everything
+                  settings.putAll(props);
+               }
+               else
+               {
+                  // Some settings exists so we need to be careful if we override properties
+                  // We need to try to keep the same type if possible
+                  for (Map.Entry<String, String> entry : props.entrySet())
+                  {
+                     String propertyName = entry.getKey();
+                     Object propertyValue = entry.getValue();
+                     propertyValue = Deserializer.resolveString((String)propertyValue);
+                     Object oldValue = settings.get(propertyName);
+                     if (oldValue != null)
+                     {
+                        // The value is not null so we need to convert the String into
+                        // the target type, we will convert thanks to the static method
+                        // valueOf(String value) if it exist for the target type
+                        Method m = null;
+                        try
+                        {
+                           // First we check if the method exists
+                           m = oldValue.getClass().getMethod("valueOf", String.class);
+                        }
+                        catch (Exception e)
+                        {
+                           if (log.isDebugEnabled())
+                           {
+                              log.debug("The static method valueOf(String) cannot be found for the class "
+                                 + oldValue.getClass(), e);
+                           }
+                        }
+                        if (m != null)
+                        {
+                           // The method could be found, thus we will try to convert the value
+                           try
+                           {
+                              propertyValue = m.invoke(null, propertyValue);
+                           }
+                           catch (Exception e)
+                           {
+                              log.error("Cannot convert the value '" + propertyValue + "' to an Object of type "
+                                 + oldValue.getClass(), e);
+                           }
+                        }
+                     }
+                     // We set the new value
+                     settings.put(propertyName, propertyValue);
+                  }
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Cannot load property file " + path, e);
+         }
+      }
+      // We then add the portal container name
+      settings.put(PORTAL_CONTAINER_SETTING_NAME, def.getName());
+      // We add the rest context name
+      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName());
+      // We add the realm name
+      settings.put(REALM_SETTING_NAME, def.getRealmName());
+      // We re-inject the settings and we make sure it is thread safe
+      def.setSettings(Collections.unmodifiableMap(settings));
    }
 
    /**
@@ -429,6 +612,7 @@ public class PortalContainerConfig implements Startable
             this.defaultRealmName = definition.getRealmName();
          }
          registerDependencies(definition, mScopes);
+         initializeSettings(definition);
       }
       this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);

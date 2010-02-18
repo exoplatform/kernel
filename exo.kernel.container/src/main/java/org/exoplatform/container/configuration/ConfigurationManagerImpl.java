@@ -18,12 +18,9 @@
  */
 package org.exoplatform.container.configuration;
 
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
-import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -54,8 +51,6 @@ public class ConfigurationManagerImpl implements ConfigurationManager
    final static public String LOG_DEBUG_PROPERTY = "org.exoplatform.container.configuration.debug";
 
    final static public boolean LOG_DEBUG = System.getProperty(LOG_DEBUG_PROPERTY) != null;
-
-   private static final String EXO_CONTAINER_PROP_NAME = "container.name.suffix";
 
    private static final Log log = ExoLogger.getLogger(ConfigurationManagerImpl.class);
 
@@ -311,7 +306,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       }
       else if (url.startsWith("file:"))
       {
-         url = resolveSystemProperties(url);
+         url = Deserializer.resolveVariables(url);
          return new URL(url);
       }
       else if (url.indexOf(":") < 0 && contextPath != null)
@@ -319,79 +314,6 @@ public class ConfigurationManagerImpl implements ConfigurationManager
          return new URL(contextPath + url);
       }
       return null;
-   }
-
-   /**
-    *
-    * @param input the input
-    * @return the resolved input
-    */
-   public static String resolveSystemProperties(String input)
-   {
-      final int NORMAL = 0;
-      final int SEEN_DOLLAR = 1;
-      final int IN_BRACKET = 2;
-      if (input == null)
-         return input;
-      char[] chars = input.toCharArray();
-      StringBuffer buffer = new StringBuffer();
-      boolean properties = false;
-      int state = NORMAL;
-      int start = 0;
-      for (int i = 0; i < chars.length; ++i)
-      {
-         char c = chars[i];
-         if (c == '$' && state != IN_BRACKET)
-            state = SEEN_DOLLAR;
-         else if (c == '{' && state == SEEN_DOLLAR)
-         {
-            buffer.append(input.substring(start, i - 1));
-            state = IN_BRACKET;
-            start = i - 1;
-         }
-         else if (state == SEEN_DOLLAR)
-            state = NORMAL;
-         else if (c == '}' && state == IN_BRACKET)
-         {
-            if (start + 2 == i)
-            {
-               buffer.append("${}");
-            }
-            else
-            {
-               String value = null;
-               String key = input.substring(start + 2, i);
-               if (key.equals(EXO_CONTAINER_PROP_NAME))
-               {
-                  // The requested key is the name of current container
-                  ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
-                  if (container instanceof PortalContainer)
-                  {
-                     // The current container is a portal container
-                     RootContainer rootContainer = (RootContainer)ExoContainerContext.getTopContainer();
-                     value = rootContainer.isPortalContainerConfigAware() ? "_" + container.getContext().getName() : "";
-                  }
-               }
-               else
-               {
-                  value = System.getProperty(key);
-               }
-               if (value != null)
-               {
-                  properties = true;
-                  buffer.append(value);
-               }
-            }
-            start = i + 1;
-            state = NORMAL;
-         }
-      }
-      if (properties == false)
-         return input;
-      if (start != chars.length)
-         buffer.append(input.substring(start, chars.length));
-      return buffer.toString();
-
    }
 
    public boolean isDefault(String value)

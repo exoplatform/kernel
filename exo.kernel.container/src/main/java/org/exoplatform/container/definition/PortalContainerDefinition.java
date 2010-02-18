@@ -21,6 +21,7 @@ package org.exoplatform.container.definition;
 import org.exoplatform.container.PortalContainer;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 
@@ -46,17 +47,28 @@ public class PortalContainerDefinition
     * The realm name of the related {@link PortalContainer}
     */
    private String realmName;
-   
+
    /**
     * The name of the {@link ServletContext} of the rest web application
     */
    private String restContextName;
-   
+
    /**
     * The list of all the context names that are needed to initialized properly the
     * {@link PortalContainer}. The order of all the dependencies will define the initialization order 
     */
    private List<String> dependencies;
+
+   /**
+    * A {@link Map} of parameters that we would like to tie the portal container. Those parameters
+    * could have any type of value.
+    */
+   private Map<String, Object> settings;
+
+   /**
+    * The path of the external properties file to load as default settings to the portal container. 
+    */
+   private String externalSettingsPath;
 
    public String getName()
    {
@@ -96,5 +108,25 @@ public class PortalContainerDefinition
    public void setRestContextName(String restContextName)
    {
       this.restContextName = restContextName;
+   }
+
+   public Map<String, Object> getSettings()
+   {
+      return settings;
+   }
+
+   public void setSettings(Map<String, Object> settings)
+   {
+      this.settings = settings;
+   }
+
+   public String getExternalSettingsPath()
+   {
+      return externalSettingsPath;
+   }
+
+   public void setExternalSettingsPath(String externalSettingsPath)
+   {
+      this.externalSettingsPath = externalSettingsPath;
    }
 }

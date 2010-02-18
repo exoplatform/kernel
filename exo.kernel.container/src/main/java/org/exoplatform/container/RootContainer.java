@@ -162,7 +162,6 @@ public class RootContainer extends ExoContainer
                pcontainer.initContainer();
                registerComponentInstance(name, pcontainer);
                PortalContainer.setInstance(pcontainer);
-               ExoContainerContext.setCurrentContainer(pcontainer);
                pcontainer.start();
             }
             catch (Exception ex)

@@ -18,11 +18,9 @@
  */
 package org.exoplatform.container;
 
-import org.exoplatform.commons.utils.PropertiesLoader;
 import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.xml.Deserializer;
+import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.Property;
@@ -31,11 +29,8 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -104,68 +99,23 @@ public class PropertyConfigurator implements Startable
       if (path != null)
       {
          log.debug("Found property file path " + path);
-         InputStream in = null;
          try
          {
             URL url = confManager.getURL(path);
-
-            //
-            if (url != null)
+            Map<String, String> props = ContainerUtil.loadProperties(url);
+            if (props != null)
             {
-               in = url.openStream();
-            }
-
-            //
-            if (in != null)
-            {
-               LinkedHashMap<String, String> props = null;
-               String fileName = url.getFile();
-               if (Tools.endsWithIgnoreCase(path, ".properties"))
+               for (Map.Entry<String, String> entry : props.entrySet())
                {
-                  log.debug("Attempt to load property file " + path);
-                  props = PropertiesLoader.load(in);
+                  String propertyName = entry.getKey();
+                  String propertyValue = entry.getValue();
+                  PropertyManager.setProperty(propertyName, propertyValue);
                }
-               else if (Tools.endsWithIgnoreCase(fileName, ".xml"))
-               {
-                  log.debug("Attempt to load property file " + path + " with XML format");
-                  props = PropertiesLoader.loadFromXML(in);
-               }
-               else
-               {
-                  log.debug("Will not load property file" + path + " because its format is not recognized");
-               }
-               if (props != null)
-               {
-                  for (Map.Entry<String, String> entry : props.entrySet())
-                  {
-                     String propertyName = entry.getKey();
-                     String propertyValue = entry.getValue();
-                     propertyValue = Deserializer.resolveString(propertyValue);
-                     PropertyManager.setProperty(propertyName, propertyValue);
-                  }
-               }
-            }
-            else
-            {
-               log.error("Could not load property file " + path);
             }
          }
          catch (Exception e)
          {
             log.error("Cannot load property file " + path, e);
-         }
-         finally
-         {
-            if (in != null)
-            {
-               try
-               {
-                  in.close();
-               }
-               catch (IOException ignore)
-               {
-               }
-            }
          }
       }
    }
