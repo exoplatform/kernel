@@ -457,14 +457,16 @@ public class PortalContainerConfig implements Startable
    }
 
    /**
-    * Initialize all the settings tied to the corresponding portal container. It will first initialize
-    * a new {@link Map} of settings from the settings retrieved from PortalContainerDefinition.getSettings(),
-    * then it will add the external settings corresponding the properties file found at the path
-    *  PortalContainerDefinition.getExternalSettingsPath(), if such file exists. If the same key has been
-    *  defined in both, the value defined in the external settings will be kept. Then we will add the main
-    *  settings such as the portal container name, the realm name and the rest context name.
-    * @param def the {@link PortalContainerDefinition} from which we have the extract the settings and in
-    * which we have to re-inject the final settings
+    * Initialize all the settings tied to the corresponding portal container. It will 
+    * first initialize a new {@link Map} of settings from the settings retrieved from 
+    * <code>PortalContainerDefinition.getSettings()</code>, then it will add the 
+    * external settings corresponding the properties file found at the path 
+    * <code>PortalContainerDefinition.getExternalSettingsPath()</code>, if such file 
+    * exists. If the same key has been defined in both, the value defined in the 
+    * external settings will be kept. Then we will add the main settings such as the 
+    * portal container name, the realm name and the rest context name.
+    * @param def the {@link PortalContainerDefinition} from which we have the extract the 
+    * settings and in which we have to re-inject the final settings
     */
    private void initializeSettings(PortalContainerDefinition def)
    {
@@ -513,7 +515,8 @@ public class PortalContainerConfig implements Startable
       // We then add the portal container name
       settings.put(PORTAL_CONTAINER_SETTING_NAME, def.getName());
       // We add the rest context name
-      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName() == null ? defaultRestContextName : def.getRestContextName());
+      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName() == null ? defaultRestContextName : def
+         .getRestContextName());
       // We add the realm name
       settings.put(REALM_SETTING_NAME, def.getRealmName() == null ? defaultRealmName : def.getRealmName());
       // We re-inject the settings and we make sure it is thread safe
@@ -521,7 +524,30 @@ public class PortalContainerConfig implements Startable
    }
 
    /**
-    * Merge the internal settings with the external settings
+    * Merge the internal settings with the external settings. If the same setting name exists
+    *  in both settings, we apply the following rules:
+    * <ol>
+    * <li>The value of the external setting is <code>null</code>, we ignore the value</li>
+    * <li>The value of the external setting is not <code>null</code> and the value of the 
+    * internal setting is <code>null</code>, the final value will be the external setting
+    *  value that is of type {@link String}</li>
+    * <li>Both values are not <code>null</code>, we will have to convert the external 
+    * setting value into the target type which is the type of the internal setting value, 
+    * thanks to the static method <code>valueOf(String)</code>, the following sub-rules are 
+    * then applied:
+    * <ol>
+    * <li>The method cannot be found, the final value will be the external setting value 
+    * that is of type {@link String}</li>
+    * <li>The method can be found and the external setting value is an empty 
+    * {@link String}, we ignore the external setting value</li>
+    * <li>The method can be found and the external setting value is not an empty String 
+    * but the method call fails, we ignore the external setting value</li>
+    * <li>The method can be found and the external setting value is not an empty String 
+    * and the method call succeeds, the final value will be the external setting value 
+    * that is of type of the internal setting value</li>
+    * </ol>
+    * </li>
+    * </ol>
     * @param settings the internal settings
     * @param props the external settings
     */
@@ -562,8 +588,8 @@ public class PortalContainerConfig implements Startable
                {
                   if (log.isDebugEnabled())
                   {
-                     log.debug("The static method valueOf(String) cannot be found for the class "
-                        + oldValue.getClass(), e);
+                     log.debug(
+                        "The static method valueOf(String) cannot be found for the class " + oldValue.getClass(), e);
                   }
                }
                if (m != null)
