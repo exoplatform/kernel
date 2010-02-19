@@ -503,15 +503,15 @@ public class PortalContainerConfig implements Startable
     * a file of type "properties" or "xml". The given path will be interpreted as follows:
     * <ol>
     * <li>The path doesn't contain any prefix of type "classpath:", "jar:" or "file:", we
-    * assume then apply the following rules
+    * assume that the file could be externalized so we apply the following rules:
     * <ol>
     * <li>A file exists at ${exo-conf-dir}/portal/${portalContainerName}/${path}, we
     * will load this file</li>
-    * <li>No file exists at the previous path, we then assume that the path can be 
+    * <li>No file exists at the previous path, we then assume that the path cans be 
     * interpreted by the {@link ConfigurationManager}</li>
     * </ol>
     * </li>
-    * <li>The path contains a prefix, we then assume that the path can be interpreted 
+    * <li>The path contains a prefix, we then assume that the path cans be interpreted 
     * by the {@link ConfigurationManager}</li>
     * </ol>
     * @param path the path of the external settings to load
