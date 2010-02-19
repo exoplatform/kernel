@@ -481,35 +481,10 @@ public class PortalContainerConfig implements Startable
       String path = def.getExternalSettingsPath();
       if (path != null && (path = path.trim()).length() > 0)
       {
-         try
+         final Map<String, String> props = loadExternalSettings(path, def.getName());
+         if (props != null && !props.isEmpty())
          {
-            URL url = null;
-            if (path.indexOf(':') == -1)
-            {
-               // We first check if the file is not in eXo configuration directory
-               String fullPath = serverInfo.getExoConfigurationDirectory() + "/portal/" + def.getName() + "/" + path;
-               File file = new File(fullPath);
-               if (file.exists())
-               {
-                  // The file exists so we will use it
-                  url = file.toURI().toURL();
-               }
-            }
-            if (url == null)
-            {
-               // We assume that the path is an eXo standard path
-               url = cm.getURL(path);
-            }
-            // We load the properties from the url found
-            final Map<String, String> props = ContainerUtil.loadProperties(url);
-            if (props != null && !props.isEmpty())
-            {
-               mergeSettings(settings, props);
-            }
-         }
-         catch (Exception e)
-         {
-            log.error("Cannot load property file " + path, e);
+            mergeSettings(settings, props);
          }
       }
       // We then add the portal container name
@@ -521,6 +496,57 @@ public class PortalContainerConfig implements Startable
       settings.put(REALM_SETTING_NAME, def.getRealmName() == null ? defaultRealmName : def.getRealmName());
       // We re-inject the settings and we make sure it is thread safe
       def.setSettings(Collections.unmodifiableMap(settings));
+   }
+
+   /**
+    * Loads the external settings corresponding to the given path. The target file cans be either
+    * a file of type "properties" or "xml". The given path will be interpreted as follows:
+    * <ol>
+    * <li>The path doesn't contain any prefix of type "classpath:", "jar:" or "file:", we
+    * assume then apply the following rules
+    * <ol>
+    * <li>A file exists at ${exo-conf-dir}/portal/${portalContainerName}/${path}, we
+    * will load this file</li>
+    * <li>No file exists at the previous path, we then assume that the path can be 
+    * interpreted by the {@link ConfigurationManager}</li>
+    * </ol>
+    * </li>
+    * <li>The path contains a prefix, we then assume that the path can be interpreted 
+    * by the {@link ConfigurationManager}</li>
+    * </ol>
+    * @param path the path of the external settings to load
+    * @param portalContainerName the name of the related portal container
+    * @return A {@link Map} of settings if the file could be loaded, <code>null</code> otherwise
+    */
+   private Map<String, String> loadExternalSettings(String path, String portalContainerName)
+   {
+      try
+      {
+         URL url = null;
+         if (path.indexOf(':') == -1)
+         {
+            // We first check if the file is not in eXo configuration directory
+            String fullPath = serverInfo.getExoConfigurationDirectory() + "/portal/" + portalContainerName + "/" + path;
+            File file = new File(fullPath);
+            if (file.exists())
+            {
+               // The file exists so we will use it
+               url = file.toURI().toURL();
+            }
+         }
+         if (url == null)
+         {
+            // We assume that the path is an eXo standard path
+            url = cm.getURL(path);
+         }
+         // We load the properties from the url found
+         return ContainerUtil.loadProperties(url);
+      }
+      catch (Exception e)
+      {
+         log.error("Cannot load property file " + path, e);
+      }
+      return null;
    }
 
    /**
