@@ -406,6 +406,7 @@ public class PortalContainerConfig implements Startable
                String name = def.getName();
                if (name == null || (name = name.trim()).length() == 0)
                {
+                  log.warn("A PortalContainerDefinition cannot have empty name");
                   continue;
                }
                else
@@ -501,58 +502,7 @@ public class PortalContainerConfig implements Startable
             final Map<String, String> props = ContainerUtil.loadProperties(url);
             if (props != null && !props.isEmpty())
             {
-               if (settings.isEmpty())
-               {
-                  // No settings exist so we can add everything
-                  settings.putAll(props);
-               }
-               else
-               {
-                  // Some settings exists so we need to be careful if we override properties
-                  // We need to try to keep the same type if possible
-                  for (Map.Entry<String, String> entry : props.entrySet())
-                  {
-                     String propertyName = entry.getKey();
-                     Object propertyValue = entry.getValue();
-                     propertyValue = Deserializer.resolveString((String)propertyValue);
-                     Object oldValue = settings.get(propertyName);
-                     if (oldValue != null)
-                     {
-                        // The value is not null so we need to convert the String into
-                        // the target type, we will convert thanks to the static method
-                        // valueOf(String value) if it exist for the target type
-                        Method m = null;
-                        try
-                        {
-                           // First we check if the method exists
-                           m = oldValue.getClass().getMethod("valueOf", String.class);
-                        }
-                        catch (Exception e)
-                        {
-                           if (log.isDebugEnabled())
-                           {
-                              log.debug("The static method valueOf(String) cannot be found for the class "
-                                 + oldValue.getClass(), e);
-                           }
-                        }
-                        if (m != null)
-                        {
-                           // The method could be found, thus we will try to convert the value
-                           try
-                           {
-                              propertyValue = m.invoke(null, propertyValue);
-                           }
-                           catch (Exception e)
-                           {
-                              log.error("Cannot convert the value '" + propertyValue + "' to an Object of type "
-                                 + oldValue.getClass(), e);
-                           }
-                        }
-                     }
-                     // We set the new value
-                     settings.put(propertyName, propertyValue);
-                  }
-               }
+               mergeSettings(settings, props);
             }
          }
          catch (Exception e)
@@ -563,11 +513,85 @@ public class PortalContainerConfig implements Startable
       // We then add the portal container name
       settings.put(PORTAL_CONTAINER_SETTING_NAME, def.getName());
       // We add the rest context name
-      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName());
+      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName() == null ? defaultRestContextName : def.getRestContextName());
       // We add the realm name
-      settings.put(REALM_SETTING_NAME, def.getRealmName());
+      settings.put(REALM_SETTING_NAME, def.getRealmName() == null ? defaultRealmName : def.getRealmName());
       // We re-inject the settings and we make sure it is thread safe
       def.setSettings(Collections.unmodifiableMap(settings));
+   }
+
+   /**
+    * Merge the internal settings with the external settings
+    * @param settings the internal settings
+    * @param props the external settings
+    */
+   private void mergeSettings(final Map<String, Object> settings, final Map<String, String> props)
+   {
+      if (settings.isEmpty())
+      {
+         // No settings exist so we can add everything
+         settings.putAll(props);
+      }
+      else
+      {
+         // Some settings exists so we need to be careful if we override properties
+         // We need to try to keep the same type if possible
+         for (Map.Entry<String, String> entry : props.entrySet())
+         {
+            String propertyName = entry.getKey();
+            Object propertyValue = entry.getValue();
+            propertyValue = Deserializer.resolveString((String)propertyValue);
+            if (propertyValue == null)
+            {
+               // We skip null value
+               continue;
+            }
+            Object oldValue = settings.get(propertyName);
+            if (oldValue != null)
+            {
+               // The value is not null so we need to convert the String into
+               // the target type, we will convert thanks to the static method
+               // valueOf(String value) if it exist for the target type
+               Method m = null;
+               try
+               {
+                  // First we check if the method exists
+                  m = oldValue.getClass().getMethod("valueOf", String.class);
+               }
+               catch (Exception e)
+               {
+                  if (log.isDebugEnabled())
+                  {
+                     log.debug("The static method valueOf(String) cannot be found for the class "
+                        + oldValue.getClass(), e);
+                  }
+               }
+               if (m != null)
+               {
+                  // The method could be found, thus we will try to convert the value
+                  String sPropertyValue = ((String)propertyValue).trim();
+                  if (sPropertyValue.length() == 0)
+                  {
+                     // We ignore empty value since it cannot be converted
+                     continue;
+                  }
+                  try
+                  {
+                     propertyValue = m.invoke(null, propertyValue);
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Cannot convert the value '" + propertyValue + "' to an Object of type "
+                        + oldValue.getClass(), e);
+                     // we ignore invalid value
+                     continue;
+                  }
+               }
+            }
+            // We set the new value
+            settings.put(propertyName, propertyValue);
+         }
+      }
    }
 
    /**
