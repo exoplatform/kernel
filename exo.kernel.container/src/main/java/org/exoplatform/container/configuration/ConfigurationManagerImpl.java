@@ -246,7 +246,9 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    public URL getResource(String url, String defaultURL) throws Exception
    {
-      return null;
+      if (url == null)
+         url = defaultURL;
+      return getResource(url);
    }
 
    public URL getResource(String uri) throws Exception
@@ -279,7 +281,11 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    private URL getURL(ServletContext context, String url) throws Exception
    {
-      if (url.startsWith("jar:"))
+      if (url == null)
+      {
+         return null;
+      }
+      else if (url.startsWith("jar:"))
       {
          String path = removePrefix("jar:/", url);
          ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -300,6 +306,11 @@ public class ConfigurationManagerImpl implements ConfigurationManager
          }
          if (scontextClassLoader_ != null)
          {
+            if (path.startsWith("/"))
+            {
+               // The ClassLoader doesn't support the first "/"
+               path = path.substring(1);
+            }
             return scontextClassLoader_.getResource(path);
          }
          throw new Exception("unsupport war uri in this configuration service");
@@ -307,11 +318,11 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       else if (url.startsWith("file:"))
       {
          url = Deserializer.resolveVariables(url);
-         return new URL(url);
+         return new URL(url.replace('\\', '/'));
       }
       else if (url.indexOf(":") < 0 && contextPath != null)
       {
-         return new URL(contextPath + url);
+         return new URL(contextPath + url.replace('\\', '/'));
       }
       return null;
    }
