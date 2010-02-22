@@ -84,6 +84,18 @@ public class TestConfigurationManagerImpl extends TestCase
       checkURL(url);
       url = cm.getURL(sURL + "\\configuration\\empty-config-fake.xml");
       checkURL(url, true);
+      String incompleteURL = "file:/" + getClass().getResource("empty-config.xml").getPath();
+      incompleteURL = incompleteURL.substring(0, incompleteURL.lastIndexOf('/'));
+      url = cm.getURL(incompleteURL + "/empty-config.xml");
+      checkURL(url);
+      url = cm.getURL(incompleteURL + "/empty-config-fake.xml");
+      checkURL(url, true);
+      incompleteURL = "file:" + getClass().getResource("empty-config.xml").getPath();
+      incompleteURL = incompleteURL.substring(0, incompleteURL.lastIndexOf('/'));
+      url = cm.getURL(incompleteURL + "/empty-config.xml");
+      checkURL(url);
+      url = cm.getURL(incompleteURL + "/empty-config-fake.xml");
+      checkURL(url, true);     
       url = cm.getURL("org/exoplatform/container/configuration/empty-config.xml");
       assertNull(url);
       url = cm.getURL("org/exoplatform/container/configuration/empty-config-fake.xml");

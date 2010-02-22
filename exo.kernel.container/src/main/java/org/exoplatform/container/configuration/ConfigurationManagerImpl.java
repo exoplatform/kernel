@@ -317,14 +317,56 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       }
       else if (url.startsWith("file:"))
       {
-         url = Deserializer.resolveVariables(url);
-         return new URL(url.replace('\\', '/'));
+         url = resolveFileURL(url);
+         return new URL(url);
       }
       else if (url.indexOf(":") < 0 && contextPath != null)
       {
          return new URL(contextPath + url.replace('\\', '/'));
       }
       return null;
+   }
+
+   /**
+    * This methods is used to convert the given into a valid url, it will:
+    * <ol>
+    * <li>Resolve variables in the path if they exist</li>
+    * <li>Replace windows path separators with proper separators</li>
+    * <li>Ensure that the path start with file:///</li>
+    * </ol>
+    * , then it will 
+    * @param url the url to resolve
+    * @return the resolved url
+    */
+   private String resolveFileURL(String url)
+   {
+      url = Deserializer.resolveVariables(url);
+      // we ensure that we don't have windows path separator in the url
+      url = url.replace('\\', '/');
+      if (!url.startsWith("file:///"))
+      {
+         // The url is invalid, so we will fix it
+         // it happens when we use a path of type file://${path}, under
+         // linux or mac os the path will start with a '/' so the url
+         // will be correct but under windows we will have something
+         // like C:\ so the first '/' is missing
+         if (url.startsWith("file://"))
+         {
+            // The url is of type file://, so one '/' is missing
+            url = "file:///" + url.substring(7);
+         }
+         else if (url.startsWith("file:/"))
+         {
+            // The url is of type file:/, so two '/' are missing
+            url = "file:///" + url.substring(6);
+         }
+         else
+         {
+            // The url is of type file:, so three '/' are missing
+            url = "file:///" + url.substring(5);               
+         }
+      }
+      return url;
    }
 
    public boolean isDefault(String value)
