@@ -60,6 +60,61 @@ public class TestJ2EEServerInfo extends TestCase
       }
    }
 
+   public void testConfigDirName()
+   {
+      testConfigDirName(null,"jonas.base");
+      testConfigDirName(null,"jboss.home.dir");
+      testConfigDirName(null,"jboss.home.dir", "jboss.server.config.url");
+      testConfigDirName(null,"jetty.home");
+      testConfigDirName(null,"was.install.root");
+      testConfigDirName(null,"wls.home");
+      testConfigDirName(null,"catalina.home");
+      testConfigDirName(null,"maven.exoplatform.dir");
+      testConfigDirName(null);
+      testConfigDirName("foo","jonas.base");
+      testConfigDirName("foo","jboss.home.dir");
+      testConfigDirName("foo","jboss.home.dir", "jboss.server.config.url");
+      testConfigDirName("foo","jetty.home");
+      testConfigDirName("foo","was.install.root");
+      testConfigDirName("foo","wls.home");
+      testConfigDirName("foo","catalina.home");
+      testConfigDirName("foo","maven.exoplatform.dir");
+      testConfigDirName("foo");
+   }
+   
+   private void testConfigDirName(String confDirName, String... asVMParams)
+   {
+      if (confDirName != null)
+      {
+         System.setProperty(J2EEServerInfo.EXO_CONF_DIR_NAME_PARAM, confDirName);
+      }
+      if (asVMParams != null)
+      {
+         for (String asVMParam : asVMParams)
+         {
+            System.setProperty(asVMParam, confDir);
+         }
+      } 
+      try
+      {
+         assertTrue((new J2EEServerInfo().getExoConfigurationDirectory()).contains(confDirName == null ? "exo-conf" : confDirName));
+      }
+      finally
+      {
+         if (confDirName != null)
+         {
+            System.getProperties().remove(J2EEServerInfo.EXO_CONF_DIR_NAME_PARAM);
+         }         
+         if (asVMParams != null)
+         {
+            for (String asVMParam : asVMParams)
+            {
+               System.getProperties().remove(asVMParam);
+            }
+         } 
+      }
+   }
+   
    public void testServerDirs() throws Exception
    {
       try

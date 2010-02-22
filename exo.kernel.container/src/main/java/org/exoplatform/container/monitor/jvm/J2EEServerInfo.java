@@ -32,9 +32,19 @@ import javax.management.MBeanServerFactory;
  */
 public class J2EEServerInfo
 {
-
+   
+   /**
+    * The name of the JVM parameter that allows us to change the location of the
+    * configuration directory
+    */
    public static final String EXO_CONF_PARAM = "exo.conf.dir";
-
+   
+   /**
+    * The name of the JVM parameter that allows us to change the default name
+    * of the configuration directory which is "exo-conf"
+    */
+   public static final String EXO_CONF_DIR_NAME_PARAM = "exo.conf.dir.name";
+   
    private String serverName_;
 
    private String serverHome_;
@@ -58,11 +68,13 @@ public class J2EEServerInfo
       String catalinaHome = System.getProperty("catalina.home");
       String testHome = System.getProperty("maven.exoplatform.dir");
 
+      // The name of the configuration directory
+      final String confDirName = System.getProperty(EXO_CONF_DIR_NAME_PARAM, "exo-conf");
       if (jonasHome != null)
       {
          serverName_ = "jonas";
          serverHome_ = jonasHome;
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (jbossHome != null)
       {
@@ -76,16 +88,16 @@ public class J2EEServerInfo
          {
             try
             {
-               exoConfDir_ = new File(new URL(jbossConfigUrl).getFile() + "/exo-conf").getAbsolutePath();
+               exoConfDir_ = new File(new URL(jbossConfigUrl).getFile() + "/" + confDirName).getAbsolutePath();
             }
             catch (Throwable e)
             {
                // don't care about it
-               exoConfDir_ = serverHome_ + "/exo-conf";
+               exoConfDir_ = serverHome_ + "/" + confDirName;
             }
          }
          else
-            exoConfDir_ = serverHome_ + "/exo-conf";
+            exoConfDir_ = serverHome_ + "/" + confDirName;
 
          //
          try
@@ -104,39 +116,39 @@ public class J2EEServerInfo
       {
          serverName_ = "jetty";
          serverHome_ = jettyHome;
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (websphereHome != null)
       {
          serverName_ = "websphere";
          serverHome_ = websphereHome;
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (weblogicHome != null)
       {
          serverName_ = "weblogic";
          serverHome_ = weblogicHome;
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
          // Catalina has to be processed at the end as other servers may embed it
       }
       else if (catalinaHome != null)
       {
          serverName_ = "tomcat";
          serverHome_ = catalinaHome;
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (testHome != null)
       {
          serverName_ = "test";
          serverHome_ = testHome;
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else
       {
          // throw new UnsupportedOperationException("unknown server platform") ;
          serverName_ = "standalone";
          serverHome_ = System.getProperty("user.dir");
-         exoConfDir_ = serverHome_ + "/exo-conf";
+         exoConfDir_ = serverHome_ + "/" + confDirName;
          mbeanServer = MBeanServerFactory.createMBeanServer();
       }
 
