@@ -23,6 +23,8 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 
+import java.util.Map;
+
 /**
  * A deserializer used by JIBX that resolve system properties to allow runtime configuration.
  *
@@ -182,6 +184,18 @@ public class Deserializer
     */
    public static String resolveVariables(String input)
    {
+      return resolveVariables(input, null);
+   }
+   
+   /**
+    * Resolve the variables of type ${my.var} for the current context which is composed
+    * of the system properties, the portal container properties and the given properties
+    * @param input the input value
+    * @param props a set of properties to add for the variable resolution
+    * @return the resolve value
+    */
+   public static String resolveVariables(String input, Map<String, String> props)   
+   {
       final int NORMAL = 0;
       final int SEEN_DOLLAR = 1;
       final int IN_BRACKET = 2;
@@ -241,7 +255,17 @@ public class Deserializer
                }
                else
                {
-                  value = System.getProperty(key);
+                  if (props != null)
+                  {
+                     // Some properties have been given thus we need to check inside first
+                     value = props.get(key);
+                  }
+                  if (value == null)
+                  {
+                     // No value could be found so far, thus we try to get it from the 
+                     // system properties
+                     value = System.getProperty(key);                     
+                  }
                }
                if (value != null)
                {

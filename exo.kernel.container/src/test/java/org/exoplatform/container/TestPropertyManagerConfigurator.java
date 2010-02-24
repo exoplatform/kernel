@@ -19,6 +19,7 @@
 package org.exoplatform.container;
 
 import junit.framework.TestCase;
+
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
@@ -111,6 +112,7 @@ public class TestPropertyManagerConfigurator extends TestCase
       assertEquals("property_value_1", additions.get("property_1"));
       assertEquals("property_value_2", additions.get("property_2"));
       assertEquals("${property_3}", additions.get("property_3"));
+      assertEquals("property_value_1-property_value_2", additions.get("property_4"));
    }
 
    public void testFromPropertiesByParam() throws Exception
@@ -129,6 +131,7 @@ public class TestPropertyManagerConfigurator extends TestCase
       assertEquals("property_value_1", additions.get("property_1"));
       assertEquals("property_value_2", additions.get("property_2"));
       assertEquals("${property_3}", additions.get("property_3"));
+      assertEquals("property_value_1-property_value_2", additions.get("property_4"));
    }
 
    public void testFromProperties() throws Exception
@@ -146,6 +149,7 @@ public class TestPropertyManagerConfigurator extends TestCase
       assertEquals("property_value_1", additions.get("property_1"));
       assertEquals("property_value_2", additions.get("property_2"));
       assertEquals("${property_3}", additions.get("property_3"));
+      assertEquals("property_value_1-property_value_2", additions.get("property_4"));
    }
 
    public void testFromXML() throws Exception
@@ -163,5 +167,6 @@ public class TestPropertyManagerConfigurator extends TestCase
       assertEquals("property_value_1", additions.get("property_1"));
       assertEquals("property_value_2", additions.get("property_2"));
       assertEquals("${property_3}", additions.get("property_3"));
+      assertEquals("property_value_1-property_value_2", additions.get("property_4"));
    }
 }

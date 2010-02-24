@@ -242,12 +242,15 @@ public class ContainerUtil
             }
             if (props != null)
             {
+               // Those properties are used for variables resolution
+               final LinkedHashMap<String, String> currentProps = new LinkedHashMap<String,String>();
                for (Map.Entry<String, String> entry : props.entrySet())
                {
                   String propertyName = entry.getKey();
                   String propertyValue = entry.getValue();
-                  propertyValue = Deserializer.resolveString(propertyValue);
+                  propertyValue = Deserializer.resolveVariables(propertyValue, currentProps);
                   props.put(propertyName, propertyValue);
+                  currentProps.put(propertyName, propertyValue);
                }
             }
          }

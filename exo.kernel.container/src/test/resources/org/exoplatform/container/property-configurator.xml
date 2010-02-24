@@ -4,4 +4,5 @@
 <entry key="property_1">property_value_1</entry>
 <entry key="property_2">${property_2}</entry>
 <entry key="property_3">${property_3}</entry>
+<entry key="property_4">${property_1}-${property_2}</entry>
 </properties>
