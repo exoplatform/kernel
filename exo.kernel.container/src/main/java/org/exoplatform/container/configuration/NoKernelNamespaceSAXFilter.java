@@ -18,6 +18,9 @@
  */
 package org.exoplatform.container.configuration;
 
+import static org.exoplatform.container.configuration.Namespaces.KERNEL_1_0_URI;
+import static org.exoplatform.container.configuration.Namespaces.KERNEL_1_1_URI;
+
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.xml.sax.Attributes;
@@ -29,7 +32,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashSet;
 import java.util.Set;
-import static org.exoplatform.container.configuration.Namespaces.*;
 
 /**
  * Removes kernel namespace declaration from the document to not confuse the jibx thing.
@@ -79,12 +81,14 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
       if (KERNEL_1_0_URI.equals(uri) || KERNEL_1_1_URI.equals(uri) || XSI_URI.equals(uri))
       {
          blackListedPrefixes.add(prefix);
-         log.debug("Black listing prefix " + prefix + " with uri " + uri);
+         if (log.isTraceEnabled())
+            log.trace("Black listing prefix " + prefix + " with uri " + uri);
       }
       else
       {
          contentHandler.startPrefixMapping(prefix, uri);
-         log.debug("Start prefix mapping " + prefix + " with uri " + uri);
+         if (log.isTraceEnabled())
+            log.trace("Start prefix mapping " + prefix + " with uri " + uri);
       }
    }
 
@@ -92,31 +96,34 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
    {
       if (!blackListedPrefixes.remove(prefix))
       {
-         log.debug("Ending prefix mapping " + prefix);
+         if (log.isTraceEnabled())
+            log.trace("Ending prefix mapping " + prefix);
          contentHandler.endPrefixMapping(prefix);
       }
       else
       {
-         log.debug("Removed prefix mapping " + prefix + " from black list ");
+         if (log.isTraceEnabled())
+            log.trace("Removed prefix mapping " + prefix + " from black list ");
       }
    }
 
    public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException
    {
-      Set<String> profiles = null;
       AttributesImpl noNSAtts = new AttributesImpl();
-      for (int i = 0;i < atts.getLength();i++)
+      for (int i = 0; i < atts.getLength(); i++)
       {
          String attQName = atts.getQName(i);
          if ((attQName.equals("xmlns")) && blackListedPrefixes.contains(""))
          {
             // Skip
-            log.debug("Skipping black listed xmlns attribute");
+            if (log.isTraceEnabled())
+               log.trace("Skipping black listed xmlns attribute");
          }
          else if (attQName.startsWith("xmlns:") && blackListedPrefixes.contains(attQName.substring(6)))
          {
             // Skip
-            log.debug("Skipping black listed " + attQName + " attribute");
+            if (log.isTraceEnabled())
+               log.trace("Skipping black listed " + attQName + " attribute");
          }
          else
          {
@@ -129,12 +136,14 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
             if (XSI_URI.equals(attURI))
             {
                // Skip
-               log.debug("Skipping XSI " + attQName + " attribute");
+               if (log.isTraceEnabled())
+                  log.trace("Skipping XSI " + attQName + " attribute");
                continue;
             }
             else if (KERNEL_1_0_URI.equals(attURI) || KERNEL_1_1_URI.equals(attURI))
             {
-               log.debug("Requalifying prefixed attribute " + attQName + " attribute to " + localName);
+               if (log.isTraceEnabled())
+                  log.trace("Requalifying prefixed attribute " + attQName + " attribute to " + localName);
                attURI = null;
                attQName = localName;
             }
@@ -147,7 +156,8 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
       //
       if (KERNEL_1_0_URI.equals(uri) || KERNEL_1_1_URI.equals(uri))
       {
-         log.debug("Requalifying active profile " + qName + " start element to " + localName);
+         if (log.isTraceEnabled())
+            log.trace("Requalifying active profile " + qName + " start element to " + localName);
          qName = localName;
          uri = null;
       }
@@ -160,13 +170,15 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
    {
       if (KERNEL_1_0_URI.equals(uri) || KERNEL_1_1_URI.equals(uri))
       {
-         log.debug("Requalifying " + qName + " end element");
+         if (log.isTraceEnabled())
+            log.trace("Requalifying " + qName + " end element");
          qName = localName;
          uri = null;
       }
 
       //
-      log.debug("Propagatting " + qName + " end element");
+      if (log.isTraceEnabled())
+         log.trace("Propagatting " + qName + " end element");
       contentHandler.endElement(uri, localName, qName);
    }
 

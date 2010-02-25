@@ -26,9 +26,7 @@ import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.w3c.dom.Document;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -41,7 +39,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -53,10 +50,6 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 /**
  * Unmarshall a configuration.
@@ -91,7 +84,8 @@ public class ConfigurationUnmarshaller
       {
          if (exception.getMessage().equals("cvc-elt.1: Cannot find the declaration of element 'configuration'."))
          {
-            log.info("The document "
+            log
+               .info("The document "
                   + url
                   + " does not contain a schema declaration, it should have an "
                   + "XML declaration similar to\n"
@@ -103,7 +97,7 @@ public class ConfigurationUnmarshaller
          else
          {
             log.error("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
-                     + ") :" + exception.getMessage());
+               + ") :" + exception.getMessage());
          }
          valid = false;
       }
@@ -141,11 +135,9 @@ public class ConfigurationUnmarshaller
    public boolean isValid(URL url) throws NullPointerException, IOException
    {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      String[] schemas = {
-         Namespaces.KERNEL_1_0_URI,
-         Namespaces.KERNEL_1_1_URI
-      };
-      factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+      String[] schemas = {Namespaces.KERNEL_1_0_URI, Namespaces.KERNEL_1_1_URI};
+      factory
+         .setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
       factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", schemas);
       factory.setNamespaceAware(true);
       factory.setValidating(true);
@@ -175,11 +167,11 @@ public class ConfigurationUnmarshaller
    {
       if (PropertyManager.isDevelopping())
       {
-        boolean valid = isValid(url);
-        if (!valid)
-        {
-           log.info("The configuration file " + url + " was not found valid according to its XSD");
-        }
+         boolean valid = isValid(url);
+         if (!valid)
+         {
+            log.info("The configuration file " + url + " was not found valid according to its XSD");
+         }
       }
 
       //
@@ -188,9 +180,12 @@ public class ConfigurationUnmarshaller
       {
          // With Java 6, it's safer to precise the builder factory class name as it may result:
          // java.lang.AbstractMethodError: org.apache.xerces.dom.DeferredDocumentImpl.getXmlStandalone()Z
-	      // at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.setDocumentInfo(Unknown Source) 
+         // at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.setDocumentInfo(Unknown Source) 
          Method dbfniMethod = DocumentBuilderFactory.class.getMethod("newInstance", String.class, ClassLoader.class);
-         factory = (DocumentBuilderFactory)dbfniMethod.invoke(null, "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl", Thread.currentThread().getContextClassLoader());
+         factory =
+            (DocumentBuilderFactory)dbfniMethod.invoke(null,
+               "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl", Thread.currentThread()
+                  .getContextClassLoader());
       }
       catch (InvocationTargetException e)
       {
@@ -246,7 +241,8 @@ public class ConfigurationUnmarshaller
       String document = buffer.toString();
 
       // Debug
-      log.debug("About to parse configuration file " + document);
+      if (log.isTraceEnabled())
+         log.trace("About to parse configuration file " + document);
 
       //
       IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
