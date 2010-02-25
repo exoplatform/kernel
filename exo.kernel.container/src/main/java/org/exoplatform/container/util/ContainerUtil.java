@@ -208,6 +208,17 @@ public class ContainerUtil
     */
    public static Map<String, String> loadProperties(URL url)
    {
+      return loadProperties(url, null);
+   }
+   
+   /**
+    * Loads the properties file corresponding to the given url
+    * @param url the url of the properties file
+    * @param initEnv the initial environment that is composed of a set of initial variables
+    * @return a {@link Map} of properties
+    */
+   public static Map<String, String> loadProperties(URL url, Map<String, String> initEnv)
+   {
       LinkedHashMap<String, String> props = null;
       String path = null;
       InputStream in = null;
@@ -243,7 +254,12 @@ public class ContainerUtil
             if (props != null)
             {
                // Those properties are used for variables resolution
-               final LinkedHashMap<String, String> currentProps = new LinkedHashMap<String,String>();
+               final Map<String, String> currentProps = new HashMap<String,String>();
+               if (initEnv != null && !initEnv.isEmpty())
+               {
+                  // There are a set of initial variables to load into the environment
+                  currentProps.putAll(initEnv);
+               }
                for (Map.Entry<String, String> entry : props.entrySet())
                {
                   String propertyName = entry.getKey();

@@ -278,7 +278,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals("20", config.getSetting("myPortal-pcdef", "long"));
       assertEquals("20", config.getSetting("myPortal-pcdef", "double"));
       assertEquals("false", config.getSetting("myPortal-pcdef", "boolean"));
-      assertEquals("value-new value", config.getSetting("myPortal-pcdef", "complex-value"));
+      assertEquals("myPortal-pcdef-myRest-pcdef-my-exo-domain-pcdef-value-new value", config.getSetting("myPortal-pcdef", "complex-value"));
       assertNull(config.getSetting("foo", PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
       assertNull(config.getSetting("myPortal", PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
       assertEquals("myPortal-pcdef", config.getSetting("myPortal-pcdef",
@@ -311,7 +311,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
          assertEquals("22", config.getSetting("myPortal-pcdef", "long"));
          assertEquals("22", config.getSetting("myPortal-pcdef", "double"));
          assertEquals("true", config.getSetting("myPortal-pcdef", "boolean"));
-         assertEquals("value 2-new value 2", config.getSetting("myPortal-pcdef", "complex-value"));
+         assertEquals("myPortal-pcdef-myRest-pcdef-my-exo-domain-pcdef-value 2-new value 2", config.getSetting("myPortal-pcdef", "complex-value"));
          assertNull(config.getSetting("foo", PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
          assertNull(config.getSetting("myPortal", PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
          assertEquals("myPortal-pcdef", config.getSetting("myPortal-pcdef",

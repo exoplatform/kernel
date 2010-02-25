@@ -481,21 +481,36 @@ public class PortalContainerConfig implements Startable
       String path = def.getExternalSettingsPath();
       if (path != null && (path = path.trim()).length() > 0)
       {
-         final Map<String, String> props = loadExternalSettings(path, def.getName());
+         final Map<String, String> props = loadExternalSettings(path, def);
          if (props != null && !props.isEmpty())
          {
             mergeSettings(settings, props);
          }
       }
-      // We then add the portal container name
+      // We then add the main settings
+      settings.putAll(getMainSettings(def));
+      // We re-inject the settings and we make sure it is thread safe
+      def.setSettings(Collections.unmodifiableMap(settings));
+   }
+
+   /**
+    * This method gives the main settings such as the portal container name, the rest context name
+    * and the realm name into a {@link Map}
+    * @param def the {@link PortalContainerDefinition} from which we extract the value of the main
+    * settings, if a main setting is null, we use the default value.
+    * @return A {@link Map} of settings including the main settings
+    */
+   private Map<String, String> getMainSettings(PortalContainerDefinition def)
+   {
+      final Map<String, String> settings = new HashMap<String, String>(3);
+      // We add the portal container name
       settings.put(PORTAL_CONTAINER_SETTING_NAME, def.getName());
       // We add the rest context name
       settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName() == null ? defaultRestContextName : def
          .getRestContextName());
       // We add the realm name
       settings.put(REALM_SETTING_NAME, def.getRealmName() == null ? defaultRealmName : def.getRealmName());
-      // We re-inject the settings and we make sure it is thread safe
-      def.setSettings(Collections.unmodifiableMap(settings));
+      return settings;
    }
 
    /**
@@ -515,10 +530,10 @@ public class PortalContainerConfig implements Startable
     * by the {@link ConfigurationManager}</li>
     * </ol>
     * @param path the path of the external settings to load
-    * @param portalContainerName the name of the related portal container
+    * @param def the {@link PortalContainerDefinition} for which we load the external settings
     * @return A {@link Map} of settings if the file could be loaded, <code>null</code> otherwise
     */
-   private Map<String, String> loadExternalSettings(String path, String portalContainerName)
+   private Map<String, String> loadExternalSettings(String path, PortalContainerDefinition def)
    {
       try
       {
@@ -526,7 +541,7 @@ public class PortalContainerConfig implements Startable
          if (path.indexOf(':') == -1)
          {
             // We first check if the file is not in eXo configuration directory
-            String fullPath = serverInfo.getExoConfigurationDirectory() + "/portal/" + portalContainerName + "/" + path;
+            String fullPath = serverInfo.getExoConfigurationDirectory() + "/portal/" + def.getName() + "/" + path;
             File file = new File(fullPath);
             if (file.exists())
             {
@@ -540,7 +555,7 @@ public class PortalContainerConfig implements Startable
             url = cm.getURL(path);
          }
          // We load the properties from the url found
-         return ContainerUtil.loadProperties(url);
+         return ContainerUtil.loadProperties(url, getMainSettings(def));
       }
       catch (Exception e)
       {
