@@ -54,7 +54,7 @@ public class Deserializer
     */
    public static String resolveString(String s)
    {
-      return Deserializer.resolveVariables(s);
+      return Deserializer.resolveNClean(s);
    }
 
    /**
@@ -77,7 +77,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       if (s.equalsIgnoreCase("true"))
       {
          return true;
@@ -107,7 +107,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       try
       {
          return Integer.parseInt(s);
@@ -136,7 +136,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       try
       {
          return Long.parseLong(s);
@@ -165,7 +165,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       try
       {
          return Double.parseDouble(s);
@@ -283,5 +283,26 @@ public class Deserializer
          buffer.append(input.substring(start, chars.length));
       return buffer.toString();
    
+   }
+   
+   /**
+    * This methods will remove useless characters from the given {@link String} and return the result
+    * @param s the input value
+    * @return <code>null</code> if the input value is <code>null</code>, <code>s.trim()</code>
+    * otherwise
+    */
+   public static String cleanString(String s)
+   {
+      return s == null ? null : s.trim();
+   }
+   
+   /**
+    * This method will first resolves the variables then it will clean the results
+    * @param s the input value
+    * @return the resolve and clean value
+    */
+   public static String resolveNClean(String s)
+   {
+      return cleanString(resolveVariables(s));
    }
 }
