@@ -38,6 +38,7 @@
    <properties>
       <exo.product.name>exo-kernel</exo.product.name>
       <exo.product.specification>2.2</exo.product.specification>
+      <org.exoplatform.framework.junit.version>1.2.1-GA</org.exoplatform.framework.junit.version>
       <forkMode>always</forkMode>
    </properties>
 
@@ -64,7 +65,7 @@
          <dependency>
             <groupId>org.exoplatform.tool</groupId>
             <artifactId>exo.tool.framework.junit</artifactId>
-            <version>1.2.1-GA</version>
+            <version>${org.exoplatform.framework.junit.version}</version>
          </dependency>
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
