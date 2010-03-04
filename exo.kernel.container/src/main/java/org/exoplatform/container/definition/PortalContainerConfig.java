@@ -19,12 +19,14 @@
 package org.exoplatform.container.definition;
 
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.PropertyConfigurator;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -36,6 +38,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,32 +79,25 @@ public class PortalContainerConfig implements Startable
    /**
     * The default name of a portal container
     */
-   public static final String DEFAULT_PORTAL_CONTAINER_NAME = "portal";
+   // We use new String to create a new object in order to use the operator ==
+   public static final String DEFAULT_PORTAL_CONTAINER_NAME = new String("portal");
 
    /**
     * The default name of a the {@link ServletContext} of the rest web application
     */
-   public static final String DEFAULT_REST_CONTEXT_NAME = "rest";
+   // We use new String to create a new object in order to use the operator ==
+   public static final String DEFAULT_REST_CONTEXT_NAME = new String("rest");
 
    /**
     * The default realm name
     */
-   public static final String DEFAULT_REALM_NAME = "exo-domain";
+   // We use new String to create a new object in order to use the operator ==
+   public static final String DEFAULT_REALM_NAME = new String("exo-domain");
 
    /**
-    * The name of the default portal container
+    * The default {@link PortalContainerDefinition} 
     */
-   private String defaultPortalContainerName;
-
-   /**
-    * The name of the default rest {@link ServletContext}
-    */
-   private String defaultRestContextName;
-
-   /**
-    * The name of the default realm
-    */
-   private String defaultRealmName;
+   private final PortalContainerDefinition defaultDefinition;
 
    /**
     * Indicates if the component has already been initialized
@@ -134,38 +130,180 @@ public class PortalContainerConfig implements Startable
     */
    private final J2EEServerInfo serverInfo;
 
+   /**
+    * Indicates if new system properties have been added
+    */
+   private final PropertyConfigurator pc;
+
    public PortalContainerConfig(ConfigurationManager cm)
    {
-      this(null, cm, new J2EEServerInfo());
+      this(null, cm, new J2EEServerInfo(), null);
+   }
+
+   public PortalContainerConfig(ConfigurationManager cm, PropertyConfigurator pc)
+   {
+      this(null, cm, new J2EEServerInfo(), pc);
    }
 
    public PortalContainerConfig(ConfigurationManager cm, J2EEServerInfo serverInfo)
    {
-      this(null, cm, serverInfo);
+      this(null, cm, serverInfo, null);
+   }
+
+   public PortalContainerConfig(ConfigurationManager cm, J2EEServerInfo serverInfo, PropertyConfigurator pc)
+   {
+      this(null, cm, serverInfo, pc);
+   }
+
+   public PortalContainerConfig(InitParams params, ConfigurationManager cm)
+   {
+      this(params, cm, new J2EEServerInfo(), null);
+   }
+
+   public PortalContainerConfig(InitParams params, ConfigurationManager cm, PropertyConfigurator pc)
+   {
+      this(params, cm, new J2EEServerInfo(), pc);
    }
 
    public PortalContainerConfig(InitParams params, ConfigurationManager cm, J2EEServerInfo serverInfo)
    {
+      this(params, cm, serverInfo, null);
+   }
+
+   /**
+    * We add the {@link PropertyConfigurator} in the constructor, in order to make sure that it is
+    * created before since it could define some JVM parameters that could be used internally by the
+    * {@link PortalContainerConfig}
+    */
+   public PortalContainerConfig(InitParams params, ConfigurationManager cm, J2EEServerInfo serverInfo,
+      PropertyConfigurator pc)
+   {
+      this.pc = pc;
       this.cm = cm;
       this.serverInfo = serverInfo;
-      if (params == null)
+      this.defaultDefinition = create(params);
+   }
+
+   /**
+    * Create the default {@link PortalContainerDefinition} corresponding to the given parameters
+    * @param params the parameter to initialize
+    */
+   private PortalContainerDefinition create(InitParams params)
+   {
+      ObjectParameter oDpd = null;
+      if (params != null)
       {
-         return;
+         oDpd = params.getObjectParam("default.portal.definition");
       }
-      final ValueParam vDpc = params.getValueParam("default.portal.container");
-      if (vDpc != null && vDpc.getValue().trim().length() > 0)
+      PortalContainerDefinition def = null;
+      if (oDpd != null)
       {
-         this.defaultPortalContainerName = vDpc.getValue().trim();
+         // A default portal definition has been found
+         final Object o = oDpd.getObject();
+         if (o instanceof PortalContainerDefinition)
+         {
+            // The nested object is of the right type
+            def = (PortalContainerDefinition)o;
+         }
+         else
+         {
+            // The nested object is not of the right type, thus it will be ignored
+            log.warn("The object parameter 'default.portal.definition' should be of type "
+               + PortalContainerDefinition.class);
+         }
       }
-      final ValueParam vRc = params.getValueParam("default.rest.context");
-      if (vRc != null && vRc.getValue().trim().length() > 0)
+      if (def == null)
       {
-         this.defaultRestContextName = vRc.getValue().trim();
+         def = new PortalContainerDefinition();
       }
-      final ValueParam vRn = params.getValueParam("default.realm.name");
-      if (vRn != null && vRn.getValue().trim().length() > 0)
+      initName(params, def);
+      initRestContextName(params, def);
+      initRealmName(params, def);
+      initializeSettings(def, false);
+      return def;
+   }
+
+   /**
+    * Initialize the value of the realm name
+    */
+   private void initRealmName(InitParams params, PortalContainerDefinition def)
+   {
+      if (def.getRealmName() == null || def.getRealmName().trim().length() == 0)
       {
-         this.defaultRealmName = vRn.getValue().trim();
+         // The realm name is empty
+         // We first set the default value
+         def.setRealmName(DEFAULT_REALM_NAME);
+         if (params == null)
+         {
+            return;
+         }
+         final ValueParam vp = params.getValueParam("default.realm.name");
+         if (vp != null && vp.getValue().trim().length() > 0)
+         {
+            // A realm name has been defined in the value parameter, thus we use it
+            def.setRealmName(vp.getValue().trim());
+         }
+      }
+      else
+      {
+         // We ensure that the realm name doesn't contain any useless characters
+         def.setRealmName(def.getRealmName().trim());
+      }
+   }
+
+   /**
+    * Initialize the value of the rest context name
+    */
+   private void initRestContextName(InitParams params, PortalContainerDefinition def)
+   {
+      if (def.getRestContextName() == null || def.getRestContextName().trim().length() == 0)
+      {
+         // The rest context name is empty
+         // We first set the default value
+         def.setRestContextName(DEFAULT_REST_CONTEXT_NAME);
+         if (params == null)
+         {
+            return;
+         }
+         final ValueParam vp = params.getValueParam("default.rest.context");
+         if (vp != null && vp.getValue().trim().length() > 0)
+         {
+            // A rest context name has been defined in the value parameter, thus we use it
+            def.setRestContextName(vp.getValue().trim());
+         }
+      }
+      else
+      {
+         // We ensure that the rest context name doesn't contain any useless characters
+         def.setRestContextName(def.getRestContextName().trim());
+      }
+   }
+
+   /**
+    * Initialize the value of the portal container name
+    */
+   private void initName(InitParams params, PortalContainerDefinition def)
+   {
+      if (def.getName() == null || def.getName().trim().length() == 0)
+      {
+         // The name is empty
+         // We first set the default value
+         def.setName(DEFAULT_PORTAL_CONTAINER_NAME);
+         if (params == null)
+         {
+            return;
+         }
+         final ValueParam vp = params.getValueParam("default.portal.container");
+         if (vp != null && vp.getValue().trim().length() > 0)
+         {
+            // A name has been defined in the value parameter, thus we use it
+            def.setName(vp.getValue().trim());
+         }
+      }
+      else
+      {
+         // We ensure that the name doesn't contain any useless characters
+         def.setName(def.getName().trim());
       }
    }
 
@@ -174,7 +312,7 @@ public class PortalContainerConfig implements Startable
     */
    public String getDefaultPortalContainer()
    {
-      return defaultPortalContainerName;
+      return defaultDefinition.getName();
    }
 
    /**
@@ -182,7 +320,7 @@ public class PortalContainerConfig implements Startable
     */
    public String getDefaultRestContext()
    {
-      return defaultRestContextName;
+      return defaultDefinition.getRestContextName();
    }
 
    /**
@@ -190,7 +328,7 @@ public class PortalContainerConfig implements Startable
     */
    public String getDefaultRealmName()
    {
-      return defaultRealmName;
+      return defaultDefinition.getRealmName();
    }
 
    /**
@@ -259,7 +397,7 @@ public class PortalContainerConfig implements Startable
       {
          // we assume the old behavior is expected         
          final String portalContainerName =
-            portalContainerNames.contains(contextName) ? contextName : defaultPortalContainerName;
+            portalContainerNames.contains(contextName) ? contextName : defaultDefinition.getName();
          return Collections.singletonList(portalContainerName);
       }
       return result;
@@ -286,7 +424,7 @@ public class PortalContainerConfig implements Startable
       if (result == null || result.isEmpty())
       {
          // we assume the old behavior is expected         
-         return defaultPortalContainerName;
+         return defaultDefinition.getName();
       }
       return result.get(0);
    }
@@ -299,7 +437,12 @@ public class PortalContainerConfig implements Startable
    public List<String> getDependencies(String portalContainerName)
    {
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
-      return definition == null ? null : definition.getDependencies();
+      List<String> result = null;
+      if (definition != null)
+      {
+         result = definition.getDependencies();
+      }
+      return result == null ? defaultDefinition.getDependencies() : result;
    }
 
    /**
@@ -316,31 +459,35 @@ public class PortalContainerConfig implements Startable
          throw new IllegalArgumentException("The setting name cannot be null");
       }
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
-      if (definition == null)
+      if (definition != null)
       {
-         return null;
+         final Map<String, Object> settings = definition.getSettings();
+         if (settings != null)
+         {
+            return settings.get(settingName);
+         }
       }
-      final Map<String, Object> settings = definition.getSettings();
-      return settings == null ? null : settings.get(settingName);
+      final Map<String, Object> defaultSettings = defaultDefinition.getSettings();
+      return defaultSettings == null ? null : defaultSettings.get(settingName);
    }
 
    /**
     * Gives the name of the rest {@link ServletContext} related to the given portal container
     * @param portalContainerName the name of the portal container for which we want the rest context name
     * @return the name of the related rest context name. It tries to get it from the {@link PortalContainerDefinition}
-    * if it has not been set it will return <code>defaultRestContextName</code> 
+    * if it has not been set it will return <code>defaultDefinition.getRestContextName()</code> 
     */
    public String getRestContextName(String portalContainerName)
    {
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
       if (definition == null)
       {
-         return defaultRestContextName;
+         return defaultDefinition.getRestContextName();
       }
       else
       {
          String contextName = definition.getRestContextName();
-         return contextName == null ? defaultRestContextName : contextName;
+         return contextName == null ? defaultDefinition.getRestContextName() : contextName;
       }
    }
 
@@ -348,19 +495,19 @@ public class PortalContainerConfig implements Startable
     * Gives the name of the realm related to the given portal container
     * @param portalContainerName the name of the portal container for which we want the realm name
     * @return the name of the related realm name. It tries to get it from the {@link PortalContainerDefinition}
-    * if it has not been set it will return <code>defaultRealmName</code> 
+    * if it has not been set it will return <code>defaultDefinition.getRealmName()</code> 
     */
    public String getRealmName(String portalContainerName)
    {
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
       if (definition == null)
       {
-         return defaultRealmName;
+         return defaultDefinition.getRealmName();
       }
       else
       {
          String realmName = definition.getRealmName();
-         return realmName == null ? defaultRealmName : realmName;
+         return realmName == null ? defaultDefinition.getRealmName() : realmName;
       }
    }
 
@@ -406,7 +553,7 @@ public class PortalContainerConfig implements Startable
                String name = def.getName();
                if (name == null || (name = name.trim()).length() == 0)
                {
-                  log.warn("A PortalContainerDefinition cannot have empty name");
+                  log.warn("A PortalContainerDefinition cannot have an empty name");
                   continue;
                }
                else
@@ -429,10 +576,15 @@ public class PortalContainerConfig implements Startable
     */
    private void registerDependencies(PortalContainerDefinition definition, Map<String, List<String>> scopes)
    {
-      final List<String> dependencies = definition.getDependencies();
+      List<String> dependencies = definition.getDependencies();
       if (dependencies == null || dependencies.isEmpty())
       {
-         return;
+         // Try to get the default dependencies
+         dependencies = defaultDefinition.getDependencies();
+         if (dependencies == null || dependencies.isEmpty())
+         {
+            return;            
+         }
       }
       for (String context : dependencies)
       {
@@ -467,30 +619,123 @@ public class PortalContainerConfig implements Startable
     * portal container name, the realm name and the rest context name.
     * @param def the {@link PortalContainerDefinition} from which we have the extract the 
     * settings and in which we have to re-inject the final settings
+    * @param addDefaultSettings indicates whether the settings of the default portal
+    * container definition has to be loaded first
     */
-   private void initializeSettings(PortalContainerDefinition def)
+   private void initializeSettings(PortalContainerDefinition def, boolean addDefaultSettings)
    {
-      final Map<String, Object> settings = new HashMap<String, Object>();
-      // We first load the settings of the PortalContainerDefinition if they exist
-      final Map<String, Object> tmpSettings = def.getSettings();
-      if (tmpSettings != null && !tmpSettings.isEmpty())
+      // The list of portal container definition for which we want to load the settings
+      final PortalContainerDefinition[] defs;
+      if (addDefaultSettings)
       {
-         settings.putAll(tmpSettings);
+         // We need to load the default settings then the settings of the current portal
+         // container definition
+         defs = new PortalContainerDefinition[]{defaultDefinition, def};
       }
-      // We then load the external settings, if they exists
-      String path = def.getExternalSettingsPath();
-      if (path != null && (path = path.trim()).length() > 0)
+      else
       {
-         final Map<String, String> props = loadExternalSettings(path, def);
-         if (props != null && !props.isEmpty())
-         {
-            mergeSettings(settings, props);
-         }
+         // We only need to load the settings of the current portal container definition
+         defs = new PortalContainerDefinition[]{def};
+      }
+      final Map<String, Object> settings = new HashMap<String, Object>();
+      loadInternalSettings(defs, settings);
+      if (pc != null)
+      {
+         resolveInternalSettings(settings);
+      }
+
+      final Map<String, String> externalSettings = new LinkedHashMap<String, String>();
+      loadExternalSettings(def, defs, externalSettings);
+      if (!externalSettings.isEmpty())
+      {
+         resolveExternalSettings(def, settings, externalSettings);
+         // Merge the settings
+         mergeSettings(settings, externalSettings);
       }
       // We then add the main settings
       settings.putAll(getMainSettings(def));
       // We re-inject the settings and we make sure it is thread safe
       def.setSettings(Collections.unmodifiableMap(settings));
+   }
+
+   /**
+    * Creates a context from the internal settings, external settings and the main settings and
+    * try to resolve variables defined in the external settings
+    */
+   private void resolveExternalSettings(PortalContainerDefinition def, final Map<String, Object> settings,
+      final Map<String, String> externalSettings)
+   {
+      // Create the context for variable resolution
+      final Map<String, Object> ctx = new LinkedHashMap<String, Object>();
+      ctx.putAll(settings);
+      ctx.putAll(externalSettings);
+      ctx.putAll(getMainSettings(def));
+      // Resolve variables
+      for (Map.Entry<String, String> entry : externalSettings.entrySet())
+      {
+         String propertyName = entry.getKey();
+         String propertyValue = entry.getValue();
+         propertyValue = Deserializer.resolveVariables(propertyValue, ctx);
+         externalSettings.put(propertyName, propertyValue);
+      }
+   }
+
+   /**
+    * Loads the external settings of all the given {@link PortalContainerDefinition}
+    */
+   private void loadExternalSettings(PortalContainerDefinition def, final PortalContainerDefinition[] defs,
+      final Map<String, String> externalSettings)
+   {
+      for (PortalContainerDefinition pcd : defs)
+      {
+         // We then load the external settings, if they exists
+         String path = pcd.getExternalSettingsPath();
+         if (path != null && (path = path.trim()).length() > 0)
+         {
+            final Map<String, String> props =
+               loadExternalSettings(path, defaultDefinition == null || pcd == defaultDefinition, def);
+            if (props != null && !props.isEmpty())
+            {
+               externalSettings.putAll(props);
+            }
+         }
+      }
+   }
+
+   /**
+    * Try to resolve all the String values to ensure that there is no variables unresolved
+    * The {@link PropertyConfigurator} cans create new system property so it could be
+    * necessary to resolve the {@link String} settings one more time
+    */
+   private void resolveInternalSettings(final Map<String, Object> settings)
+   {
+      // New System properties have been added so we will try to re-resolve the String variables
+      for (Map.Entry<String, Object> entry : settings.entrySet())
+      {
+         String propertyName = entry.getKey();
+         Object propertyValue = entry.getValue();
+         if (propertyValue instanceof String)
+         {
+            propertyValue = Deserializer.resolveVariables((String)propertyValue);
+            settings.put(propertyName, propertyValue);
+         }
+      }
+   }
+
+   /**
+    * Loads all the internal settings related to the given array of {@link PortalContainerDefinition}
+    */
+   private void loadInternalSettings(final PortalContainerDefinition[] defs, final Map<String, Object> settings)
+   {
+      for (PortalContainerDefinition pcd : defs)
+      {
+         // We first load the internal settings if they exists
+         final Map<String, Object> tmpSettings = pcd.getSettings();
+         if (tmpSettings != null && !tmpSettings.isEmpty())
+         {
+            settings.putAll(tmpSettings);
+         }
+      }
    }
 
    /**
@@ -506,10 +751,11 @@ public class PortalContainerConfig implements Startable
       // We add the portal container name
       settings.put(PORTAL_CONTAINER_SETTING_NAME, def.getName());
       // We add the rest context name
-      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName() == null ? defaultRestContextName : def
-         .getRestContextName());
+      settings.put(REST_CONTEXT_SETTING_NAME, def.getRestContextName() == null ? defaultDefinition.getRestContextName()
+         : def.getRestContextName());
       // We add the realm name
-      settings.put(REALM_SETTING_NAME, def.getRealmName() == null ? defaultRealmName : def.getRealmName());
+      settings.put(REALM_SETTING_NAME, def.getRealmName() == null ? defaultDefinition.getRealmName() : def
+         .getRealmName());
       return settings;
    }
 
@@ -520,8 +766,12 @@ public class PortalContainerConfig implements Startable
     * <li>The path doesn't contain any prefix of type "classpath:", "jar:" or "file:", we
     * assume that the file could be externalized so we apply the following rules:
     * <ol>
-    * <li>A file exists at ${exo-conf-dir}/portal/${portalContainerName}/${path}, we
-    * will load this file</li>
+    * <li>The value of the parameter <code>isPath4DefaultPCD</code> is <code>true</code> which
+    * means that the given url comes from the default portal container definition and a file 
+    * exists at ${exo-conf-dir}/portal/${path}, we will load this file</li>
+    * <li>The value of the parameter <code>isPath4DefaultPCD</code> is <code>false</code> which
+    * means that the given url doesn't come from the default portal container definition and a file 
+    * exists at ${exo-conf-dir}/portal/${portalContainerName}/${path}, we will load this file</li>
     * <li>No file exists at the previous path, we then assume that the path cans be 
     * interpreted by the {@link ConfigurationManager}</li>
     * </ol>
@@ -530,10 +780,13 @@ public class PortalContainerConfig implements Startable
     * by the {@link ConfigurationManager}</li>
     * </ol>
     * @param path the path of the external settings to load
+    * @param isPath4DefaultPCD indicates if the given path comes from the default portal
+    * container definition
     * @param def the {@link PortalContainerDefinition} for which we load the external settings
     * @return A {@link Map} of settings if the file could be loaded, <code>null</code> otherwise
     */
-   private Map<String, String> loadExternalSettings(String path, PortalContainerDefinition def)
+   private Map<String, String> loadExternalSettings(String path, boolean isPath4DefaultPCD,
+      PortalContainerDefinition def)
    {
       try
       {
@@ -541,7 +794,9 @@ public class PortalContainerConfig implements Startable
          if (path.indexOf(':') == -1)
          {
             // We first check if the file is not in eXo configuration directory
-            String fullPath = serverInfo.getExoConfigurationDirectory() + "/portal/" + def.getName() + "/" + path;
+            String fullPath =
+               serverInfo.getExoConfigurationDirectory() + "/portal/" + (isPath4DefaultPCD ? "" : def.getName() + "/")
+                  + path;
             File file = new File(fullPath);
             if (file.exists())
             {
@@ -555,7 +810,7 @@ public class PortalContainerConfig implements Startable
             url = cm.getURL(path);
          }
          // We load the properties from the url found
-         return ContainerUtil.loadProperties(url, getMainSettings(def));
+         return ContainerUtil.loadProperties(url, false);
       }
       catch (Exception e)
       {
@@ -667,54 +922,45 @@ public class PortalContainerConfig implements Startable
     */
    private void initialize(Map<String, PortalContainerDefinition> mDefinitions)
    {
-      if (mDefinitions.isEmpty())
-      {
-         // No definitions have been found, the default values will be set
-         if (defaultPortalContainerName == null)
-         {
-            this.defaultPortalContainerName = DEFAULT_PORTAL_CONTAINER_NAME;
-         }
-      }
       final List<String> lPortalContainerNames = new ArrayList<String>(mDefinitions.size() + 1);
       // Add the default portal container name
-      if (defaultPortalContainerName != null)
-      {
-         lPortalContainerNames.add(defaultPortalContainerName);
-      }
+      lPortalContainerNames.add(defaultDefinition.getName());
       final Map<String, List<String>> mScopes = new HashMap<String, List<String>>();
       for (Map.Entry<String, PortalContainerDefinition> entry : mDefinitions.entrySet())
       {
          PortalContainerDefinition definition = entry.getValue();
          String name = definition.getName();
-         if (!name.equals(defaultPortalContainerName))
+         boolean hasChanged = false;
+         if (!name.equals(defaultDefinition.getName()))
          {
-            if (defaultPortalContainerName == null)
+            if (defaultDefinition.getName() == DEFAULT_PORTAL_CONTAINER_NAME)
             {
-               this.defaultPortalContainerName = name;
+               defaultDefinition.setName(name);
+               hasChanged = true;
             }
             lPortalContainerNames.add(name);
          }
-         if (defaultRestContextName == null)
+         if (defaultDefinition.getRestContextName() == DEFAULT_REST_CONTEXT_NAME
+            && definition.getRestContextName() != null && definition.getRestContextName().trim().length() > 0)
          {
-            this.defaultRestContextName = definition.getRestContextName();
+            defaultDefinition.setRestContextName(definition.getRestContextName().trim());
+            hasChanged = true;
          }
-         if (defaultRealmName == null)
+         if (defaultDefinition.getRealmName() == DEFAULT_REALM_NAME && definition.getRealmName() != null
+            && definition.getRealmName().trim().length() > 0)
          {
-            this.defaultRealmName = definition.getRealmName();
+            defaultDefinition.setRealmName(definition.getRealmName().trim());
+            hasChanged = true;
          }
          registerDependencies(definition, mScopes);
-         initializeSettings(definition);
+         if (hasChanged)
+         {
+            initializeSettings(defaultDefinition, false);
+         }
+         initializeSettings(definition, true);
       }
       this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);
-      if (defaultRestContextName == null)
-      {
-         this.defaultRestContextName = DEFAULT_REST_CONTEXT_NAME;
-      }
-      if (defaultRealmName == null)
-      {
-         this.defaultRealmName = DEFAULT_REALM_NAME;
-      }
    }
 
    /**

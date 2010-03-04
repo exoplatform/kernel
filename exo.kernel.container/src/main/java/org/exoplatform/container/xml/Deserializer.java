@@ -178,7 +178,7 @@ public class Deserializer
 
    /**
     * Resolve the variables of type ${my.var} for the current context which is composed
-    * of the system properties and the portal container properties
+    * of the system properties and the portal container settings
     * @param input the input value
     * @return the resolve value
     */
@@ -189,12 +189,12 @@ public class Deserializer
    
    /**
     * Resolve the variables of type ${my.var} for the current context which is composed
-    * of the system properties, the portal container properties and the given properties
+    * of the system properties, the portal container settings and the given settings
     * @param input the input value
-    * @param props a set of properties to add for the variable resolution
+    * @param props a set of parameters to add for the variable resolution
     * @return the resolve value
     */
-   public static String resolveVariables(String input, Map<String, String> props)   
+   public static String resolveVariables(String input, Map<String, Object> props)   
    {
       final int NORMAL = 0;
       final int SEEN_DOLLAR = 1;
@@ -257,8 +257,9 @@ public class Deserializer
                {
                   if (props != null)
                   {
-                     // Some properties have been given thus we need to check inside first
-                     value = props.get(key);
+                     // Some parameters have been given thus we need to check inside first
+                     Object oValue = props.get(key);
+                     value = oValue == null ? null : oValue.toString();
                   }
                   if (value == null)
                   {
