@@ -245,7 +245,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * Only puts the data into the cache nothing more
     */
-   private V putOnly(K key, V value)
+   protected V putOnly(K key, V value)
    {
       return cache.put(getFqn(key), key, value);
    }
@@ -428,7 +428,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * Returns the Fqn related to the given name
     */
-   private Fqn<Serializable> getFqn(Serializable name)
+   protected Fqn<Serializable> getFqn(Serializable name)
    {
       return Fqn.fromElements(name);
    }
