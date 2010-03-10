@@ -516,6 +516,13 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals("my-exo-domain", config.getSetting("myPortal", PortalContainerConfig.REALM_SETTING_NAME));
       assertEquals("my-exo-domain-pcdef", config.getSetting("myPortal-pcdef", PortalContainerConfig.REALM_SETTING_NAME));
 
+      // Simple usecase from gatein
+      rootContainer = createRootContainer("sample-gtn-configuration.xml");
+      config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+      assertEquals("../gatein/data", config.getSetting("portal", "gatein.data.dir"));
+      assertEquals("../gatein/data/db", config.getSetting("portal", "gatein.db.data.dir"));
+      assertEquals("jdbc:hsqldb:file:../gatein/data/db/data/jdbcjcr_portal", config.getSetting("portal", "gatein.jcr.datasource.url"));
+     
       // With external settings, with several portal container definitions and with 
       // default portal container definition
       rootContainer =

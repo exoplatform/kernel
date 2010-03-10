@@ -677,6 +677,7 @@ public class PortalContainerConfig implements Startable
          String propertyValue = entry.getValue();
          propertyValue = Deserializer.resolveVariables(propertyValue, ctx);
          externalSettings.put(propertyName, propertyValue);
+         ctx.put(propertyName, propertyValue);
       }
    }
 
