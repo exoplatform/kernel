@@ -54,7 +54,7 @@ public class Deserializer
     */
    public static String resolveString(String s)
    {
-      return Deserializer.resolveVariables(s);
+      return Deserializer.resolveNClean(s);
    }
 
    /**
@@ -77,7 +77,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       if (s.equalsIgnoreCase("true"))
       {
          return true;
@@ -107,7 +107,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       try
       {
          return Integer.parseInt(s);
@@ -136,7 +136,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       try
       {
          return Long.parseLong(s);
@@ -165,7 +165,7 @@ public class Deserializer
       {
          return null;
       }
-      s = Deserializer.resolveVariables(s);
+      s = Deserializer.resolveNClean(s);
       try
       {
          return Double.parseDouble(s);
@@ -178,7 +178,7 @@ public class Deserializer
 
    /**
     * Resolve the variables of type ${my.var} for the current context which is composed
-    * of the system properties and the portal container properties
+    * of the system properties and the portal container settings
     * @param input the input value
     * @return the resolve value
     */
@@ -189,12 +189,12 @@ public class Deserializer
    
    /**
     * Resolve the variables of type ${my.var} for the current context which is composed
-    * of the system properties, the portal container properties and the given properties
+    * of the system properties, the portal container settings and the given settings
     * @param input the input value
-    * @param props a set of properties to add for the variable resolution
+    * @param props a set of parameters to add for the variable resolution
     * @return the resolve value
     */
-   public static String resolveVariables(String input, Map<String, String> props)   
+   public static String resolveVariables(String input, Map<String, Object> props)   
    {
       final int NORMAL = 0;
       final int SEEN_DOLLAR = 1;
@@ -257,8 +257,9 @@ public class Deserializer
                {
                   if (props != null)
                   {
-                     // Some properties have been given thus we need to check inside first
-                     value = props.get(key);
+                     // Some parameters have been given thus we need to check inside first
+                     Object oValue = props.get(key);
+                     value = oValue == null ? null : oValue.toString();
                   }
                   if (value == null)
                   {
@@ -283,5 +284,26 @@ public class Deserializer
          buffer.append(input.substring(start, chars.length));
       return buffer.toString();
    
+   }
+   
+   /**
+    * This methods will remove useless characters from the given {@link String} and return the result
+    * @param s the input value
+    * @return <code>null</code> if the input value is <code>null</code>, <code>s.trim()</code>
+    * otherwise
+    */
+   public static String cleanString(String s)
+   {
+      return s == null ? null : s.trim();
+   }
+   
+   /**
+    * This method will first resolves the variables then it will clean the results
+    * @param s the input value
+    * @return the resolve and clean value
+    */
+   public static String resolveNClean(String s)
+   {
+      return cleanString(resolveVariables(s));
    }
 }

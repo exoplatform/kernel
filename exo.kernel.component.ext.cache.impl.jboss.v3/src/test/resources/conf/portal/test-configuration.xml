@@ -122,7 +122,27 @@
           <field name="maxAge"><long>2000</long></field>
           <field name="timeToLive"><long>1500</long></field>
         </object>
-      </object-param>                                  
+      </object-param>    
+       <object-param>
+        <name>test-ea-with-old-config</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field name="name"><string>test-ea-with-old-config</string></field>
+          <field name="maxSize"><int>5</int></field>
+          <field name="liveTime"><long>1</long></field>
+          <field name="implementation"><string>EA</string></field>
+        </object>
+      </object-param> 
+       <object-param>
+        <name>test-ea</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.impl.jboss.ea.EAExoCacheConfig">
+          <field name="name"><string>test-ea</string></field>
+          <field name="maxNodes"><int>5</int></field>
+          <field name="minTimeToLive"><long>1000</long></field>
+          <field name="expirationTimeout"><long>2000</long></field>
+        </object>
+      </object-param>                                   
     </init-params>	
   </component>  
   
@@ -174,7 +194,14 @@
 		        	<field name="defaultTimeToLive"><long>1500</long></field>
 		        	<field name="defaultMaxAge"><long>2000</long></field>	
 		        </object>
-		    </object-param>  		          
+		    </object-param>  
+	      <object-param>
+		        <name>EA</name>
+		        <description>The ea cache creator</description>
+		        <object type="org.exoplatform.services.cache.impl.jboss.ea.EAExoCacheCreator">
+		        	<field name="defaultExpirationTimeout"><long>2000</long></field>	
+		        </object>
+		    </object-param>		    		          
       </init-params>	
     </component-plugin>
   </external-component-plugins>  

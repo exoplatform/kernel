@@ -51,7 +51,7 @@ public class LFUExoCacheCreator implements ExoCacheCreator
    public static final String EXPECTED_IMPL = "LFU";
 
    /**
-    * The default value for the parameter maxAge
+    * The default value for the parameter minNodes
     */
    protected int defaultMinNodes;
 

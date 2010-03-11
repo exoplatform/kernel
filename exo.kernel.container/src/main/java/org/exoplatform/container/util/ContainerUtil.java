@@ -208,16 +208,16 @@ public class ContainerUtil
     */
    public static Map<String, String> loadProperties(URL url)
    {
-      return loadProperties(url, null);
+      return loadProperties(url, true);
    }
    
    /**
     * Loads the properties file corresponding to the given url
     * @param url the url of the properties file
-    * @param initEnv the initial environment that is composed of a set of initial variables
+    * @param resolveVariables indicates if the variables must be resolved
     * @return a {@link Map} of properties
     */
-   public static Map<String, String> loadProperties(URL url, Map<String, String> initEnv)
+   public static Map<String, String> loadProperties(URL url, boolean resolveVariables)
    {
       LinkedHashMap<String, String> props = null;
       String path = null;
@@ -251,15 +251,10 @@ public class ContainerUtil
             {
                log.debug("Will not load property file" + path + " because its format is not recognized");
             }
-            if (props != null)
+            if (props != null && resolveVariables)
             {
                // Those properties are used for variables resolution
-               final Map<String, String> currentProps = new HashMap<String,String>();
-               if (initEnv != null && !initEnv.isEmpty())
-               {
-                  // There are a set of initial variables to load into the environment
-                  currentProps.putAll(initEnv);
-               }
+               final Map<String, Object> currentProps = new HashMap<String, Object>();            
                for (Map.Entry<String, String> entry : props.entrySet())
                {
                   String propertyName = entry.getKey();
