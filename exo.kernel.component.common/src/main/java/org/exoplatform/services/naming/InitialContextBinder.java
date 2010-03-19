@@ -19,9 +19,6 @@
 package org.exoplatform.services.naming;
 
 import org.exoplatform.container.configuration.ConfigurationException;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.PropertiesParam;
-import org.exoplatform.container.xml.ValueParam;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +38,6 @@ import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-import javax.sql.DataSource;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -54,6 +50,8 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 /**
+ * Class is responsible for binding datasources at runtime, persists on file and automatically rebinds after restart.
+ * 
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: InitialContextBinder.java 111 2010-11-11 11:11:11Z tolusha $
  */
@@ -81,9 +79,7 @@ public class InitialContextBinder
     */
    protected final InitialContextInitializer initialContextInitializer;
 
-   protected final String bindReferencesStorage;
-
-   protected final Reference reference;
+   protected final String bindReferencesPath;
 
    protected Map<String, Reference> bindReferences;
 
@@ -100,40 +96,15 @@ public class InitialContextBinder
     * @throws XMLStreamException
     * @throws NamingException
     */
-   public InitialContextBinder(InitialContextInitializer initialContextInitializer, InitParams initParams)
-      throws ConfigurationException, FileNotFoundException, XMLStreamException, NamingException
+   public InitialContextBinder(InitialContextInitializer initialContextInitializer) throws ConfigurationException,
+      FileNotFoundException, XMLStreamException, NamingException
    {
       this.initialContextInitializer = initialContextInitializer;
 
-      ValueParam cnParam = initParams.getValueParam("class-name");
-      if (cnParam == null)
-      {
-         throw new ConfigurationException("class-name parameter expected");
-      }
-
-      ValueParam factoryParam = initParams.getValueParam("factory");
-      if (factoryParam == null)
-      {
-         throw new ConfigurationException("factory parameter expected");
-      }
-
-      ValueParam flParam = initParams.getValueParam("factory-location");
-      String factoryLocation = flParam != null ? flParam.getValue() : null;
-
-      this.reference = new Reference(cnParam.getValue(), factoryParam.getValue(), factoryLocation);
-
-      PropertiesParam addrsParam = initParams.getPropertiesParam("ref-addresses");
-      if (addrsParam != null)
-      {
-         for (Entry entry : addrsParam.getProperties().entrySet())
-         {
-            reference.add(new StringRefAddr((String)entry.getKey(), (String)entry.getValue()));
-         }
-      }
-
-      this.bindReferencesStorage = System.getProperty("java.io.tmpdir") + File.separator + "datasources.xml";
       this.bindReferences = new HashMap<String, Reference>();
-      if (new File(bindReferencesStorage).exists())
+      this.bindReferencesPath = System.getProperty("java.io.tmpdir") + File.separator + "datasources.xml";
+
+      if (new File(bindReferencesPath).exists())
       {
          this.bindReferences.putAll(doImport());
          for (Entry<String, Reference> entry : bindReferences.entrySet())
@@ -144,24 +115,21 @@ public class InitialContextBinder
    }
 
    /**
-    * Bind reference and return datasource.
-    * 
-    * @param bindName
-    *          bind name
-    * @return  datasource
-    * @throws NamingException
-    * @throws FileNotFoundException
-    * @throws XMLStreamException
+    * Bind reference.
     */
-   public DataSource bind(String bindName) throws NamingException, FileNotFoundException, XMLStreamException
+   public void bind(String bindName, String className, String factory, String factoryLocation,
+      Map<String, String> refAddr) throws NamingException, FileNotFoundException, XMLStreamException
    {
+      Reference reference = new Reference(className, factory, factoryLocation);
+      for (Entry entry : refAddr.entrySet())
+      {
+         reference.add(new StringRefAddr((String)entry.getKey(), (String)entry.getValue()));
+      }
+
       bind(bindName, reference);
 
       bindReferences.put(bindName, reference);
       doExport();
-
-      return (DataSource)initialContextInitializer.getInitialContext().lookup(bindName);
-
    }
 
    private void bind(String bindName, Reference reference) throws NamingException
@@ -170,7 +138,7 @@ public class InitialContextBinder
    }
 
    /**
-    * Export into xml.
+    * Export references into xml-file.
     * 
     * @throws XMLStreamException
     * @throws FileNotFoundException
@@ -178,8 +146,7 @@ public class InitialContextBinder
    protected void doExport() throws XMLStreamException, FileNotFoundException
    {
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-      XMLStreamWriter writer =
-         outputFactory.createXMLStreamWriter(new FileOutputStream(bindReferencesStorage), "UTF-8");
+      XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(bindReferencesPath), "UTF-8");
 
       writer.writeStartDocument("UTF-8", "1.0");
       writer.writeStartElement(BIND_REFERENCES_ELEMENT);
@@ -220,9 +187,10 @@ public class InitialContextBinder
    }
 
    /**
-    * Import from xml. 
+    * Import references from xml-file. 
     * 
-    * @return
+    * @return list of references
+    * 
     * @throws XMLStreamException 
     * @throws FileNotFoundException 
     */
@@ -231,7 +199,7 @@ public class InitialContextBinder
       Map<String, Reference> references = new HashMap<String, Reference>();
 
       XMLInputFactory factory = XMLInputFactory.newInstance();
-      XMLEventReader reader = factory.createXMLEventReader(new FileInputStream(bindReferencesStorage), "UTF-8");
+      XMLEventReader reader = factory.createXMLEventReader(new FileInputStream(bindReferencesPath), "UTF-8");
 
       while (reader.hasNext())
       {
