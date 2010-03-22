@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="ch-initial-context-binder-service.html"?>
+
+  <title>Initial Context Binder</title>
+
+  <section>
+    <title>About</title>
+
+    <para>Initial Context Binder is responsible for binding references at
+    runtime, persisting in file and automatically rebinding after restart.
+    Java temp directory is used to persist references in bind-references.xml
+    file.</para>
+  </section>
+
+  <section>
+    <title>API</title>
+
+    <para>Service provide methods for binding reference.</para>
+
+    <programlisting>public void bind(String bindName, String className, String factory, String factoryLocation, Map&lt;String, String&gt; refAddr) throws NamingException, FileNotFoundException, XMLStreamException;</programlisting>
+
+    <itemizedlist>
+      <listitem>
+        <para>bindName - name of binding</para>
+      </listitem>
+
+      <listitem>
+        <para>className - the fully-qualified name of the class of the object
+        to which this Reference refers</para>
+      </listitem>
+
+      <listitem>
+        <para>factory - the name of the factory class for creating an instance
+        of the object to which this Reference refers</para>
+      </listitem>
+
+      <listitem>
+        <para>factoryLocation - the location of the factory class</para>
+      </listitem>
+
+      <listitem>
+        <para>refAddr - object's properties map</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>A configuration examples</title>
+
+    <para>Service's configuration.</para>
+
+    <programlisting>&lt;component&gt; 
+   &lt;key&gt;org.exoplatform.services.naming.InitialContextBinder&lt;/key&gt; 
+   &lt;type&gt;org.exoplatform.services.naming.InitialContextBinder&lt;/type&gt; 
+&lt;/component&gt;</programlisting>
+  </section>
+</chapter>
