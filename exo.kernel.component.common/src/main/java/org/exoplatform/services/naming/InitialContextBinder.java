@@ -18,24 +18,20 @@
  */
 package org.exoplatform.services.naming;
 
-import org.exoplatform.container.configuration.ConfigurationException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Stack;
 
-import java.util.List;
 import java.util.Map;
 
 import java.util.Map.Entry;
 
 import javax.naming.NamingException;
-import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.xml.stream.XMLEventReader;
@@ -50,7 +46,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 /**
- * Class is responsible for binding datasources at runtime, persists on file and automatically rebinds after restart.
+ * Class is responsible for binding references at runtime, persists on file and automatically binds after restart.
  * 
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: InitialContextBinder.java 111 2010-11-11 11:11:11Z tolusha $
@@ -79,8 +75,14 @@ public class InitialContextBinder
     */
    protected final InitialContextInitializer initialContextInitializer;
 
+   /**
+    * Absolute file path to references's storage.
+    */
    protected final String bindReferencesPath;
 
+   /**
+    * All current binded references.
+    */
    protected Map<String, Reference> bindReferences;
 
    /**
@@ -90,24 +92,25 @@ public class InitialContextBinder
     *          initial context initializer
     * @param initParams
     *          initialization parameters
-    * 
-    * @throws ConfigurationException
+    * @throws XMLStreamException 
+    * @throws FileNotFoundException 
     * @throws FileNotFoundException
     * @throws XMLStreamException
+    * @throws NamingException 
     * @throws NamingException
     */
-   public InitialContextBinder(InitialContextInitializer initialContextInitializer) throws ConfigurationException,
-      FileNotFoundException, XMLStreamException, NamingException
+   public InitialContextBinder(InitialContextInitializer initialContextInitializer) throws FileNotFoundException,
+      XMLStreamException, NamingException
    {
       this.initialContextInitializer = initialContextInitializer;
 
       this.bindReferences = new HashMap<String, Reference>();
-      this.bindReferencesPath = System.getProperty("java.io.tmpdir") + File.separator + "datasources.xml";
+      this.bindReferencesPath = System.getProperty("java.io.tmpdir") + File.separator + "bind-references.xml";
 
       if (new File(bindReferencesPath).exists())
       {
-         this.bindReferences.putAll(doImport());
-         for (Entry<String, Reference> entry : bindReferences.entrySet())
+         Map<String, Reference> importedRefs = doImport();
+         for (Entry<String, Reference> entry : importedRefs.entrySet())
          {
             bind(entry.getKey(), entry.getValue());
          }
@@ -115,7 +118,24 @@ public class InitialContextBinder
    }
 
    /**
-    * Bind reference.
+    * Constructs references from params, binds in initial contexts and persists list of all binded
+    * references into file.
+    * 
+    * @param bindName
+    *          bind name
+    * @param className
+    *          class name
+    * @param factory
+    *          factory name
+    * @param factoryLocation
+    *          factory location
+    * @param refAddr
+    *          map of references's properties
+    * 
+    * @throws NamingException
+    *          if error occurs due to binding
+    * @throws XMLStreamException 
+    * @throws FileNotFoundException
     */
    public void bind(String bindName, String className, String factory, String factoryLocation,
       Map<String, String> refAddr) throws NamingException, FileNotFoundException, XMLStreamException
@@ -128,22 +148,24 @@ public class InitialContextBinder
 
       bind(bindName, reference);
 
-      bindReferences.put(bindName, reference);
       doExport();
    }
 
    private void bind(String bindName, Reference reference) throws NamingException
    {
       initialContextInitializer.getInitialContext().bind(bindName, reference);
+      bindReferences.put(bindName, reference);
    }
 
    /**
     * Export references into xml-file.
     * 
-    * @throws XMLStreamException
+    * @throws XMLStreamException 
+    *          if any exception occurs during export
     * @throws FileNotFoundException
+    *          if can't open output stream from file
     */
-   protected void doExport() throws XMLStreamException, FileNotFoundException
+   protected void doExport() throws FileNotFoundException, XMLStreamException
    {
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
       XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(bindReferencesPath), "UTF-8");
@@ -189,14 +211,18 @@ public class InitialContextBinder
    /**
     * Import references from xml-file. 
     * 
-    * @return list of references
+    * @return map with bind name - references
     * 
-    * @throws XMLStreamException 
+    * @throws XMLStreamException
+    *          if errors occurs during import 
     * @throws FileNotFoundException 
+    *          if can't open input stream from file
     */
    protected Map<String, Reference> doImport() throws FileNotFoundException, XMLStreamException
    {
-      Map<String, Reference> references = new HashMap<String, Reference>();
+      Stack<RefEntity> stack = new Stack<RefEntity>();
+
+      Map<String, Reference> importedRefs = new HashMap<String, Reference>();
 
       XMLInputFactory factory = XMLInputFactory.newInstance();
       XMLEventReader reader = factory.createXMLEventReader(new FileInputStream(bindReferencesPath), "UTF-8");
@@ -208,7 +234,15 @@ public class InitialContextBinder
          {
             case XMLStreamConstants.START_ELEMENT :
                StartElement startElement = event.asStartElement();
-               Map<String, String> attr = parseAttributes(startElement);
+
+               Map<String, String> attr = new HashMap<String, String>();
+
+               Iterator attributes = startElement.getAttributes();
+               while (attributes.hasNext())
+               {
+                  Attribute attribute = (Attribute)attributes.next();
+                  attr.put(attribute.getName().getLocalPart(), attribute.getValue());
+               }
 
                String localName = startElement.getName().getLocalPart();
                if (localName.equals(REFERENCE_ELEMENT))
@@ -219,54 +253,31 @@ public class InitialContextBinder
                   String factoryLocation = attr.get(FACTORY_LOCATION_ATTR);
 
                   Reference reference = new Reference(className, factoryName, factoryLocation);
-                  for (RefAddr refAddr : importRefAddr(reader))
-                  {
-                     reference.add(refAddr);
-                  }
-
-                  references.put(bindName, reference);
+                  stack.push(new RefEntity(bindName, reference));
                }
-               break;
-            case XMLStreamConstants.END_ELEMENT :
-               break;
-            default :
-               break;
-         }
-      }
-
-      return references;
-   }
-
-   private List<RefAddr> importRefAddr(XMLEventReader reader) throws XMLStreamException
-   {
-      List<RefAddr> refAddrs = new ArrayList<RefAddr>();
-
-      outer : while (reader.hasNext())
-      {
-         XMLEvent event = reader.nextEvent();
-         switch (event.getEventType())
-         {
-            case XMLStreamConstants.START_ELEMENT :
-               StartElement startElement = event.asStartElement();
-
-               Map<String, String> attr = parseAttributes(startElement);
-
-               String localName = startElement.getName().getLocalPart();
-               if (localName.equals(PROPERTY_ELEMENT))
+               else if (localName.equals(PROPERTY_ELEMENT))
                {
+                  RefEntity refEntity = stack.pop();
+                  Reference reference = refEntity.getValue();
+
                   for (Entry<String, String> entry : attr.entrySet())
                   {
-                     refAddrs.add(new StringRefAddr(entry.getKey(), entry.getValue()));
+                     reference.add(new StringRefAddr(entry.getKey(), entry.getValue()));
                   }
+
+                  refEntity.setValue(reference);
+                  stack.push(refEntity);
                }
+
                break;
             case XMLStreamConstants.END_ELEMENT :
                EndElement endElement = event.asEndElement();
-
                localName = endElement.getName().getLocalPart();
-               if (localName.equals(REFADDR_ELEMENT))
+
+               if (localName.equals(REFERENCE_ELEMENT))
                {
-                  break outer;
+                  RefEntity refEntity = stack.pop();
+                  importedRefs.put(refEntity.getKey(), refEntity.getValue());
                }
                break;
             default :
@@ -274,20 +285,67 @@ public class InitialContextBinder
          }
       }
 
-      return refAddrs;
+      return importedRefs;
    }
 
-   private Map<String, String> parseAttributes(StartElement startElement)
+   /**
+    * Class implements Map.Entry interface and used to push/pop entity in stack. 
+    */
+   class RefEntity implements Map.Entry
    {
-      Map<String, String> attr = new HashMap<String, String>();
 
-      Iterator attributes = startElement.getAttributes();
-      while (attributes.hasNext())
+      /**
+       * Entry key.
+       */
+      private final String key;
+
+      /**
+       * Entry value.
+       */
+      private Reference value;
+
+      /**
+       * RefEntity constructor.
+       * 
+       * @param key
+       *          entry key
+       * @param value
+       *          entry value       
+       */
+      public RefEntity(String key, Reference value)
       {
-         Attribute attribute = (Attribute)attributes.next();
-         attr.put(attribute.getName().getLocalPart(), attribute.getValue());
+         this.key = key;
+         this.value = value;
       }
 
-      return attr;
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public String getKey()
+      {
+         return key;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Reference getValue()
+      {
+         return value;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Reference setValue(Object value)
+      {
+         Reference oldValue = this.value;
+         this.value = (Reference)value;
+
+         return oldValue;
+      }
    }
 }

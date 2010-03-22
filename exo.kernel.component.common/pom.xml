@@ -99,7 +99,6 @@
                <excludes>
                   <exclude>**/InitialContextTest.java</exclude>
                   <exclude>**/TransactionTest.java</exclude>
-                  <exclude>**/TestInitialContextBinder.java</exclude>
                </excludes>
             </configuration>
          </plugin>
