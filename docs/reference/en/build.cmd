@@ -1,1 +1,0 @@
-@start mvn clean install jdocbook:resources jdocbook:generate
