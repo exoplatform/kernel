@@ -583,7 +583,7 @@ public class PortalContainerConfig implements Startable
          dependencies = defaultDefinition.getDependencies();
          if (dependencies == null || dependencies.isEmpty())
          {
-            return;            
+            return;
          }
       }
       for (String context : dependencies)
@@ -959,6 +959,13 @@ public class PortalContainerConfig implements Startable
             initializeSettings(defaultDefinition, false);
          }
          initializeSettings(definition, true);
+      }
+      if (!mDefinitions.containsKey(defaultDefinition.getName()) && defaultDefinition.getDependencies() != null
+         && !defaultDefinition.getDependencies().isEmpty())
+      {
+         // The default portal container has not been defined and some default
+         // dependencies have been defined
+         registerDependencies(defaultDefinition, mScopes);
       }
       this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);
