@@ -26,16 +26,23 @@ import org.exoplatform.container.xml.Property;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Created by The eXo Platform SAS.<br/> Initializer for
@@ -59,13 +66,18 @@ public class InitialContextInitializer
 
    private final InitialContext initialContext;
 
+   private final InitialContextBinder binder;
+
    /**
     * @param params
     * @throws NamingException
     * @throws ConfigurationException if no context factory initialized and no
     *           context-factory nor default-context-factory configured
+    * @throws XMLStreamException if error of serialized bindings read
+    * @throws FileNotFoundException if cannot open file with serialized bindings
     */
-   public InitialContextInitializer(InitParams params) throws NamingException, ConfigurationException
+   public InitialContextInitializer(InitParams params) throws NamingException, ConfigurationException,
+      FileNotFoundException, XMLStreamException
    {
       for (Iterator propsParams = params.getPropertiesParamIterator(); propsParams.hasNext();)
       {
@@ -97,6 +109,9 @@ public class InitialContextInitializer
       }
       initialContext = new InitialContext();
       bindReferencesPlugins = new ArrayList<BindReferencePlugin>();
+
+      // binder
+      binder = new InitialContextBinder(this);
    }
 
    private void setSystemProperty(String propName, String propValue, String propParamName)
@@ -110,13 +125,17 @@ public class InitialContextInitializer
    }
 
    // for out-of-container testing
-   private InitialContextInitializer(String name, Reference reference) throws NamingException
+   private InitialContextInitializer(String name, Reference reference) throws NamingException, FileNotFoundException, XMLStreamException
    {
       if (System.getProperty(Context.INITIAL_CONTEXT_FACTORY) == null)
+      {
          System.setProperty(Context.INITIAL_CONTEXT_FACTORY, defaultContextFactory);
+      }
       initialContext = new InitialContext();
       initialContext.rebind(name, reference);
 
+      // binder
+      binder = new InitialContextBinder(this);
    }
 
    /**
@@ -191,8 +210,34 @@ public class InitialContextInitializer
    }
 
    // for out-of-container testing
-   public static void initialize(String name, Reference reference) throws NamingException
+   public static void initialize(String name, Reference reference) throws NamingException, FileNotFoundException, XMLStreamException
    {
       new InitialContextInitializer(name, reference);
+   }
+
+   /**
+    * Constructs references from params, binds in initial contexts and persists list of all binded
+    * references into file.
+    * 
+    * @param bindName
+    *          bind name
+    * @param className
+    *          class name
+    * @param factory
+    *          factory name
+    * @param factoryLocation
+    *          factory location
+    * @param refAddr
+    *          map of references's properties
+    * 
+    * @throws NamingException
+    *          if error occurs due to binding
+    * @throws XMLStreamException 
+    * @throws FileNotFoundException
+    */
+   public void bind(String bindName, String className, String factory, String factoryLocation,
+      Map<String, String> refAddr) throws NamingException, FileNotFoundException, XMLStreamException
+   {
+      binder.bind(bindName, className, factory, factoryLocation, refAddr);
    }
 }

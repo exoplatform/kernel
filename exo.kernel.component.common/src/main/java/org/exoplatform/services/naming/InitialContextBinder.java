@@ -78,12 +78,12 @@ public class InitialContextBinder
    /**
     * Absolute file path to references's storage.
     */
-   protected final String bindReferencesPath;
+   protected final String bindingsStorePath;
 
    /**
     * All current binded references.
     */
-   protected Map<String, Reference> bindReferences;
+   protected Map<String, Reference> bindings;
 
    /**
     * InitialContextBinder constructor.
@@ -99,17 +99,17 @@ public class InitialContextBinder
     * @throws NamingException 
     * @throws NamingException
     */
-   public InitialContextBinder(InitialContextInitializer initialContextInitializer) throws FileNotFoundException,
+   InitialContextBinder(InitialContextInitializer initialContextInitializer) throws FileNotFoundException,
       XMLStreamException, NamingException
    {
       this.initialContextInitializer = initialContextInitializer;
 
-      this.bindReferences = new HashMap<String, Reference>();
-      this.bindReferencesPath = System.getProperty("java.io.tmpdir") + File.separator + "bind-references.xml";
+      this.bindings = new HashMap<String, Reference>();
+      this.bindingsStorePath = System.getProperty("java.io.tmpdir") + File.separator + "bind-references.xml";
 
-      if (new File(bindReferencesPath).exists())
+      if (new File(bindingsStorePath).exists())
       {
-         Map<String, Reference> importedRefs = doImport();
+         Map<String, Reference> importedRefs = readBindings();
          for (Entry<String, Reference> entry : importedRefs.entrySet())
          {
             bind(entry.getKey(), entry.getValue());
@@ -141,20 +141,20 @@ public class InitialContextBinder
       Map<String, String> refAddr) throws NamingException, FileNotFoundException, XMLStreamException
    {
       Reference reference = new Reference(className, factory, factoryLocation);
-      for (Entry entry : refAddr.entrySet())
+      for (Map.Entry<String, String> entry : refAddr.entrySet())
       {
-         reference.add(new StringRefAddr((String)entry.getKey(), (String)entry.getValue()));
+         reference.add(new StringRefAddr(entry.getKey(), entry.getValue()));
       }
 
       bind(bindName, reference);
 
-      doExport();
+      saveBindings();
    }
 
    private void bind(String bindName, Reference reference) throws NamingException
    {
       initialContextInitializer.getInitialContext().bind(bindName, reference);
-      bindReferences.put(bindName, reference);
+      bindings.put(bindName, reference);
    }
 
    /**
@@ -165,15 +165,15 @@ public class InitialContextBinder
     * @throws FileNotFoundException
     *          if can't open output stream from file
     */
-   protected void doExport() throws FileNotFoundException, XMLStreamException
+   protected void saveBindings() throws FileNotFoundException, XMLStreamException
    {
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-      XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(bindReferencesPath), "UTF-8");
+      XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(bindingsStorePath), "UTF-8");
 
       writer.writeStartDocument("UTF-8", "1.0");
       writer.writeStartElement(BIND_REFERENCES_ELEMENT);
 
-      for (Entry<String, Reference> entry : bindReferences.entrySet())
+      for (Entry<String, Reference> entry : bindings.entrySet())
       {
          String bindName = entry.getKey();
          Reference reference = entry.getValue();
@@ -218,14 +218,14 @@ public class InitialContextBinder
     * @throws FileNotFoundException 
     *          if can't open input stream from file
     */
-   protected Map<String, Reference> doImport() throws FileNotFoundException, XMLStreamException
+   protected Map<String, Reference> readBindings() throws FileNotFoundException, XMLStreamException
    {
       Stack<RefEntity> stack = new Stack<RefEntity>();
 
       Map<String, Reference> importedRefs = new HashMap<String, Reference>();
 
       XMLInputFactory factory = XMLInputFactory.newInstance();
-      XMLEventReader reader = factory.createXMLEventReader(new FileInputStream(bindReferencesPath), "UTF-8");
+      XMLEventReader reader = factory.createXMLEventReader(new FileInputStream(bindingsStorePath), "UTF-8");
 
       while (reader.hasNext())
       {
