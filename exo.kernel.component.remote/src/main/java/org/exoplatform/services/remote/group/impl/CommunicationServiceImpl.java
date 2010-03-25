@@ -62,7 +62,7 @@ public class CommunicationServiceImpl implements CommunicationService
 
    private CommunicationChannelListener channelListener_ = new CommunicationChannelListener();
 
-   private Log LOG = ExoLogger.getLogger(CommunicationServiceImpl.class.getName());
+   private Log LOG = ExoLogger.getLogger("exo.kernel.component.remote.CommunicationServiceImpl");
 
    public CommunicationServiceImpl(InitParams confParams) throws Exception
    {

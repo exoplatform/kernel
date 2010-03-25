@@ -55,7 +55,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger(ExoCacheFactoryImpl.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.jboss.v3.ExoCacheFactoryImpl");
 
    /**
     * The initial parameter key that defines the full path of the configuration template

@@ -43,7 +43,7 @@ public class CommonsXMLConfigurationPlugin extends BaseComponentPlugin
 
    // protected Catalog defaultCatalog;
    
-   private static Log log = ExoLogger.getLogger(CommonsXMLConfigurationPlugin.class);
+   private static Log log = ExoLogger.getLogger("exo.kernel.component.cache.CommonsXMLConfigurationPlugin");
 
    public CommonsXMLConfigurationPlugin(InitParams params, ConfigurationManager configurationManager) throws Exception
    {

@@ -52,7 +52,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    final static public boolean LOG_DEBUG = System.getProperty(LOG_DEBUG_PROPERTY) != null;
 
-   private static final Log log = ExoLogger.getLogger(ConfigurationManagerImpl.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationManagerImpl");
 
    protected Configuration configurations_;
 

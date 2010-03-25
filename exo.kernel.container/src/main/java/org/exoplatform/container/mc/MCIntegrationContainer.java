@@ -38,7 +38,7 @@ public class MCIntegrationContainer extends DefaultPicoContainer
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger(MCIntegrationContainer.class);
+   private static Log log = ExoLogger.getLogger("exo.kernel.container.MCIntegrationContainer");
 
    /**
     * Constructor that exposes super constructor.

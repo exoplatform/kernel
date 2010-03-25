@@ -59,7 +59,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * Logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(AbstractExoCache.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.jboss.v3.AbstractExoCache");
 
    private final AtomicInteger hits = new AtomicInteger(0);
 

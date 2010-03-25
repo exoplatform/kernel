@@ -35,8 +35,8 @@ public class ListenerService
 
    private Map<String, List<Listener>> listeners_;
 
-   private static Log log = ExoLogger.getLogger("kernel.ListenerService");
-
+   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
+   
    /**
     * Construct a listener service.
     */

@@ -39,7 +39,7 @@ import javax.transaction.xa.Xid;
 public class XAResourceTestImpl implements ExoResource, XAResource
 {
 
-   private static Log log = ExoLogger.getLogger("tx.TestXAResource");
+   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.XAResourceTestImpl");
 
    private int timeout = 5;
 

@@ -52,14 +52,14 @@ import javax.servlet.ServletContext;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto
  *          nicolas.filotto@exoplatform.com
- * 26 aožt 2009  
+ * 26 aoï¿½t 2009  
  */
 public class PortalContainerConfig implements Startable
 {
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger(PortalContainerConfig.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.PortalContainerConfig");
 
    /**
     * The name of the setting corresponding to the portal container name

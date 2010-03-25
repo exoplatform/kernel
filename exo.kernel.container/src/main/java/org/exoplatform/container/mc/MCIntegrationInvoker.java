@@ -43,7 +43,7 @@ public class MCIntegrationInvoker
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger(MCIntegrationInvoker.class);
+   private static Log log = ExoLogger.getLogger("exo.kernel.container.MCIntegrationInvoker");
 
    /**
     * Reference to actual implementation of mc-integration - the one with hard dependencies on JBoss MC Kernel.

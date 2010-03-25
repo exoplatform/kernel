@@ -34,7 +34,7 @@ import java.io.Serializable;
 public class LoggingCacheListener implements CacheListener
 {
 
-   Log log = ExoLogger.getLogger("kernel.cache.log");
+   Log log = ExoLogger.getLogger("exo.kernel.component.cache.LoggingCacheListener");
 
    public void onClearCache(CacheListenerContext context) throws Exception
    {

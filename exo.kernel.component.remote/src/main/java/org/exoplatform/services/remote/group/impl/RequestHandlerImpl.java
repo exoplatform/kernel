@@ -40,7 +40,7 @@ public class RequestHandlerImpl implements RequestHandler
 {
    private Map messageHandlers_ = new HashMap();
 
-   private static final Log LOG = ExoLogger.getLogger(RequestHandlerImpl.class.getName());
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.remote.RequestHandlerImpl");
 
    public RequestHandlerImpl()
    {

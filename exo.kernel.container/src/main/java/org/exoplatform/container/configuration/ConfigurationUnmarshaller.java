@@ -60,7 +60,7 @@ import javax.xml.transform.stream.StreamResult;
 public class ConfigurationUnmarshaller
 {
 
-   private static final Log log = ExoLogger.getLogger(ConfigurationUnmarshaller.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationUnmarshaller");
 
    private class Reporter implements ErrorHandler
    {

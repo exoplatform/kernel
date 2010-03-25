@@ -35,7 +35,7 @@ public class ManageableComponentAdapter implements ComponentAdapter
 {
 
    /** . */
-   private Log log = ExoLogger.getLogger(ManageableComponentAdapter.class);
+   private Log log = ExoLogger.getLogger("exo.kernel.container.ManageableComponentAdapter");
 
    /** . */
    private ComponentAdapter delegate;

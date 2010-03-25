@@ -43,7 +43,7 @@ public final class ExoContainerContext implements java.io.Serializable
 
    private String name;
 
-   private static final Log log = ExoLogger.getLogger(ExoContainerContext.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ExoContainerContext");
 
    public ExoContainerContext(ExoContainer container)
    {

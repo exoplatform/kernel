@@ -26,22 +26,18 @@ import org.exoplatform.container.xml.Property;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.StringRefAddr;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -58,7 +54,7 @@ public class InitialContextInitializer
 
    final public static String PROPERTIES_MANDATORY = "mandatory-properties";
 
-   private static Log log = ExoLogger.getLogger("naming.InitialContextInitializer");
+   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
 
    private List<BindReferencePlugin> bindReferencesPlugins;
 

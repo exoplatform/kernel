@@ -34,7 +34,7 @@ import java.lang.management.ManagementFactory;
 public class AddJVMComponentsToRootContainer extends BaseContainerLifecyclePlugin
 {
 
-   private static final Log log = ExoLogger.getLogger(AddJVMComponentsToRootContainer.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.AddJVMComponentsToRootContainer");
 
    public void initContainer(ExoContainer container)
    {

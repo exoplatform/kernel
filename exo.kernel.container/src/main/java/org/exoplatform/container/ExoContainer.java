@@ -71,7 +71,7 @@ public class ExoContainer extends ManageableContainer
       return Collections.unmodifiableSet(profiles);
    }
 
-   Log log = ExoLogger.getLogger(ExoContainer.class);
+   Log log = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
 
    private Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =
       new HashMap<String, ComponentLifecyclePlugin>();

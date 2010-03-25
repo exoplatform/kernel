@@ -51,7 +51,7 @@ import javax.transaction.xa.Xid;
 public class TransactionServiceJotmImpl implements TransactionService
 {
 
-   protected static Log log = ExoLogger.getLogger("transaction.TransactionServiceJotmImpl");
+   protected static Log log = ExoLogger.getLogger("exo.kernel.component.common.TransactionServiceJotmImpl");
 
    public static final String TRACK_WITHOT_TRANSACTION_PARAM = "track-without-transaction";
 

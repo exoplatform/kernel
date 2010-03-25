@@ -64,7 +64,7 @@ public class RootContainer extends ExoContainer
 
    private PortalContainerConfig config_;
 
-   private static final Log log = ExoLogger.getLogger(RootContainer.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.RootContainer");
 
    private static volatile boolean booting = false;
 

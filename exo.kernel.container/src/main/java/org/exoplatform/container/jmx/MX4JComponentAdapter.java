@@ -46,7 +46,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
 {
    private Object instance_;
 
-   private Log log = ExoLogger.getLogger(MX4JComponentAdapter.class);
+   private Log log = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
    public MX4JComponentAdapter(Object key, Class implementation)
    {

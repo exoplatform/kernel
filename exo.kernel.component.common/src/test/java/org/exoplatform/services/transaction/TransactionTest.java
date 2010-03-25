@@ -40,7 +40,7 @@ import javax.transaction.xa.Xid;
 public class TransactionTest extends TestCase
 {
 
-   private static Log log = ExoLogger.getLogger("tx.TransactionTest");
+   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.TransactionTest");
 
    private StandaloneContainer container;
 
