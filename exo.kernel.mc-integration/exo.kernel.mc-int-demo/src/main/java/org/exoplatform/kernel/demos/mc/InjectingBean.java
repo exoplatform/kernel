@@ -56,7 +56,7 @@ public class InjectingBean implements org.picocontainer.Startable
    /**
     * Logger
     */
-   private static final Log log = ExoLogger.getLogger(InjectingBean.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int-demo.InjectingBean");
 
    /**
     * Field to be injected through setter method by mc kernel.

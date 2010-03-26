@@ -49,7 +49,7 @@ public class MCIntegrationImpl implements MCIntegration
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger(MCIntegrationImpl.class);
+   private static Log log = ExoLogger.getLogger("exo.kernel.mc-int.MCIntegrationImpl");
 
    /**
     * A singleton MCIntegration implementation

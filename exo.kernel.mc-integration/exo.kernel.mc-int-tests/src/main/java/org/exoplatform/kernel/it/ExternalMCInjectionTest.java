@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class ExternalMCInjectionTest
 {
-   protected Log log = ExoLogger.getLogger(getClass());
+   protected Log log = ExoLogger.getLogger("exo.kernel.mc-int-tests.ExternalMCInjectionTest");
 
    protected String beanName;
    protected ExternallyControlledInjectingBean bean;

@@ -76,7 +76,7 @@ public class MCIntConfig
    /**
     * Logger.
     */
-   private static final Log log = ExoLogger.getLogger(MCIntConfig.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int.MCIntConfig");
 
    /**
     * Configuration for <em>beans</em> specified with <em>name</em>.

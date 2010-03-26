@@ -36,7 +36,7 @@ import java.io.PrintStream;
 
 public class JUnitInvokerServlet extends HttpServlet
 {
-   private static final Log log = ExoLogger.getLogger(JUnitInvokerServlet.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int-tests.JUnitInvokerServlet");
 
    protected void doGet(HttpServletRequest request, HttpServletResponse response)
          throws ServletException, IOException

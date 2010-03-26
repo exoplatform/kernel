@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
  */
 public class InjectedBean
 {
-   private static final Log log = ExoLogger.getLogger(InjectedBean.class);
+   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int-demo.InjectedBean");
 
    public static final String SOME_PROPERTY_VALUE = "[This is some property value]";
 
