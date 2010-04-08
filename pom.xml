@@ -25,12 +25,12 @@
    <parent>
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
-      <version>6-SNAPSHOT</version>
+      <version>6</version>
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.2.1-GA-SNAPSHOT</version>
+   <version>2.2.1-CR1</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
@@ -38,14 +38,14 @@
    <properties>
       <exo.product.name>exo-kernel</exo.product.name>
       <exo.product.specification>2.2</exo.product.specification>
-      <org.exoplatform.framework.junit.version>1.2.2-GA-SNAPSHOT</org.exoplatform.framework.junit.version>
+      <org.exoplatform.framework.junit.version>1.2.1-GA</org.exoplatform.framework.junit.version>
       <forkMode>always</forkMode>
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/trunk</developerConnection>
-      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/trunk</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/tags/2.2.1-CR1</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/tags/2.2.1-CR1</developerConnection>
+      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/tags/2.2.1-CR1</url>
    </scm>
 
    <modules>
