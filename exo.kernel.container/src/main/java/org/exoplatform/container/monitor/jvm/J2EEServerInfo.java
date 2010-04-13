@@ -19,11 +19,11 @@
 package org.exoplatform.container.monitor.jvm;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URL;
 
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
@@ -149,7 +149,10 @@ public class J2EEServerInfo
          serverName_ = "standalone";
          serverHome_ = System.getProperty("user.dir");
          exoConfDir_ = serverHome_ + "/" + confDirName;
-         mbeanServer = MBeanServerFactory.createMBeanServer();
+      }
+      if (mbeanServer == null)
+      {
+         mbeanServer = ManagementFactory.getPlatformMBeanServer();
       }
 
       String exoConfHome = System.getProperty(EXO_CONF_PARAM);

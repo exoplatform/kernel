@@ -18,11 +18,16 @@
  */
 package org.exoplatform.management.jmx.impl;
 
+import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.spi.ManagementProvider;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
-import javax.management.InstanceAlreadyExistsException;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -30,9 +35,6 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBeanInfo;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.List;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -40,6 +42,11 @@ import java.util.List;
  */
 public class JMXManagementProvider implements ManagementProvider
 {
+
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.JMXManagementProvider");
 
    /** . */
    private final MBeanServer server;
@@ -136,23 +143,24 @@ public class JMXManagementProvider implements ManagementProvider
    {
       synchronized (server)
       {
+         if (server.isRegistered(name))
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("The MBean '" + name + " has already been registered, it will be unregistered and then re-registered");
+            }
+            try
+            {
+               server.unregisterMBean(name);            
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Failed to unregister MBean '" + name + " due to " + e.getMessage(), e);
+            }
+         }
          try
          {
             server.registerMBean(mbean, name);
-         }
-         catch (InstanceAlreadyExistsException e)
-         {
-            try
-            {
-
-               server.unregisterMBean(name);
-               server.registerMBean(mbean, name);
-
-            }
-            catch (Exception e1)
-            {
-               throw new RuntimeException("Failed to register MBean '" + name + " due to " + e.getMessage(), e);
-            }
          }
          catch (Exception e)
          {

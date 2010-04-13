@@ -43,7 +43,6 @@ public class ManagedManagementAware implements ManagementAware
 
    public void setContext(ManagementContext context)
    {
-      this.context = context;
 
       //
       if (count == 0)
@@ -52,7 +51,8 @@ public class ManagedManagementAware implements ManagementAware
          {
             failure = new AssertionError();
          }
-         context.register(foo);
+         this.context = context;
+         this.context.register(foo);
          count = 1;
       }
       else if (count == 1)
@@ -61,7 +61,7 @@ public class ManagedManagementAware implements ManagementAware
          {
             failure = new AssertionError();
          }
-         context.unregister(foo);
+         this.context.unregister(foo);
       }
       else
       {

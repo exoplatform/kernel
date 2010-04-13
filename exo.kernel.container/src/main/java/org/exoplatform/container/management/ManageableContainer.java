@@ -34,7 +34,6 @@ import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
-import java.lang.management.ManagementFactory;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,12 +51,7 @@ public class ManageableContainer extends CachingContainer
    private static MBeanServer findMBeanServer()
    {
       J2EEServerInfo serverenv_ = new J2EEServerInfo();
-      MBeanServer server = serverenv_.getMBeanServer();
-      if (server == null)
-      {
-         server = ManagementFactory.getPlatformMBeanServer();
-      }
-      return server;
+      return serverenv_.getMBeanServer();
    }
 
    /** . */
