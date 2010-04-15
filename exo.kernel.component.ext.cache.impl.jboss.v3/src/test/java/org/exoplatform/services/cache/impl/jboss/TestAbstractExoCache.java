@@ -311,18 +311,21 @@ public class TestAbstractExoCache extends BasicTestCase
          assertEquals(1, listener1.remove);
          assertEquals(1, listener2.remove);
          assertEquals(0, listener3.remove);
+         cache1.put(new MyKey("c"), "c");
          cache1.clearCache();
          assertEquals(0, cache1.getCacheSize());
-         assertEquals(null, cache2.get(new MyKey("b")));
-         assertEquals(0, cache2.getCacheSize());
-         assertEquals(3, listener1.put);
-         assertEquals(3, listener2.put);
+         assertEquals(null, cache1.get(new MyKey("b")));         
+         assertEquals("c", cache2.get(new MyKey("b")));
+         assertEquals("c", cache2.get(new MyKey("c")));
+         assertEquals(2, cache2.getCacheSize());
+         assertEquals(4, listener1.put);
+         assertEquals(4, listener2.put);
          assertEquals(1, listener3.put);
-         assertEquals(2, listener1.get);
-         assertEquals(2, listener2.get);
+         assertEquals(3, listener1.get);
+         assertEquals(3, listener2.get);
          assertEquals(1, listener3.get);
-         assertEquals(2, listener1.remove);
-         assertEquals(2, listener2.remove);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
          assertEquals(0, listener3.remove);
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
@@ -335,15 +338,15 @@ public class TestAbstractExoCache extends BasicTestCase
          Thread.sleep(40);
          assertEquals("a", cache2.get(new MyKey("a")));
          assertEquals("b", cache2.get(new MyKey("b")));
-         assertEquals(2, cache2.getCacheSize());
-         assertEquals(5, listener1.put);
-         assertEquals(5, listener2.put);
+         assertEquals(3, cache2.getCacheSize());
+         assertEquals(6, listener1.put);
+         assertEquals(6, listener2.put);
          assertEquals(1, listener3.put);
-         assertEquals(2, listener1.get);
-         assertEquals(4, listener2.get);
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
          assertEquals(1, listener3.get);
-         assertEquals(2, listener1.remove);
-         assertEquals(2, listener2.remove);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
          assertEquals(0, listener3.remove);
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
@@ -380,16 +383,16 @@ public class TestAbstractExoCache extends BasicTestCase
          values.put(new MyKey("d"), "d");
          cache1.putMap(values);
          assertEquals(2, cache1.getCacheSize());
-         assertEquals(2, cache2.getCacheSize());
+         assertEquals(3, cache2.getCacheSize());
          assertEquals(1, cache3.getCacheSize());
-         assertEquals(5, listener1.put);
-         assertEquals(5, listener2.put);
+         assertEquals(6, listener1.put);
+         assertEquals(6, listener2.put);
          assertEquals(1, listener3.put);
-         assertEquals(2, listener1.get);
-         assertEquals(4, listener2.get);
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
          assertEquals(1, listener3.get);
-         assertEquals(2, listener1.remove);
-         assertEquals(2, listener2.remove);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
          assertEquals(0, listener3.remove);
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
@@ -401,20 +404,20 @@ public class TestAbstractExoCache extends BasicTestCase
          assertEquals(0, cache1.getCacheSize());
          assertEquals(0, cache2.getCacheSize());
          assertEquals(0, cache3.getCacheSize());
-         assertEquals(5, listener1.put);
-         assertEquals(5, listener2.put);
+         assertEquals(6, listener1.put);
+         assertEquals(6, listener2.put);
          assertEquals(1, listener3.put);
-         assertEquals(2, listener1.get);
-         assertEquals(4, listener2.get);
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
          assertEquals(1, listener3.get);
-         assertEquals(2, listener1.remove);
-         assertEquals(2, listener2.remove);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
          assertEquals(0, listener3.remove);
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
          assertEquals(0, listener3.clearCache);
          assertEquals(2, listener1.expire);
-         assertEquals(2, listener2.expire);
+         assertEquals(3, listener2.expire);
          assertEquals(1, listener3.expire);
       }
       finally
@@ -698,6 +701,12 @@ public class TestAbstractExoCache extends BasicTestCase
       public int hashCode()
       {
          return value.hashCode();
+      }
+
+      @Override
+      public String toString()
+      {
+         return value;
       }
    }
 }

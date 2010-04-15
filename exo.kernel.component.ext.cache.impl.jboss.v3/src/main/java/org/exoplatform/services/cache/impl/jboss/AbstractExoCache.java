@@ -43,6 +43,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -107,17 +108,22 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    public void clearCache()
    {
-      final Node<K, V> rootNode = cache.getRoot();
-      for (Node<K, V> node : rootNode.getChildren())
+      Set<Fqn> internalFqns = cache.getInternalFqns();
+      for (Object childName : cache.peek(Fqn.ROOT, false, false).getChildrenNames())
       {
-         if (node == null)
+         if (!internalFqns.contains(Fqn.fromElements(childName)))
          {
-            continue;
+            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+            cache.removeNode(Fqn.fromRelativeElements(Fqn.ROOT, childName));
          }
-         remove(getKey(node));
       }
+      // The code above can be replaced with the code below once the bug JBCACHE-1577
+      // will be fixed in JBC
+//      cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+//      cache.removeNode(Fqn.ROOT);
       onClearCache();
    }
 
