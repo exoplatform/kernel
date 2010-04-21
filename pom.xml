@@ -179,7 +179,7 @@
          <dependency>
             <groupId>org.jboss.cache</groupId>
             <artifactId>jbosscache-core</artifactId>
-            <version>3.2.3.CR1</version>            
+            <version>3.2.3.GA</version>            
          </dependency>         
          <dependency>
             <groupId>org.jibx</groupId>
