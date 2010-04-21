@@ -253,15 +253,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     */
    protected V putOnly(K key, V value)
    {
-      try
-      {
-         return cache.put(getFqn(key), key, value);
-      }
-      catch (NullPointerException e)
-      {
-         // to fix temporary the bug JBCACHE-1572
-      }
-      return null;
+      return cache.put(getFqn(key), key, value);
    }
 
    /**
