@@ -227,8 +227,8 @@ public class ContainerUtil
          //
          if (url != null)
          {
-            in = url.openStream();
             path = url.getPath();
+            in = url.openStream();
          }
 
          //

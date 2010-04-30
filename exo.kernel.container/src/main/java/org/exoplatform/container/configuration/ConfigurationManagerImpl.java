@@ -48,10 +48,6 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 {
    final static public String WAR_CONF_LOCATION = "/WEB-INF";
 
-   final static public String LOG_DEBUG_PROPERTY = "org.exoplatform.container.configuration.debug";
-
-   final static public boolean LOG_DEBUG = System.getProperty(LOG_DEBUG_PROPERTY) != null;
-
    private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationManagerImpl");
 
    protected Configuration configurations_;

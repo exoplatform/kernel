@@ -803,12 +803,29 @@ public class PortalContainerConfig implements Startable
             {
                // The file exists so we will use it
                url = file.toURI().toURL();
+               if (ConfigurationManager.LOG_DEBUG)
+               {
+                  log.info("The external settings could be found in the directory ${exo-conf}/portal, "
+                     + "it will be used as external settings of the "
+                     + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
+               }
+            }
+            else if (ConfigurationManager.LOG_DEBUG)
+            {
+               log.info("No external settings could be found in the directory ${exo-conf}/portal for the "
+                  + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
             }
          }
          if (url == null)
          {
             // We assume that the path is an eXo standard path
             url = cm.getURL(path);
+            if (ConfigurationManager.LOG_DEBUG)
+            {
+               log.info("Trying to retrieve the external settings from the url '" + url
+                  + "', it will be used as external settings of the "
+                  + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
+            }
          }
          // We load the properties from the url found
          return ContainerUtil.loadProperties(url, false);

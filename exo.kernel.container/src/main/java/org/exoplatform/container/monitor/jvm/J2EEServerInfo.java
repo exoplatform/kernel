@@ -18,6 +18,9 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
@@ -32,6 +35,10 @@ import javax.management.MBeanServer;
  */
 public class J2EEServerInfo
 {
+   /**
+    * The logger
+    */
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.J2EEServerInfo");
    
    /**
     * The name of the JVM parameter that allows us to change the location of the
@@ -158,7 +165,7 @@ public class J2EEServerInfo
       String exoConfHome = System.getProperty(EXO_CONF_PARAM);
       if (exoConfHome != null && exoConfHome.length() > 0)
       {
-         System.out.println("[INFO] Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
+         log.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
             + "'");
          exoConfDir_ = exoConfHome;
       }
