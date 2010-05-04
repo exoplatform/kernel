@@ -37,8 +37,14 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
+@SuppressWarnings("unchecked")
 public class CachingContainer extends MCIntegrationContainer
 {
+
+   /**
+    * Serial Version UID
+    */
+   private static final long serialVersionUID = 316388590860241305L;
 
    private final ConcurrentMap<Class, ComponentAdapter> adapterByType =
       new ConcurrentHashMap<Class, ComponentAdapter>();
@@ -171,67 +177,67 @@ public class CachingContainer extends MCIntegrationContainer
 
    //
 
-   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
+   public synchronized ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
       throws DuplicateComponentKeyRegistrationException
    {
       invalidate();
       return super.registerComponent(componentAdapter);
    }
 
-   public ComponentAdapter unregisterComponent(Object componentKey)
+   public synchronized ComponentAdapter unregisterComponent(Object componentKey)
    {
       invalidate();
       return super.unregisterComponent(componentKey);
    }
 
-   public ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
+   public synchronized ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
    {
       invalidate();
       return super.registerComponentInstance(component);
    }
 
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+   public synchronized ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
       throws PicoRegistrationException
    {
       invalidate();
       return super.registerComponentInstance(componentKey, componentInstance);
    }
 
-   public ComponentAdapter registerComponentImplementation(Class componentImplementation)
+   public synchronized ComponentAdapter registerComponentImplementation(Class componentImplementation)
       throws PicoRegistrationException
    {
       invalidate();
       return super.registerComponentImplementation(componentImplementation);
    }
 
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
+   public synchronized ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
       throws PicoRegistrationException
    {
       invalidate();
       return super.registerComponentImplementation(componentKey, componentImplementation);
    }
 
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
+   public synchronized ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
       Parameter[] parameters) throws PicoRegistrationException
    {
       invalidate();
       return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
    }
 
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
+   public synchronized ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
       List parameters) throws PicoRegistrationException
    {
       invalidate();
       return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
    }
 
-   public boolean addChildContainer(PicoContainer child)
+   public synchronized boolean addChildContainer(PicoContainer child)
    {
       invalidate();
       return super.addChildContainer(child);
    }
 
-   public boolean removeChildContainer(PicoContainer child)
+   public synchronized boolean removeChildContainer(PicoContainer child)
    {
       invalidate();
       return super.removeChildContainer(child);

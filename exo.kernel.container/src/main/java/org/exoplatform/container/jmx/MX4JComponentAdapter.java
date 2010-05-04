@@ -42,9 +42,15 @@ import java.util.List;
  * @author Benjamin Mestrallet
  * @version $Revision: 1.5 $
  */
+@SuppressWarnings("unchecked")
 public class MX4JComponentAdapter extends AbstractComponentAdapter
 {
-   private Object instance_;
+   /**
+    * Serial Version ID
+    */
+   private static final long serialVersionUID = -9001193588034229411L;
+
+   private volatile Object instance_;
 
    private Log log = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
@@ -58,30 +64,37 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       if (instance_ != null)
          return instance_;
 
-      // Get the component
-      ExoContainer exocontainer = (ExoContainer)container;
-      Object key = getComponentKey();
-      String componentKey;
-      if (key instanceof String)
-         componentKey = (String)key;
-      else
-         componentKey = ((Class)key).getName();
-      ConfigurationManager manager =
-         (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
-      Component component = manager.getComponent(componentKey);
-
       //
+      ExoContainer exocontainer = (ExoContainer)container;
+      Component component = null;
+      ConfigurationManager manager;
+      String componentKey;
       try
       {
          InitParams params = null;
          boolean debug = false;
-         if (component != null)
+         synchronized (this)
          {
-            params = component.getInitParams();
-            debug = component.getShowDeployInfo();
+            // Avoid to create duplicate instances if it is called at the same time by several threads
+            if (instance_ != null)
+               return instance_;
+            // Get the component
+            Object key = getComponentKey();
+            if (key instanceof String)
+               componentKey = (String)key;
+            else
+               componentKey = ((Class)key).getName();
+            manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
+            component = manager.getComponent(componentKey);
+            if (component != null)
+            {
+               params = component.getInitParams();
+               debug = component.getShowDeployInfo();
+            }
+            // Please note that we cannot fully initialize the Object "instance_" before releasing other
+            // threads because it could cause StackOverflowError due to recursive calls
+            instance_ = exocontainer.createComponent(getComponentImplementation(), params);
          }
-
-         instance_ = exocontainer.createComponent(getComponentImplementation(), params);
 
          if (debug)
             log.debug("==> create  component : " + instance_);
@@ -112,6 +125,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
          }
          throw new RuntimeException(msg, ex);
       }
+
       return instance_;
    }
 
