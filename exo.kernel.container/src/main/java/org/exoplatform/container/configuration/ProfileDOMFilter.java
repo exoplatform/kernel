@@ -27,9 +27,9 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import static org.exoplatform.container.configuration.Namespaces.*;
 
 /**
  * Filters a kernel DOM according to a list of active profiles.
@@ -44,10 +44,17 @@ class ProfileDOMFilter
    private static final String PROFILE_ATTRIBUTE = "profiles";
 
    /** . */
-   private static final Set<String> kernelURIs = Tools.set(KERNEL_1_0_URI, KERNEL_1_1_URI);
+   private static final Set<String> kernelURIs = Namespaces.KERNEL_NAMESPACES_SET;
 
    /** . */
-   private static final Set<String> kernelWithProfileURIs = Tools.set(KERNEL_1_1_URI);
+   private static final Set<String> kernelWithProfileURIs;
+   static
+   {
+      // All the kernel namespaces but KERNEL_1_0_URI
+      Set<String> tmp = new LinkedHashSet<String>(Namespaces.KERNEL_NAMESPACES_SET);
+      tmp.remove(Namespaces.KERNEL_1_0_URI);
+      kernelWithProfileURIs = Collections.unmodifiableSet(tmp);
+   }
 
    /** . */
    private final Set<String> activeProfiles;

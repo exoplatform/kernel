@@ -60,7 +60,7 @@ public class Configuration
    public void addContainerLifecyclePlugin(Object object)
    {
       ContainerLifecyclePlugin plugin = (ContainerLifecyclePlugin)object;
-      String key = plugin.getClass().getName();
+      String key = plugin.getType();
       containerLifecyclePlugin_.put(key, plugin);
    }
 

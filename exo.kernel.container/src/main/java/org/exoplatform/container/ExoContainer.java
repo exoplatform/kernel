@@ -113,39 +113,101 @@ public class ExoContainer extends ManageableContainer
       return context;
    }
 
+   /**
+    * @return the name of the plugin if it is not empty, the FQN of the plugin otherwise
+    */
+   private static String getPluginName(ContainerLifecyclePlugin plugin)
+   {
+      String name = plugin.getName();
+      if (name == null || name.length() == 0)
+      {
+         name = plugin.getClass().getName();
+      }
+      return name;
+   }
+   
    public void initContainer() throws Exception
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
-      for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
-      {
-         plugin.initContainer(this);
-      }
       ContainerUtil.addComponents(this, manager);
-   }
-
-   public void startContainer() throws Exception
-   {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
       {
-         plugin.startContainer(this);
+         try
+         {
+            plugin.initContainer(this);
+         }
+         catch (Exception e)
+         {
+            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+         }
       }
    }
 
-   public void stopContainer() throws Exception
+   @Override
+   public void dispose()
+   {
+      destroyContainer();
+      super.dispose();
+   }
+
+   @Override
+   public void start()
+   {
+      super.start();
+      startContainer();
+   }
+
+   @Override
+   public void stop()
+   {
+      stopContainer();
+      super.stop();
+   }
+
+   public void startContainer()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
       {
-         plugin.stopContainer(this);
+         try
+         {
+            plugin.startContainer(this);
+         }
+         catch (Exception e)
+         {
+            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+         }
       }
    }
 
-   public void destroyContainer() throws Exception
+   public void stopContainer()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
       {
-         plugin.destroyContainer(this);
+         try
+         {
+            plugin.stopContainer(this);
+         }
+         catch (Exception e)
+         {
+            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+         }
+      }
+   }
+
+   public void destroyContainer()
+   {
+      for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
+      {
+         try
+         {
+            plugin.destroyContainer(this);
+         }
+         catch (Exception e)
+         {
+            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+         }
       }
    }
 

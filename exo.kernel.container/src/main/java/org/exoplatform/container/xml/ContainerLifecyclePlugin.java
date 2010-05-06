@@ -24,10 +24,26 @@ package org.exoplatform.container.xml;
  */
 public class ContainerLifecyclePlugin
 {
+   private String name;
+   
    private String type;
+   
+   private String description;
+   
+   private String priority;
 
    private InitParams initParams;
+   
+   public String getName()
+   {
+      return name;
+   }
 
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+   
    public String getType()
    {
       return type;
@@ -38,6 +54,26 @@ public class ContainerLifecyclePlugin
       this.type = type;
    }
 
+   public String getDescription()
+   {
+      return description;
+   }
+
+   public void setDescription(String desc)
+   {
+      this.description = desc;
+   }
+
+   public String getPriority()
+   {
+      return priority;
+   }
+
+   public void setPriority(String priority)
+   {
+      this.priority = priority;
+   }
+   
    public InitParams getInitParams()
    {
       return initParams;

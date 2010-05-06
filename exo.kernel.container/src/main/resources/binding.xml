@@ -153,7 +153,10 @@
   </mapping>
 
   <mapping name="container-lifecycle-plugin" class="org.exoplatform.container.xml.ContainerLifecyclePlugin">
+    <value name="name"  field="name" usage="optional" />
     <value name="type"  field="type" />
+    <value name="description" field="description" usage="optional" />
+    <value name="priority" field="priority"  usage="optional" />
     <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" 
                get-method="getInitParams" set-method="setInitParams"/>
   </mapping>

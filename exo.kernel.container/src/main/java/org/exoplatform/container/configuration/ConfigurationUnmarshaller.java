@@ -62,6 +62,11 @@ public class ConfigurationUnmarshaller
 
    private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationUnmarshaller");
 
+   /**
+    * A private copy of the list of kernel namespaces
+    */
+   private static final String[] KERNEL_NAMESPACES = Namespaces.getKernelNamespaces();
+   
    private class Reporter implements ErrorHandler
    {
 
@@ -135,10 +140,9 @@ public class ConfigurationUnmarshaller
    public boolean isValid(URL url) throws NullPointerException, IOException
    {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      String[] schemas = {Namespaces.KERNEL_1_0_URI, Namespaces.KERNEL_1_1_URI};
       factory
          .setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-      factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", schemas);
+      factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", KERNEL_NAMESPACES);
       factory.setNamespaceAware(true);
       factory.setValidating(true);
 

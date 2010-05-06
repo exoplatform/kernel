@@ -34,11 +34,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +49,7 @@ import java.util.Map;
  * @since Oct 28, 2004
  * @version $Id: ContainerUtil.java 9894 2006-10-31 02:52:41Z tuan08 $
  */
+@SuppressWarnings("unchecked")
 public class ContainerUtil
 {
    /** The logger. */
@@ -86,7 +90,7 @@ public class ContainerUtil
          // in the class path. It cause the configuration run twice
          int index1 = key.lastIndexOf("exo-");
          int index2 = key.lastIndexOf("exo.");
-         int index = index1 < index2 ? index2 : index1; 
+         int index = index1 < index2 ? index2 : index1;
          if (index >= 0)
             key = key.substring(index);
          map.put(key, url);
@@ -102,23 +106,48 @@ public class ContainerUtil
 
    static public void addContainerLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
    {
-      Collection plugins = conf.getConfiguration().getContainerLifecyclePlugins();
+      List plugins = new ArrayList(conf.getConfiguration().getContainerLifecyclePlugins());
+      Collections.sort(plugins, COMPARATOR_CONTAINER_PLUGIN);
       Iterator i = plugins.iterator();
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
       while (i.hasNext())
       {
          ContainerLifecyclePlugin plugin = (ContainerLifecyclePlugin)i.next();
-         try
+         addContainerLifecyclePlugin(container, plugin);
+      }
+   }
+   
+   private static final Comparator<org.exoplatform.container.xml.ContainerLifecyclePlugin> COMPARATOR_CONTAINER_PLUGIN =
+      new Comparator<org.exoplatform.container.xml.ContainerLifecyclePlugin>()
+      {
+
+         public int compare(org.exoplatform.container.xml.ContainerLifecyclePlugin o1,
+            org.exoplatform.container.xml.ContainerLifecyclePlugin o2)
          {
-            Class classType = loader.loadClass(plugin.getType());
-            org.exoplatform.container.ContainerLifecyclePlugin instance =
-               (org.exoplatform.container.ContainerLifecyclePlugin)classType.newInstance();
-            container.addContainerLifecylePlugin(instance);
+            return getPriority(o1) - getPriority(o2);
          }
-         catch (Exception ex)
+
+         private int getPriority(org.exoplatform.container.xml.ContainerLifecyclePlugin p)
          {
-            ex.printStackTrace();
+            return p.getPriority() == null ? 0 : Integer.parseInt(p.getPriority());
          }
+
+      };
+      
+   private static void addContainerLifecyclePlugin(ExoContainer container, ContainerLifecyclePlugin plugin)
+   {
+      try
+      {
+         Class clazz = Class.forName(plugin.getType());
+         org.exoplatform.container.ContainerLifecyclePlugin cplugin =
+            (org.exoplatform.container.ContainerLifecyclePlugin)container
+               .createComponent(clazz, plugin.getInitParams());
+         cplugin.setName(plugin.getName());
+         cplugin.setDescription(plugin.getDescription());
+         container.addContainerLifecylePlugin(cplugin);
+      }
+      catch (Exception ex)
+      {
+         log.error("Failed to instanciate plugin " + plugin.getType() + ": " + ex.getMessage(), ex);
       }
    }
 
@@ -139,7 +168,7 @@ public class ContainerUtil
          }
          catch (Exception ex)
          {
-            ex.printStackTrace();
+            log.error("Failed to instanciate plugin " + plugin.getType() + ": " + ex.getMessage(), ex);
          }
       }
    }
@@ -166,7 +195,7 @@ public class ContainerUtil
                if (component.isMultiInstance())
                {
                   container.registerComponent(new ConstructorInjectionComponentAdapter(classType, classType));
-                  System.out.println("===>>> Thread local component " + classType.getName() + " registered.");
+                  log.debug("===>>> Thread local component " + classType.getName() + " registered.");
                }
                else
                {
@@ -181,7 +210,7 @@ public class ContainerUtil
                   if (component.isMultiInstance())
                   {
                      container.registerComponent(new ConstructorInjectionComponentAdapter(keyType, classType));
-                     System.out.println("===>>> Thread local component " + classType.getName() + " registered.");
+                     log.debug("===>>> Thread local component " + classType.getName() + " registered.");
                   }
                   else
                   {
@@ -196,11 +225,11 @@ public class ContainerUtil
          }
          catch (ClassNotFoundException ex)
          {
-            ex.printStackTrace();
+            log.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", ex);
          }
       }
    }
-   
+
    /**
     * Loads the properties file corresponding to the given url
     * @param url the url of the properties file
@@ -210,7 +239,7 @@ public class ContainerUtil
    {
       return loadProperties(url, true);
    }
-   
+
    /**
     * Loads the properties file corresponding to the given url
     * @param url the url of the properties file
@@ -237,7 +266,7 @@ public class ContainerUtil
             String fileName = url.getFile();
             if (Tools.endsWithIgnoreCase(path, ".properties"))
             {
-               if (log.isDebugEnabled()) 
+               if (log.isDebugEnabled())
                   log.debug("Attempt to load property file " + path);
                props = PropertiesLoader.load(in);
             }
@@ -254,7 +283,7 @@ public class ContainerUtil
             if (props != null && resolveVariables)
             {
                // Those properties are used for variables resolution
-               final Map<String, Object> currentProps = new HashMap<String, Object>();            
+               final Map<String, Object> currentProps = new HashMap<String, Object>();
                for (Map.Entry<String, String> entry : props.entrySet())
                {
                   String propertyName = entry.getKey();

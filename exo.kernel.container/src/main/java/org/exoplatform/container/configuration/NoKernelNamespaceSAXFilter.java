@@ -18,9 +18,6 @@
  */
 package org.exoplatform.container.configuration;
 
-import static org.exoplatform.container.configuration.Namespaces.KERNEL_1_0_URI;
-import static org.exoplatform.container.configuration.Namespaces.KERNEL_1_1_URI;
-
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.xml.sax.Attributes;
@@ -78,7 +75,7 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
 
    public void startPrefixMapping(String prefix, String uri) throws SAXException
    {
-      if (KERNEL_1_0_URI.equals(uri) || KERNEL_1_1_URI.equals(uri) || XSI_URI.equals(uri))
+      if (Namespaces.isKernelNamespace(uri) || XSI_URI.equals(uri))
       {
          blackListedPrefixes.add(prefix);
          if (log.isTraceEnabled())
@@ -140,7 +137,7 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
                   log.trace("Skipping XSI " + attQName + " attribute");
                continue;
             }
-            else if (KERNEL_1_0_URI.equals(attURI) || KERNEL_1_1_URI.equals(attURI))
+            else if (Namespaces.isKernelNamespace(attURI))
             {
                if (log.isTraceEnabled())
                   log.trace("Requalifying prefixed attribute " + attQName + " attribute to " + localName);
@@ -154,7 +151,7 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
       }
 
       //
-      if (KERNEL_1_0_URI.equals(uri) || KERNEL_1_1_URI.equals(uri))
+      if (Namespaces.isKernelNamespace(uri))
       {
          if (log.isTraceEnabled())
             log.trace("Requalifying active profile " + qName + " start element to " + localName);
@@ -168,7 +165,7 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
 
    public void endElement(String uri, String localName, String qName) throws SAXException
    {
-      if (KERNEL_1_0_URI.equals(uri) || KERNEL_1_1_URI.equals(uri))
+      if (Namespaces.isKernelNamespace(uri))
       {
          if (log.isTraceEnabled())
             log.trace("Requalifying " + qName + " end element");
