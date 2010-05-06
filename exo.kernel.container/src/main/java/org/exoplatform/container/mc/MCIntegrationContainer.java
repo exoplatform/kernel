@@ -21,19 +21,19 @@
  */
 package org.exoplatform.container.mc;
 
+import org.exoplatform.container.ConcurrentPicoContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.DefaultPicoContainer;
 
 /**
  * Container class that serves as an interception point for MC integration.
  *
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
-public class MCIntegrationContainer extends DefaultPicoContainer
+public class MCIntegrationContainer extends ConcurrentPicoContainer
 {
    /**
     * Logger

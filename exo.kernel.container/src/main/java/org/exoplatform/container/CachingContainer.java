@@ -25,7 +25,6 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
 import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.PicoVisitor;
-import org.picocontainer.defaults.AbstractPicoVisitor;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
@@ -146,7 +145,7 @@ public class CachingContainer extends MCIntegrationContainer
       return instance;
    }
 
-   private static final PicoVisitor invalidator = new AbstractPicoVisitor()
+   private static final PicoVisitor invalidator = new ContainerVisitor()
    {
       public void visitContainer(PicoContainer pico)
       {
@@ -160,14 +159,6 @@ public class CachingContainer extends MCIntegrationContainer
             caching.instancesByType.clear();
          }
       }
-
-      public void visitComponentAdapter(ComponentAdapter componentAdapter)
-      {
-      }
-
-      public void visitParameter(Parameter parameter)
-      {
-      }
    };
 
    private void invalidate()
@@ -177,69 +168,65 @@ public class CachingContainer extends MCIntegrationContainer
 
    //
 
-   public synchronized ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
+   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
       throws DuplicateComponentKeyRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponent(componentAdapter);
       invalidate();
-      return super.registerComponent(componentAdapter);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter unregisterComponent(Object componentKey)
+   public ComponentAdapter unregisterComponent(Object componentKey)
    {
+      ComponentAdapter adapter = super.unregisterComponent(componentKey);
       invalidate();
-      return super.unregisterComponent(componentKey);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
+   public ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponentInstance(component);
       invalidate();
-      return super.registerComponentInstance(component);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
       throws PicoRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
       invalidate();
-      return super.registerComponentInstance(componentKey, componentInstance);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter registerComponentImplementation(Class componentImplementation)
+   public ComponentAdapter registerComponentImplementation(Class componentImplementation)
       throws PicoRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponentImplementation(componentImplementation);
       invalidate();
-      return super.registerComponentImplementation(componentImplementation);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
+   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
       throws PicoRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation);
       invalidate();
-      return super.registerComponentImplementation(componentKey, componentImplementation);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
+   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
       Parameter[] parameters) throws PicoRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
       invalidate();
-      return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
+      return adapter;
    }
 
-   public synchronized ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
+   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
       List parameters) throws PicoRegistrationException
    {
+      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
       invalidate();
-      return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
-   }
-
-   public synchronized boolean addChildContainer(PicoContainer child)
-   {
-      invalidate();
-      return super.addChildContainer(child);
-   }
-
-   public synchronized boolean removeChildContainer(PicoContainer child)
-   {
-      invalidate();
-      return super.removeChildContainer(child);
+      return adapter;
    }
 }

@@ -19,6 +19,7 @@ package org.exoplatform.container;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
+import org.exoplatform.container.support.ContainerBuilder;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
@@ -27,6 +28,7 @@ import org.picocontainer.PicoIntrospectionException;
 import org.picocontainer.PicoVisitor;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +72,53 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(plugin);
       assertNotNull(plugin.cmanager_);
       assertEquals(value, plugin.myClass_);
+   }
+   
+   public void testCache()
+   {
+      URL rootURL = getClass().getResource("test-exo-container.xml");
+      URL portalURL = getClass().getResource("empty-config.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      //
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
+
+      final RootContainer container = RootContainer.getInstance();
+      final ComponentAdapter ca = new ComponentAdapter()
+      {
+
+         public void accept(PicoVisitor paramPicoVisitor)
+         {
+         }
+
+         public Class getComponentImplementation()
+         {
+            return MyClass.class;
+         }
+
+         public Object getComponentInstance(PicoContainer paramPicoContainer)
+            throws PicoInitializationException, PicoIntrospectionException
+         {
+            return new MyClass();
+         }
+
+         public Object getComponentKey()
+         {
+            return "MyKey";
+         }
+
+         public void verify(PicoContainer paramPicoContainer) throws PicoIntrospectionException
+         {
+         }
+
+      };
+      container.registerComponent(ca);
+      final PortalContainer pcontainer = PortalContainer.getInstance();
+      assertEquals(ca, container.getComponentAdapter("MyKey"));
+      assertEquals(ca, pcontainer.getComponentAdapter("MyKey"));
+      container.unregisterComponent("MyKey");
+      assertNull(container.getComponentAdapter("MyKey"));
+      assertNull(pcontainer.getComponentAdapter("MyKey"));  
    }
    
    public void testMultiThreading() throws Throwable
@@ -143,7 +192,7 @@ public class TestExoContainer extends AbstractTestContainer
                   }
 
                };
-               ar.set(container.registerComponent(ca));
+               ar.compareAndSet(null, container.registerComponent(ca));
             }
             catch (DuplicateComponentKeyRegistrationException e)
             {
@@ -167,7 +216,52 @@ public class TestExoContainer extends AbstractTestContainer
             container.unregisterComponent("a");
          }
       });
+   
+      testMultiThreading(new Task()
+      {
 
+         public void execute()
+         {
+            final Object key = new Object();
+            ComponentAdapter ca = new ComponentAdapter()
+            {
+
+               public void accept(PicoVisitor paramPicoVisitor)
+               {
+               }
+
+               public Class getComponentImplementation()
+               {
+                  return MyClass.class;
+               }
+
+               public Object getComponentInstance(PicoContainer paramPicoContainer)
+                  throws PicoInitializationException, PicoIntrospectionException
+               {
+                  return new MyClass();
+               }
+
+               public Object getComponentKey()
+               {
+                  return key;
+               }
+
+               public void verify(PicoContainer paramPicoContainer) throws PicoIntrospectionException
+               {
+               }
+
+            };            
+            assertNotNull(container.registerComponent(ca));
+            assertNotNull(container.getComponentAdapter(key));
+            assertFalse(container.getComponentAdapters().isEmpty());
+            assertFalse(container.getComponentAdaptersOfType(MyClass.class).isEmpty());
+            assertNotNull(container.getComponentInstance(key));
+            assertNotNull(container.getComponentInstanceOfType(MyClass.class));
+            assertFalse(container.getComponentInstances().isEmpty());
+            assertFalse(container.getComponentInstancesOfType(MyClass.class).isEmpty());
+            assertNotNull(container.unregisterComponent(key));
+         }
+      });   
    }
 
    private void testMultiThreading(final Task task) throws Throwable
@@ -326,5 +420,5 @@ public class TestExoContainer extends AbstractTestContainer
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
          if (counter != null) counter.stop.add(this);
       }   
-   }   
+   }
 }
