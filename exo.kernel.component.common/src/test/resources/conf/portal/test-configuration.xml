@@ -21,7 +21,13 @@
 -->
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
-
+	<container-lifecycle-plugin>
+		<type>org.exoplatform.services.scheduler.test.TestSchedulerService$MyContainerLifecyclePlugin</type>
+	</container-lifecycle-plugin>
+   <component>
+      <type>org.exoplatform.services.scheduler.test.TestSchedulerService$MyComponent</type>
+   </component>
+	
    <component>
       <key>org.exoplatform.services.net.NetService</key>
       <type>org.exoplatform.services.net.impl.NetServiceImpl</type>
@@ -196,5 +202,25 @@
             </properties-param>
          </init-params>
       </component-plugin>
+      <component-plugin>
+         <name>AddJob</name>
+         <set-method>addPeriodJob</set-method>
+         <type>org.exoplatform.services.scheduler.PeriodJob</type>
+         <description>add a job to the JobSchedulerService</description>
+         <init-params>
+            <properties-param>
+               <name>job.info</name>
+               <description>Test QueueTaks</description>
+               <property name="jobName" value="job1" />
+               <property name="groupName" value="group1" />
+               <property name="job" value="org.exoplatform.services.scheduler.test.TestSchedulerService$MyJobWithNonStartedServices" />
+
+               <property name="repeatCount" value="1" />
+               <property name="period" value="1000" />
+               <property name="startTime" value="" />
+               <property name="endTime" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>      
    </external-component-plugins>
 </configuration>

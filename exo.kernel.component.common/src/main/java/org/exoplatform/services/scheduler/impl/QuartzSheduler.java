@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
+import org.exoplatform.container.BaseContainerLifecyclePlugin;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerFactory;
@@ -31,13 +36,24 @@ import org.quartz.impl.StdSchedulerFactory;
  */
 public class QuartzSheduler implements Startable
 {
-   private Scheduler scheduler_;
+   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.QuartzSheduler");
+   
+   private final Scheduler scheduler_;
 
-   public QuartzSheduler() throws Exception
+   public QuartzSheduler(ExoContainerContext ctx) throws Exception
    {
       SchedulerFactory sf = new StdSchedulerFactory();
       scheduler_ = sf.getScheduler();
-      scheduler_.start();
+      // This will launch the scheduler when all the components will be started  
+      ctx.getContainer().addContainerLifecylePlugin(new BaseContainerLifecyclePlugin()
+      {
+
+         @Override
+         public void startContainer(ExoContainer container) throws Exception
+         {
+            scheduler_.start();
+         }         
+      });
    }
 
    public Scheduler getQuartzSheduler()
@@ -57,7 +73,7 @@ public class QuartzSheduler implements Startable
       }
       catch (Exception ex)
       {
-         ex.printStackTrace();
+         log.warn("Could not shutdown the scheduler", ex);
       }
    }
 }

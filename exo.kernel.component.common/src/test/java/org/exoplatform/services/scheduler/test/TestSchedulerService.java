@@ -18,15 +18,22 @@
  */
 package org.exoplatform.services.scheduler.test;
 
+import org.exoplatform.container.BaseContainerLifecyclePlugin;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.scheduler.JobInfo;
 import org.exoplatform.services.scheduler.JobSchedulerService;
 import org.exoplatform.services.scheduler.PeriodInfo;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
 import org.quartz.TriggerListener;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham hoapham@exoplatform.com Oct
@@ -48,6 +55,12 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    {
    }
 
+   public void testJobWithNonStartedServices() throws Exception
+   {
+      MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
+      assertEquals(Boolean.TRUE, component.getResult());
+   }
+   
    public void testSeviceWithGlobalListener() throws Exception
    {
       assertTrue("JobScheduler is not deployed correctly", service_ != null);
@@ -257,5 +270,52 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       triggerListenerCol = service_.getAllTriggerListener();
       assertTrue("now, expect no non global trigger is found", triggerListenerCol.size() == 0);
       System.out.println("-------------------End Test Non Global Listener---------");
+   }
+   
+   public static class MyContainerLifecyclePlugin extends BaseContainerLifecyclePlugin
+   {
+
+      @Override
+      public void startContainer(ExoContainer container) throws Exception
+      {
+         MyComponent component = (MyComponent)container.getComponentInstanceOfType(MyComponent.class);
+         component.started = true;
+      }
+   }
+   
+   public static class MyComponent
+   {
+      public boolean started;
+      private final CountDownLatch doneSignal = new CountDownLatch(1);
+      public Boolean result;
+      
+      public void doSomething()
+      {
+         if (started)
+         {
+            result = Boolean.TRUE;
+         }
+         else
+         {
+            result = Boolean.FALSE;            
+         }
+         doneSignal.countDown();
+      }
+      
+      public Boolean getResult() throws InterruptedException
+      {
+         doneSignal.await(2, TimeUnit.SECONDS);
+         return result;
+      }
+   }
+   
+   public static class MyJobWithNonStartedServices implements Job
+   {
+
+      public void execute(JobExecutionContext context) throws JobExecutionException
+      {
+         MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
+         component.doSomething();
+      }
    }
 }
