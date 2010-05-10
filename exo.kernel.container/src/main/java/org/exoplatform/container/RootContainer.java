@@ -32,7 +32,6 @@ import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.test.mocks.servlet.MockServletContext;
-import org.picocontainer.ComponentAdapter;
 
 import java.io.File;
 import java.util.Collection;
@@ -160,9 +159,8 @@ public class RootContainer extends ExoContainer
                cService.addConfiguration(ContainerUtil.getConfigurationURL("conf/portal/test-configuration.xml"));
                cService.processRemoveConfiguration();
                pcontainer.registerComponentInstance(ConfigurationManager.class, cService);
-               pcontainer.initContainer();
                registerComponentInstance(name, pcontainer);
-               pcontainer.start();
+               pcontainer.start(true);
             }
             catch (Exception ex)
             {
@@ -326,10 +324,9 @@ public class RootContainer extends ExoContainer
          }
 
          cService.processRemoveConfiguration();
-         ComponentAdapter adapter = pcontainer.registerComponentInstance(ConfigurationManager.class, cService);
-         pcontainer.initContainer();
+         pcontainer.registerComponentInstance(ConfigurationManager.class, cService);
          registerComponentInstance(portalContainerName, pcontainer);
-         pcontainer.start();
+         pcontainer.start(true);
 
          // Register the portal as an mbean
          getManagementContext().register(pcontainer);
@@ -397,13 +394,11 @@ public class RootContainer extends ExoContainer
          }
          service.processRemoveConfiguration();
          rootContainer.registerComponentInstance(ConfigurationManager.class, service);
-         rootContainer.initContainer();
-         rootContainer.start();
+         rootContainer.start(true);
          return rootContainer;
       }
       catch (Exception e)
       {
-         e.printStackTrace();
          log.error("Could not build root container", e);
          return null;
       }

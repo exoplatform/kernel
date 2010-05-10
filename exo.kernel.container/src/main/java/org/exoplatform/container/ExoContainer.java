@@ -46,6 +46,11 @@ public class ExoContainer extends ManageableContainer
 {
 
    /**
+    * Serial Version UID
+    */
+   private static final long serialVersionUID = -8068506531004854036L;
+
+   /**
     * Returns an unmodifable set of profiles defined by the value returned by invoking
     * {@link PropertyManager#getProperty(String)} with the {@link org.exoplatform.commons.utils.PropertyManager#RUNTIME_PROFILES}
     * property.
@@ -126,7 +131,15 @@ public class ExoContainer extends ManageableContainer
       return name;
    }
    
+   /**
+    * Explicit calls are not allowed anymore
+    */
+   @Deprecated
    public void initContainer() throws Exception
+   {      
+   }
+      
+   private void initContainerInternal()
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
@@ -148,25 +161,47 @@ public class ExoContainer extends ManageableContainer
    @Override
    public void dispose()
    {
-      destroyContainer();
+      destroyContainerInternal();
       super.dispose();
    }
 
+   /**
+    * Starts the container
+    * @param init indicates if the container must be initialized first
+    */
+   public void start(boolean init)
+   {
+      if (init)
+      {
+         // Initialize the container first
+         initContainerInternal();
+      }
+      start();
+   }
+   
    @Override
    public void start()
    {
       super.start();
-      startContainer();
+      startContainerInternal();
    }
 
    @Override
    public void stop()
    {
-      stopContainer();
+      stopContainerInternal();
       super.stop();
    }
 
-   public void startContainer()
+   /**
+    * Explicit calls are not allowed anymore
+    */
+   @Deprecated 
+   public void startContainer() throws Exception
+   {      
+   }
+   
+   private void startContainerInternal()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
       {
@@ -181,7 +216,15 @@ public class ExoContainer extends ManageableContainer
       }
    }
 
-   public void stopContainer()
+   /**
+    * Explicit calls are not allowed anymore
+    */
+   @Deprecated 
+   public void stopContainer() throws Exception
+   {      
+   }
+
+   private void stopContainerInternal()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
       {
@@ -196,7 +239,15 @@ public class ExoContainer extends ManageableContainer
       }
    }
 
-   public void destroyContainer()
+   /**
+    * Explicit calls are not allowed anymore
+    */
+   @Deprecated 
+   public void destroyContainer() throws Exception
+   {      
+   }
+
+   private void destroyContainerInternal()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
       {

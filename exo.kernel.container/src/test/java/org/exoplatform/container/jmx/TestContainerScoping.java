@@ -35,8 +35,7 @@ public class TestContainerScoping extends AbstractTestContainer
 
       //
       ManagedContainer child = new ManagedContainer(root);
-      child.initContainer();
-      child.start();
+      child.start(true);
 
       //
       MBeanServer server = root.getMBeanServer();
