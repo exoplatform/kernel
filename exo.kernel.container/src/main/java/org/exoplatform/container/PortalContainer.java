@@ -28,6 +28,7 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.management.rest.annotations.RESTEndpoint;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +48,7 @@ import javax.servlet.ServletContext;
 @Managed
 @NamingContext(@Property(key = "portal", value = "{Name}"))
 @NameTemplate({@Property(key = "container", value = "portal"), @Property(key = "name", value = "{Name}")})
+@RESTEndpoint(path = "pcontainer")
 public class PortalContainer extends ExoContainer implements SessionManagerContainer
 {
 

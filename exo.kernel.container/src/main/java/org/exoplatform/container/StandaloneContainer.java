@@ -29,6 +29,7 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.management.rest.annotations.RESTEndpoint;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -51,6 +52,7 @@ import java.util.List;
  */
 @Managed
 @NamingContext(@Property(key = "container", value = "standalone"))
+@RESTEndpoint(path = "scontainer")
 public class StandaloneContainer extends ExoContainer implements SessionManagerContainer
 {
 

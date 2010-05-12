@@ -31,6 +31,7 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.test.mocks.servlet.MockServletContext;
@@ -55,6 +56,7 @@ import javax.servlet.ServletContext;
  */
 @Managed
 @NamingContext(@Property(key = "container", value = "root"))
+@RESTEndpoint(path = "rcontainer")
 public class RootContainer extends ExoContainer
 {
 
