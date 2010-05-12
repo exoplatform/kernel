@@ -21,6 +21,7 @@ package org.exoplatform.container;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
+import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -48,6 +49,11 @@ import javax.servlet.ServletContext;
 @NameTemplate({@Property(key = "container", value = "portal"), @Property(key = "name", value = "{Name}")})
 public class PortalContainer extends ExoContainer implements SessionManagerContainer
 {
+
+   /**
+    * Serial Version UID
+    */
+   private static final long serialVersionUID = -9110532469581690803L;
 
    /**
     * The default name of the portal container
@@ -271,6 +277,25 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       return name;
    }
 
+   @Managed
+   @ManagedDescription("The configuration of the container in XML format.")
+   public String getConfigurationXML()
+   {
+      Configuration conf = getConfiguration();
+      if (conf == null)
+      {
+         log.warn("The configuration of the PortalContainer could not be found");
+         return null;
+      }
+      Configuration result = Configuration.merge(((ExoContainer)parent).getConfiguration(), conf);
+      if (result == null)
+      {
+         log.warn("The configurations could not be merged");
+         return null;         
+      }
+      return result.toXML();
+   }
+   
    public SessionContainer createSessionContainer(String id, String owner)
    {
       SessionContainer scontainer = getSessionManager().getSessionContainer(id);

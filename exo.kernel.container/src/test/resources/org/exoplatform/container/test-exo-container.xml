@@ -25,6 +25,10 @@
 			</value-param>
 		</init-params>
 	</container-lifecycle-plugin>
+	<container-lifecycle-plugin>
+		<type>org.exoplatform.container.TestExoContainer$MyContainerLifecyclePlugin3</type>
+		<priority>-5</priority>
+	</container-lifecycle-plugin>
 	<component>
 		<type>org.exoplatform.container.TestExoContainer$MyCounter</type>
 	</component>

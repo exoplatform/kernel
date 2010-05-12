@@ -22,7 +22,7 @@ package org.exoplatform.container.xml;
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Sep 8, 2005
  */
-public class ContainerLifecyclePlugin
+public class ContainerLifecyclePlugin implements Comparable<ContainerLifecyclePlugin>
 {
    private String name;
    
@@ -30,7 +30,7 @@ public class ContainerLifecyclePlugin
    
    private String description;
    
-   private String priority;
+   private int priority;
 
    private InitParams initParams;
    
@@ -64,12 +64,12 @@ public class ContainerLifecyclePlugin
       this.description = desc;
    }
 
-   public String getPriority()
+   public int getPriority()
    {
       return priority;
    }
 
-   public void setPriority(String priority)
+   public void setPriority(int priority)
    {
       this.priority = priority;
    }
@@ -82,5 +82,10 @@ public class ContainerLifecyclePlugin
    public void setInitParams(InitParams initParams)
    {
       this.initParams = initParams;
+   }
+
+   public int compareTo(ContainerLifecyclePlugin o)
+   {
+      return getPriority() - o.getPriority();
    }
 }

@@ -448,10 +448,8 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
     */
    public void start()
    {
-      if (disposed.get())
-         throw new IllegalStateException("Already disposed");
-      if (started.get())
-         throw new IllegalStateException("Already started");
+      if (disposed.get() || started.get())
+         return;
       LifecycleVisitor.start(this);
       started.set(true);
    }
@@ -465,10 +463,8 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
     */
    public void stop()
    {
-      if (disposed.get())
-         throw new IllegalStateException("Already disposed");
-      if (!started.get())
-         throw new IllegalStateException("Not started");
+      if (disposed.get() || !started.get())
+         return;
       LifecycleVisitor.stop(this);
       started.set(false);
    }
@@ -483,7 +479,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    public void dispose()
    {
       if (disposed.get())
-         throw new IllegalStateException("Already disposed");
+         return;
       LifecycleVisitor.dispose(this);
       disposed.set(true);
    }

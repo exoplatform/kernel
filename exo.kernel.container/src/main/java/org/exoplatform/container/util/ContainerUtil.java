@@ -34,14 +34,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -106,32 +103,13 @@ public class ContainerUtil
 
    static public void addContainerLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
    {
-      List plugins = new ArrayList(conf.getConfiguration().getContainerLifecyclePlugins());
-      Collections.sort(plugins, COMPARATOR_CONTAINER_PLUGIN);
-      Iterator i = plugins.iterator();
+      Iterator i = conf.getConfiguration().getContainerLifecyclePluginIterator();
       while (i.hasNext())
       {
          ContainerLifecyclePlugin plugin = (ContainerLifecyclePlugin)i.next();
          addContainerLifecyclePlugin(container, plugin);
       }
    }
-   
-   private static final Comparator<org.exoplatform.container.xml.ContainerLifecyclePlugin> COMPARATOR_CONTAINER_PLUGIN =
-      new Comparator<org.exoplatform.container.xml.ContainerLifecyclePlugin>()
-      {
-
-         public int compare(org.exoplatform.container.xml.ContainerLifecyclePlugin o1,
-            org.exoplatform.container.xml.ContainerLifecyclePlugin o2)
-         {
-            return getPriority(o1) - getPriority(o2);
-         }
-
-         private int getPriority(org.exoplatform.container.xml.ContainerLifecyclePlugin p)
-         {
-            return p.getPriority() == null ? 0 : Integer.parseInt(p.getPriority());
-         }
-
-      };
       
    private static void addContainerLifecyclePlugin(ExoContainer container, ContainerLifecyclePlugin plugin)
    {
@@ -176,8 +154,6 @@ public class ContainerUtil
    static public void addComponents(ExoContainer container, ConfigurationManager conf)
    {
       Collection components = conf.getComponents();
-      if (components == null)
-         return;
       if (components == null)
          return;
       Iterator i = components.iterator();

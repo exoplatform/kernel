@@ -23,6 +23,7 @@ import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.management.ManageableContainer;
 import org.exoplatform.container.util.ContainerUtil;
+import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -320,5 +321,15 @@ public class ExoContainer extends ManageableContainer
             return clazz.cast(constructor.newInstance(args));
       }
       throw new Exception("Cannot find a satisfying constructor for " + clazz + " with parameter " + unknownParameter);
+   }
+   
+   /**
+    * Gets the {@link ConfigurationManager} from the given {@link ExoContainer} if it exists, 
+    * then returns the nested {@link Configuration} otherwise it returns <code>null</code>
+    */
+   protected Configuration getConfiguration()
+   {
+      ConfigurationManager cm = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
+      return cm == null ? null : cm.getConfiguration();
    }
 }

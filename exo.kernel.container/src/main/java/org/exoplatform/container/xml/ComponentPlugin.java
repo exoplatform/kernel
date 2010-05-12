@@ -23,7 +23,7 @@ package org.exoplatform.container.xml;
  * @since Apr 18, 2005
  * @version $Id: ComponentPlugin.java 5799 2006-05-28 17:55:42Z geaz $
  */
-public class ComponentPlugin
+public class ComponentPlugin implements Comparable<ComponentPlugin>
 {
    String name;
 
@@ -35,7 +35,7 @@ public class ComponentPlugin
 
    InitParams initParams;
 
-   String priority;
+   int priority;
 
    public String getName()
    {
@@ -87,13 +87,21 @@ public class ComponentPlugin
       this.initParams = ips;
    }
 
-   public String getPriority()
+   public int getPriority()
    {
       return priority;
    }
 
-   public void setPriority(String priority)
+   public void setPriority(int priority)
    {
       this.priority = priority;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int compareTo(ComponentPlugin o)
+   {
+      return getPriority() - o.getPriority();
    }
 }

@@ -18,20 +18,22 @@
  */
 package org.exoplatform.container;
 
-import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.util.ContainerUtil;
+import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NamingContext;
+import org.exoplatform.management.jmx.annotations.Property;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS .
@@ -47,13 +49,12 @@ import java.util.Set;
  *          it is AS server home in a case of AS env or just current directory
  *          (from where JVM is started) for standalone. See
  */
-
+@Managed
+@NamingContext(@Property(key = "container", value = "standalone"))
 public class StandaloneContainer extends ExoContainer implements SessionManagerContainer
 {
 
    private static final long serialVersionUID = 12L;
-
-   private static final String CONFIGURATION_URL_ATTR = "configurationURL";
 
    private static StandaloneContainer container;
 
@@ -199,7 +200,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    {
       if ((path == null) || (path.length() == 0))
          return;
-      URL confURL = new File(path).getAbsoluteFile().toURL();
+      URL confURL = new File(path).toURI().toURL();
       configurationURL = fileExists(confURL) ? confURL : null;
    }
 
@@ -266,6 +267,19 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       return configurationURL;
    }
 
+   @Managed
+   @ManagedDescription("The configuration of the container in XML format.")
+   public String getConfigurationXML()
+   {
+      Configuration config = getConfiguration();
+      if (config == null)
+      {
+         log.warn("The configuration of the StandaloneContainer could not be found");
+         return null;
+      }
+      return config.toXML();
+   }
+   
    /**
     * {@inheritDoc}
     */

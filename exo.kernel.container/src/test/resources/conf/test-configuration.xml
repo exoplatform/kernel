@@ -92,10 +92,11 @@
    <external-component-plugins>
       <target-component>org.exoplatform.mocks.PriorityService</target-component>
       <component-plugin>
-         <name>PluginPriority3</name>
+         <name>PluginPriority2</name>
          <set-method>addPlugin</set-method>
-         <type>org.exoplatform.mocks.PluginPriority3</type>
-         <description>PluginPriority3 description</description>
+         <type>org.exoplatform.mocks.PluginPriority2</type>
+         <description>PluginPriority2 description</description>
+         <priority>2</priority>
       </component-plugin>
    </external-component-plugins>
    <external-component-plugins>
@@ -108,11 +109,10 @@
          <priority>1</priority>
       </component-plugin>
       <component-plugin>
-         <name>PluginPriority2</name>
+         <name>PluginPriority3</name>
          <set-method>addPlugin</set-method>
-         <type>org.exoplatform.mocks.PluginPriority2</type>
-         <description>PluginPriority2 description</description>
-         <priority>2</priority>
+         <type>org.exoplatform.mocks.PluginPriority3</type>
+         <description>PluginPriority3 description</description>
       </component-plugin>
    </external-component-plugins>
 

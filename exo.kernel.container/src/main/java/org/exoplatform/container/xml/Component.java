@@ -22,6 +22,7 @@ import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ public class Component
 
    ArrayList plugins;
 
-   ArrayList<ComponentPlugin> componentPlugins;
+   private ArrayList<ComponentPlugin> componentPlugins;
 
    ArrayList listeners;
 
@@ -114,13 +115,18 @@ public class Component
       plugins = list;
    }
 
-   public List getComponentPlugins()
+   public List<ComponentPlugin> getComponentPlugins()
    {
       return componentPlugins;
    }
 
-   public void setComponentPlugins(ArrayList list)
+   public void setComponentPlugins(ArrayList<ComponentPlugin> list)
    {
+      if (list != null)
+      {
+         // Sort the list of component plugins first
+         Collections.sort(list);
+      }
       componentPlugins = list;
    }
 

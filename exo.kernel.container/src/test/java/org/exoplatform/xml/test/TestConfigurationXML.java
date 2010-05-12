@@ -113,7 +113,7 @@ public class TestConfigurationXML extends TestCase
          assertEquals("component-plugins-name", cp.getName());
          assertEquals("set-method-name", cp.getSetMethod());
          assertEquals("component-plugins-type", cp.getType());
-         assertEquals("1", cp.getPriority());
+         assertEquals(1, cp.getPriority());
          it = conf.getExternalComponentPluginsIterator();
          assertNotNull(it);
          assertTrue(it.hasNext());         
@@ -126,7 +126,7 @@ public class TestConfigurationXML extends TestCase
          assertEquals("component-plugins-name", cp.getName());
          assertEquals("set-method-name", cp.getSetMethod());
          assertEquals("component-plugins-type", cp.getType());
-         assertEquals("1", cp.getPriority());
+         assertEquals(1, cp.getPriority());
          list = conf.getImports();
          assertNotNull(list);
          assertFalse(list.isEmpty());

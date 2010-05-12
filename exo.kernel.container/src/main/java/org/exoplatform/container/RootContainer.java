@@ -26,7 +26,9 @@ import org.exoplatform.container.definition.PortalContainerDefinition;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.monitor.jvm.OperatingSystemInfo;
 import org.exoplatform.container.util.ContainerUtil;
+import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.log.ExoLogger;
@@ -55,6 +57,11 @@ import javax.servlet.ServletContext;
 @NamingContext(@Property(key = "container", value = "root"))
 public class RootContainer extends ExoContainer
 {
+
+   /**
+    * Serial Version UID
+    */
+   private static final long serialVersionUID = 812448359436635438L;
 
    /** The field is volatile to properly implement the double checked locking pattern. */
    private static volatile RootContainer singleton_;
@@ -101,7 +108,7 @@ public class RootContainer extends ExoContainer
 
       //
       Runtime.getRuntime().addShutdownHook(new ShutdownThread(this));
-      this.profiles= profiles;
+      this.profiles = profiles;
       this.registerComponentInstance(J2EEServerInfo.class, serverenv_);
    }
 
@@ -459,6 +466,19 @@ public class RootContainer extends ExoContainer
    static public void setInstance(RootContainer rcontainer)
    {
       singleton_ = rcontainer;
+   }
+
+   @Managed
+   @ManagedDescription("The configuration of the container in XML format.")
+   public String getConfigurationXML()
+   {
+      Configuration config = getConfiguration();
+      if (config == null)
+      {
+         log.warn("The configuration of the RootContainer could not be found");
+         return null;
+      }
+      return config.toXML();
    }
 
    /**

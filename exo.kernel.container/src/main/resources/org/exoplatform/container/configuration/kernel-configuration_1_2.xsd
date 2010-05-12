@@ -160,7 +160,7 @@
             <xsd:element name="set-method" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="priority" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="priority" type="xsd:int" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:attribute name="profiles" type="xsd:string"/>
@@ -178,7 +178,7 @@
             <xsd:element name="name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="priority" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="priority" type="xsd:int" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
     </xsd:complexType>

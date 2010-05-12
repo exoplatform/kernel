@@ -31,8 +31,6 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.AbstractComponentAdapter;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -129,30 +127,11 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       return instance_;
    }
 
-   private static final Comparator<org.exoplatform.container.xml.ComponentPlugin> COMPARATOR =
-      new Comparator<org.exoplatform.container.xml.ComponentPlugin>()
-      {
-
-         public int compare(org.exoplatform.container.xml.ComponentPlugin o1,
-            org.exoplatform.container.xml.ComponentPlugin o2)
-         {
-            return getPriority(o1) - getPriority(o2);
-         }
-
-         private int getPriority(org.exoplatform.container.xml.ComponentPlugin p)
-         {
-            //      return p.getPriority() == null ? Integer.MAX_VALUE : Integer.parseInt(p.getPriority());
-            return p.getPriority() == null ? 0 : Integer.parseInt(p.getPriority());
-         }
-
-      };
-
    private void addComponentPlugin(boolean debug, Object component,
       List<org.exoplatform.container.xml.ComponentPlugin> plugins, ExoContainer container) throws Exception
    {
       if (plugins == null)
          return;
-      Collections.sort(plugins, COMPARATOR);
       for (org.exoplatform.container.xml.ComponentPlugin plugin : plugins)
       {
 

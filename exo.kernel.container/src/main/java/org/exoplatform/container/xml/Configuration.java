@@ -18,8 +18,18 @@
  */
 package org.exoplatform.container.xml;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IMarshallingContext;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -32,10 +42,12 @@ import java.util.Map;
  * @email: tuan08@users.sourceforge.net
  * @version: $Id: Configuration.java 5799 2006-05-28 17:55:42Z geaz $
  */
-public class Configuration
+public class Configuration implements Cloneable
 {
 
    public static final String KERNEL_CONFIGURATION_1_0_URI = "http://www.exoplaform.org/xml/ns/kernel_1_0.xsd";
+
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.Configuration");
 
    private Map<String, ContainerLifecyclePlugin> containerLifecyclePlugin_ =
       new HashMap<String, ContainerLifecyclePlugin>();
@@ -52,9 +64,12 @@ public class Configuration
 
    private ArrayList<String> removeConfiguration_;
 
-   public Collection getContainerLifecyclePlugins()
+   public Collection<ContainerLifecyclePlugin> getContainerLifecyclePlugins()
    {
-      return containerLifecyclePlugin_.values();
+      List<ContainerLifecyclePlugin> plugins =
+         new ArrayList<ContainerLifecyclePlugin>(containerLifecyclePlugin_.values());
+      Collections.sort(plugins);
+      return plugins;
    }
 
    public void addContainerLifecyclePlugin(Object object)
@@ -64,9 +79,9 @@ public class Configuration
       containerLifecyclePlugin_.put(key, plugin);
    }
 
-   public Iterator getContainerLifecyclePluginIterator()
+   public Iterator<ContainerLifecyclePlugin> getContainerLifecyclePluginIterator()
    {
-      return containerLifecyclePlugin_.values().iterator();
+      return getContainerLifecyclePlugins().iterator();
    }
 
    public boolean hasContainerLifecyclePlugin()
@@ -135,8 +150,7 @@ public class Configuration
 
    public void addExternalComponentPlugins(Object o)
    {
-
-      if (o != null)
+      if (o instanceof ExternalComponentPlugins)
       {
          ExternalComponentPlugins eps = (ExternalComponentPlugins)o;
 
@@ -211,24 +225,102 @@ public class Configuration
       Iterator i = other.externalComponentPlugins_.values().iterator();
       while (i.hasNext())
       {
-         ExternalComponentPlugins eplugins = (ExternalComponentPlugins)i.next();
-         ExternalComponentPlugins foundExternalComponentPlugins =
-            externalComponentPlugins_.get(eplugins.getTargetComponent());
-         if (foundExternalComponentPlugins == null)
-         {
-            externalComponentPlugins_.put(eplugins.getTargetComponent(), eplugins);
-         }
-         else
-         {
-            foundExternalComponentPlugins.merge(eplugins);
-         }
+         addExternalComponentPlugins(i.next());
       }
-      // externalListeners_.putAll(other.externalListeners_) ;
 
       if (other.getRemoveConfiguration() == null)
          return;
       if (removeConfiguration_ == null)
          removeConfiguration_ = new ArrayList<String>();
       removeConfiguration_.addAll(other.getRemoveConfiguration());
+   }
+
+   /**
+    * Merge all the given configurations and return a safe copy of the result
+    * @param configs the list of configurations to merge ordered by priority, the second
+    * configuration will override the configuration of the first one and so on.
+    * @return the merged configuration
+    */
+   public static Configuration merge(Configuration... configs)
+   {
+      if (configs == null || configs.length == 0)
+      {
+         return null;
+      }
+      Configuration result = null;
+      for (Configuration conf : configs)
+      {
+         if (conf == null)
+         {
+            // Ignore the null configuration
+            continue;
+         }
+         else if (result == null)
+         {
+            try
+            {
+               // Initialize with the clone of the first non null configuration 
+               result = (Configuration)conf.clone();
+            }
+            catch (CloneNotSupportedException e)
+            {
+               log.warn("Could not clone the configuration", e);
+               break;
+            }
+         }
+         else
+         {
+            // The merge the current configuration with this new configuration
+            result.mergeConfiguration(conf);
+         }
+      }
+      return result;
+   }
+
+   /**
+    * Dumps the configuration in XML format into the given {@link Writer}
+    */
+   public void toXML(Writer w)
+   {
+      try
+      {
+         IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
+         IMarshallingContext mctx = bfact.createMarshallingContext();
+         mctx.setIndent(2);
+         mctx.marshalDocument(this, "UTF-8", null, w);
+      }
+      catch (Exception e)
+      {
+         log.warn("Couldn't dump the runtime configuration in XML Format", e);
+      }
+   }
+
+   /**
+    * Dumps the configuration in XML format into a {@link StringWriter} and 
+    * returns the content
+    */
+   public String toXML()
+   {
+      StringWriter sw = new StringWriter();
+      try
+      {
+         toXML(sw);
+      }
+      catch (Exception e)
+      {
+         log.warn("Cannot convert the configuration to XML format", e);
+         return null;
+      }
+      finally
+      {
+         try
+         {
+            sw.close();
+         }
+         catch (IOException ignore)
+         {
+         }            
+      }
+      return sw.toString();
    }
 }

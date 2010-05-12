@@ -49,18 +49,20 @@ public class TestExoContainer extends AbstractTestContainer
       final RootContainer container = createRootContainer("test-exo-container.xml");
       MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
       assertNotNull(counter);
-      assertEquals(2, counter.init.size());
-      assertEquals(2, counter.start.size());
+      assertEquals(3, counter.init.size());
+      assertEquals(3, counter.start.size());
       container.stop();
-      assertEquals(2, counter.stop.size());
+      assertEquals(3, counter.stop.size());
       container.dispose();
-      assertEquals(2, counter.destroy.size());
+      assertEquals(3, counter.destroy.size());
       // Check order
       assertTrue(counter.init.get(0) instanceof MyContainerLifecyclePlugin2);
       MyContainerLifecyclePlugin2 plugin = (MyContainerLifecyclePlugin2)counter.init.get(0);
       assertNotNull(plugin.getName());
       assertNotNull(plugin.getDescription());
       assertNotNull(plugin.param);
+      assertTrue(counter.init.get(1) instanceof MyContainerLifecyclePlugin3);
+      assertTrue(counter.init.get(2) instanceof MyContainerLifecyclePlugin1);
    }
    
    public void testStackOverFlow()
@@ -420,5 +422,43 @@ public class TestExoContainer extends AbstractTestContainer
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
          if (counter != null) counter.stop.add(this);
       }   
+   }
+   
+   
+   public static class MyContainerLifecyclePlugin3 extends BaseContainerLifecyclePlugin
+   {
+      
+      public MyContainerLifecyclePlugin3()
+      {
+      }
+      
+      @Override
+      public void destroyContainer(ExoContainer container) throws Exception
+      {
+         MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
+         if (counter != null) counter.destroy.add(this);
+      }
+
+      @Override
+      public void initContainer(ExoContainer container) throws Exception
+      {
+         MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
+         if (counter != null) counter.init.add(this);
+      }
+
+      @Override
+      public void startContainer(ExoContainer container) throws Exception
+      {
+         MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
+         if (counter != null) counter.start.add(this);
+      }
+
+      @Override
+      public void stopContainer(ExoContainer container) throws Exception
+      {
+         MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
+         if (counter != null) counter.stop.add(this);
+      }
+      
    }
 }
