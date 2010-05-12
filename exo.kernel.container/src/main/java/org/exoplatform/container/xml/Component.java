@@ -19,6 +19,7 @@
 package org.exoplatform.container.xml;
 
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.jibx.runtime.IMarshallingContext;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -170,4 +171,8 @@ public class Component
       multiInstance = b;
    }
 
+   public void preGet(IMarshallingContext ictx)
+   {
+      ConfigurationMarshallerUtil.addURLToContent(documentURL, ictx);
+   }
 }

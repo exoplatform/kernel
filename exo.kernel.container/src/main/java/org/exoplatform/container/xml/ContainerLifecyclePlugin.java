@@ -18,12 +18,20 @@
  */
 package org.exoplatform.container.xml;
 
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.jibx.runtime.IMarshallingContext;
+
+import java.net.URL;
+
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Sep 8, 2005
  */
 public class ContainerLifecyclePlugin implements Comparable<ContainerLifecyclePlugin>
 {
+   
+   final URL documentURL;
+   
    private String name;
    
    private String type;
@@ -33,6 +41,11 @@ public class ContainerLifecyclePlugin implements Comparable<ContainerLifecyclePl
    private int priority;
 
    private InitParams initParams;
+   
+   public ContainerLifecyclePlugin()
+   {
+      documentURL = ConfigurationManagerImpl.getCurrentURL();
+   }   
    
    public String getName()
    {
@@ -87,5 +100,10 @@ public class ContainerLifecyclePlugin implements Comparable<ContainerLifecyclePl
    public int compareTo(ContainerLifecyclePlugin o)
    {
       return getPriority() - o.getPriority();
+   }
+   
+   public void preGet(IMarshallingContext ictx)
+   {
+      ConfigurationMarshallerUtil.addURLToContent(documentURL, ictx);
    }
 }

@@ -18,18 +18,31 @@
  */
 package org.exoplatform.container.xml;
 
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.jibx.runtime.IMarshallingContext;
+
+import java.net.URL;
+
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Sep 8, 2005
  */
 public class ComponentLifecyclePlugin
 {
+   
+   final URL documentURL;
+   
    private String type;
 
    private ManageableComponents manageableComponents;
 
    private InitParams initParams;
 
+   public ComponentLifecyclePlugin()
+   {
+      documentURL = ConfigurationManagerImpl.getCurrentURL();
+   }
+   
    public String getType()
    {
       return type;
@@ -60,4 +73,8 @@ public class ComponentLifecyclePlugin
       this.initParams = initParams;
    }
 
+   public void preGet(IMarshallingContext ictx)
+   {
+      ConfigurationMarshallerUtil.addURLToContent(documentURL, ictx);
+   }
 }

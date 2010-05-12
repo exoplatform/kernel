@@ -18,6 +18,11 @@
  */
 package org.exoplatform.container.xml;
 
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.jibx.runtime.IMarshallingContext;
+
+import java.net.URL;
+
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
  * @since Apr 18, 2005
@@ -25,6 +30,9 @@ package org.exoplatform.container.xml;
  */
 public class ComponentPlugin implements Comparable<ComponentPlugin>
 {
+
+   final URL documentURL;
+   
    String name;
 
    String type;
@@ -37,6 +45,11 @@ public class ComponentPlugin implements Comparable<ComponentPlugin>
 
    int priority;
 
+   public ComponentPlugin()
+   {
+      documentURL = ConfigurationManagerImpl.getCurrentURL();
+   }
+   
    public String getName()
    {
       return name;
@@ -104,4 +117,9 @@ public class ComponentPlugin implements Comparable<ComponentPlugin>
    {
       return getPriority() - o.getPriority();
    }
+
+   public void preGet(IMarshallingContext ictx)
+   {
+      ConfigurationMarshallerUtil.addURLToContent(documentURL, ictx);
+   }   
 }

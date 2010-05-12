@@ -137,7 +137,7 @@
                 add-method="addParam" iter-method="getObjectParamIterator"/>
   </mapping>
 
-  <mapping name="component-plugin" class="org.exoplatform.container.xml.ComponentPlugin">
+  <mapping name="component-plugin" class="org.exoplatform.container.xml.ComponentPlugin" pre-get="preGet">
     <value name="name"  field="name" />
     <value name="set-method"  field="setMethod" />
     <value name="type"  field="type" />
@@ -152,7 +152,7 @@
     <collection item-type="org.exoplatform.container.xml.ComponentPlugin" field="componentPlugins"/>
   </mapping>
 
-  <mapping name="container-lifecycle-plugin" class="org.exoplatform.container.xml.ContainerLifecyclePlugin">
+  <mapping name="container-lifecycle-plugin" class="org.exoplatform.container.xml.ContainerLifecyclePlugin" pre-get="preGet">
     <value name="name"  field="name" usage="optional" />
     <value name="type"  field="type" />
     <value name="description" field="description" usage="optional" />
@@ -168,7 +168,7 @@
     </collection>
   </mapping>
 
-  <mapping name="component-lifecycle-plugin" class="org.exoplatform.container.xml.ComponentLifecyclePlugin">
+  <mapping name="component-lifecycle-plugin" class="org.exoplatform.container.xml.ComponentLifecyclePlugin" pre-get="preGet">
     <value name="type"  field="type" />
     <structure map-as="org.exoplatform.container.xml.ManageableComponents"
                get-method="getManageableComponents" set-method="setManageableComponents"/>
@@ -176,7 +176,7 @@
                get-method="getInitParams" set-method="setInitParams"/>
   </mapping>
 
-  <mapping name="component" class="org.exoplatform.container.xml.Component">
+  <mapping name="component" class="org.exoplatform.container.xml.Component" pre-get="preGet">
     <value name="key"  field="key" usage="optional" />
     <value name="jmx-name"  field="jmxName" usage="optional" />
     <value name="type"  field="type" />
