@@ -24,7 +24,7 @@ import org.exoplatform.services.log.Log;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
-import java.net.URL;
+import java.net.URI;
 
 import javax.management.MBeanServer;
 
@@ -95,7 +95,7 @@ public class J2EEServerInfo
          {
             try
             {
-               exoConfDir_ = new File(new URL(jbossConfigUrl).getFile() + "/" + confDirName).getAbsolutePath();
+               exoConfDir_ = new File(new File(new URI(jbossConfigUrl)), confDirName).getAbsolutePath();
             }
             catch (Throwable e)
             {
