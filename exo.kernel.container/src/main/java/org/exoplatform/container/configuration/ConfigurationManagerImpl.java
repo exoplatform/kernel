@@ -176,10 +176,12 @@ public class ConfigurationManagerImpl implements ConfigurationManager
                URL urlObject = getURL(uri);
                if (urlObject != null)
                {
-                  conf = unmarshaller.unmarshall(urlObject);
-                  configurations_.mergeConfiguration(conf);
                   if (LOG_DEBUG)
                      log.info("\timport " + urlObject);
+                  // Set the URL of imported file
+                  currentURL.set(urlObject);
+                  conf = unmarshaller.unmarshall(urlObject);
+                  configurations_.mergeConfiguration(conf);
                }
                else
                {
