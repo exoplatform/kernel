@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -239,16 +240,25 @@ public class InitialContextInitializer
       if (LOG.isDebugEnabled())
       {
          StringBuilder refAddrString = new StringBuilder();
-         for (Map.Entry<String, String> ent: refAddr.entrySet()) {
+         refAddrString.append('{');
+         Set<Map.Entry<String, String>> refs = refAddr.entrySet();
+         int i = 1;
+         for (Map.Entry<String, String> ent : refs)
+         {
             refAddrString.append(ent.getKey());
             refAddrString.append('=');
             refAddrString.append(ent.getValue());
-            refAddrString.append(';');
+            if (i < refs.size())
+            {
+               refAddrString.append(' ');
+            }
+            i++;
          }
-         LOG.debug("Bind: " + bindName + " class-name:" + className + " factory:" + factory + " factoryLocation:" + factoryLocation + 
-            " refAddr:" + refAddrString);
+         refAddrString.append('}');
+         LOG.debug("Bind: " + bindName + " class-name:" + className + " factory:" + factory + " factoryLocation:"
+            + factoryLocation + " refAddr:" + refAddrString);
       }
-      
+
       binder.bind(bindName, className, factory, factoryLocation, refAddr);
    }
 }
