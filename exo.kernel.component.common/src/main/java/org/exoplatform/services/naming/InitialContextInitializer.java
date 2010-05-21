@@ -54,7 +54,7 @@ public class InitialContextInitializer
 
    final public static String PROPERTIES_MANDATORY = "mandatory-properties";
 
-   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
+   private static Log LOG = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
 
    private List<BindReferencePlugin> bindReferencesPlugins;
 
@@ -98,7 +98,7 @@ public class InitialContextInitializer
                }
                else
                {
-                  log.info("Using default system property: " + propName + " = " + existedProp);
+                  LOG.info("Using default system property: " + propName + " = " + existedProp);
                }
             }
          }
@@ -117,11 +117,12 @@ public class InitialContextInitializer
       {
          defaultContextFactory = propValue;
       }
-      log.info("Using mandatory system property: " + propName + " = " + System.getProperty(propName));
+      LOG.info("Using mandatory system property: " + propName + " = " + System.getProperty(propName));
    }
 
    // for out-of-container testing
-   private InitialContextInitializer(String name, Reference reference) throws NamingException, FileNotFoundException, XMLStreamException
+   private InitialContextInitializer(String name, Reference reference) throws NamingException, FileNotFoundException,
+      XMLStreamException
    {
       if (System.getProperty(Context.INITIAL_CONTEXT_FACTORY) == null)
       {
@@ -147,15 +148,15 @@ public class InitialContextInitializer
          {
             InitialContext ic = new InitialContext();
             ic.bind(plugin.getBindName(), plugin.getReference());
-            log.info("Reference bound (by recall()): " + plugin.getBindName());
+            LOG.info("Reference bound (by recall()): " + plugin.getBindName());
          }
          catch (NameAlreadyBoundException e)
          {
-            log.debug("Name already bound: " + plugin.getBindName());
+            LOG.debug("Name already bound: " + plugin.getBindName());
          }
          catch (NamingException e)
          {
-            log.error("Could not bind: " + plugin.getBindName(), e);
+            LOG.error("Could not bind: " + plugin.getBindName(), e);
          }
       }
    }
@@ -169,12 +170,12 @@ public class InitialContextInitializer
          {
             // initialContext = new InitialContext();
             initialContext.rebind(brplugin.getBindName(), brplugin.getReference());
-            log.info("Reference bound: " + brplugin.getBindName());
+            LOG.info("Reference bound: " + brplugin.getBindName());
             bindReferencesPlugins.add((BindReferencePlugin)plugin);
          }
          catch (NamingException e)
          {
-            log.error("Could not bind: " + brplugin.getBindName(), e);
+            LOG.error("Could not bind: " + brplugin.getBindName(), e);
          }
       }
    }
@@ -206,7 +207,8 @@ public class InitialContextInitializer
    }
 
    // for out-of-container testing
-   public static void initialize(String name, Reference reference) throws NamingException, FileNotFoundException, XMLStreamException
+   public static void initialize(String name, Reference reference) throws NamingException, FileNotFoundException,
+      XMLStreamException
    {
       new InitialContextInitializer(name, reference);
    }
@@ -234,6 +236,19 @@ public class InitialContextInitializer
    public void bind(String bindName, String className, String factory, String factoryLocation,
       Map<String, String> refAddr) throws NamingException, FileNotFoundException, XMLStreamException
    {
+      if (LOG.isDebugEnabled())
+      {
+         StringBuilder refAddrString = new StringBuilder();
+         for (Map.Entry<String, String> ent: refAddr.entrySet()) {
+            refAddrString.append(ent.getKey());
+            refAddrString.append('=');
+            refAddrString.append(ent.getValue());
+            refAddrString.append(';');
+         }
+         LOG.debug("Bind: " + bindName + " class-name:" + className + " factory:" + factory + " factoryLocation:" + factoryLocation + 
+            " refAddr:" + refAddrString);
+      }
+      
       binder.bind(bindName, className, factory, factoryLocation, refAddr);
    }
 }
