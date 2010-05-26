@@ -31,6 +31,7 @@ import java.util.Map;
 
 import java.util.Map.Entry;
 
+import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
@@ -153,7 +154,14 @@ public class InitialContextBinder
 
    private void bind(String bindName, Reference reference) throws NamingException
    {
-      initialContextInitializer.getInitialContext().bind(bindName, reference);
+      try
+      {
+         initialContextInitializer.getInitialContext().bind(bindName, reference);
+      }
+      catch (NameAlreadyBoundException e)
+      {
+         initialContextInitializer.getInitialContext().rebind(bindName, reference);
+      }
       bindings.put(bindName, reference);
    }
 
