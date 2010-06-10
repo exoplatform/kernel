@@ -167,36 +167,67 @@ public class ConfigurationManagerImpl implements ConfigurationManager
             configurations_ = conf;
          else
             configurations_.mergeConfiguration(conf);
-         List urls = conf.getImports();
-         if (urls != null)
-         {
-            for (int i = 0; i < urls.size(); i++)
-            {
-               String uri = (String)urls.get(i);
-               URL urlObject = getURL(uri);
-               if (urlObject != null)
-               {
-                  if (LOG_DEBUG)
-                     log.info("\timport " + urlObject);
-                  // Set the URL of imported file
-                  currentURL.set(urlObject);
-                  conf = unmarshaller.unmarshall(urlObject);
-                  configurations_.mergeConfiguration(conf);
-               }
-               else
-               {
-                  log.warn("Couldn't process the URL for " + uri + " configuration file ignored ");
-               }
-            }
-         }
+         importConf(unmarshaller, conf);
       }
       catch (Exception ex)
       {
-         log.error("Cannot process the configuration " + url, ex);
+         log.error("Cannot process the configuration " + currentURL.get(), ex);
       }
       finally
       {
          currentURL.set(null);
+      }
+   }
+
+   /**
+    * Recursively import the configuration files
+    * 
+    * @param unmarshaller the unmarshaller used to unmarshall the configuration file to import
+    * @param conf the configuration in which we get the list of files to import
+    * @throws Exception if an exception occurs while loading the files to import
+    */
+   private void importConf(ConfigurationUnmarshaller unmarshaller, Configuration conf) throws Exception
+   {
+      importConf(unmarshaller, conf, 1);
+   }
+   
+   /**
+    * Recursively import the configuration files
+    * 
+    * @param unmarshaller the unmarshaller used to unmarshall the configuration file to import
+    * @param conf the configuration in which we get the list of files to import
+    * @param depth used to log properly the URL of the file to import
+    * @throws Exception if an exception occurs while loading the files to import
+    */
+   private void importConf(ConfigurationUnmarshaller unmarshaller, Configuration conf, int depth) throws Exception
+   {
+      List urls = conf.getImports();
+      if (urls != null)
+      {
+         StringBuilder prefix = new StringBuilder(depth);
+         for (int i = 0; i < depth; i++)
+         {
+            prefix.append('\t');
+         }
+         for (int i = 0; i < urls.size(); i++)
+         {
+            String uri = (String)urls.get(i);
+            URL urlObject = getURL(uri);
+            if (urlObject != null)
+            {
+               if (LOG_DEBUG)
+                  log.info(prefix + "import " + urlObject);
+               // Set the URL of imported file
+               currentURL.set(urlObject);
+               conf = unmarshaller.unmarshall(urlObject);
+               configurations_.mergeConfiguration(conf);
+               importConf(unmarshaller, conf, depth + 1);
+            }
+            else
+            {
+               log.warn("Couldn't process the URL for " + uri + " configuration file ignored ");
+            }
+         }
       }
    }
 

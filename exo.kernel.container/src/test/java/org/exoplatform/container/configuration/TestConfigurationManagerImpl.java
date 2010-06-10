@@ -18,6 +18,8 @@ package org.exoplatform.container.configuration;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.xml.Configuration;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -199,6 +201,39 @@ public class TestConfigurationManagerImpl extends TestCase
       checkURL(url, true);      
    }
 
+   public void testImport() throws Exception
+   {
+      // no import
+      ConfigurationManager cm = new ConfigurationManagerImpl();
+      cm.addConfiguration("classpath:/org/exoplatform/container/configuration/config-manager-configuration-a.xml");
+      Configuration conf = cm.getConfiguration();
+      assertNotNull(conf.getComponent("A"));
+      assertTrue(conf.getComponent("A").getDocumentURL().getFile().endsWith("config-manager-configuration-a.xml"));
+      assertNull(conf.getComponent("B"));
+      assertNull(conf.getComponent("C"));
+      
+      // b import a
+      cm = new ConfigurationManagerImpl();
+      cm.addConfiguration("classpath:/org/exoplatform/container/configuration/config-manager-configuration-b.xml");
+      conf = cm.getConfiguration();
+      assertNotNull(conf.getComponent("A"));
+      assertTrue(conf.getComponent("A").getDocumentURL().getFile().endsWith("config-manager-configuration-a.xml"));
+      assertNotNull(conf.getComponent("B"));
+      assertTrue(conf.getComponent("B").getDocumentURL().getFile().endsWith("config-manager-configuration-b.xml"));
+      assertNull(conf.getComponent("C"));
+      
+      // c import b and b import a
+      cm = new ConfigurationManagerImpl();
+      cm.addConfiguration("classpath:/org/exoplatform/container/configuration/config-manager-configuration-c.xml");
+      conf = cm.getConfiguration();
+      assertNotNull(conf.getComponent("A"));
+      assertTrue(conf.getComponent("A").getDocumentURL().getFile().endsWith("config-manager-configuration-a.xml"));
+      assertNotNull(conf.getComponent("B"));
+      assertTrue(conf.getComponent("B").getDocumentURL().getFile().endsWith("config-manager-configuration-b.xml"));
+      assertNotNull(conf.getComponent("C"));
+      assertTrue(conf.getComponent("C").getDocumentURL().getFile().endsWith("config-manager-configuration-c.xml"));
+   }
+   
    private void checkURL(URL url) throws Exception
    {
       checkURL(url, false);
