@@ -1,0 +1,5 @@
+// configure static permissions here
+grant {                                                                                                          
+    permission java.security.AllPermission;                                                                                                    
+};
+ 
