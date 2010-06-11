@@ -28,71 +28,21 @@ import java.security.Permission;
 import java.security.Permissions;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
  * @version $Id: TestSecureSet.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
- *
  */
-public class TestSecureCollections extends TestCase
+
+public abstract class AbstractSecureCollectionsTest extends TestCase
 {
    // permission for testing purposes
    public static final Permission MODIFY_PERMISSION = new RuntimePermission("modifyPermisssion");
 
-   public void testSecurityManagerExists()
-   {
-      // check if SM is installed
-      assertNotNull("Security Manager is not installed", System.getSecurityManager());
-   }
-
-   public void testSecureSetAddPermitted()
-   {
-      final Set<String> set = SecureCollections.secureSet(new HashSet<String>(), MODIFY_PERMISSION);
-      try
-      {
-         // giving MODIFY_PERMISSION
-         doActionWithPermissions(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               set.add("string");
-               return null;
-            }
-         }, MODIFY_PERMISSION);
-      }
-      catch (Exception e)
-      {
-         fail("Modification should be permitted.");
-      }
-   }
-
-   public void testSecureSetAddDenied()
-   {
-      final Set<String> set = SecureCollections.secureSet(new HashSet<String>(), MODIFY_PERMISSION);
-      try
-      {
-         // giving no permissions
-         doActionWithPermissions(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               set.add("string");
-               return null;
-            }
-         });
-         fail("Modification should be denied.");
-      }
-      catch (Exception e)
-      {
-      }
-   }
-
    /**
     * Run privileged action with given privileges.
     */
-   private <T> T doActionWithPermissions(PrivilegedExceptionAction<T> action, Permission... permissions)
+   protected <T> T doActionWithPermissions(PrivilegedExceptionAction<T> action, Permission... permissions)
       throws Exception
    {
       Permissions allPermissions = new Permissions();
@@ -109,7 +59,7 @@ public class TestSecureCollections extends TestCase
       return AccessController.doPrivileged(action, new AccessControlContext(protectionDomains));
    }
 
-   private URL getCodeSource()
+   protected URL getCodeSource()
    {
       return getClass().getProtectionDomain().getCodeSource().getLocation();
    }
