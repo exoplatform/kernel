@@ -27,15 +27,14 @@ import java.util.Iterator;
  * @version $Revision$
  */
 
-public class TestSecureCollectionsSet extends AbstractSecureCollectionsTest
+public class TestSecureSet extends AbstractSecureCollectionsTest
 {
    private Set<String> set;
 
-   /**
-    * establishment of protected set prior to each test 
-    */
+   @Override
    protected void setUp()
    {
+      // establishment of protected set prior to each test 
       set = SecureCollections.secureSet(new HashSet<String>(), MODIFY_PERMISSION);
       try
       {
@@ -55,11 +54,10 @@ public class TestSecureCollectionsSet extends AbstractSecureCollectionsTest
       }
    }
 
-   /**
-    * cleaning protected set after each test
-    */
+   @Override
    protected void tearDown()
    {
+      // cleaning protected set after each test
       try
       {
          // giving MODIFY_PERMISSION
@@ -167,6 +165,28 @@ public class TestSecureCollectionsSet extends AbstractSecureCollectionsTest
             public Object run() throws Exception
             {
                Iterator<String> iterator = set.iterator();
+               return null;
+            }
+         }, MODIFY_PERMISSION);
+      }
+      catch (Exception e)
+      {
+         fail("Modification should be permitted.");
+      }
+   }
+
+   public void testSecureSetIteratorRemovePermitted()
+   {
+      try
+      {
+         // giving MODIFY_PERMISSION
+         doActionWithPermissions(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               Iterator<String> iterator = set.iterator();
+               iterator.next();
+               iterator.remove();
                return null;
             }
          }, MODIFY_PERMISSION);

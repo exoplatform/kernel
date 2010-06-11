@@ -28,15 +28,14 @@ import java.util.ListIterator;
  * @version $Revision$
  */
 
-public class TestSecureCollectionsList extends AbstractSecureCollectionsTest
+public class TestSecureList extends AbstractSecureCollectionsTest
 {
-   private List<String> list = SecureCollections.secureList(new ArrayList<String>(), MODIFY_PERMISSION);
+   private List<String> list;
 
-   /**
-    * establishment of protected list prior to each test 
-    */
+   @Override
    protected void setUp()
    {
+      // establishment of protected set prior to each test 
       list = SecureCollections.secureList(new ArrayList<String>(), MODIFY_PERMISSION);
       try
       {
@@ -56,12 +55,10 @@ public class TestSecureCollectionsList extends AbstractSecureCollectionsTest
       }
    }
 
-   /**
-    * cleaning protected list after each test
-    */
-
+   @Override
    protected void tearDown()
    {
+      // cleaning protected list after each test
       try
       {
          // giving MODIFY_PERMISSION
@@ -139,7 +136,7 @@ public class TestSecureCollectionsList extends AbstractSecureCollectionsTest
       }
    }
 
-   public void testSecureListIteratorPermitted()
+   public void testSecureListIteratorRemovePermitted()
    {
       try
       {
@@ -148,7 +145,9 @@ public class TestSecureCollectionsList extends AbstractSecureCollectionsTest
          {
             public Object run() throws Exception
             {
-               ListIterator<String> it = list.listIterator();
+               ListIterator<String> iterator = list.listIterator();
+               iterator.next();
+               iterator.remove();
                return null;
             }
          }, MODIFY_PERMISSION);
