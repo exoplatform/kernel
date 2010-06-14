@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import java.net.URL;
 import java.security.AccessControlContext;
 import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.Permissions;
@@ -31,7 +32,7 @@ import java.security.ProtectionDomain;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
- * @version $Id: TestSecureSet.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
+ * @version $Id$
  */
 
 public abstract class AbstractSecureCollectionsTest extends TestCase
@@ -43,7 +44,7 @@ public abstract class AbstractSecureCollectionsTest extends TestCase
     * Run privileged action with given privileges.
     */
    protected <T> T doActionWithPermissions(PrivilegedExceptionAction<T> action, Permission... permissions)
-      throws Exception
+      throws PrivilegedActionException
    {
       Permissions allPermissions = new Permissions();
       for (Permission permission : permissions)

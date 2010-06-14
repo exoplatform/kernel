@@ -16,8 +16,9 @@
  */
 package org.exoplatform.commons.utils.secure;
 
-import java.security.Permission;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.security.AccessControlException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,7 +34,7 @@ public class TestSecureList extends AbstractSecureCollectionsTest
    private List<String> list;
 
    @Override
-   protected void setUp()
+   protected void setUp() throws PrivilegedActionException
    {
       // establishment of protected set prior to each test 
       list = SecureCollections.secureList(new ArrayList<String>(), MODIFY_PERMISSION);
@@ -42,7 +43,7 @@ public class TestSecureList extends AbstractSecureCollectionsTest
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                list.add("firstString");
                list.add("secondString");
@@ -50,13 +51,14 @@ public class TestSecureList extends AbstractSecureCollectionsTest
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
    @Override
-   protected void tearDown()
+   protected void tearDown() throws PrivilegedActionException
    {
       // cleaning protected list after each test
       try
@@ -64,26 +66,27 @@ public class TestSecureList extends AbstractSecureCollectionsTest
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                list.clear();
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
-   public void testSecureListAddDenied()
+   public void testSecureListAddDenied() throws PrivilegedActionException
    {
       try
       {
          // giving no permissions
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                list.add("string");
                return null;
@@ -91,39 +94,40 @@ public class TestSecureList extends AbstractSecureCollectionsTest
          });
          fail("Modification should be denied.");
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
-   public void testSecureListAddPermitted()
+   public void testSecureListAddPermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                list.add(0, "string");
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }
    }
 
-   public void testSecureListClearDenied()
+   public void testSecureListClearDenied() throws PrivilegedActionException
    {
       try
       {
          // giving no permissions
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                list.clear();
                return null;
@@ -131,19 +135,20 @@ public class TestSecureList extends AbstractSecureCollectionsTest
          });
          fail("Modification should be denied.");
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
-   public void testSecureListIteratorRemovePermitted()
+   public void testSecureListIteratorRemovePermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                ListIterator<String> iterator = list.listIterator();
                iterator.next();
@@ -152,20 +157,20 @@ public class TestSecureList extends AbstractSecureCollectionsTest
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }
    }
 
-   public void testSecureListRemoveDenied()
+   public void testSecureListRemoveDenied() throws PrivilegedActionException
    {
       try
       {
          // giving no permissions
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                list.remove(0);
                return null;
@@ -173,26 +178,27 @@ public class TestSecureList extends AbstractSecureCollectionsTest
          });
          fail("Modification should be denied.");
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
-   public void testSecureIteratorPermitted()
+   public void testSecureIteratorPermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                Iterator<String> it = list.iterator();
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }

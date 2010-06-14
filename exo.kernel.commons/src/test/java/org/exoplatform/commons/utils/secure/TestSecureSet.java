@@ -16,8 +16,9 @@
  */
 package org.exoplatform.commons.utils.secure;
 
-import java.security.Permissions;
 import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedActionException;
+import java.security.AccessControlException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Iterator;
@@ -32,7 +33,7 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
    private Set<String> set;
 
    @Override
-   protected void setUp()
+   protected void setUp() throws PrivilegedActionException
    {
       // establishment of protected set prior to each test 
       set = SecureCollections.secureSet(new HashSet<String>(), MODIFY_PERMISSION);
@@ -41,7 +42,7 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.add("firstString");
                set.add("secondString");
@@ -49,13 +50,14 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok         
       }
    }
 
    @Override
-   protected void tearDown()
+   protected void tearDown() throws PrivilegedActionException
    {
       // cleaning protected set after each test
       try
@@ -63,46 +65,47 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.clear();
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok         
       }
    }
 
-   public void testSecureSetAddPermitted()
+   public void testSecureSetAddPermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.add("string");
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }
    }
 
-   public void testSecureSetAddDenied()
+   public void testSecureSetAddDenied() throws PrivilegedActionException
    {
       try
       {
          // giving no permissions
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.add("string");
                return null;
@@ -110,19 +113,20 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
          });
          fail("Modification should be denied.");
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
-   public void testSecureSetRemoveDenied()
+   public void testSecureSetRemoveDenied() throws PrivilegedActionException
    {
       try
       {
          // giving no permissions
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.remove(0);
                return null;
@@ -130,59 +134,60 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
          });
          fail("Modification should be denied.");
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 
-   public void testSecureSetRemovePermitted()
+   public void testSecureSetRemovePermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.remove(0);
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }
    }
 
-   public void testSecureSetIteratorPermitted()
+   public void testSecureSetIteratorPermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                Iterator<String> iterator = set.iterator();
                return null;
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }
    }
 
-   public void testSecureSetIteratorRemovePermitted()
+   public void testSecureSetIteratorRemovePermitted() throws PrivilegedActionException
    {
       try
       {
          // giving MODIFY_PERMISSION
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                Iterator<String> iterator = set.iterator();
                iterator.next();
@@ -191,20 +196,20 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
             }
          }, MODIFY_PERMISSION);
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
          fail("Modification should be permitted.");
       }
    }
 
-   public void testSecureSetClearDenied()
+   public void testSecureSetClearDenied() throws PrivilegedActionException
    {
       try
       {
          // giving no permissions
          doActionWithPermissions(new PrivilegedExceptionAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run() throws AccessControlException
             {
                set.clear();
                return null;
@@ -212,8 +217,9 @@ public class TestSecureSet extends AbstractSecureCollectionsTest
          });
          fail("Modification should be denied.");
       }
-      catch (Exception e)
+      catch (AccessControlException e)
       {
+         // ok
       }
    }
 }
