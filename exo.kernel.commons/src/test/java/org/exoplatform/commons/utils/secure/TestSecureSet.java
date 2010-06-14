@@ -25,8 +25,7 @@ import java.util.Iterator;
 
 /**
  * @author <a href="mailto:natasha.vakulenko@gmail.com">Natasha Vakulenko</a>
- * @version $$Id${file_name} 34360 2009-07-22 23:58:59Z Natasha Vakulenko$$ *
- * ${tags}
+ * @version $Id$ 
  */
 
 public class TestSecureSet extends AbstractSecureCollectionsTest
