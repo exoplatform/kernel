@@ -26,7 +26,7 @@ import java.util.ListIterator;
 
 /**
  * @author <a href="mailto:natasha.vakulenko@gmail.com">Natasha Vakulenko</a>
- * @version $Revision$
+ * @version $Id: 
  */
 
 public class TestSecureList extends AbstractSecureCollectionsTest
