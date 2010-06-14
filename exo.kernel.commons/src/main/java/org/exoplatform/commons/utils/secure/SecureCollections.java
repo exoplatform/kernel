@@ -30,6 +30,13 @@ import java.util.Set;
 public class SecureCollections
 {
    /**
+    * Private constructor, used to disallow instance creation  
+    */
+   private SecureCollections()
+   {
+   }
+
+   /**
     * Creates {@link SecureSet}, which will require given {@link Permission} for it's modification
     * 
     * @param <E>
