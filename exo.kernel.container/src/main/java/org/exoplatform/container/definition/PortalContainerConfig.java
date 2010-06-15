@@ -442,7 +442,7 @@ public class PortalContainerConfig implements Startable
       {
          result = definition.getDependencies();
       }
-      return result == null ? defaultDefinition.getDependencies() : result;
+      return result == null || result.isEmpty() ? defaultDefinition.getDependencies() : result;
    }
 
    /**
@@ -462,7 +462,7 @@ public class PortalContainerConfig implements Startable
       if (definition != null)
       {
          final Map<String, Object> settings = definition.getSettings();
-         if (settings != null)
+         if (settings != null && !settings.isEmpty())
          {
             return settings.get(settingName);
          }
@@ -547,7 +547,7 @@ public class PortalContainerConfig implements Startable
                throw new IllegalStateException("The PortalContainerConfig has already been initialized");
             }
             final Map<String, PortalContainerDefinition> tempDefinitions =
-               new HashMap<String, PortalContainerDefinition>(definitions);
+               new LinkedHashMap<String, PortalContainerDefinition>(definitions);
             for (PortalContainerDefinition def : lDefs)
             {
                String name = def.getName();
@@ -944,6 +944,7 @@ public class PortalContainerConfig implements Startable
       // Add the default portal container name
       lPortalContainerNames.add(defaultDefinition.getName());
       final Map<String, List<String>> mScopes = new HashMap<String, List<String>>();
+      boolean first = true;
       for (Map.Entry<String, PortalContainerDefinition> entry : mDefinitions.entrySet())
       {
          PortalContainerDefinition definition = entry.getValue();
@@ -951,24 +952,29 @@ public class PortalContainerConfig implements Startable
          boolean hasChanged = false;
          if (!name.equals(defaultDefinition.getName()))
          {
+            lPortalContainerNames.add(name);
+         }
+         if (first)
+         {
+            first = false;
+            // Initialize the main fields thanks to the data found in the first portal container
             if (defaultDefinition.getName() == DEFAULT_PORTAL_CONTAINER_NAME)
             {
                defaultDefinition.setName(name);
                hasChanged = true;
             }
-            lPortalContainerNames.add(name);
-         }
-         if (defaultDefinition.getRestContextName() == DEFAULT_REST_CONTEXT_NAME
-            && definition.getRestContextName() != null && definition.getRestContextName().trim().length() > 0)
-         {
-            defaultDefinition.setRestContextName(definition.getRestContextName().trim());
-            hasChanged = true;
-         }
-         if (defaultDefinition.getRealmName() == DEFAULT_REALM_NAME && definition.getRealmName() != null
-            && definition.getRealmName().trim().length() > 0)
-         {
-            defaultDefinition.setRealmName(definition.getRealmName().trim());
-            hasChanged = true;
+            if (defaultDefinition.getRestContextName() == DEFAULT_REST_CONTEXT_NAME
+               && definition.getRestContextName() != null && definition.getRestContextName().trim().length() > 0)
+            {
+               defaultDefinition.setRestContextName(definition.getRestContextName().trim());
+               hasChanged = true;
+            }
+            if (defaultDefinition.getRealmName() == DEFAULT_REALM_NAME && definition.getRealmName() != null
+               && definition.getRealmName().trim().length() > 0)
+            {
+               defaultDefinition.setRealmName(definition.getRealmName().trim());
+               hasChanged = true;
+            }
          }
          registerDependencies(definition, mScopes);
          if (hasChanged)
