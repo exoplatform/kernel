@@ -58,6 +58,142 @@
 					</object>
 				</object-param>
 			</init-params>
-		</component-plugin>				
+		</component-plugin>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Change PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
+			<set-method>registerChangePlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionChangePlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+			<init-params>
+				<value-param>
+					<name>apply.all</name>
+					<value>true</value>
+				</value-param>
+				<object-param>
+					<name>change1</name>
+					<object type="org.exoplatform.container.definition.TestPortalContainerConfig$TestPortalContainerDefinitionChange">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>change1</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Change PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
+			<set-method>registerChangePlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionChangePlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+			<init-params>
+				<value-param>
+					<name>apply.default</name>
+					<value>true</value>
+				</value-param>
+				<object-param>
+					<name>change2</name>
+					<object type="org.exoplatform.container.definition.TestPortalContainerConfig$TestPortalContainerDefinitionChange">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>change2</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Change PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
+			<set-method>registerChangePlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionChangePlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+			<init-params>
+				<values-param>
+					<name>apply.specific</name>
+					<value>fake</value>
+					<value>myPortal-pcdef</value>
+				</values-param>
+				<object-param>
+					<name>change3</name>
+					<object type="org.exoplatform.container.definition.TestPortalContainerConfig$TestPortalContainerDefinitionChange">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>change3</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Change PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
+			<set-method>registerChangePlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionChangePlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+			<init-params>
+				<value-param>
+					<name>apply.default</name>
+					<value>true</value>
+				</value-param>			
+				<values-param>
+					<name>apply.specific</name>
+					<value>fake</value>
+					<value>myPortal-pcdef</value>
+				</values-param>
+				<object-param>
+					<name>change4</name>
+					<object type="org.exoplatform.container.definition.TestPortalContainerConfig$TestPortalContainerDefinitionChange">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>change4</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Change PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
+			<set-method>registerChangePlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionChangePlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+			<init-params>
+				<object-param>
+					<name>change5</name>
+					<object type="org.exoplatform.container.definition.TestPortalContainerConfig$TestPortalContainerDefinitionChange">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>change5</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Change PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
+			<set-method>registerChangePlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionChangePlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+			<init-params>
+				<object-param profiles="change6">
+					<name>change6</name>
+					<object type="org.exoplatform.container.definition.TestPortalContainerConfig$TestPortalContainerDefinitionChange">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>change6</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>								
 	</external-component-plugins>
 </configuration>

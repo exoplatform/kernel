@@ -20,7 +20,11 @@ import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS
@@ -95,7 +99,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals("myRest-pcdef", config.getDefaultRestContext());
       assertEquals("my-exo-domain-pcdef", config.getDefaultRealmName());
       assertTrue(config.hasDefinition());
-      
+
       rootContainer = createRootContainer("portal-container-config-with-no-default-values-but-with-portal-defs.xml");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
 
@@ -103,19 +107,74 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals("myRest", config.getDefaultRestContext());
       assertEquals("my-exo-domain", config.getDefaultRealmName());
       assertTrue(config.hasDefinition());
-      
+
       rootContainer = createRootContainer("portal-container-config-with-no-default-values-but-with-portal-defs2.xml");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
 
       assertEquals("myPortal-pcdef", config.getDefaultPortalContainer());
       assertEquals("myRest-pcdef", config.getDefaultRestContext());
       assertEquals("my-exo-domain-pcdef", config.getDefaultRealmName());
-      assertTrue(config.hasDefinition());     
+      assertTrue(config.hasDefinition());
+   }
+
+   public void testChanges()
+   {
+      Set<String> s;
+      try
+      {
+         createRootContainer("portal-container-config-with-no-default-values-but-with-portal-defs.xml");
+         s = TestPortalContainerDefinitionChange.NAMES.get("change1");
+         assertNotNull(s);
+         assertEquals(2, s.size());
+         assertTrue(s.contains("portal"));
+         assertTrue(s.contains("myPortal-pcdef"));
+
+         s = TestPortalContainerDefinitionChange.NAMES.get("change2");
+         assertNotNull(s);
+         assertEquals(1, s.size());
+         assertTrue(s.contains("portal"));
+
+         s = TestPortalContainerDefinitionChange.NAMES.get("change3");
+         assertNotNull(s);
+         assertEquals(1, s.size());
+         assertTrue(s.contains("myPortal-pcdef"));
+
+         s = TestPortalContainerDefinitionChange.NAMES.get("change4");
+         assertNotNull(s);
+         assertEquals(2, s.size());
+         assertTrue(s.contains("portal"));
+         assertTrue(s.contains("myPortal-pcdef"));
+
+         s = TestPortalContainerDefinitionChange.NAMES.get("change5");
+         assertNotNull(s);
+         assertEquals(1, s.size());
+         assertTrue(s.contains("portal"));
+
+         s = TestPortalContainerDefinitionChange.NAMES.get("change6");
+         assertNull(s);
+      }
+      finally
+      {
+         TestPortalContainerDefinitionChange.NAMES.clear();
+      }
+
+      try
+      {
+         createRootContainer("portal-container-config-with-no-default-values-but-with-portal-defs.xml", "change6");
+         s = TestPortalContainerDefinitionChange.NAMES.get("change6");
+         assertNotNull(s);
+         assertEquals(1, s.size());
+         assertTrue(s.contains("portal"));
+      }
+      finally
+      {
+         TestPortalContainerDefinitionChange.NAMES.clear();
+      }
    }
 
    public void testDependencies()
    {
-      
+
       // Empty
       RootContainer rootContainer = createRootContainer("portal-container-config-with-no-default-values.xml");
       PortalContainerConfig config =
@@ -144,19 +203,65 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getRealmName("myPortal-pcdef"));
       assertFalse(config.isPortalContainerName("foo"));
       assertFalse(config.isPortalContainerName("myPortal"));
-      assertFalse(config.isPortalContainerName("myPortal-pcdef"));   
+      assertFalse(config.isPortalContainerName("myPortal-pcdef"));
       assertTrue(config.isPortalContainerName(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME));
       // Needed for backward compatibility
       assertTrue(config.isScopeValid("foo", "foo"));
       assertTrue(config.isScopeValid("myPortal", "foo"));
       assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));
       assertFalse(config.hasDefinition());
-      
+
+      // Empty with AddDependencies, AddDependenciesBefore and AddDependenciesAfter
+      String[] profiles =
+         {"AddDependencies", "AddDependenciesBefore-No-Target", "AddDependenciesBefore-With-Fake-Target",
+            "AddDependenciesAfter-No-Target", "AddDependenciesAfter-With-Fake-Target"};
+
+      List<String> deps;
+      for (String profile : profiles)
+      {
+         rootContainer = createRootContainer("portal-container-config-with-no-default-values2.xml", profile);
+         config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+         deps = config.getDependencies(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME);
+         assertTrue(deps != null && deps.size() == 1 && deps.contains("foo"));
+         deps = config.getDependencies("foo");
+         assertTrue(deps != null && deps.size() == 1 && deps.contains("foo"));
+         deps = config.getDependencies("myPortal");
+         assertTrue(deps != null && deps.size() == 1 && deps.contains("foo"));
+         deps = config.getDependencies("myPortal-pcdef");
+         assertTrue(deps != null && deps.size() == 1 && deps.contains("foo"));
+         names = config.getPortalContainerNames("foo");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, names.get(0));
+         names = config.getPortalContainerNames("myPortal");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, names.get(0));
+         names = config.getPortalContainerNames("myPortal-pcdef");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, names.get(0));
+         assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, config.getPortalContainerName("foo"));
+         assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, config.getPortalContainerName("myPortal"));
+         assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, config
+            .getPortalContainerName("myPortal-pcdef"));
+         assertEquals(PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME, config.getRestContextName("foo"));
+         assertEquals(PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME, config.getRestContextName("myPortal"));
+         assertEquals(PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME, config.getRestContextName("myPortal-pcdef"));
+         assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getRealmName("foo"));
+         assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getRealmName("myPortal"));
+         assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getRealmName("myPortal-pcdef"));
+         assertFalse(config.isPortalContainerName("foo"));
+         assertFalse(config.isPortalContainerName("myPortal"));
+         assertFalse(config.isPortalContainerName("myPortal-pcdef"));
+         assertTrue(config.isPortalContainerName(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME));
+         // Needed for backward compatibility
+         assertFalse(config.isScopeValid("foo", "foo"));
+         assertFalse(config.isScopeValid("myPortal", "foo"));
+         assertFalse(config.isScopeValid("myPortal-pcdef", "foo"));
+         assertTrue(config.isScopeValid(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, "foo"));
+         assertFalse(config.hasDefinition());
+      }
       // Without dependencies
-      rootContainer =
-         createRootContainer("portal-container-config-with-default-values-and-with-portal-def.xml");
-      config =
-         (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+      rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def.xml");
+      config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
       assertNull(config.getDependencies("foo"));
       assertNull(config.getDependencies("myPortal"));
       assertNull(config.getDependencies("myPortal-pcdef"));
@@ -249,9 +354,10 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertTrue(config.hasDefinition());
 
       // Without dependencies and with default portal container definition
-      rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def-with-default-portal-def.xml");
+      rootContainer =
+         createRootContainer("portal-container-config-with-default-values-and-with-portal-def-with-default-portal-def.xml");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
-      List<String> deps = config.getDependencies("foo");
+      deps = config.getDependencies("foo");
       assertTrue(deps != null && deps.size() == 1 && deps.contains("fooX"));
       deps = config.getDependencies("myPortal");
       assertTrue(deps != null && deps.size() == 1 && deps.contains("fooX"));
@@ -289,6 +395,68 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertTrue(config.isScopeValid("myPortal-pcdef", "fooX"));
       assertTrue(config.hasDefinition());
 
+      profiles =
+         new String[]{"AddDependencies", "AddDependenciesBefore-No-Target", "AddDependenciesBefore-With-Fake-Target",
+            "AddDependenciesBefore-With-Target", "AddDependenciesAfter-No-Target",
+            "AddDependenciesAfter-With-Fake-Target", "AddDependenciesAfter-With-Target"};
+
+      for (String profile : profiles)
+      {
+         rootContainer =
+            createRootContainer(
+               "portal-container-config-with-default-values-and-with-portal-def-with-default-portal-def.xml",
+               "with-profiles", profile);
+         config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+         deps = config.getDependencies("foo");
+         assertTrue(deps != null && deps.size() == 2 && deps.contains("fooX") && deps.contains("foo"));
+         int index = deps.indexOf("foo");
+         if (profile.equals("AddDependenciesBefore-No-Target")
+            || profile.equals("AddDependenciesBefore-With-Fake-Target")
+            || profile.equals("AddDependenciesBefore-With-Target"))
+         {
+            assertEquals(0, index);
+         }
+         else
+         {
+            assertEquals(1, index);
+         }
+         deps = config.getDependencies("myPortal");
+         assertTrue(deps != null && deps.size() == 2 && deps.contains("fooX") && deps.contains("foo"));
+         deps = config.getDependencies("myPortal-pcdef");
+         assertTrue(deps != null && deps.size() == 2 && deps.contains("fooX") && deps.contains("foo"));
+         names = config.getPortalContainerNames("fooX");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals(2, names.size());
+         assertTrue(names.contains("myPortal-dpcdef"));
+         assertTrue(names.contains("myPortal-pcdef"));
+         names = config.getPortalContainerNames("foo");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals(1, names.size());
+         assertEquals("myPortal-dpcdef", names.get(0));
+         names = config.getPortalContainerNames("myPortal");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal-dpcdef", names.get(0));
+         names = config.getPortalContainerNames("myPortal-pcdef");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal-pcdef", names.get(0));
+         assertEquals("myPortal-dpcdef", config.getPortalContainerName("foo"));
+         assertEquals("myPortal-dpcdef", config.getPortalContainerName("myPortal"));
+         assertEquals("myPortal-pcdef", config.getPortalContainerName("myPortal-pcdef"));
+         assertEquals("myRest-dpcdef", config.getRestContextName("foo"));
+         assertEquals("myRest-dpcdef", config.getRestContextName("myPortal"));
+         assertEquals("myRest-pcdef", config.getRestContextName("myPortal-pcdef"));
+         assertEquals("my-exo-domain-dpcdef", config.getRealmName("foo"));
+         assertEquals("my-exo-domain-dpcdef", config.getRealmName("myPortal"));
+         assertEquals("my-exo-domain-pcdef", config.getRealmName("myPortal-pcdef"));
+         assertFalse(config.isPortalContainerName("foo"));
+         assertFalse(config.isPortalContainerName("myPortal"));
+         assertTrue(config.isPortalContainerName("myPortal-pcdef"));
+         assertFalse(config.isScopeValid("foo", "fooX"));
+         assertFalse(config.isScopeValid("myPortal", "fooX"));
+         assertTrue(config.isScopeValid("myPortal-pcdef", "fooX"));
+         assertTrue(config.hasDefinition());
+      }
+
       // With dependencies
       rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def2.xml");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
@@ -321,9 +489,66 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertFalse(config.isScopeValid("myPortal", "foo"));
       assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));
       assertTrue(config.hasDefinition());
-      
+
+      for (String profile : profiles)
+      {
+         rootContainer =
+            createRootContainer("portal-container-config-with-default-values-and-with-portal-def2.xml",
+               "with-profiles", profile);
+         config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+         deps = config.getDependencies("foo");
+         assertTrue(deps != null && deps.size() == 1 && deps.contains("fooX"));
+         deps = config.getDependencies("myPortal");
+         assertTrue(deps != null && deps.size() == 1 && deps.contains("fooX"));
+         deps = config.getDependencies("myPortal-pcdef");
+         assertTrue(deps != null && deps.size() == 4);
+         int index = deps.indexOf("fooX");
+         if (profile.equals("AddDependenciesBefore-No-Target") || profile.equals("AddDependenciesBefore-With-Fake-Target"))
+         {
+            assertEquals(0, index);
+         }
+         else if (profile.equals("AddDependenciesBefore-With-Target"))
+         {
+            assertEquals(1, index);
+         }
+         else if (profile.equals("AddDependenciesAfter-With-Target"))
+         {
+            assertEquals(2, index);
+         }
+         else
+         {
+            assertEquals(3, index);            
+         }
+         names = config.getPortalContainerNames("foo");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal-pcdef", names.get(0));
+         names = config.getPortalContainerNames("myPortal");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal", names.get(0));
+         names = config.getPortalContainerNames("myPortal-pcdef");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal-pcdef", names.get(0));
+         assertEquals("myPortal-pcdef", config.getPortalContainerName("foo"));
+         assertEquals("myPortal", config.getPortalContainerName("myPortal"));
+         assertEquals("myPortal-pcdef", config.getPortalContainerName("myPortal-pcdef"));
+         assertEquals("myRest", config.getRestContextName("foo"));
+         assertEquals("myRest", config.getRestContextName("myPortal"));
+         assertEquals("myRest-pcdef", config.getRestContextName("myPortal-pcdef"));
+         assertEquals("my-exo-domain", config.getRealmName("foo"));
+         assertEquals("my-exo-domain", config.getRealmName("myPortal"));
+         assertEquals("my-exo-domain-pcdef", config.getRealmName("myPortal-pcdef"));
+         assertFalse(config.isPortalContainerName("foo"));
+         assertTrue(config.isPortalContainerName("myPortal"));
+         assertTrue(config.isPortalContainerName("myPortal-pcdef"));
+         assertFalse(config.isScopeValid("foo", "foo"));
+         assertFalse(config.isScopeValid("myPortal", "foo"));
+         assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));
+         assertTrue(config.hasDefinition());
+      }
+
       // With dependencies and with default portal container definition
-      rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def-with-default-portal-def2.xml");
+      rootContainer =
+         createRootContainer("portal-container-config-with-default-values-and-with-portal-def-with-default-portal-def2.xml");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
       deps = config.getDependencies("foo");
       assertTrue(deps != null && deps.size() == 1 && deps.contains("fooX"));
@@ -360,7 +585,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertFalse(config.isScopeValid("foo", "foo"));
       assertFalse(config.isScopeValid("myPortal", "foo"));
       assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));
-      assertTrue(config.hasDefinition());      
+      assertTrue(config.hasDefinition());
    }
 
    public void testSettings()
@@ -391,6 +616,33 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getSetting("myPortal-pcdef",
          PortalContainerConfig.REALM_SETTING_NAME));
 
+      rootContainer = createRootContainer("portal-container-config-with-no-default-values.xml", "with-profiles");
+      config =
+         (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+      assertNull(config.getSetting("foo", "foo"));
+      assertNull(config.getSetting("myPortal", "foo"));
+      assertNull(config.getSetting("myPortal-pcdef", "foo"));
+      assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, config.getSetting("foo",
+         PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, config.getSetting("myPortal",
+         PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, config.getSetting("myPortal-pcdef",
+         PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME, config.getSetting("foo",
+         PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME, config.getSetting("myPortal",
+         PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME, config.getSetting("myPortal-pcdef",
+         PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getSetting("foo",
+         PortalContainerConfig.REALM_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getSetting("myPortal",
+         PortalContainerConfig.REALM_SETTING_NAME));
+      assertEquals(PortalContainerConfig.DEFAULT_REALM_NAME, config.getSetting("myPortal-pcdef",
+         PortalContainerConfig.REALM_SETTING_NAME));      
+      assertEquals("value1", config.getSetting("foo", "string"));
+      assertEquals("value1", config.getSetting("foo", "stringX"));
+      
       // Without settings and without portal definition
       rootContainer = createRootContainer("portal-container-config-with-default-values.xml");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
@@ -593,8 +845,9 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
       assertEquals("../gatein/data", config.getSetting("portal", "gatein.data.dir"));
       assertEquals("../gatein/data/db", config.getSetting("portal", "gatein.db.data.dir"));
-      assertEquals("jdbc:hsqldb:file:../gatein/data/db/data/jdbcjcr_portal", config.getSetting("portal", "gatein.jcr.datasource.url"));
-     
+      assertEquals("jdbc:hsqldb:file:../gatein/data/db/data/jdbcjcr_portal", config.getSetting("portal",
+         "gatein.jcr.datasource.url"));
+
       // With external settings, with several portal container definitions and with 
       // default portal container definition
       rootContainer =
@@ -721,7 +974,8 @@ public class TestPortalContainerConfig extends AbstractTestContainer
          assertEquals("2001", config.getSetting("myPortal", "long"));
          assertEquals("2001", config.getSetting("myPortal", "double"));
          assertEquals("false", config.getSetting("myPortal", "boolean"));
-         assertEquals("myPortal-myRest-my-exo-domain-value01-new value01", config.getSetting("myPortal", "complex-value2"));
+         assertEquals("myPortal-myRest-my-exo-domain-value01-new value01", config.getSetting("myPortal",
+            "complex-value2"));
          assertEquals("new value01", config.getSetting("myPortal0", "string"));
          assertEquals("2001", config.getSetting("myPortal0", "int"));
          assertEquals("2001", config.getSetting("myPortal0", "long"));
@@ -751,10 +1005,12 @@ public class TestPortalContainerConfig extends AbstractTestContainer
             PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
          assertEquals("myRest", config.getSetting("foo", PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
          assertEquals("myRest", config.getSetting("myPortal", PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
-         assertEquals("myRest-pcdef", config.getSetting("myPortal-pcdef", PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
+         assertEquals("myRest-pcdef", config.getSetting("myPortal-pcdef",
+            PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
          assertEquals("my-exo-domain", config.getSetting("foo", PortalContainerConfig.REALM_SETTING_NAME));
          assertEquals("my-exo-domain", config.getSetting("myPortal", PortalContainerConfig.REALM_SETTING_NAME));
-         assertEquals("my-exo-domain-pcdef", config.getSetting("myPortal-pcdef", PortalContainerConfig.REALM_SETTING_NAME));
+         assertEquals("my-exo-domain-pcdef", config.getSetting("myPortal-pcdef",
+            PortalContainerConfig.REALM_SETTING_NAME));
 
       }
       finally
@@ -799,7 +1055,8 @@ public class TestPortalContainerConfig extends AbstractTestContainer
          System.setProperty("TestPortalContainerConfig-string", "system value");
          System.setProperty("TestPortalContainerConfig-int", "50");
          // With both settings internal and external and default portal container definition
-         rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-both-settings-with-default-portal-def.xml");
+         rootContainer =
+            createRootContainer("portal-container-config-with-default-values-and-with-both-settings-with-default-portal-def.xml");
          config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
          assertEquals("value0", config.getSetting("foo", "foo"));
          assertEquals("value0", config.getSetting("myPortal", "foo"));
@@ -864,10 +1121,12 @@ public class TestPortalContainerConfig extends AbstractTestContainer
             PortalContainerConfig.PORTAL_CONTAINER_SETTING_NAME));
          assertEquals("myRest", config.getSetting("foo", PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
          assertEquals("myRest", config.getSetting("myPortal", PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
-         assertEquals("myRest-pcdef", config.getSetting("myPortal-pcdef", PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
+         assertEquals("myRest-pcdef", config.getSetting("myPortal-pcdef",
+            PortalContainerConfig.REST_CONTEXT_SETTING_NAME));
          assertEquals("my-exo-domain", config.getSetting("foo", PortalContainerConfig.REALM_SETTING_NAME));
          assertEquals("my-exo-domain", config.getSetting("myPortal", PortalContainerConfig.REALM_SETTING_NAME));
-         assertEquals("my-exo-domain-pcdef", config.getSetting("myPortal-pcdef", PortalContainerConfig.REALM_SETTING_NAME));
+         assertEquals("my-exo-domain-pcdef", config.getSetting("myPortal-pcdef",
+            PortalContainerConfig.REALM_SETTING_NAME));
       }
       finally
       {
@@ -893,5 +1152,25 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertEquals("my-exo-domain", config.getSetting("foo", PortalContainerConfig.REALM_SETTING_NAME));
       assertEquals("my-exo-domain", config.getSetting("myPortal", PortalContainerConfig.REALM_SETTING_NAME));
       assertEquals("my-exo-domain", config.getSetting("myPortal-pcdef", PortalContainerConfig.REALM_SETTING_NAME));
+   }
+
+   public static class TestPortalContainerDefinitionChange implements PortalContainerDefinitionChange
+   {
+
+      public String name;
+
+      public static Map<String, Set<String>> NAMES = new HashMap<String, Set<String>>();
+
+      public void apply(PortalContainerDefinition pcd)
+      {
+         Set<String> names = NAMES.get(name);
+         if (names == null)
+         {
+            names = new HashSet<String>();
+            NAMES.put(name, names);
+         }
+         names.add(pcd.getName());
+      }
+
    }
 }

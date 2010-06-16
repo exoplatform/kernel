@@ -10,71 +10,12 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
 	xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd">
 	<component>
-		<!-- The full qualified name of the PortalContainerConfig -->
 		<type>org.exoplatform.container.definition.PortalContainerConfig</type>
-		<init-params>
-			<!-- The name of the default portal container -->
-			<value-param>
-				<name>default.portal.container</name>
-				<value>myPortal</value>
-			</value-param>
-			<!-- The name of the default rest ServletContext -->
-			<value-param>
-				<name>default.rest.context</name>
-				<value>myRest</value>
-			</value-param>
-			<!-- The name of the default realm -->
-			<value-param>
-				<name>default.realm.name</name>
-				<value>my-exo-domain</value>
-			</value-param>
-		</init-params>
 	</component>
 	<external-component-plugins>
 		<!-- The full qualified name of the PortalContainerConfig -->
 		<target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
 		<component-plugin>
-			<!-- The name of the plugin -->
-			<name>Add PortalContainer Definitions</name>
-			<!-- The name of the method to call on the PortalContainerConfig in order to register the PortalContainerDefinitions -->
-			<set-method>registerPlugin</set-method>
-			<!-- The full qualified name of the PortalContainerDefinitionPlugin -->
-			<type>org.exoplatform.container.definition.PortalContainerDefinitionPlugin</type>
-			<init-params>
-				<object-param>
-					<name>portal</name>
-					<object type="org.exoplatform.container.definition.PortalContainerDefinition">
-						<!-- The name of the portal container -->
-						<field name="name">
-							<string>myPortal-pcdef</string>
-						</field>
-						<!-- The name of the context name of the rest web application -->
-						<field name="restContextName">
-							<string>myRest-pcdef</string>
-						</field>
-						<!-- The name of the realm -->
-						<field name="realmName">
-							<string>my-exo-domain-pcdef</string>
-						</field>
-						<!-- All the dependencies of the portal container ordered by loading priority -->
-						<field name="dependencies">
-							<collection type="java.util.ArrayList">
-								<value>
-									<string>foo</string>
-								</value>
-								<value>
-									<string>foo2</string>
-								</value>
-								<value>
-									<string>foo3</string>
-								</value>
-							</collection>
-						</field>
-					</object>
-				</object-param>
-			</init-params>
-		</component-plugin>
-		<component-plugin profiles="with-profiles">
 			<!-- The name of the plugin -->
 			<name>Change PortalContainer Definitions</name>
 			<!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions -->
@@ -83,7 +24,7 @@
 			<type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
 			<init-params>
 				<value-param>
-					<name>apply.all</name>
+					<name>apply.default</name>
 					<value>true</value>
 				</value-param>
 				<object-param profiles="AddDependencies">
@@ -93,7 +34,7 @@
 						<field name="dependencies">
 							<collection type="java.util.ArrayList">
 								<value>
-									<string>fooX</string>
+									<string>foo</string>
 								</value>
 							</collection>
 						</field>
@@ -106,7 +47,7 @@
 						<field name="dependencies">
 							<collection type="java.util.ArrayList">
 								<value>
-									<string>fooX</string>
+									<string>foo</string>
 								</value>
 							</collection>
 						</field>
@@ -119,30 +60,13 @@
 						<field name="dependencies">
 							<collection type="java.util.ArrayList">
 								<value>
-									<string>fooX</string>
+									<string>foo</string>
 								</value>
 							</collection>
 						</field>
 						<!-- The name of the target dependency -->
 						<field name="target">
 							<string>fake</string>
-						</field>
-					</object>
-				</object-param>
-				<object-param profiles="AddDependenciesBefore-With-Target">
-					<name>change</name>
-					<object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependenciesBefore">
-						<!-- The list of name of the dependencies to add -->
-						<field name="dependencies">
-							<collection type="java.util.ArrayList">
-								<value>
-									<string>fooX</string>
-								</value>
-							</collection>
-						</field>
-						<!-- The name of the target dependency -->
-						<field name="target">
-							<string>foo2</string>
 						</field>
 					</object>
 				</object-param>
@@ -153,7 +77,7 @@
 						<field name="dependencies">
 							<collection type="java.util.ArrayList">
 								<value>
-									<string>fooX</string>
+									<string>foo</string>
 								</value>
 							</collection>
 						</field>
@@ -166,7 +90,7 @@
 						<field name="dependencies">
 							<collection type="java.util.ArrayList">
 								<value>
-									<string>fooX</string>
+									<string>foo</string>
 								</value>
 							</collection>
 						</field>
@@ -175,25 +99,8 @@
 							<string>fake</string>
 						</field>
 					</object>
-				</object-param>
-				<object-param profiles="AddDependenciesAfter-With-Target">
-					<name>change</name>
-					<object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependenciesAfter">
-						<!-- The list of name of the dependencies to add -->
-						<field name="dependencies">
-							<collection type="java.util.ArrayList">
-								<value>
-									<string>fooX</string>
-								</value>
-							</collection>
-						</field>
-						<!-- The name of the target dependency -->
-						<field name="target">
-							<string>foo2</string>
-						</field>
-					</object>
 				</object-param>				
 			</init-params>
-		</component-plugin>		
+		</component-plugin>
 	</external-component-plugins>
 </configuration>
