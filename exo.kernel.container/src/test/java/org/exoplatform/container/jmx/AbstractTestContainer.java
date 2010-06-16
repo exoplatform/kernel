@@ -37,4 +37,11 @@ public class AbstractTestContainer extends TestCase
       assertNotNull(url);
       return new ContainerBuilder().withRoot(url).build();
    }
+   
+   public RootContainer createRootContainer(String relativeConfigurationFile, String... profiles)
+   {
+      URL url = getClass().getResource(relativeConfigurationFile);
+      assertNotNull(url);
+      return new ContainerBuilder().withRoot(url).profiledBy(profiles).build();
+   }   
 }

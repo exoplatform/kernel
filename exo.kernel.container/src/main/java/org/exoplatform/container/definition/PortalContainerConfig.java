@@ -121,6 +121,11 @@ public class PortalContainerConfig implements Startable
       Collections.unmodifiableMap(new HashMap<String, PortalContainerDefinition>());
 
    /**
+    * The list of all the changes to apply to the registered {@link PortalContainerDefinition}
+    */
+   private List<PortalContainerDefinitionChangePlugin> changes = new ArrayList<PortalContainerDefinitionChangePlugin>();
+
+   /**
     * The configuration manager
     */
    private final ConfigurationManager cm;
@@ -569,6 +574,26 @@ public class PortalContainerConfig implements Startable
    }
 
    /**
+    * Allow to define a set of changes to apply to the registered {@link PortalContainerDefinition}
+    * @param plugin the plugin that defines the changes to apply
+    */
+   public void registerChangePlugin(PortalContainerDefinitionChangePlugin plugin)
+   {
+      final List<PortalContainerDefinitionChange> lchanges = plugin.getChanges();
+      if (lchanges != null && !lchanges.isEmpty())
+      {
+         synchronized (this)
+         {
+            if (initialized)
+            {
+               throw new IllegalStateException("The PortalContainerConfig has already been initialized");
+            }
+            changes.add(plugin);
+         }
+      }
+   }
+
+   /**
     * Construct the scopes of all the web applications from the given {@link PortalContainerDefinition}
     * @param definition the definition of a {@link PortalContainer} that contains the dependencies with
     * the web application
@@ -976,6 +1001,8 @@ public class PortalContainerConfig implements Startable
                hasChanged = true;
             }
          }
+         // Apply the changes corresponding to the given definition
+         applyChanges(definition);
          registerDependencies(definition, mScopes);
          if (hasChanged)
          {
@@ -983,15 +1010,78 @@ public class PortalContainerConfig implements Startable
          }
          initializeSettings(definition, true);
       }
-      if (!mDefinitions.containsKey(defaultDefinition.getName()) && defaultDefinition.getDependencies() != null
-         && !defaultDefinition.getDependencies().isEmpty())
+      if (!mDefinitions.containsKey(defaultDefinition.getName()))
       {
-         // The default portal container has not been defined and some default
-         // dependencies have been defined
-         registerDependencies(defaultDefinition, mScopes);
+         // Apply the changes corresponding to the default definition
+         applyChanges(defaultDefinition);
+         initializeSettings(defaultDefinition, false);
+         if (defaultDefinition.getDependencies() != null && !defaultDefinition.getDependencies().isEmpty())
+         {
+            // The default portal container has not been defined and some default
+            // dependencies have been defined
+            registerDependencies(defaultDefinition, mScopes);
+         }
       }
       this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);
+      // clear the changes
+      changes.clear();
+   }
+
+   /**
+    * Apply the changes corresponding to the give {@link PortalContainerDefinition}
+    * @param definition
+    */
+   private void applyChanges(PortalContainerDefinition definition)
+   {
+      for (PortalContainerDefinitionChangePlugin plugin : changes)
+      {
+         if (matches(definition, plugin))
+         {
+            // The definition matches with the scope of the changes
+            for (PortalContainerDefinitionChange change : plugin.getChanges())
+            {
+               try
+               {
+                  // Secure access to definition's info
+                  change.apply(new SafePortalContainerDefinition(definition, defaultDefinition));
+               }
+               catch (Exception e)
+               {
+                  log.warn("Cannot apply the change " + change, e);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * Indicates whether the given definition matches with the scope of the {@link PortalContainerDefinitionChangePlugin}
+    * @param definition the {@link PortalContainerDefinition} to test.
+    * @param plugin the {@link PortalContainerDefinitionChangePlugin} from which we extract the scopes
+    * of the embedded actions
+    * @return <code>true</code> if it matches, <code>false</code> otherwise
+    */
+   private boolean matches(PortalContainerDefinition definition, PortalContainerDefinitionChangePlugin plugin)
+   {
+      if (plugin.isAll())
+      {
+         // The changes have to be applied to all the portal containers
+         return true;
+      }
+      if ((plugin.getNames() == null || plugin.isDefault()) && defaultDefinition.getName().equals(definition.getName()))
+      {
+         // The changes have to be applied to the default portal container and the given definition is
+         // the definition of the default portal container
+         return true;
+      }
+      if (plugin.getNames() != null && plugin.getNames().contains(definition.getName()))
+      {
+         // The changes have to be applied to a specific list of portal containers and the given
+         // definition is the a definition of one of them
+         return true;
+      }
+      return false;
    }
 
    /**
