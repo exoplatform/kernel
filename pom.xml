@@ -52,7 +52,6 @@
       <module>exo.kernel.container</module>
       <module>exo.kernel.commons</module>
       <module>exo.kernel.component.common</module>
-      <module>exo.kernel.component.remote</module>
       <module>exo.kernel.component.cache</module>
       <module>exo.kernel.component.ext.cache.impl.jboss.v3</module>
       <module>exo.kernel.component.command</module>
@@ -75,11 +74,6 @@
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
             <artifactId>exo.kernel.commons</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.component.remote</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>

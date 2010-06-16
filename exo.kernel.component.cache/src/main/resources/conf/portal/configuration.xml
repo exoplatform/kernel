@@ -53,13 +53,4 @@
       <type>org.exoplatform.container.PropertyManagerManaged</type>
    </component -->
 
-   <!-- external-component-plugins>
-      <target-component>org.exoplatform.services.remote.group.CommunicationService</target-component>
-      <component-plugin>
-         <name>synchronize.cache.handler</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.cache.impl.SynchronizeCacheMessageHandler</type>
-         <description>synchronize the cache</description>
-      </component-plugin>
-   </external-component-plugins -->
 </configuration>
