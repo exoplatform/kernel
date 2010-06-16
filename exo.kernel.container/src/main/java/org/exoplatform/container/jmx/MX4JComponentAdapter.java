@@ -137,13 +137,19 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
 
          try
          {
-            Class clazz = Class.forName(plugin.getType());
-            ComponentPlugin cplugin = (ComponentPlugin)container.createComponent(clazz, plugin.getInitParams());
+            Class pluginClass = Class.forName(plugin.getType());
+            ComponentPlugin cplugin = (ComponentPlugin)container.createComponent(pluginClass, plugin.getInitParams());
             cplugin.setName(plugin.getName());
             cplugin.setDescription(plugin.getDescription());
-            clazz = component.getClass();
+            Class clazz = component.getClass();
 
-            Method m = getSetMethod(clazz, plugin.getSetMethod());
+            Method m = getSetMethod(clazz, plugin.getSetMethod(), pluginClass);
+            if (m == null)
+            {
+               log.error("Cannot find the method '" + plugin.getSetMethod() + "' that has only one parameter of type '"
+                  + pluginClass.getName() + "' in the class '" + clazz.getName() + "'.");
+               continue;
+            }
             Object[] params = {cplugin};
             m.invoke(component, params);
             if (debug)
@@ -160,9 +166,18 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       }
    }
 
-   private Method getSetMethod(Class clazz, String name)
+   /**
+    * Finds the best "set method" according to the given method name and type of plugin
+    * @param clazz the {@link Class} of the target component
+    * @param name the name of the method
+    * @param pluginClass the {@link Class} of the plugin
+    * @return the "set method" corresponding to the given context
+    */
+   private Method getSetMethod(Class clazz, String name, Class pluginClass)
    {
       Method[] methods = clazz.getMethods();
+      Method bestCandidate = null;
+      int depth = -1;
       for (Method m : methods)
       {
          if (name.equals(m.getName()))
@@ -170,13 +185,51 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             Class[] types = m.getParameterTypes();
             if (types != null && types.length == 1 && ComponentPlugin.class.isAssignableFrom(types[0]))
             {
-               return m;
+               int currentDepth = getClosestMatchDepth(pluginClass, types[0]);
+               if (currentDepth == 0)
+               {
+                  return m;
+               }
+               else if (depth == -1 || depth > currentDepth)
+               {
+                  bestCandidate = m;
+                  depth = currentDepth;
+               }
             }
          }
       }
-      return null;
+      return bestCandidate;
    }
 
+   /**
+    * Check if the given plugin class is assignable from the given type, if not we recheck with its parent class
+    * until we find the closest match.
+    * @param pluginClass the class of the plugin
+    * @param type the class from which the plugin must be assignable
+    * @return The total amount of times we had to up the hierarchy of the plugin
+    */
+   private static int getClosestMatchDepth(Class pluginClass, Class type)
+   {
+      return getClosestMatchDepth(pluginClass, type, 0);
+   }
+   
+   /**
+    * Check if the given plugin class is assignable from the given type, if not we recheck with its parent class
+    * until we find the closest match.
+    * @param pluginClass the class of the plugin
+    * @param type the class from which the plugin must be assignable
+    * @param depth the current amount of times that we had to up the hierarchy of the plugin
+    * @return The total amount of times we had to up the hierarchy of the plugin
+    */
+   private static int getClosestMatchDepth(Class pluginClass, Class type, int depth)
+   {
+      if (pluginClass == null || pluginClass.isAssignableFrom(type))
+      {
+         return depth;
+      }
+      return getClosestMatchDepth(pluginClass.getSuperclass(), type, depth + 1);
+   }
+   
    public void verify(PicoContainer container)
    {
    }
