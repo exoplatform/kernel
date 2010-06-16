@@ -16,13 +16,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.commons;
+package org.exoplatform.commons.test;
 
 import java.security.Permission;
 
 /**
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
- * @version $Id$
+ * @version $Id: TestSecurityManager.java 2636 2010-06-16 14:18:23Z tolusha $
  *
  */
 public class TestSecurityManager extends SecurityManager
