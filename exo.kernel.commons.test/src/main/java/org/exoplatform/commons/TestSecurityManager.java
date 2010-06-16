@@ -22,7 +22,7 @@ import java.security.Permission;
 
 /**
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
- * @version $Id: TesterSecurityManager.java 111 2010-11-11 11:11:11Z tolusha $
+ * @version $Id$
  *
  */
 public class TestSecurityManager extends SecurityManager
