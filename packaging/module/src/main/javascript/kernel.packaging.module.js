@@ -50,10 +50,6 @@ function getModule(params) {
     
   module.component.cache = 
     new Project("org.exoplatform.kernel", "exo.kernel.component.cache", "jar", module.version) ;
-
-  module.component.remote = 
-    new Project("org.exoplatform.kernel", "exo.kernel.component.remote", "jar", module.version). 
-    addDependency(new Project("jgroups", "jgroups", "jar", "2.6.13.GA"));
   
   return module;
 }
