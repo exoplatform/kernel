@@ -25,6 +25,13 @@
    <name>eXo Kernel :: Commons :: Test Util</name>
    <description>eXo Commons Test Util</description>
 
+   <dependencies>
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons</artifactId>
+      </dependency>
+   </dependencies>
+
    <build>
       <plugins>
          <plugin>

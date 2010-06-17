@@ -18,6 +18,9 @@
  */
 package org.exoplatform.commons.test;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.security.Permission;
 
 /**
@@ -27,6 +30,11 @@ import java.security.Permission;
  */
 public class TestSecurityManager extends SecurityManager
 {
+
+   /**
+    * The logger 
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.test.TestSecurityManager");
 
    /**
     * {@inheritDoc}
@@ -107,8 +115,7 @@ public class TestSecurityManager extends SecurityManager
             return;
          }
 
-         System.out.println("#################");
-         se.printStackTrace();
+         LOG.error(se);
          throw se;
       }
    }
