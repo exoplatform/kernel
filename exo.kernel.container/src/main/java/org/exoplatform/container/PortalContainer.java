@@ -428,6 +428,12 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
          return null;
       }
       String portalContainerName = CONFIG.getPortalContainerName(context.getServletContextName());
+      if (portalContainerName == null)
+      {
+         log.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
+            + " has a dependency of any PortalContainerDefinitions.");
+         return null;
+      }
       RootContainer root = RootContainer.getInstance();
       return root.getPortalContainer(portalContainerName);
    }
