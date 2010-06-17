@@ -91,7 +91,8 @@ public class TestSecurityManager extends SecurityManager
                      testCode = true;
                   }
                }
-               else if (className.startsWith("org.slf4j.impl.Log4jLoggerFactory"))
+               else if (className.startsWith("org.slf4j.impl.Log4jLoggerFactory")
+                  || className.startsWith("com.arjuna.ats.jta.logging.jtaLogger"))
                {
                   return;
                }
@@ -106,6 +107,8 @@ public class TestSecurityManager extends SecurityManager
             return;
          }
 
+         System.out.println("#################");
+         se.printStackTrace();
          throw se;
       }
    }
