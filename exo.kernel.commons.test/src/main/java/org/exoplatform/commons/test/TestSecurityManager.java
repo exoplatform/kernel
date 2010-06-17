@@ -27,6 +27,7 @@ import java.security.Permission;
  */
 public class TestSecurityManager extends SecurityManager
 {
+
    /**
     * {@inheritDoc}
     */
@@ -56,6 +57,12 @@ public class TestSecurityManager extends SecurityManager
                {
                   // hide Exception during JCR initialization
                   if (fileName.equals("BaseStandaloneTest.java"))
+                  {
+                     return;
+                  }
+
+                  // workaround for tests
+                  if (fileName.equals("RequestHandlerImpl.java"))
                   {
                      return;
                   }
