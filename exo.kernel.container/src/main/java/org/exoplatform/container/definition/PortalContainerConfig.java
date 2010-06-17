@@ -539,26 +539,11 @@ public class PortalContainerConfig implements Startable
     */
    public boolean isScopeValid(String portalContainerName, String contextName)
    {
-      if (portalContainerNames.contains(contextName))
+      if (portalContainerName == null)
       {
-         // The given context name is a context name of a portal container
-         return true;
-      }
-      else if (scopes.isEmpty())
-      {
-         // we assume that the old behavior is expected         
-         return defaultDefinition.getName().equals(portalContainerName);         
+         throw new IllegalArgumentException("The portal container name cannot be null");
       }      
-      final List<String> result = scopes.get(contextName);
-      if (result == null || result.isEmpty())
-      {
-         // This context has not been added as dependency of any portal containers      
-         return false;
-      }
-      else
-      {
-         return result.contains(portalContainerName);
-      }
+      return getPortalContainerNames(contextName).contains(portalContainerName);
    }
 
    /**

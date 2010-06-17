@@ -486,6 +486,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertFalse(config.isScopeValid("foo", "foo"));
       assertFalse(config.isScopeValid("myPortal", "foo"));
       assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));
+      assertFalse(config.isScopeValid("myPortal-pcdef", "myPortal"));
       assertFalse(config.isScopeValid("myPortal-pcdef", "fooY"));
       assertTrue(config.hasDefinition());
 
