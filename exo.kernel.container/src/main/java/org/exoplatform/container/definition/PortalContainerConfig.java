@@ -397,13 +397,23 @@ public class PortalContainerConfig implements Startable
       {
          throw new IllegalArgumentException("The context name cannot be null");
       }
-      final List<String> result = scopes.get(contextName);
-      if (result == null || result.isEmpty())
+      if (scopes.isEmpty())
       {
-         // we assume the old behavior is expected         
+         // we assume that the old behavior is expected         
          final String portalContainerName =
             portalContainerNames.contains(contextName) ? contextName : defaultDefinition.getName();
          return Collections.singletonList(portalContainerName);
+      }
+      final List<String> result = scopes.get(contextName);
+      if (result == null || result.isEmpty())
+      {
+         // This context has not been added as dependency of any portal containers
+         if (portalContainerNames.contains(contextName))
+         {
+            // The given context is a portal container
+            return Collections.singletonList(contextName);
+         }
+         return Collections.emptyList();
       }
       return result;
    }
@@ -425,11 +435,16 @@ public class PortalContainerConfig implements Startable
          // The given context name is a context name of a portal container
          return contextName;
       }
+      else if (scopes.isEmpty())
+      {
+         // we assume that the old behavior is expected         
+         return defaultDefinition.getName();         
+      }
       final List<String> result = scopes.get(contextName);
       if (result == null || result.isEmpty())
       {
-         // we assume the old behavior is expected         
-         return defaultDefinition.getName();
+         // This context has not been added as dependency of any portal containers         
+         return null;
       }
       return result.get(0);
    }
@@ -524,11 +539,21 @@ public class PortalContainerConfig implements Startable
     */
    public boolean isScopeValid(String portalContainerName, String contextName)
    {
+      if (portalContainerNames.contains(contextName))
+      {
+         // The given context name is a context name of a portal container
+         return true;
+      }
+      else if (scopes.isEmpty())
+      {
+         // we assume that the old behavior is expected         
+         return defaultDefinition.getName().equals(portalContainerName);         
+      }      
       final List<String> result = scopes.get(contextName);
       if (result == null || result.isEmpty())
       {
-         // we assume the old behavior is expected
-         return true;
+         // This context has not been added as dependency of any portal containers      
+         return false;
       }
       else
       {
