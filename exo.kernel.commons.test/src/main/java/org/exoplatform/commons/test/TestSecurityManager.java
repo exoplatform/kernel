@@ -115,7 +115,8 @@ public class TestSecurityManager extends SecurityManager
             return;
          }
 
-         LOG.error("Check permission failed", se);
+         // Only for test purpose
+         //         LOG.error("Check permission failed", se);
          throw se;
       }
    }
