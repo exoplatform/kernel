@@ -39,8 +39,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 
@@ -105,9 +107,9 @@ public class PortalContainerConfig implements Startable
    private volatile boolean initialized;
 
    /**
-    * The list of all the portal containers
+    * The set of all the portal containers
     */
-   private List<String> portalContainerNames;
+   private Set<String> portalContainerNames;
 
    /**
     * The list of all the web application scopes
@@ -354,10 +356,10 @@ public class PortalContainerConfig implements Startable
    {
       if (!portalContainerNames.contains(name))
       {
-         final List<String> lPortalContainerNames = new ArrayList<String>(portalContainerNames.size() + 1);
+         final Set<String> lPortalContainerNames = new LinkedHashSet<String>(portalContainerNames.size() + 1);
          lPortalContainerNames.add(name);
          lPortalContainerNames.addAll(portalContainerNames);
-         this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
+         this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
       }
    }
 
@@ -369,9 +371,9 @@ public class PortalContainerConfig implements Startable
    {
       if (portalContainerNames.contains(name))
       {
-         final List<String> lPortalContainerNames = new ArrayList<String>(portalContainerNames);
+         final Set<String> lPortalContainerNames = new LinkedHashSet<String>(portalContainerNames);
          lPortalContainerNames.remove(name);
-         this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
+         this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
       }
    }
 
@@ -438,7 +440,7 @@ public class PortalContainerConfig implements Startable
       else if (scopes.isEmpty())
       {
          // we assume that the old behavior is expected         
-         return defaultDefinition.getName();         
+         return defaultDefinition.getName();
       }
       final List<String> result = scopes.get(contextName);
       if (result == null || result.isEmpty())
@@ -542,7 +544,7 @@ public class PortalContainerConfig implements Startable
       if (portalContainerName == null)
       {
          throw new IllegalArgumentException("The portal container name cannot be null");
-      }      
+      }
       return getPortalContainerNames(contextName).contains(portalContainerName);
    }
 
@@ -975,9 +977,12 @@ public class PortalContainerConfig implements Startable
     */
    private void initialize(Map<String, PortalContainerDefinition> mDefinitions)
    {
-      final List<String> lPortalContainerNames = new ArrayList<String>(mDefinitions.size() + 1);
-      // Add the default portal container name
-      lPortalContainerNames.add(defaultDefinition.getName());
+      final Set<String> lPortalContainerNames = new LinkedHashSet<String>(mDefinitions.size() + 1);
+      if (mDefinitions.isEmpty())
+      {
+         // Add the default portal container name
+         lPortalContainerNames.add(defaultDefinition.getName());
+      }
       final Map<String, List<String>> mScopes = new HashMap<String, List<String>>();
       boolean first = true;
       for (Map.Entry<String, PortalContainerDefinition> entry : mDefinitions.entrySet())
@@ -985,10 +990,7 @@ public class PortalContainerConfig implements Startable
          PortalContainerDefinition definition = entry.getValue();
          String name = definition.getName();
          boolean hasChanged = false;
-         if (!name.equals(defaultDefinition.getName()))
-         {
-            lPortalContainerNames.add(name);
-         }
+         lPortalContainerNames.add(name);
          if (first)
          {
             first = false;
@@ -1032,7 +1034,7 @@ public class PortalContainerConfig implements Startable
             registerDependencies(defaultDefinition, mScopes);
          }
       }
-      this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
+      this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);
       // clear the changes
       changes.clear();
