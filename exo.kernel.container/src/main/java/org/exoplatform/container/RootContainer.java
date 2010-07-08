@@ -189,20 +189,12 @@ public class RootContainer extends ExoContainer
    public void registerPortalContainer(ServletContext context)
    {
       PortalContainerConfig config = getPortalContainerConfig();
+      // Ensure that the portal container has been registered
+      config.registerPortalContainerName(context.getServletContextName());
       if (config.hasDefinition())
       {
          // The new behavior has been detected thus, the creation will be done at the end asynchronously
-         if (config.isPortalContainerName(context.getServletContextName()))
-         {
-            // The portal context has been registered has a portal container
-            portalContexts.add(new WebAppInitContext(context));
-         }
-         else
-         {
-            log.info("We assume that the ServletContext '" + context.getServletContextName()
-               + "' is not a portal since no portal container with the same name has been"
-               + " registered to the component PortalContainerConfig.");
-         }
+         portalContexts.add(new WebAppInitContext(context));
          // We assume that a ServletContext of a portal container owns configuration files
          final PortalContainerPreInitTask task = new PortalContainerPreInitTask()
          {
@@ -216,8 +208,6 @@ public class RootContainer extends ExoContainer
       }
       else
       {
-         // Ensure that the portal container has been registered
-         config.registerPortalContainerName(context.getServletContextName());
          // The old behavior has been detected thus, the creation will be done synchronously
          createPortalContainer(context);
       }
@@ -254,14 +244,11 @@ public class RootContainer extends ExoContainer
       PortalContainerConfig config = getPortalContainerConfig();
       for (String portalContainerName : initTasks.keySet())
       {
-         if (config.isPortalContainerName(portalContainerName))
-         {
-            // Unregister name of portal container that doesn't exist
-            log.warn("The portal container '" + portalContainerName + "' doesn't not exist or"
-               + " it has not yet been registered, please check your PortalContainerDefinitions and "
-               + "the loading order.");
-            config.unregisterPortalContainerName(portalContainerName);            
-         }
+         // Unregister name of portal container that doesn't exist
+         log.warn("The portal container '" + portalContainerName + "' doesn't not exist or"
+            + " it has not yet been registered, please check your PortalContainerDefinitions and "
+            + "the loading order.");
+         config.unregisterPortalContainerName(portalContainerName);
       }
       // remove all the unneeded tasks
       initTasks.clear();
