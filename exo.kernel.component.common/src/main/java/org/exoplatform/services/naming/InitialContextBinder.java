@@ -22,14 +22,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Stack;
-
 import java.util.Map;
-
+import java.util.Stack;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
@@ -105,7 +103,7 @@ public class InitialContextBinder
    {
       this.initialContextInitializer = initialContextInitializer;
 
-      this.bindings = new HashMap<String, Reference>();
+      this.bindings = new ConcurrentHashMap<String, Reference>();
       this.bindingsStorePath = System.getProperty("java.io.tmpdir") + File.separator + "bind-references.xml";
 
       if (new File(bindingsStorePath).exists())
@@ -173,7 +171,7 @@ public class InitialContextBinder
     * @throws FileNotFoundException
     *          if can't open output stream from file
     */
-   protected void saveBindings() throws FileNotFoundException, XMLStreamException
+   protected synchronized void saveBindings() throws FileNotFoundException, XMLStreamException
    {
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
       XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(bindingsStorePath), "UTF-8");
