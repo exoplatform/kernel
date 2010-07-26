@@ -18,13 +18,17 @@
  */
 package org.exoplatform.services.listener;
 
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.naming.InitialContextInitializer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by The eXo Platform SAS Author : Nhu Dinh Thuan
@@ -32,29 +36,73 @@ import java.util.Map;
  */
 public class ListenerService
 {
+   /** 
+    * This executor used for asynchronously event broadcast. 
+    */
+   private final Executor executor;
 
+   /**
+    * Listeners by name map.
+    */
    private Map<String, List<Listener>> listeners_;
 
    private static Log log = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
-   
+
    /**
     * Construct a listener service.
     */
    public ListenerService()
    {
       listeners_ = new HashMap<String, List<Listener>>();
+      executor = Executors.newFixedThreadPool(1, new ListenerThreadFactory());
+   }
+
+   /**
+    * Construct a listener service.
+    */
+   public ListenerService(InitialContextInitializer initializer, InitParams params)
+   {
+      listeners_ = new HashMap<String, List<Listener>>();
+      int poolSize = 1;
+
+      if (params != null)
+      {
+         if (params.getValueParam("asynchPoolSize") != null)
+         {
+
+            poolSize = Integer.parseInt(params.getValueParam("asynchPoolSize").getValue());
+         }
+      }
+      executor = Executors.newFixedThreadPool(poolSize, new ListenerThreadFactory());
    }
 
    /**
     * This method is used to register a listener with the service. The method
     * should: 1. Check to see if there is a list of listener with the listener
     * name, create one if the listener list doesn't exit 2. Add the new listener
-    * to the listener list
+    * to the listener list.
     * 
     * @param listener
     */
    public void addListener(Listener listener)
    {
+      // Check is Listener or its superclass asynchronous, if so - wrap it in AsynchronousListener.
+      Class listenerClass = listener.getClass();
+
+      do
+      {
+         if (listenerClass.isAnnotationPresent(Asynchronous.class))
+         {
+            listener = new AsynchronousListener(listener);
+            break;
+         }
+         else
+         {
+            listenerClass = listenerClass.getSuperclass();
+         }
+      }
+      while (listenerClass != null);
+
       String name = listener.getName();
       List<Listener> list = listeners_.get(name);
       if (list == null)
@@ -101,7 +149,17 @@ public class ListenerService
          {
             log.debug("broadcasting event " + name + " on " + listener.getName());
          }
-         listener.onEvent(new Event<S, D>(name, source, data));
+
+         try
+         {
+            listener.onEvent(new Event<S, D>(name, source, data));
+         }
+         catch (Exception e)
+         {
+            // log exception and keep broadcast events
+            log.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
+            log.info("Exception occures but keep broadcast events.");
+         }
       }
    }
 
@@ -121,8 +179,98 @@ public class ListenerService
    {
       List<Listener> list = listeners_.get(event.getEventName());
       if (list == null)
+      {
          return;
+      }
       for (Listener listener : list)
-         listener.onEvent(event);
+      {
+         try
+         {
+            listener.onEvent(event);
+         }
+         catch (Exception e)
+         {
+            // log exception and keep broadcast events
+            log.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
+            log.info("Exception occures but keep broadcast events.");
+         }
+      }
+   }
+
+   /**
+    * This AsynchronousListener is a wrapper for original listener, that 
+    * executes wrapped listeners onEvent() in separate thread. 
+    */
+   protected class AsynchronousListener<S, D> extends Listener<S, D>
+   {
+      private Listener<S, D> listener;
+
+      public AsynchronousListener(Listener<S, D> listener)
+      {
+         this.listener = listener;
+      }
+
+      @Override
+      public String getName()
+      {
+         return listener.getName();
+      }
+
+      @Override
+      public void setName(String s)
+      {
+         listener.setName(s);
+      }
+
+      @Override
+      public String getDescription()
+      {
+         return listener.getDescription();
+      }
+
+      @Override
+      public void setDescription(String s)
+      {
+         listener.setDescription(s);
+      }
+
+      @Override
+      public void onEvent(Event<S, D> event) throws Exception
+      {
+         executor.execute(new RunListener<S, D>(listener, event));
+      }
+   }
+
+   /** 
+    * This thread executes listener.onEvent(event) method.
+    */
+   protected class RunListener<S, D> implements Runnable
+   {
+      private Listener<S, D> listener;
+
+      private Event<S, D> event;
+
+      public RunListener(Listener<S, D> listener, Event<S, D> event)
+      {
+         this.listener = listener;
+         this.event = event;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void run()
+      {
+         try
+         {
+            listener.onEvent(event);
+         }
+         catch (Exception e)
+         {
+            // Do not throw exception. Event is asynchronous so just report error.
+            // Must say that exception will be ignored even in synchronous events.
+            log.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
+         }
+      }
    }
 }
