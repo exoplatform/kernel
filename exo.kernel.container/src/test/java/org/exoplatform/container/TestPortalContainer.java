@@ -43,7 +43,7 @@ public class TestPortalContainer extends AbstractTestContainer
       assertEquals("myRest", portal.getRestContextName());
       assertEquals("my-exo-domain", portal.getRealmName());
       
-      assertTrue(PortalContainer.isPortalContainerName("myPortal"));
+      assertFalse(PortalContainer.isPortalContainerName("myPortal"));
       assertTrue(PortalContainer.isPortalContainerName("portal"));
       assertFalse(PortalContainer.isPortalContainerName("foo"));
       
@@ -73,7 +73,7 @@ public class TestPortalContainer extends AbstractTestContainer
       assertEquals("myRest", PortalContainer.getRestContextName("foo"));
       assertEquals("my-exo-domain", PortalContainer.getRealmName("foo"));   
       
-      assertTrue(PortalContainer.isPortalContainerName("myPortal"));
+      assertFalse(PortalContainer.isPortalContainerName("myPortal"));
       assertTrue(PortalContainer.isPortalContainerName("portal"));
       assertFalse(PortalContainer.isPortalContainerName("foo"));
     
@@ -84,7 +84,7 @@ public class TestPortalContainer extends AbstractTestContainer
       assertEquals("myRest", PortalContainer.getCurrentRestContextName());
       assertEquals("my-exo-domain", PortalContainer.getCurrentRealmName());      
       
-      assertTrue(PortalContainer.isPortalContainerName("myPortal"));
+      assertFalse(PortalContainer.isPortalContainerName("myPortal"));
       assertTrue(PortalContainer.isPortalContainerName("portal"));
       assertFalse(PortalContainer.isPortalContainerName("foo"));
    }
