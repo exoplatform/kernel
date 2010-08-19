@@ -18,10 +18,13 @@
  */
 package org.exoplatform.container.web;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 
@@ -40,6 +43,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class AbstractHttpServlet extends HttpServlet
 {
+   /**
+    * The logger
+    */
+   private static final Log log = ExoLogger.getLogger("exo.kernel.container.AbstractHttpServlet");
 
    /**
     * Serial Version ID.
@@ -102,16 +109,25 @@ public abstract class AbstractHttpServlet extends HttpServlet
             ExoContainerContext.setCurrentContainer(container);
             hasBeenSet = true;
          }
-         if (requirePortalEnvironment() && container instanceof PortalContainer)
+         if (requirePortalEnvironment())
          {
-            if (PortalContainer.getInstanceIfPresent() == null)
+            final String ctxName = config.getServletContext().getServletContextName();
+            if (!PortalContainer.isPortalContainerNameDisabled(ctxName) && container instanceof PortalContainer)
             {
-               // The portal container has not been set
-               PortalContainer.setInstance((PortalContainer)container);
-               hasBeenSet = true;
+               if (PortalContainer.getInstanceIfPresent() == null)
+               {
+                  // The portal container has not been set
+                  PortalContainer.setInstance((PortalContainer)container);
+                  hasBeenSet = true;
+               }
+               // Set the full classloader of the portal container
+               Thread.currentThread().setContextClassLoader(((PortalContainer)container).getPortalClassLoader());
             }
-            // Set the full classloader of the portal container
-            Thread.currentThread().setContextClassLoader(((PortalContainer)container).getPortalClassLoader());
+            else
+            {
+               onPortalEnvironmentError(req, res);
+               return;
+            }
          }
          onService(container, req, res);
       }
@@ -165,6 +181,26 @@ public abstract class AbstractHttpServlet extends HttpServlet
    {
       // Dispatches to the right HTTP method
       super.service(req, res);
+   }
+
+   /**
+    * Allow the sub classed to execute a task when the portal environment could not be set
+    * because no related portal container could be found
+    * @param req the {@link HttpServletRequest}
+    * @param res the {@link HttpServletResponse}
+    */
+   protected void onPortalEnvironmentError(HttpServletRequest req, HttpServletResponse res) throws ServletException,
+      IOException
+   {
+      if (PropertyManager.isDevelopping())
+      {
+         log.info("The portal environment could not be set for the webapp '"
+            + config.getServletContext().getServletContextName()
+            + "' because this servlet context has not been defined as a "
+            + "dependency of any portal container or it is a disabled portal"
+            + " container, the target URI was " + req.getRequestURI());         
+      }
+      res.sendError(HttpServletResponse.SC_NOT_FOUND);
    }
 
    /**

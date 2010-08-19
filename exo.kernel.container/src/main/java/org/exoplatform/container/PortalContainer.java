@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
@@ -378,6 +379,21 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
+    * @see the method isPortalContainerNameDisabled of {@link PortalContainerConfig}
+    */
+   public static boolean isPortalContainerNameDisabled(String name)
+   {
+      if (CONFIG == null)
+      {
+         return false;
+      }
+      else
+      {
+         return CONFIG.isPortalContainerNameDisabled(name);
+      }
+   }
+
+   /**
     * Add an init-task to all the portal container instances related to the given ServletContext
     * 
     * @param context the context from which we extract the context name
@@ -430,8 +446,11 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       String portalContainerName = CONFIG.getPortalContainerName(context.getServletContextName());
       if (portalContainerName == null)
       {
-         log.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
-            + " has a dependency of any PortalContainerDefinitions.");
+         if (PropertyManager.isDevelopping())
+         {
+            log.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
+               + " has a dependency of any PortalContainerDefinitions.");            
+         }
          return null;
       }
       RootContainer root = RootContainer.getInstance();

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.definition;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.PropertyConfigurator;
 import org.exoplatform.container.RootContainer;
@@ -38,9 +39,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 
@@ -105,14 +109,19 @@ public class PortalContainerConfig implements Startable
    private volatile boolean initialized;
 
    /**
-    * The list of all the portal containers
+    * The set of all the portal containers
     */
-   private List<String> portalContainerNames;
+   private Set<String> portalContainerNames = Collections.unmodifiableSet(new HashSet<String>());
+
+   /**
+    * The set of all the portal containers that have been disabled
+    */
+   private Set<String> portalContainerNamesDisabled = Collections.unmodifiableSet(new HashSet<String>());
 
    /**
     * The list of all the web application scopes
     */
-   private Map<String, List<String>> scopes;
+   private Map<String, List<String>> scopes = Collections.unmodifiableMap(new HashMap<String, List<String>>());
 
    /**
     * The list of all the {@link PortalContainerDefinition} that have been registered
@@ -345,7 +354,69 @@ public class PortalContainerConfig implements Startable
    {
       return !definitions.isEmpty();
    }
+   
+   /**
+    * Disables a portal container if it has not yet been disabled.
+    * @param name the name of the portal container to disable
+    */
+   public synchronized void disablePortalContainer(String name)
+   {
+      if (!portalContainerNamesDisabled.contains(name))
+      {
+         if (PropertyManager.isDevelopping())
+         {
+            log.info("The portal container '" + name + "' will be disabled");
+         }
+         final Set<String> lPortalContainerNames = new HashSet<String>(portalContainerNamesDisabled.size() + 1);
+         lPortalContainerNames.add(name);
+         lPortalContainerNames.addAll(portalContainerNamesDisabled);
+         this.portalContainerNamesDisabled = Collections.unmodifiableSet(lPortalContainerNames);
+         if (hasDefinition())
+         {
+            // The new behavior is expected
+            // Remove the portal container from the registered portal container list
+            unregisterPortalContainerName(name);
+         }
+      }
+   }
+   
+   /**
+    * Remove the given portal container name from all the existing scopes
+    * 
+    * @param name the name of the portal container to remove from all the scopes
+    */
+   private void removePortalContainerNameFromScopes(String name)
+   {
+      final Map<String, List<String>> tmpScopes = new HashMap<String, List<String>>(scopes);
+      boolean changed = false;
+      for (String ctx : tmpScopes.keySet())
+      {
+         List<String> portalContainerNames = tmpScopes.get(ctx);
+         if (portalContainerNames.contains(name))
+         {
+            List<String> tmpPortalContainerNames = new ArrayList<String>(portalContainerNames);
+            tmpPortalContainerNames.remove(name);
+            tmpScopes.put(ctx, Collections.unmodifiableList(tmpPortalContainerNames));
+            changed = true;
+         }
+      }
+      if (changed)
+      {
+         this.scopes = Collections.unmodifiableMap(tmpScopes);
+      }
+   }
 
+   /**
+    * Indicates if the given name is the name of a portal container that has been registered as disabled
+    * @param name the name to check
+    * @return <code>true</code> if the name is a name of a disabled portal container, <code>false</code>
+    *        otherwise.
+    */
+   public boolean isPortalContainerNameDisabled(String name)
+   {
+      return name == null ? false : portalContainerNamesDisabled.contains(name);
+   }
+   
    /**
     * Registers a name of a portal container if it has not yet been registered
     * @param name the name of the portal container to register
@@ -354,10 +425,10 @@ public class PortalContainerConfig implements Startable
    {
       if (!portalContainerNames.contains(name))
       {
-         final List<String> lPortalContainerNames = new ArrayList<String>(portalContainerNames.size() + 1);
+         final Set<String> lPortalContainerNames = new LinkedHashSet<String>(portalContainerNames.size() + 1);
          lPortalContainerNames.add(name);
          lPortalContainerNames.addAll(portalContainerNames);
-         this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
+         this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
       }
    }
 
@@ -369,9 +440,15 @@ public class PortalContainerConfig implements Startable
    {
       if (portalContainerNames.contains(name))
       {
-         final List<String> lPortalContainerNames = new ArrayList<String>(portalContainerNames);
+         final Set<String> lPortalContainerNames = new LinkedHashSet<String>(portalContainerNames);
          lPortalContainerNames.remove(name);
-         this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
+         this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
+         if (hasDefinition())
+         {
+            // The new behavior is expected
+            // Remove the portal container from all the scopes
+            removePortalContainerNameFromScopes(name);
+         }         
       }
    }
 
@@ -397,7 +474,7 @@ public class PortalContainerConfig implements Startable
       {
          throw new IllegalArgumentException("The context name cannot be null");
       }
-      if (scopes.isEmpty())
+      if (definitions.isEmpty())
       {
          // we assume that the old behavior is expected         
          final String portalContainerName =
@@ -435,15 +512,20 @@ public class PortalContainerConfig implements Startable
          // The given context name is a context name of a portal container
          return contextName;
       }
-      else if (scopes.isEmpty())
+      else if (definitions.isEmpty())
       {
          // we assume that the old behavior is expected         
-         return defaultDefinition.getName();         
+         return defaultDefinition.getName();
       }
       final List<String> result = scopes.get(contextName);
       if (result == null || result.isEmpty())
       {
-         // This context has not been added as dependency of any portal containers         
+         // This context has not been added as dependency of any portal containers
+         if (PropertyManager.isDevelopping())
+         {
+            log.info("The context '" + contextName + "' has not been added as " +
+            		"dependency of any portal containers");
+         }
          return null;
       }
       return result.get(0);
@@ -457,12 +539,18 @@ public class PortalContainerConfig implements Startable
    public List<String> getDependencies(String portalContainerName)
    {
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
-      List<String> result = null;
       if (definition != null)
       {
-         result = definition.getDependencies();
+         // A definition has been defined
+         List<String> result = definition.getDependencies();
+         return result == null || result.isEmpty() ? defaultDefinition.getDependencies() : result;         
       }
-      return result == null || result.isEmpty() ? defaultDefinition.getDependencies() : result;
+      else if (definitions.isEmpty())
+      {
+         // The old behavior is expected
+         return defaultDefinition.getDependencies();
+      }
+      return null;
    }
 
    /**
@@ -542,7 +630,7 @@ public class PortalContainerConfig implements Startable
       if (portalContainerName == null)
       {
          throw new IllegalArgumentException("The portal container name cannot be null");
-      }      
+      }
       return getPortalContainerNames(contextName).contains(portalContainerName);
    }
 
@@ -583,6 +671,29 @@ public class PortalContainerConfig implements Startable
       }
    }
 
+   /**
+    * Allow to disable a set of portal containers
+    * @param plugin the plugin that defines the name of portal containers to disable
+    */
+   public void registerDisablePlugin(PortalContainerDefinitionDisablePlugin plugin)
+   {
+      final Set<String> sPortalContainerNames = plugin.getNames();
+      if (sPortalContainerNames != null && !sPortalContainerNames.isEmpty())
+      {
+         synchronized (this)
+         {
+            if (initialized)
+            {
+               throw new IllegalStateException("The PortalContainerConfig has already been initialized");
+            }
+            for (String name : sPortalContainerNames)
+            {
+               disablePortalContainer(name);
+            }
+         }         
+      }
+   }
+   
    /**
     * Allow to define a set of changes to apply to the registered {@link PortalContainerDefinition}
     * @param plugin the plugin that defines the changes to apply
@@ -975,20 +1086,21 @@ public class PortalContainerConfig implements Startable
     */
    private void initialize(Map<String, PortalContainerDefinition> mDefinitions)
    {
-      final List<String> lPortalContainerNames = new ArrayList<String>(mDefinitions.size() + 1);
-      // Add the default portal container name
-      lPortalContainerNames.add(defaultDefinition.getName());
+      final Set<String> lPortalContainerNames = new LinkedHashSet<String>(mDefinitions.size() + 1);
       final Map<String, List<String>> mScopes = new HashMap<String, List<String>>();
       boolean first = true;
       for (Map.Entry<String, PortalContainerDefinition> entry : mDefinitions.entrySet())
       {
          PortalContainerDefinition definition = entry.getValue();
          String name = definition.getName();
-         boolean hasChanged = false;
-         if (!name.equals(defaultDefinition.getName()))
+         if (isPortalContainerNameDisabled(name))
          {
-            lPortalContainerNames.add(name);
+            // The portal container has been disabled so the related portal container definition
+            // will be ignored
+            continue;
          }
+         boolean hasChanged = false;
+         lPortalContainerNames.add(name);
          if (first)
          {
             first = false;
@@ -1020,8 +1132,10 @@ public class PortalContainerConfig implements Startable
          }
          initializeSettings(definition, true);
       }
-      if (!mDefinitions.containsKey(defaultDefinition.getName()))
+      if (mDefinitions.isEmpty())
       {
+         // Add the default portal container name
+         lPortalContainerNames.add(defaultDefinition.getName());
          // Apply the changes corresponding to the default definition
          applyChanges(defaultDefinition);
          initializeSettings(defaultDefinition, false);
@@ -1031,8 +1145,18 @@ public class PortalContainerConfig implements Startable
             // dependencies have been defined
             registerDependencies(defaultDefinition, mScopes);
          }
+         if (!portalContainerNamesDisabled.isEmpty())
+         {
+            if (PropertyManager.isDevelopping())
+            {
+               log.warn("No portal container definition has been registered, the old behavior is" +
+                  " then expected so you cannot disable any portal container. The list of" +
+                  " portal containers to disable will be ignored");               
+            }
+            portalContainerNamesDisabled = Collections.unmodifiableSet(new HashSet<String>());
+         }
       }
-      this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
+      this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);
       // clear the changes
       changes.clear();
