@@ -91,7 +91,14 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             }
             // Please note that we cannot fully initialize the Object "instance_" before releasing other
             // threads because it could cause StackOverflowError due to recursive calls
-            instance_ = exocontainer.createComponent(getComponentImplementation(), params);
+            Object instance = exocontainer.createComponent(getComponentImplementation(), params);
+            if (instance_ != null)
+            {
+               // Avoid instantiating twice the same component in case of a cyclic reference due
+               // to component plugins
+               return instance_;
+            }
+            instance_ = instance;
          }
 
          if (debug)

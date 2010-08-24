@@ -76,6 +76,16 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(value, plugin.myClass_);
    }
    
+   public void testCyclicRef()
+   {
+      final RootContainer container = createRootContainer("test-exo-container.xml", "testCyclicRef");
+      A a = (A)container.getComponentInstanceOfType(A.class);
+      assertNotNull(a);
+      B b = (B)container.getComponentInstanceOfType(B.class);
+      assertNotNull(b);
+      assertEquals(a, b.a);
+   }
+   
    public void testCache()
    {
       URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -460,5 +470,33 @@ public class TestExoContainer extends AbstractTestContainer
          if (counter != null) counter.stop.add(this);
       }
       
+   }
+   
+   public static class A
+   {
+      public B b;
+      public A(B b)
+      {
+         this.b = b;
+      }
+   }
+   public static class BPlugin extends BaseComponentPlugin
+   {
+      public A a;
+      public BPlugin(A a)
+      {
+         this.a = a;
+      }
+   }
+   
+   public static class B
+   {
+      public A a;
+      public BPlugin plugin_;
+      public void add(BPlugin plugin)
+      {
+         this.plugin_ = plugin;
+         this.a = plugin.a;         
+      }
    }
 }

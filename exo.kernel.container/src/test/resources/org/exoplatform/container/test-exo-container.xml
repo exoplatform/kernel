@@ -45,4 +45,17 @@
 			</component-plugin>
 		</component-plugins>
 	</component>
+	<component profiles="testCyclicRef">
+		<type>org.exoplatform.container.TestExoContainer$A</type>
+	</component>
+	<component profiles="testCyclicRef">
+		<type>org.exoplatform.container.TestExoContainer$B</type>
+		<component-plugins>
+			<component-plugin>
+				<name>testCyclicRef</name>
+				<set-method>add</set-method>
+				<type>org.exoplatform.container.TestExoContainer$BPlugin</type>
+			</component-plugin>
+		</component-plugins>
+	</component>
 </configuration>
