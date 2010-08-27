@@ -21,6 +21,7 @@ package org.exoplatform.commons.utils;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +36,11 @@ import java.util.regex.Pattern;
  */
 public class MapResourceBundle extends ResourceBundle implements Serializable
 {
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -7020823660841958748L;
 
    private final static String REGEXP = "#\\{.*\\}";
 
@@ -123,35 +129,42 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
 
    public void resolveDependencies()
    {
-      Map tempMap = new HashMap();
-      Set keys = props.keySet();
+      Map tempMap = new HashMap(props);
+      Set keys = tempMap.keySet();
       Pattern pattern = Pattern.compile(REGEXP);
       for (Iterator iter = keys.iterator(); iter.hasNext();)
       {
          String element = (String)iter.next();
-         String value = lookupKey(element, pattern);
+         String value = lookupKey(tempMap, element, pattern, new HashSet<String>());
          tempMap.put(element, value);
       }
       props = tempMap;
    }
 
-   private String lookupKey(String key, Pattern pattern)
+   private String lookupKey(Map props, String key, Pattern pattern, Set<String> callStack)
    {
       String s = (String)props.get(key);
-      if (s == null)
+      if (s == null || callStack.contains(key))
+      {
+         // The value cannot be found or it has already been asked which means that
+         // a loop has been detected
          return key;
+      }
+      callStack.add(key);
       Matcher matcher = pattern.matcher(s);
       if (matcher.find())
       {
-         return recursivedResolving(s, pattern);
+         return recursivedResolving(props, s, pattern, callStack);
       }
+      // The value could be resolved thus it can be removed from the callStack
+      callStack.remove(key);
       return s;
    }
 
-   private String recursivedResolving(String key, Pattern pattern)
+   private String recursivedResolving(Map props, String value, Pattern pattern, Set<String> callStack)
    {
-      String resolved = key;
-      StringBuffer sB = new StringBuffer();
+      String resolved = value;
+      StringBuilder sB = new StringBuilder();
       while (resolved.indexOf("#{") != -1)
       {
          sB.setLength(0);
@@ -159,7 +172,7 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
          int lastIndex = resolved.indexOf('}', firstIndex);
          String realKey = resolved.substring(firstIndex + 2, lastIndex);
          sB.append(resolved.substring(0, firstIndex));
-         sB.append(lookupKey(realKey, pattern));
+         sB.append(lookupKey(props, realKey, pattern, callStack));
          sB.append(resolved.substring(lastIndex + 1));
          resolved = sB.toString();
       }

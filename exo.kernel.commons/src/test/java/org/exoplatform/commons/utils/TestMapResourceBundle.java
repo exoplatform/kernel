@@ -33,9 +33,19 @@ public class TestMapResourceBundle extends TestCase
       ResourceBundle rB = ResourceBundle.getBundle("org.exoplatform.commons.utils.resources");
       MapResourceBundle mapRB = new MapResourceBundle(rB, new Locale("en"));
       mapRB.resolveDependencies();
-      // System.out.println("KEYYYYYYYYY2 "+mapRB.getString("key1"));
-      System.out.println("KEYYYYYYYYY2 " + mapRB.getString("key2"));
-      // System.out.println("KEYYYYYYYYY2 "+mapRB.getString("key3"));
+      assertEquals("attention", mapRB.getString("key1"));
+      assertEquals("attention please", mapRB.getString("key3"));
+      assertEquals("attention and attention please alors", mapRB.getString("key2"));
+      assertEquals("non-existing", mapRB.getString("key4"));
+      assertEquals("key5 StackOverflowError", mapRB.getString("key5"));
+      assertTrue(mapRB.getString("key6").startsWith("key"));
+      assertTrue(mapRB.getString("key7").startsWith("key"));
+      assertEquals("some other value value", mapRB.getString("key8"));
+      assertEquals("other value", mapRB.getString("key9"));
+      assertEquals("value", mapRB.getString("key10"));
+      assertEquals("X", mapRB.getString("key11"));
+      assertEquals("-X-", mapRB.getString("key12"));
+      assertEquals("-X-", mapRB.getString("key13"));
+      assertEquals("--X--", mapRB.getString("key14"));
    }
-
 }
