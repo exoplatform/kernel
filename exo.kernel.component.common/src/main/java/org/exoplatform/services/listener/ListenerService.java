@@ -33,9 +33,9 @@ import java.util.Map;
 public class ListenerService
 {
 
-   private Map<String, List<Listener>> listeners_;
+   private final Map<String, List<Listener>> listeners_;
 
-   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
+   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
    
    /**
     * Construct a listener service.
@@ -46,34 +46,40 @@ public class ListenerService
    }
 
    /**
-    * This method is used to register a listener with the service. The method
-    * should: 1. Check to see if there is a list of listener with the listener
-    * name, create one if the listener list doesn't exit 2. Add the new listener
-    * to the listener list
+    * This method is used to register a {@link Listener} to the events of the same
+    * name. It is similar to addListener(listener.getName(), listener)
     * 
-    * @param listener
+    * @param listener the listener to notify any time an even of the same name is
+    * triggered
     */
    public void addListener(Listener listener)
    {
-      String name = listener.getName();
-      List<Listener> list = listeners_.get(name);
-      if (list == null)
-      {
-         list = new ArrayList<Listener>();
-         listeners_.put(name, list);
-      }
-      list.add(listener);
+      addListener(listener.getName(), listener);
    }
 
    /**
-    * @deprecated use the Listener name as the event name
-    * @param eventName
-    * @param listener
+    * This method is used to register a new {@link Listener}. Any time an
+    * event of the given event name has been triggered, the {@link Listener} will be
+    * notified.
+    * This method will:
+    * <ol>
+    * <li>Check if it exists a list of listeners that have been registered for the
+    * given event name, create a new list if no list exists</li>
+    * <li>Add the listener to the list</li>
+    * </ol>
+    * @param eventName The name of the event to listen to
+    * @param listener The Listener to notify any time the event with the given
+    * name is triggered
     */
    public void addListener(String eventName, Listener listener)
    {
-      listener.setName(eventName);
-      addListener(listener);
+      List<Listener> list = listeners_.get(eventName);
+      if (list == null)
+      {
+         list = new ArrayList<Listener>();
+         listeners_.put(eventName, list);
+      }
+      list.add(listener);
    }
 
    /**
