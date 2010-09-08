@@ -23,12 +23,9 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.impl.jboss.AbstractExoCache;
-import org.exoplatform.services.cache.impl.jboss.ExoCacheCreator;
+import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheCreator;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
-import org.jboss.cache.config.Configuration;
-import org.jboss.cache.config.EvictionConfig;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithm;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 
@@ -41,7 +38,7 @@ import java.io.Serializable;
  *          nicolas.filotto@exoplatform.com
  * 8 mars 2010  
  */
-public class EAExoCacheCreator implements ExoCacheCreator
+public class EAExoCacheCreator extends AbstractExoCacheCreator
 {
 
    /**
@@ -95,18 +92,14 @@ public class EAExoCacheCreator implements ExoCacheCreator
    private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache,
       int maxNodes, long minTimeToLive, long expirationTimeout) throws ExoCacheInitException
    {
-      final Configuration configuration = cache.getConfiguration();
       final ExpirationAlgorithmConfig ea = new ExpirationAlgorithmConfig();
       ea.setMaxNodes(maxNodes);
       ea.setMinTimeToLive(minTimeToLive);
       ea.setExpirationKeyName(ExpirationAlgorithmConfig.EXPIRATION_KEY);
-      // Create an eviction region config
-      final EvictionRegionConfig erc = new EvictionRegionConfig(Fqn.ROOT, ea);
 
-      final EvictionConfig evictionConfig = configuration.getEvictionConfig();
-      evictionConfig.setDefaultEvictionRegionConfig(erc);
+      Fqn<String> rooFqn = addEvictionRegion(config, cache, ea);
 
-      return new EAExoCache(config, cache, ea, expirationTimeout);
+      return new EAExoCache(config, cache, rooFqn, ea, expirationTimeout);
    }
 
    /**
@@ -118,10 +111,10 @@ public class EAExoCacheCreator implements ExoCacheCreator
 
       private final ExpirationAlgorithmConfig ea;
 
-      public EAExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache, ExpirationAlgorithmConfig ea,
-         long expirationTimeout)
+      public EAExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache, Fqn<String> rooFqn,
+         ExpirationAlgorithmConfig ea, long expirationTimeout)
       {
-         super(config, cache);
+         super(config, cache, rooFqn);
          this.ea = ea;
          this.expirationTimeout = expirationTimeout;
       }

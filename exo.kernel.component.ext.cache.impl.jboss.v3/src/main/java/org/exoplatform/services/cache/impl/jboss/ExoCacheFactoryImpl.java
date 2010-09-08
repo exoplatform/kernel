@@ -37,6 +37,7 @@ import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.config.Configuration.CacheMode;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,6 +89,12 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * The mapping between the cache names and the configuration paths
     */
    private final Map<String, String> mappingCacheNameConfig = new HashMap<String, String>();
+   
+   /**
+    * A Map that contains all the registered JBC instances.
+    */
+   private final Map<ConfigurationKey, Cache<Serializable, Object>> caches =
+      new HashMap<ConfigurationKey, Cache<Serializable, Object>>();
 
    /**
     * The default creator
@@ -96,14 +103,19 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
 
    public ExoCacheFactoryImpl(InitParams params, ConfigurationManager configManager)
    {
+      this(getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), configManager);
+   }
+
+   ExoCacheFactoryImpl(String cacheConfigTemplate, ConfigurationManager configManager)
+   {
       this.configManager = configManager;
-      this.cacheConfigTemplate = getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY);
+      this.cacheConfigTemplate = cacheConfigTemplate;
       if (cacheConfigTemplate == null)
       {
          throw new RuntimeException("The parameter '" + CACHE_CONFIG_TEMPLATE_KEY + "' must be set");
       }
    }
-
+   
    /**
     * To create a new cache instance according to the given configuration, we follow the steps below:
     * 
@@ -116,7 +128,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    {
       final String region = config.getName();
       final String customConfig = mappingCacheNameConfig.get(region);
-      final Cache<Serializable, Object> cache;
+      Cache<Serializable, Object> cache;
       final CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
       final ExoCache<Serializable, Object> eXoCache;
       try
@@ -143,6 +155,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             cleanConfigurationTemplate(cache, region);
          }
          final ExoCacheCreator creator = getExoCacheCreator(config);
+         // Ensure that new created cache doesn't exist
+         cache = getUniqueInstance(cache, region);
          // Create the cache
          eXoCache = creator.create(config, cache);
          // Create the cache
@@ -238,11 +252,102 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          config.setEvictionConfig(evictionConfig);
       }
       evictionConfig.setEvictionRegionConfigs(new LinkedList<EvictionRegionConfig>());
-      // Rename the cluster name
-      String clusterName = config.getClusterName();
-      if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
+   } 
+   
+   /**
+    * Try to find if a Cache of the same type (i.e. their {@link Configuration} are equals)
+    * has already been registered.
+    * If no cache has been registered, we register the given cache otherwise we
+    * use the previously registered cache.
+    * @param cache the cache to register
+    * @param region the region of the cache
+    * @return the given cache if has not been registered otherwise the cache of the same
+    * type that has already been registered 
+    * @throws ExoCacheInitException
+    */
+   private synchronized Cache<Serializable, Object> getUniqueInstance(Cache<Serializable, Object> cache, String region)
+      throws ExoCacheInitException
+   {
+      Configuration cfg = cache.getConfiguration();
+      ConfigurationKey key;
+      try
       {
-         config.setClusterName(clusterName + " " + region);
+         key = new ConfigurationKey(cfg);
       }
+      catch (CloneNotSupportedException e)
+      {
+         throw new ExoCacheInitException("Cannot clone the configuration.", e);
+      }
+      if (caches.containsKey(key))
+      {
+         cache = caches.get(key);
+      }
+      else
+      {
+         caches.put(key, cache);
+         if (LOG.isInfoEnabled())
+            LOG.info("A new eXo Cache based on JBoss Cache instance has been registered for the region " + region);
+      }
+      return cache;
    }
+   
+   /**
+    * This class is used to make {@link Configuration} being usable as a Key in an HashMap since
+    * some variables such as <code>jgroupsConfigFile</code> are not managed as expected in the
+    * methods equals and hashCode. Moreover two cache with same config except the EvictionConfig
+    * are considered as identical
+    */
+   private static class ConfigurationKey
+   {
+      private final URL jgroupsConfigFile;
+      private final Configuration conf;
+      
+      public ConfigurationKey(Configuration initialConf) throws CloneNotSupportedException
+      {
+         // Clone it first since it will be modified
+         this.conf = initialConf.clone();
+         this.jgroupsConfigFile = conf.getJGroupsConfigFile();
+         // remove the jgroupsConfigFile from the conf
+         conf.setJgroupsConfigFile(null);
+         // remove the EvictionConfig to ignore it
+         conf.setEvictionConfig(null);
+      }
+
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((conf == null) ? 0 : conf.hashCode());
+         result = prime * result + ((jgroupsConfigFile == null) ? 0 : jgroupsConfigFile.hashCode());
+         return result;
+      }
+
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (getClass() != obj.getClass())
+            return false;
+         ConfigurationKey other = (ConfigurationKey)obj;
+         if (conf == null)
+         {
+            if (other.conf != null)
+               return false;
+         }
+         else if (!conf.equals(other.conf))
+            return false;
+         if (jgroupsConfigFile == null)
+         {
+            if (other.jgroupsConfigFile != null)
+               return false;
+         }
+         else if (!jgroupsConfigFile.equals(other.jgroupsConfigFile))
+            return false;
+         return true;
+      }
+   }   
 }

@@ -78,17 +78,24 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    private final CopyOnWriteArrayList<ListenerContext<K, V>> listeners;
 
    protected final CacheSPI<K, V> cache;
+   
+   protected final Fqn<String> rootFqn;
 
-   public AbstractExoCache(ExoCacheConfig config, Cache<K, V> cache)
+   public AbstractExoCache(ExoCacheConfig config, Cache<K, V> cache, Fqn<String> rootFqn)
    {
       this.cache = (CacheSPI<K, V>)cache;
+      this.rootFqn = rootFqn;
       this.listeners = new CopyOnWriteArrayList<ListenerContext<K, V>>();
       setDistributed(config.isDistributed());
       setLabel(config.getLabel());
       setName(config.getName());
       setLogEnabled(config.isLogEnabled());
       setReplicated(config.isRepicated());
-      cache.getConfiguration().setInvocationBatchingEnabled(true);
+      if (cache.getCacheStatus().createAllowed())
+      {
+         // Avoid set several times the same parameter if the cache is shared
+         cache.getConfiguration().setInvocationBatchingEnabled(true);
+      }
       cache.addCacheListener(new CacheEventListener());
    }
 
@@ -110,7 +117,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    public void clearCache()
    {
       cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-      cache.removeNode(Fqn.ROOT);
+      cache.removeNode(rootFqn);
       onClearCache();
    }
 
@@ -158,7 +165,8 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     */
    public int getCacheSize()
    {
-      return cache.getNumberOfNodes();
+      final NodeSPI<K, V> node = cache.peek(rootFqn, false);
+      return node == null ? 0 : node.getChildrenNamesDirect().size();
    }
 
    /**
@@ -167,7 +175,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    public List<V> getCachedObjects()
    {
       final LinkedList<V> list = new LinkedList<V>();
-      for (Node<K, V> node : cache.getRoot().getChildren())
+      for (Node<K, V> node : cache.getNode(rootFqn).getChildren())
       {
          if (node == null)
          {
@@ -331,7 +339,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       {
          throw new IllegalArgumentException("No null selector");
       }      
-      for (Node<K, V> node : cache.getRoot().getChildren())
+      for (Node<K, V> node : cache.getNode(rootFqn).getChildren())
       {
          if (node == null)
          {
@@ -415,7 +423,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    @SuppressWarnings("unchecked")
    private K getKey(Fqn fqn)
    {
-      return (K)fqn.get(0);
+      return (K)fqn.get(rootFqn.size());
    }
 
    /**
@@ -423,7 +431,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     */
    protected Fqn<Serializable> getFqn(Serializable name)
    {
-      return Fqn.fromElements(name);
+      return Fqn.fromRelativeElements(rootFqn, name);
    }
 
    void onExpire(K key, V obj)
@@ -521,13 +529,14 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    }
 
    @org.jboss.cache.notifications.annotation.CacheListener
+   @SuppressWarnings("unchecked")
    public class CacheEventListener
    {
 
       @NodeEvicted
       public void nodeEvicted(NodeEvictedEvent ne)
       {
-         if (ne.isPre())
+         if (ne.isPre() && ne.getFqn().isChildOf(rootFqn))
          {
             final NodeSPI<K, V> node = cache.peek(ne.getFqn(), true);
             final K key = getKey(ne.getFqn());
@@ -535,11 +544,10 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          }
       }
 
-      @SuppressWarnings("unchecked")
       @NodeRemoved
       public void nodeRemoved(NodeRemovedEvent ne)
       {
-         if (ne.isPre() && !ne.isOriginLocal())
+         if (ne.isPre() && !ne.isOriginLocal() && ne.getFqn().isChildOf(rootFqn))
          {
             final K key = getKey(ne.getFqn());
             final Map<K, V> data = ne.getData();
@@ -547,11 +555,10 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          }
       }
 
-      @SuppressWarnings("unchecked")
       @NodeModified
       public void nodeModified(NodeModifiedEvent ne)
       {
-         if (!ne.isOriginLocal() && !ne.isPre())
+         if (!ne.isOriginLocal() && !ne.isPre() && ne.getFqn().isChildOf(rootFqn))
          {
             final K key = getKey(ne.getFqn());
             final Map<K, V> data = ne.getData();

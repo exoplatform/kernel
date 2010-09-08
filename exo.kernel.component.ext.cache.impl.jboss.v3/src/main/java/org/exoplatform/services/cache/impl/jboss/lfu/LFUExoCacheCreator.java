@@ -25,12 +25,9 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.impl.jboss.AbstractExoCache;
-import org.exoplatform.services.cache.impl.jboss.ExoCacheCreator;
+import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheCreator;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
-import org.jboss.cache.config.Configuration;
-import org.jboss.cache.config.EvictionConfig;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.LFUAlgorithmConfig;
 
 import java.io.Serializable;
@@ -42,7 +39,7 @@ import java.io.Serializable;
  *          exo@exoplatform.com
  * 21 juil. 2009  
  */
-public class LFUExoCacheCreator implements ExoCacheCreator
+public class LFUExoCacheCreator extends AbstractExoCacheCreator
 {
 
    /**
@@ -58,7 +55,8 @@ public class LFUExoCacheCreator implements ExoCacheCreator
    /**
     * {@inheritDoc}
     */
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache)
+      throws ExoCacheInitException
    {
       if (config instanceof LFUExoCacheConfig)
       {
@@ -75,18 +73,13 @@ public class LFUExoCacheCreator implements ExoCacheCreator
    /**
     * Creates a new ExoCache instance with the relevant parameters
     */
-   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, int minNodes,
-      long minTimeToLive) throws ExoCacheInitException
+   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache,
+      int maxNodes, int minNodes, long minTimeToLive) throws ExoCacheInitException
    {
-      final Configuration configuration = cache.getConfiguration();
       final LFUAlgorithmConfig lfu = new LFUAlgorithmConfig(maxNodes, minNodes);
       lfu.setMinTimeToLive(minTimeToLive);
-      // Create an eviction region config
-      final EvictionRegionConfig erc = new EvictionRegionConfig(Fqn.ROOT, lfu);
-
-      final EvictionConfig evictionConfig = configuration.getEvictionConfig();
-      evictionConfig.setDefaultEvictionRegionConfig(erc);
-      return new LFUExoCache(config, cache, lfu);
+      Fqn<String> rooFqn = addEvictionRegion(config, cache, lfu);
+      return new LFUExoCache(config, cache, rooFqn, lfu);
    }
 
    /**
@@ -113,9 +106,10 @@ public class LFUExoCacheCreator implements ExoCacheCreator
 
       private final LFUAlgorithmConfig lfu;
 
-      public LFUExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache, LFUAlgorithmConfig lfu)
+      public LFUExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache, Fqn<String> rooFqn,
+         LFUAlgorithmConfig lfu)
       {
-         super(config, cache);
+         super(config, cache, rooFqn);
          this.lfu = lfu;
       }
 

@@ -19,6 +19,9 @@
 package org.exoplatform.services.cache.impl.jboss;
 
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
 import org.exoplatform.services.cache.CacheService;
@@ -26,7 +29,9 @@ import org.exoplatform.services.cache.CachedObjectSelector;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
+import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.ObjectCacheInfo;
+import org.exoplatform.services.cache.impl.jboss.lru.LRUExoCacheCreator;
 import org.exoplatform.test.BasicTestCase;
 
 import java.io.Serializable;
@@ -200,7 +205,8 @@ public class TestAbstractExoCache extends BasicTestCase
       CachedObjectSelector<Serializable, Object> selector = new CachedObjectSelector<Serializable, Object>()
       {
 
-         public void onSelect(ExoCache<? extends Serializable, ? extends Object> cache, Serializable key, ObjectCacheInfo<? extends Object> ocinfo) throws Exception
+         public void onSelect(ExoCache<? extends Serializable, ? extends Object> cache, Serializable key,
+            ObjectCacheInfo<? extends Object> ocinfo) throws Exception
          {
             assertTrue(key.equals(new MyKey("a")) || key.equals(new MyKey("b")) || key.equals(new MyKey("c")));
             assertTrue(ocinfo.get().equals(1) || ocinfo.get().equals(2) || ocinfo.get().equals(3));
@@ -229,10 +235,27 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(2, cache.getCacheMiss() - misses);
    }
 
+   private ExoCacheFactory getExoCacheFactoryInstance() throws ExoCacheInitException
+   {
+      PortalContainer pc = PortalContainer.getInstance();
+      ExoCacheFactoryImpl factory = new ExoCacheFactoryImpl("jar:/conf/portal/cache-configuration-template.xml", (ConfigurationManager)pc
+            .getComponentInstanceOfType(ConfigurationManager.class));
+      InitParams params = new InitParams();
+      ObjectParameter param = new ObjectParameter();
+      param.setName("LRU");
+      param.setObject(new LRUExoCacheCreator());
+      params.addParam(param);
+      ExoCacheCreatorPlugin plugin = new ExoCacheCreatorPlugin(params);
+      factory.addCreator(plugin);
+      return factory;
+   }
+
    @SuppressWarnings("unchecked")
    public void testDistributedCache() throws Exception
    {
-      System.out.println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = " + System.getProperty("java.net.preferIPv4Stack"));
+      System.out
+         .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
+            + System.getProperty("java.net.preferIPv4Stack"));
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(5);
@@ -245,13 +268,16 @@ public class TestAbstractExoCache extends BasicTestCase
       config2.setLiveTime(1);
       config2.setImplementation("LRU");
       config2.setDistributed(true);
-      AbstractExoCache<Serializable, Object> cache1 = (AbstractExoCache<Serializable, Object>)factory.createCache(config);
+      AbstractExoCache<Serializable, Object> cache1 =
+         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config);
       MyCacheListener listener1 = new MyCacheListener();
       cache1.addCacheListener(listener1);
-      AbstractExoCache<Serializable, Object> cache2 = (AbstractExoCache<Serializable, Object>)factory.createCache(config);
+      AbstractExoCache<Serializable, Object> cache2 =
+         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config);
       MyCacheListener listener2 = new MyCacheListener();
       cache2.addCacheListener(listener2);
-      AbstractExoCache<Serializable, Object> cache3 = (AbstractExoCache<Serializable, Object>)factory.createCache(config2);
+      AbstractExoCache<Serializable, Object> cache3 =
+         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config2);
       MyCacheListener listener3 = new MyCacheListener();
       cache3.addCacheListener(listener3);
       try
@@ -314,7 +340,7 @@ public class TestAbstractExoCache extends BasicTestCase
          cache1.put(new MyKey("c"), "c");
          cache1.clearCache();
          assertEquals(0, cache1.getCacheSize());
-         assertEquals(null, cache1.get(new MyKey("b")));         
+         assertEquals(null, cache1.get(new MyKey("b")));
          assertEquals("c", cache2.get(new MyKey("b")));
          assertEquals("c", cache2.get(new MyKey("c")));
          assertEquals(2, cache2.getCacheSize());
@@ -684,6 +710,7 @@ public class TestAbstractExoCache extends BasicTestCase
    public static class MyKey implements Serializable
    {
       private static final long serialVersionUID = 1L;
+
       public String value;
 
       public MyKey(String value)

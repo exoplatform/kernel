@@ -24,12 +24,9 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.impl.jboss.AbstractExoCache;
-import org.exoplatform.services.cache.impl.jboss.ExoCacheCreator;
+import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheCreator;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
-import org.jboss.cache.config.Configuration;
-import org.jboss.cache.config.EvictionConfig;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.FIFOAlgorithmConfig;
 
 import java.io.Serializable;
@@ -41,7 +38,7 @@ import java.io.Serializable;
  *          exo@exoplatform.com
  * 20 juil. 2009  
  */
-public class FIFOExoCacheCreator implements ExoCacheCreator
+public class FIFOExoCacheCreator extends AbstractExoCacheCreator
 {
 
    /**
@@ -88,16 +85,10 @@ public class FIFOExoCacheCreator implements ExoCacheCreator
    private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, long minTimeToLive)
       throws ExoCacheInitException
    {
-      final Configuration configuration = cache.getConfiguration();
       final FIFOAlgorithmConfig fifo = new FIFOAlgorithmConfig(maxNodes);
       fifo.setMinTimeToLive(minTimeToLive);
-      // Create an eviction region config
-      final EvictionRegionConfig erc = new EvictionRegionConfig(Fqn.ROOT, fifo);
-
-      final EvictionConfig evictionConfig = configuration.getEvictionConfig();
-      evictionConfig.setDefaultEvictionRegionConfig(erc);
-
-      return new AbstractExoCache<Serializable, Object>(config, cache)
+      Fqn<String> rooFqn = addEvictionRegion(config, cache, fifo);
+      return new AbstractExoCache<Serializable, Object>(config, cache, rooFqn)
       {
 
          public void setMaxSize(int max)
