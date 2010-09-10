@@ -20,6 +20,8 @@ package org.exoplatform.services.scheduler.impl;
 
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.PortalContainerInfo;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.scheduler.CronJob;
 import org.exoplatform.services.scheduler.JobInfo;
 import org.exoplatform.services.scheduler.JobSchedulerService;
@@ -57,6 +59,10 @@ import java.util.Set;
  */
 public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 {
+   
+   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.JobSchedulerServiceImpl");
+   
+   static final String STANDALONE_CONTAINER_NAME = "$Standalone";
    private final Scheduler scheduler_;
 
    private final String containerName_;
@@ -79,7 +85,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public JobSchedulerServiceImpl(QuartzSheduler quartzSchduler, QueueTasks qtasks)
    {
       scheduler_ = quartzSchduler.getQuartzSheduler();
-      containerName_ = "Standalone";
+      containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
    }
 
@@ -155,7 +161,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobInfo jobinfo = getJobInfo(jinfo);
       CronTrigger trigger =
          new CronTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJobName(), jobinfo.getGroupName(),
-			exp);
+         exp);
       JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
       job.setDescription(jobinfo.getDescription());
       scheduler_.addJob(job, true);
@@ -174,7 +180,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobInfo jobinfo = getJobInfo(jinfo);
       CronTrigger trigger =
          new CronTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJobName(), jobinfo.getGroupName(),
-			exp);
+         exp);
       JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
       job.setJobDataMap(jdatamap);
       job.setDescription(jobinfo.getDescription());
@@ -205,8 +211,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public boolean removeJob(JobInfo jinfo) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
-      boolean b = scheduler_.deleteJob(jobinfo.getJobName(), jobinfo.getGroupName());
-      return b;
+      return scheduler_.deleteJob(jobinfo.getJobName(), jobinfo.getGroupName());
    }
 
    public List getAllExcutingJobs() throws Exception
@@ -236,16 +241,13 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public List getAllGlobalJobListener() throws Exception
    {
-      List globalListeners;
-      globalListeners = scheduler_.getGlobalJobListeners();
-      return globalListeners;
+      return scheduler_.getGlobalJobListeners();
    }
 
    public JobListener getGlobalJobListener(String name) throws Exception
    {
-      List listener;
       JobListener jlistener;
-      listener = scheduler_.getGlobalJobListeners();
+      List listener = scheduler_.getGlobalJobListeners();
       ListIterator iterator = listener.listIterator();
       while (iterator.hasNext())
       {
@@ -261,8 +263,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public boolean removeGlobalJobListener(String name) throws Exception
    {
       JobListener jlistener = getGlobalJobListener(name);
-      boolean b = scheduler_.removeGlobalJobListener(jlistener);
-      return b;
+      return scheduler_.removeGlobalJobListener(jlistener);
    }
 
    public void addJobListener(ComponentPlugin plugin) throws Exception
@@ -290,8 +291,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public boolean removeJobListener(String name) throws Exception
    {
-      boolean b = scheduler_.removeJobListener(name);
-      return b;
+      return scheduler_.removeJobListener(name);
    }
 
    public void addGlobalTriggerListener(ComponentPlugin plugin) throws Exception
@@ -301,16 +301,13 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public List getAllGlobalTriggerListener() throws Exception
    {
-      List listener;
-      listener = scheduler_.getGlobalTriggerListeners();
-      return listener;
+      return scheduler_.getGlobalTriggerListeners();
    }
 
    public TriggerListener getGlobalTriggerListener(String name) throws Exception
    {
       TriggerListener tlistener;
-      List listener;
-      listener = scheduler_.getGlobalTriggerListeners();
+      List listener = scheduler_.getGlobalTriggerListeners();
       ListIterator iterator = listener.listIterator();
       while (iterator.hasNext())
       {
@@ -326,8 +323,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public boolean removeGlobaTriggerListener(String name) throws Exception
    {
       TriggerListener tlistener = getGlobalTriggerListener(name);
-      boolean b = scheduler_.removeGlobalTriggerListener(tlistener);
-      return b;
+      return scheduler_.removeGlobalTriggerListener(tlistener);
    }
 
    public void addTriggerListener(ComponentPlugin plugin) throws Exception
@@ -350,14 +346,12 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public TriggerListener getTriggerListener(String name) throws Exception
    {
-      TriggerListener tlistener = scheduler_.getTriggerListener(name);
-      return tlistener;
+      return scheduler_.getTriggerListener(name);
    }
 
    public boolean removeTriggerListener(String name) throws Exception
    {
-      boolean b = scheduler_.removeTriggerListener(name);
-      return b;
+      return scheduler_.removeTriggerListener(name);
    }
 
    private JobInfo getJobInfo(JobInfo jinfo) throws Exception
@@ -404,6 +398,17 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public void start()
    {
+      try
+      {
+         // Ensure that only one JobEnvironmentConfigListener will be registered
+         while (removeGlobalJobListener(JobEnvironmentConfigListener.NAME));
+         // Add the unique instance of JobEnvironmentConfigListener
+         scheduler_.addGlobalJobListener(new JobEnvironmentConfigListener());
+      }
+      catch (Exception e)
+      {
+         log.warn("Could not remove the GlobalJobListener " + JobEnvironmentConfigListener.NAME, e);
+      }
    }
 
    public void stop()
@@ -424,7 +429,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       catch (Exception ex)
       {
-         ex.printStackTrace();
+         log.warn("Could not interrupt all the current jobs properly", ex);
       }
    }
 
