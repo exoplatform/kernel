@@ -44,6 +44,9 @@ public class QuartzSheduler implements Startable
    {
       SchedulerFactory sf = new StdSchedulerFactory();
       scheduler_ = sf.getScheduler();
+      // If the scheduler has already been started, it is necessary to put the scheduler
+      // in standby mode to ensure that the jobs of the ExoContainer won't launched too early
+      scheduler_.standby();
       // This will launch the scheduler when all the components will be started  
       ctx.getContainer().addContainerLifecylePlugin(new BaseContainerLifecyclePlugin()
       {
