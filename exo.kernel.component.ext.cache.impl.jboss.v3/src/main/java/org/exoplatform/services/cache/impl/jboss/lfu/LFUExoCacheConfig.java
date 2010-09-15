@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.cache.impl.jboss.lfu;
 
-import org.exoplatform.services.cache.ExoCacheConfig;
+import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheConfig;
 
 /**
  * The {@link org.exoplatform.services.cache.ExoCacheConfig} for the LFU implementation
@@ -28,7 +28,7 @@ import org.exoplatform.services.cache.ExoCacheConfig;
  *          exo@exoplatform.com
  * 21 juil. 2009  
  */
-public class LFUExoCacheConfig extends ExoCacheConfig
+public class LFUExoCacheConfig extends AbstractExoCacheConfig
 {
 
    private int maxNodes;

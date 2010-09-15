@@ -16,7 +16,7 @@
  */
 package org.exoplatform.services.cache.impl.jboss.ea;
 
-import org.exoplatform.services.cache.ExoCacheConfig;
+import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithm;
 
 
@@ -29,7 +29,7 @@ import org.jboss.cache.eviction.ExpirationAlgorithm;
  *          nicolas.filotto@exoplatform.com
  * 8 mars 2010  
  */
-public class EAExoCacheConfig extends ExoCacheConfig
+public class EAExoCacheConfig extends AbstractExoCacheConfig
 {
 
    private int maxNodes;

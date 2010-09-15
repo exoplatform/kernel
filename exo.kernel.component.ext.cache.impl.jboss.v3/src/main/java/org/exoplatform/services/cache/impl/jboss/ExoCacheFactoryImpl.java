@@ -62,6 +62,13 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * The initial parameter key that defines the full path of the configuration template
     */
    private static final String CACHE_CONFIG_TEMPLATE_KEY = "cache.config.template";
+   
+   /**
+    * Indicate whether the JBoss Cache instance used can be shared with other caches
+    */
+   public static final String ALLOW_SHAREABLE_CACHE = "allow.shareable.cache";
+
+   public static final boolean ALLOW_SHAREABLE_CACHE_DEFAULT = true;
 
    /**
     * The configuration manager that allows us to retrieve a configuration file in several different
@@ -73,6 +80,11 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * The full path of the configuration template
     */
    private final String cacheConfigTemplate;
+   
+   /**
+    * Indicates whether the JBossCache instances can be shared between several eXo Cache by default
+    */
+   private final boolean allowShareableCache;
 
    /**
     * The mapping between the configuration types and the creators
@@ -103,13 +115,15 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
 
    public ExoCacheFactoryImpl(InitParams params, ConfigurationManager configManager)
    {
-      this(getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), configManager);
+      this(getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), configManager, getBooleanParam(params,
+         ALLOW_SHAREABLE_CACHE, ALLOW_SHAREABLE_CACHE_DEFAULT));
    }
 
-   ExoCacheFactoryImpl(String cacheConfigTemplate, ConfigurationManager configManager)
+   ExoCacheFactoryImpl(String cacheConfigTemplate, ConfigurationManager configManager, boolean allowShareableCache)
    {
       this.configManager = configManager;
       this.cacheConfigTemplate = cacheConfigTemplate;
+      this.allowShareableCache = allowShareableCache;
       if (cacheConfigTemplate == null)
       {
          throw new RuntimeException("The parameter '" + CACHE_CONFIG_TEMPLATE_KEY + "' must be set");
@@ -156,7 +170,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          }
          final ExoCacheCreator creator = getExoCacheCreator(config);
          // Ensure that new created cache doesn't exist
-         cache = getUniqueInstance(cache, region);
+         cache = getUniqueInstance(cache, config);
          // Create the cache
          eXoCache = creator.create(config, cache);
          // Create the cache
@@ -214,6 +228,16 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    }
 
    /**
+    * Returns the boolean value of the parameter corresponding to the given key. If no value can
+    * be found the default value will be returned 
+    */
+   private static boolean getBooleanParam(InitParams params, String key, boolean defaultValue)
+   {
+      String value = getValueParam(params, key);
+      return value == null ? defaultValue : Boolean.valueOf(value).booleanValue();
+   }
+   
+   /**
     * Returns the most relevant ExoCacheCreator according to the give configuration
     */
    protected ExoCacheCreator getExoCacheCreator(ExoCacheConfig config)
@@ -258,17 +282,40 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * Try to find if a Cache of the same type (i.e. their {@link Configuration} are equals)
     * has already been registered.
     * If no cache has been registered, we register the given cache otherwise we
-    * use the previously registered cache.
+    * use the previously registered cache. If the config given is of type {@link AbstractExoCacheConfig}
+    * we will try to get the value of the parameter allowShareableCache, if it is not set we will use the
+    * default value defined in the current instance of {@link ExoCacheFactoryImpl}. If the cache
+    * is not shareable then no cache will be registered.
     * @param cache the cache to register
-    * @param region the region of the cache
+    * @param config the configuration of the cache
     * @return the given cache if has not been registered otherwise the cache of the same
     * type that has already been registered 
     * @throws ExoCacheInitException
     */
-   private synchronized Cache<Serializable, Object> getUniqueInstance(Cache<Serializable, Object> cache, String region)
+   private synchronized Cache<Serializable, Object> getUniqueInstance(Cache<Serializable, Object> cache, ExoCacheConfig config)
       throws ExoCacheInitException
    {
+      String region = config.getName();
+      boolean allowShareableCache = this.allowShareableCache;
+      if (config instanceof AbstractExoCacheConfig)
+      {
+         AbstractExoCacheConfig aConfig = (AbstractExoCacheConfig)config;
+         if (aConfig.getAllowShareableCache() != null)
+         {
+            allowShareableCache = aConfig.getAllowShareableCache().booleanValue();
+         }
+      }
       Configuration cfg = cache.getConfiguration();
+      if (!allowShareableCache)
+      {
+         // Rename the cluster name
+         String clusterName = cfg.getClusterName();
+         if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
+         {
+            cfg.setClusterName(clusterName + " " + region);
+         }
+         return cache;
+      }
       ConfigurationKey key;
       try
       {

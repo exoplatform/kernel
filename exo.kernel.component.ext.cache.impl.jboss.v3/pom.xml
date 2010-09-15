@@ -76,6 +76,10 @@
                      <name>jgroups.stack</name>
                      <value>udp</value>
                   </property>
+                  <property>
+                     <name>allow.shareable.cache</name>
+                     <value>true</value>
+                  </property>
                </systemProperties>
             </configuration>
          </plugin>

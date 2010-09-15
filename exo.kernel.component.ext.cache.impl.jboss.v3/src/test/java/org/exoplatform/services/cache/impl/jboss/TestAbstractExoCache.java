@@ -238,8 +238,10 @@ public class TestAbstractExoCache extends BasicTestCase
    private ExoCacheFactory getExoCacheFactoryInstance() throws ExoCacheInitException
    {
       PortalContainer pc = PortalContainer.getInstance();
-      ExoCacheFactoryImpl factory = new ExoCacheFactoryImpl("jar:/conf/portal/cache-configuration-template.xml", (ConfigurationManager)pc
-            .getComponentInstanceOfType(ConfigurationManager.class));
+      ExoCacheFactoryImpl factory =
+         new ExoCacheFactoryImpl("jar:/conf/portal/cache-configuration-template.xml", (ConfigurationManager)pc
+            .getComponentInstanceOfType(ConfigurationManager.class), Boolean.valueOf(
+            System.getProperty("allow.shareable.cache")).booleanValue());
       InitParams params = new InitParams();
       ObjectParameter param = new ObjectParameter();
       param.setName("LRU");

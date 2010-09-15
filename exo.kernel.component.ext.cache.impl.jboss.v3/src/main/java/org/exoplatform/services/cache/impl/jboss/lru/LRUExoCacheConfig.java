@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.cache.impl.jboss.lru;
 
-import org.exoplatform.services.cache.ExoCacheConfig;
+import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheConfig;
 
 /**
  * The {@link org.exoplatform.services.cache.ExoCacheConfig} for the LRU implementation
@@ -28,7 +28,7 @@ import org.exoplatform.services.cache.ExoCacheConfig;
  *          exo@exoplatform.com
  * 21 juil. 2009  
  */
-public class LRUExoCacheConfig extends ExoCacheConfig
+public class LRUExoCacheConfig extends AbstractExoCacheConfig
 {
 
    private int maxNodes;

@@ -154,6 +154,10 @@
         <name>cache.config.template</name>
         <value>jar:/conf/portal/cache-configuration-template.xml</value>
       </value-param>
+      <value-param>
+        <name>allow.shareable.cache</name>
+        <value>${allow.shareable.cache}</value>
+      </value-param>
     </init-params>
   </component>  
     
