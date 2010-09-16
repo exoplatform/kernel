@@ -312,7 +312,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          String clusterName = cfg.getClusterName();
          if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
          {
-            cfg.setClusterName(clusterName + " " + region);
+            cfg.setClusterName(clusterName + "-" + region);
          }
          return cache;
       }
