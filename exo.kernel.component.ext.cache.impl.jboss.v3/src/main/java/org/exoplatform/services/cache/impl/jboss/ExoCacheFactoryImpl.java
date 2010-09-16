@@ -68,7 +68,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     */
    public static final String ALLOW_SHAREABLE_CACHE = "allow.shareable.cache";
 
-   public static final boolean ALLOW_SHAREABLE_CACHE_DEFAULT = true;
+   public static final boolean ALLOW_SHAREABLE_CACHE_DEFAULT = false;
 
    /**
     * The configuration manager that allows us to retrieve a configuration file in several different
