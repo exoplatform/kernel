@@ -107,7 +107,7 @@
 				<values-param>
 					<name>apply.specific</name>
 					<value>fake</value>
-					<value>myPortal-dpcdef</value>
+					<value>myPortal-pcdef</value>
 				</values-param>
 				<object-param profiles="AddDependencies">
 					<name>change</name>

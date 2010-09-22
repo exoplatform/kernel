@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.definition;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.PropertyConfigurator;
 import org.exoplatform.container.RootContainer;
@@ -112,7 +113,7 @@ public class PortalContainerConfig implements Startable
    /**
     * The list of all the web application scopes
     */
-   private Map<String, List<String>> scopes;
+   private Map<String, List<String>> scopes = Collections.unmodifiableMap(new HashMap<String, List<String>>());
 
    /**
     * The list of all the {@link PortalContainerDefinition} that have been registered
@@ -397,7 +398,7 @@ public class PortalContainerConfig implements Startable
       {
          throw new IllegalArgumentException("The context name cannot be null");
       }
-      if (scopes.isEmpty())
+      if (definitions.isEmpty())
       {
          // we assume that the old behavior is expected         
          final String portalContainerName =
@@ -413,7 +414,8 @@ public class PortalContainerConfig implements Startable
             // The given context is a portal container
             return Collections.singletonList(contextName);
          }
-         return Collections.emptyList();
+         // By default we scope it to all the portal containers
+         return portalContainerNames;
       }
       return result;
    }
@@ -435,16 +437,22 @@ public class PortalContainerConfig implements Startable
          // The given context name is a context name of a portal container
          return contextName;
       }
-      else if (scopes.isEmpty())
+      else if (definitions.isEmpty())
       {
          // we assume that the old behavior is expected         
-         return defaultDefinition.getName();         
+         return defaultDefinition.getName();
       }
       final List<String> result = scopes.get(contextName);
       if (result == null || result.isEmpty())
       {
-         // This context has not been added as dependency of any portal containers         
-         return null;
+         // This context has not been added as dependency of any portal containers   
+         if (PropertyManager.isDevelopping())
+         {
+            log.debug("The context '" + contextName + "' has not been added as " +
+            		"dependency of any portal containers");
+         }
+         // by default we will return the default portal container
+         return defaultDefinition.getName();
       }
       return result.get(0);
    }
@@ -457,12 +465,18 @@ public class PortalContainerConfig implements Startable
    public List<String> getDependencies(String portalContainerName)
    {
       final PortalContainerDefinition definition = definitions.get(portalContainerName);
-      List<String> result = null;
       if (definition != null)
       {
-         result = definition.getDependencies();
+         // A definition has been defined
+         List<String> result = definition.getDependencies();
+         return result == null || result.isEmpty() ? defaultDefinition.getDependencies() : result;
       }
-      return result == null || result.isEmpty() ? defaultDefinition.getDependencies() : result;
+      else if (definitions.isEmpty())
+      {
+         // The old behavior is expected
+         return defaultDefinition.getDependencies();
+      }
+      return null;
    }
 
    /**
@@ -542,7 +556,7 @@ public class PortalContainerConfig implements Startable
       if (portalContainerName == null)
       {
          throw new IllegalArgumentException("The portal container name cannot be null");
-      }      
+      }
       return getPortalContainerNames(contextName).contains(portalContainerName);
    }
 
