@@ -279,6 +279,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       public void startContainer(ExoContainer container) throws Exception
       {
          MyComponent component = (MyComponent)container.getComponentInstanceOfType(MyComponent.class);
+         component.doneSignal.await(2, TimeUnit.SECONDS);
          component.started = true;
       }
    }
@@ -286,7 +287,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    public static class MyComponent
    {
       public boolean started;
-      private final CountDownLatch doneSignal = new CountDownLatch(1);
+      public final CountDownLatch doneSignal = new CountDownLatch(1);
       public Boolean result;
       
       public void doSomething()
