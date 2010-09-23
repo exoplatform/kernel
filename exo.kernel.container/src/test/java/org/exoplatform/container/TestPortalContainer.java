@@ -27,7 +27,7 @@ import java.net.URL;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 18 fŽvr. 2010  
+ * 18 fï¾Žvr. 2010  
  */
 public class TestPortalContainer extends AbstractTestContainer
 {
@@ -43,7 +43,7 @@ public class TestPortalContainer extends AbstractTestContainer
       assertEquals("myRest", portal.getRestContextName());
       assertEquals("my-exo-domain", portal.getRealmName());
       
-      assertFalse(PortalContainer.isPortalContainerName("myPortal"));
+      assertTrue(PortalContainer.isPortalContainerName("myPortal"));
       assertTrue(PortalContainer.isPortalContainerName("portal"));
       assertFalse(PortalContainer.isPortalContainerName("foo"));
       
@@ -73,7 +73,7 @@ public class TestPortalContainer extends AbstractTestContainer
       assertEquals("myRest", PortalContainer.getRestContextName("foo"));
       assertEquals("my-exo-domain", PortalContainer.getRealmName("foo"));   
       
-      assertFalse(PortalContainer.isPortalContainerName("myPortal"));
+      assertTrue(PortalContainer.isPortalContainerName("myPortal"));
       assertTrue(PortalContainer.isPortalContainerName("portal"));
       assertFalse(PortalContainer.isPortalContainerName("foo"));
     
@@ -84,7 +84,7 @@ public class TestPortalContainer extends AbstractTestContainer
       assertEquals("myRest", PortalContainer.getCurrentRestContextName());
       assertEquals("my-exo-domain", PortalContainer.getCurrentRealmName());      
       
-      assertFalse(PortalContainer.isPortalContainerName("myPortal"));
+      assertTrue(PortalContainer.isPortalContainerName("myPortal"));
       assertTrue(PortalContainer.isPortalContainerName("portal"));
       assertFalse(PortalContainer.isPortalContainerName("foo"));
    }

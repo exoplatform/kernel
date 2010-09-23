@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,9 +108,9 @@ public class PortalContainerConfig implements Startable
    private volatile boolean initialized;
 
    /**
-    * The set of all the portal containers
+    * The list of all the portal containers
     */
-   private Set<String> portalContainerNames = Collections.unmodifiableSet(new HashSet<String>());
+   private List<String> portalContainerNames = Collections.unmodifiableList(new ArrayList<String>());
 
    /**
     * The set of all the portal containers that have been disabled
@@ -148,6 +147,15 @@ public class PortalContainerConfig implements Startable
     * Indicates if new system properties have been added
     */
    private final PropertyConfigurator pc;
+   
+   /**
+    * Indicates whether the unregistered webapps have to be ignored. If a webapp has not been registered as a dependency
+    * of any portal containers, we will use the value of this parameter to know what to do.
+    * If it is set to false, this webapp will be considered by default as a dependency of all the portal containers.
+    * If it is set to true, this webapp won't be considered by default as a dependency of any portal container, it will
+    * be simply ignored.
+    */
+   private final boolean ignoreUnregisteredWebapp;
 
    public PortalContainerConfig(ConfigurationManager cm)
    {
@@ -196,6 +204,9 @@ public class PortalContainerConfig implements Startable
       this.cm = cm;
       this.serverInfo = serverInfo;
       this.defaultDefinition = create(params);
+      this.ignoreUnregisteredWebapp =
+         params != null && params.getValueParam("ignore.unregistered.webapp") != null
+            && Boolean.valueOf(params.getValueParam("ignore.unregistered.webapp").getValue());
    }
 
    /**
@@ -423,12 +434,12 @@ public class PortalContainerConfig implements Startable
     */
    public synchronized void registerPortalContainerName(String name)
    {
-      if (!portalContainerNames.contains(name))
+      if (!portalContainerNames.contains(name) && !portalContainerNamesDisabled.contains(name))
       {
-         final Set<String> lPortalContainerNames = new LinkedHashSet<String>(portalContainerNames.size() + 1);
+         final List<String> lPortalContainerNames = new ArrayList<String>(portalContainerNames.size() + 1);
          lPortalContainerNames.add(name);
          lPortalContainerNames.addAll(portalContainerNames);
-         this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
+         this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
       }
    }
 
@@ -440,9 +451,9 @@ public class PortalContainerConfig implements Startable
    {
       if (portalContainerNames.contains(name))
       {
-         final Set<String> lPortalContainerNames = new LinkedHashSet<String>(portalContainerNames);
+         final List<String> lPortalContainerNames = new ArrayList<String>(portalContainerNames);
          lPortalContainerNames.remove(name);
-         this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
+         this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
          if (hasDefinition())
          {
             // The new behavior is expected
@@ -490,7 +501,14 @@ public class PortalContainerConfig implements Startable
             // The given context is a portal container
             return Collections.singletonList(contextName);
          }
-         return Collections.emptyList();
+         else if (portalContainerNamesDisabled.contains(contextName) || ignoreUnregisteredWebapp)
+         {
+            // The given context name is a context name of a disabled portal container or
+            // the webapp is ignored since it has not been registered in any portal container dependency list
+            return Collections.emptyList();
+         }
+         // By default we scope it to all the portal containers
+         return portalContainerNames;
       }
       return result;
    }
@@ -521,12 +539,24 @@ public class PortalContainerConfig implements Startable
       if (result == null || result.isEmpty())
       {
          // This context has not been added as dependency of any portal containers
+         if (portalContainerNamesDisabled.contains(contextName) || ignoreUnregisteredWebapp)
+         {
+            // The given context name is a context name of a disabled portal container or
+            // the webapp is ignored since it has not been registered in any portal container dependency list
+            if (PropertyManager.isDevelopping())
+            {
+               log.warn("The context '" + contextName + "' has not been added as " +
+                     "dependency of any portal containers");
+            }
+            return null;
+         }
          if (PropertyManager.isDevelopping())
          {
-            log.info("The context '" + contextName + "' has not been added as " +
+            log.debug("The context '" + contextName + "' has not been added as " +
             		"dependency of any portal containers");
          }
-         return null;
+         // by default we will return the default portal container
+         return defaultDefinition.getName();
       }
       return result.get(0);
    }
@@ -1086,7 +1116,13 @@ public class PortalContainerConfig implements Startable
     */
    private void initialize(Map<String, PortalContainerDefinition> mDefinitions)
    {
-      final Set<String> lPortalContainerNames = new LinkedHashSet<String>(mDefinitions.size() + 1);
+      final List<String> lPortalContainerNames = new ArrayList<String>(mDefinitions.size() + 1);
+      boolean isDefaultPortalDisabled = isPortalContainerNameDisabled(defaultDefinition.getName());
+      if (mDefinitions.isEmpty() || !isDefaultPortalDisabled)
+      {
+         // Add the default portal container name if not disabled
+         lPortalContainerNames.add(defaultDefinition.getName());         
+      }
       final Map<String, List<String>> mScopes = new HashMap<String, List<String>>();
       boolean first = true;
       for (Map.Entry<String, PortalContainerDefinition> entry : mDefinitions.entrySet())
@@ -1100,24 +1136,27 @@ public class PortalContainerConfig implements Startable
             continue;
          }
          boolean hasChanged = false;
-         lPortalContainerNames.add(name);
+         if (!lPortalContainerNames.contains(name))
+         {
+            lPortalContainerNames.add(name);
+         }
          if (first)
          {
             first = false;
             // Initialize the main fields thanks to the data found in the first portal container
-            if (defaultDefinition.getName() == DEFAULT_PORTAL_CONTAINER_NAME)
+            if (defaultDefinition.getName() == DEFAULT_PORTAL_CONTAINER_NAME || isDefaultPortalDisabled)
             {
                defaultDefinition.setName(name);
                hasChanged = true;
             }
-            if (defaultDefinition.getRestContextName() == DEFAULT_REST_CONTEXT_NAME
+            if ((defaultDefinition.getRestContextName() == DEFAULT_REST_CONTEXT_NAME || isDefaultPortalDisabled)
                && definition.getRestContextName() != null && definition.getRestContextName().trim().length() > 0)
             {
                defaultDefinition.setRestContextName(definition.getRestContextName().trim());
                hasChanged = true;
             }
-            if (defaultDefinition.getRealmName() == DEFAULT_REALM_NAME && definition.getRealmName() != null
-               && definition.getRealmName().trim().length() > 0)
+            if ((defaultDefinition.getRealmName() == DEFAULT_REALM_NAME || isDefaultPortalDisabled)
+               && definition.getRealmName() != null && definition.getRealmName().trim().length() > 0)
             {
                defaultDefinition.setRealmName(definition.getRealmName().trim());
                hasChanged = true;
@@ -1132,10 +1171,8 @@ public class PortalContainerConfig implements Startable
          }
          initializeSettings(definition, true);
       }
-      if (mDefinitions.isEmpty())
+      if (!mDefinitions.containsKey(defaultDefinition.getName()))
       {
-         // Add the default portal container name
-         lPortalContainerNames.add(defaultDefinition.getName());
          // Apply the changes corresponding to the default definition
          applyChanges(defaultDefinition);
          initializeSettings(defaultDefinition, false);
@@ -1145,7 +1182,7 @@ public class PortalContainerConfig implements Startable
             // dependencies have been defined
             registerDependencies(defaultDefinition, mScopes);
          }
-         if (!portalContainerNamesDisabled.isEmpty())
+         if (mDefinitions.isEmpty() && !portalContainerNamesDisabled.isEmpty())
          {
             if (PropertyManager.isDevelopping())
             {
@@ -1156,7 +1193,7 @@ public class PortalContainerConfig implements Startable
             portalContainerNamesDisabled = Collections.unmodifiableSet(new HashSet<String>());
          }
       }
-      this.portalContainerNames = Collections.unmodifiableSet(lPortalContainerNames);
+      this.portalContainerNames = Collections.unmodifiableList(lPortalContainerNames);
       this.scopes = Collections.unmodifiableMap(mScopes);
       // clear the changes
       changes.clear();
