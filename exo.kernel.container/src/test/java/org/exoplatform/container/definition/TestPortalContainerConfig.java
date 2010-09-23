@@ -289,41 +289,66 @@ public class TestPortalContainerConfig extends AbstractTestContainer
          assertEquals(PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME, names.get(0));
       }
       // Without dependencies
-      rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def.xml");
-      config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
-      assertNull(config.getDependencies("foo"));
-      assertNull(config.getDependencies("myPortal"));
-      assertNull(config.getDependencies("myPortal-pcdef"));
-      names = config.getPortalContainerNames("foo");
-      assertTrue(names != null && !names.isEmpty());
-      assertEquals(2, names.size());
-      assertTrue(names.contains("myPortal"));
-      assertTrue(names.contains("myPortal-pcdef"));
-      names = config.getPortalContainerNames("myPortal");
-      assertTrue(names != null && !names.isEmpty());
-      assertEquals("myPortal", names.get(0));
-      names = config.getPortalContainerNames("myPortal-pcdef");
-      assertTrue(names != null && !names.isEmpty());
-      assertEquals("myPortal-pcdef", names.get(0));
-      assertEquals("myPortal", config.getPortalContainerName("foo"));
-      assertEquals("myPortal", config.getPortalContainerName("myPortal"));
-      assertEquals("myPortal-pcdef", config.getPortalContainerName("myPortal-pcdef"));
-      assertEquals("myRest", config.getRestContextName("foo"));
-      assertEquals("myRest", config.getRestContextName("myPortal"));
-      assertEquals("myRest-pcdef", config.getRestContextName("myPortal-pcdef"));
-      assertEquals("my-exo-domain", config.getRealmName("foo"));
-      assertEquals("my-exo-domain", config.getRealmName("myPortal"));
-      assertEquals("my-exo-domain-pcdef", config.getRealmName("myPortal-pcdef"));
-      assertFalse(config.isPortalContainerName("foo"));
-      assertTrue(config.isPortalContainerName("myPortal"));
-      assertTrue(config.isPortalContainerName("myPortal-pcdef"));
-      // Needed for backward compatibility
-      assertFalse(config.isScopeValid("foo", "foo"));
-      assertTrue(config.isScopeValid("myPortal", "foo"));
-      assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));
-      assertTrue(config.isScopeValid("myPortal", "myPortal"));
-      assertTrue(config.isScopeValid("myPortal-pcdef", "myPortal-pcdef"));
-      assertTrue(config.hasDefinition());
+      String[] ignoreWebappProfiles = {"ignore.unregistered.webapp-default", "ignore.unregistered.webapp-false", "ignore.unregistered.webapp-true"};
+      for (int i = 0; i < ignoreWebappProfiles.length; i++)
+      {
+         rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def.xml", ignoreWebappProfiles[i]);
+         config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);
+         assertNull(config.getDependencies("foo"));
+         assertNull(config.getDependencies("myPortal"));
+         assertNull(config.getDependencies("myPortal-pcdef"));
+         names = config.getPortalContainerNames("foo");
+         if (i < ignoreWebappProfiles.length - 1)
+         {
+            // Default behavior
+            assertTrue(names != null && !names.isEmpty());
+            assertEquals(2, names.size());
+            assertTrue(names.contains("myPortal"));
+            assertTrue(names.contains("myPortal-pcdef"));
+            assertEquals("myPortal", config.getPortalContainerName("foo"));         
+         }
+         else
+         {
+            // Ignore webapp needed for EXOJCR-795
+            assertTrue(names != null && names.isEmpty());
+            assertNull(config.getPortalContainerName("foo"));
+         }
+         names = config.getPortalContainerNames("myPortal");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal", names.get(0));
+         names = config.getPortalContainerNames("myPortal-pcdef");
+         assertTrue(names != null && !names.isEmpty());
+         assertEquals("myPortal-pcdef", names.get(0));
+         assertEquals("myPortal", config.getPortalContainerName("myPortal"));
+         assertEquals("myPortal-pcdef", config.getPortalContainerName("myPortal-pcdef"));
+         assertEquals("myRest", config.getRestContextName("foo"));
+         assertEquals("myRest", config.getRestContextName("myPortal"));
+         assertEquals("myRest-pcdef", config.getRestContextName("myPortal-pcdef"));
+         assertEquals("my-exo-domain", config.getRealmName("foo"));
+         assertEquals("my-exo-domain", config.getRealmName("myPortal"));
+         assertEquals("my-exo-domain-pcdef", config.getRealmName("myPortal-pcdef"));
+         assertFalse(config.isPortalContainerName("foo"));
+         assertTrue(config.isPortalContainerName("myPortal"));
+         assertTrue(config.isPortalContainerName("myPortal-pcdef"));
+         // Needed for backward compatibility
+         assertFalse(config.isScopeValid("foo", "foo"));
+         if (i < ignoreWebappProfiles.length - 1)
+         {
+            // Default behavior
+            assertTrue(config.isScopeValid("myPortal", "foo"));
+            assertTrue(config.isScopeValid("myPortal-pcdef", "foo"));         
+         }
+         else
+         {
+            // Ignore webapp needed for EXOJCR-795
+            assertFalse(config.isScopeValid("myPortal", "foo"));
+            assertFalse(config.isScopeValid("myPortal-pcdef", "foo"));         
+         }
+         assertTrue(config.isScopeValid("myPortal", "myPortal"));
+         assertTrue(config.isScopeValid("myPortal-pcdef", "myPortal-pcdef"));
+         assertTrue(config.hasDefinition());         
+      }
+
       // Unregister the portal container
       rootContainer = createRootContainer("portal-container-config-with-default-values-and-with-portal-def.xml", "disable-pc");
       config = (PortalContainerConfig)rootContainer.getComponentInstanceOfType(PortalContainerConfig.class);

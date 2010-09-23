@@ -147,6 +147,15 @@ public class PortalContainerConfig implements Startable
     * Indicates if new system properties have been added
     */
    private final PropertyConfigurator pc;
+   
+   /**
+    * Indicates whether the unregistered webapps have to be ignored. If a webapp has not been registered as a dependency
+    * of any portal containers, we will use the value of this parameter to know what to do.
+    * If it is set to false, this webapp will be considered by default as a dependency of all the portal containers.
+    * If it is set to true, this webapp won't be considered by default as a dependency of any portal container, it will
+    * be simply ignored.
+    */
+   private final boolean ignoreUnregisteredWebapp;
 
    public PortalContainerConfig(ConfigurationManager cm)
    {
@@ -195,6 +204,9 @@ public class PortalContainerConfig implements Startable
       this.cm = cm;
       this.serverInfo = serverInfo;
       this.defaultDefinition = create(params);
+      this.ignoreUnregisteredWebapp =
+         params != null && params.getValueParam("ignore.unregistered.webapp") != null
+            && Boolean.valueOf(params.getValueParam("ignore.unregistered.webapp").getValue());
    }
 
    /**
@@ -489,11 +501,12 @@ public class PortalContainerConfig implements Startable
             // The given context is a portal container
             return Collections.singletonList(contextName);
          }
-         else if (portalContainerNamesDisabled.contains(contextName))
+         else if (portalContainerNamesDisabled.contains(contextName) || ignoreUnregisteredWebapp)
          {
-            // The given context name is a context name of a disabled portal container
+            // The given context name is a context name of a disabled portal container or
+            // the webapp is ignored since it has not been registered in any portal container dependency list
             return Collections.emptyList();
-         }      
+         }
          // By default we scope it to all the portal containers
          return portalContainerNames;
       }
@@ -526,9 +539,15 @@ public class PortalContainerConfig implements Startable
       if (result == null || result.isEmpty())
       {
          // This context has not been added as dependency of any portal containers
-         if (portalContainerNamesDisabled.contains(contextName))
+         if (portalContainerNamesDisabled.contains(contextName) || ignoreUnregisteredWebapp)
          {
-            // The given context name is a context name of a disabled portal container
+            // The given context name is a context name of a disabled portal container or
+            // the webapp is ignored since it has not been registered in any portal container dependency list
+            if (PropertyManager.isDevelopping())
+            {
+               log.warn("The context '" + contextName + "' has not been added as " +
+                     "dependency of any portal containers");
+            }
             return null;
          }
          if (PropertyManager.isDevelopping())

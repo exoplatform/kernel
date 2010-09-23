@@ -28,6 +28,15 @@
 				<name>default.realm.name</name>
 				<value>my-exo-domain</value>
 			</value-param>
+			<!-- Indicates whether the unregistered webapps have to be ignored -->
+			<value-param profiles="ignore.unregistered.webapp-false">
+				<name>ignore.unregistered.webapp</name>
+				<value>false</value>
+			</value-param>
+			<value-param profiles="ignore.unregistered.webapp-true">
+				<name>ignore.unregistered.webapp</name>
+				<value>true</value>
+			</value-param>
 		</init-params>
 	</component>
 	<external-component-plugins>
