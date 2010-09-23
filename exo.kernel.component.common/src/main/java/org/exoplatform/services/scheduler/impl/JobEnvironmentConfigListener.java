@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
-import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.component.ComponentRequestLifecycle;
-import org.exoplatform.container.xml.PortalContainerInfo;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
@@ -33,25 +33,36 @@ import java.util.List;
  * Created by The eXo Platform SAS Author : Hoa Pham hoapham@exoplatform.com Oct
  * 5, 2005
  */
+@SuppressWarnings("unchecked")
 public class JobEnvironmentConfigListener implements JobListener, ComponentPlugin
 {
-   private String containerName_;
-
-   public JobEnvironmentConfigListener(PortalContainerInfo pinfo)
-   {
-      containerName_ = pinfo.getContainerName();
-   }
+   static final String NAME = "JobContextConfigListener";
 
    public void jobToBeExecuted(JobExecutionContext context)
    {
-      RootContainer rootContainer = RootContainer.getInstance();
-      PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance(containerName_);
-      PortalContainer.setInstance(pcontainer);
-      List<ComponentRequestLifecycle> components =
-         pcontainer.getComponentInstancesOfType(ComponentRequestLifecycle.class);
-      for (ComponentRequestLifecycle component : components)
+      String containerName = extractContainerName(context);
+      ExoContainer container = null;
+      if (containerName != null)
       {
-         component.startRequest(pcontainer);
+         if (containerName.equals(JobSchedulerServiceImpl.STANDALONE_CONTAINER_NAME))
+         {
+            container = ExoContainerContext.getTopContainer();            
+         }
+         else
+         {
+            RootContainer rootContainer = RootContainer.getInstance();
+            container = (ExoContainer)rootContainer.getComponentInstance(containerName);            
+         }
+      }
+      if (container != null)
+      {
+         ExoContainerContext.setCurrentContainer(container);            
+         List<ComponentRequestLifecycle> components =
+            container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
+         for (ComponentRequestLifecycle component : components)
+         {
+            component.startRequest(container);
+         }
       }
    }
 
@@ -62,20 +73,35 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
 
    public void jobWasExecuted(JobExecutionContext context, JobExecutionException exception)
    {
-      RootContainer rootContainer = RootContainer.getInstance();
-      PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance(containerName_);
-      List<ComponentRequestLifecycle> components =
-         pcontainer.getComponentInstancesOfType(ComponentRequestLifecycle.class);
-      for (ComponentRequestLifecycle component : components)
+      String containerName = extractContainerName(context);
+      ExoContainer container = null;
+      if (containerName != null)
       {
-         component.endRequest(pcontainer);
+         if (containerName.equals(JobSchedulerServiceImpl.STANDALONE_CONTAINER_NAME))
+         {
+            container = ExoContainerContext.getTopContainer();            
+         }
+         else
+         {
+            RootContainer rootContainer = RootContainer.getInstance();
+            container = (ExoContainer)rootContainer.getComponentInstance(containerName);            
+         }
       }
-      PortalContainer.setInstance(null);
+      if (container != null)
+      {
+         List<ComponentRequestLifecycle> components =
+            container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
+         for (ComponentRequestLifecycle component : components)
+         {
+            component.endRequest(container);
+         }
+         ExoContainerContext.setCurrentContainer(null);            
+      }
    }
 
    public String getName()
    {
-      return "JobContextConfigListener";
+      return NAME;
    }
 
    public void setName(String s)
@@ -84,11 +110,25 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
 
    public String getDescription()
    {
-      return null;
+      return "This JobListener is used to setup the eXo environment properly";
    }
 
    public void setDescription(String s)
    {
    }
 
+   /**
+    * Extracts the container name from the {@link JobExecutionContext}.
+    * The container name is extracted from the group name
+    */
+   private static String extractContainerName(JobExecutionContext context)
+   {
+      String group = context.getJobDetail().getGroup();
+      if (group == null || (group = group.trim()).length() == 0)
+      {
+         return null;
+      }
+      int index = group.indexOf(':');
+      return index == -1 ? group : group.substring(0, index);
+   }
 }

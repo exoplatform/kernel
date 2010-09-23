@@ -18,9 +18,12 @@
  */
 package org.exoplatform.services.scheduler.test;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.BaseContainerLifecyclePlugin;
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.services.scheduler.JobInfo;
 import org.exoplatform.services.scheduler.JobSchedulerService;
 import org.exoplatform.services.scheduler.PeriodInfo;
@@ -60,6 +63,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
       assertEquals(Boolean.TRUE, component.getResult());
    }
+   
    
    public void testSeviceWithGlobalListener() throws Exception
    {
@@ -272,6 +276,64 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       System.out.println("-------------------End Test Non Global Listener---------");
    }
    
+   public void testMultiplePortalContainers() throws Exception
+   {
+      ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+      MyComponent component;
+      PortalContainer container = null;
+      MyComponent component2;
+      PortalContainer container2 = null;
+      String oldProfileList = System.getProperty(PropertyManager.RUNTIME_PROFILES);
+      try
+      {
+         try
+         {
+            PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "MultiplePortalContainers");
+            component = (MyComponent)(container = RootContainer.getInstance().getPortalContainer("portal-container")).getComponentInstanceOfType(MyComponent.class);
+         }
+         finally
+         {
+            ExoContainerContext.setCurrentContainer(oldContainer);
+         }
+         try
+         {
+            PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "MultiplePortalContainers,portal-container2");
+            component2 = (MyComponent)(container2 = RootContainer.getInstance().getPortalContainer("portal-container2")).getComponentInstanceOfType(MyComponent.class);
+            Thread.sleep(2000);
+         }
+         finally
+         {
+            ExoContainerContext.setCurrentContainer(oldContainer);
+         }
+      }
+      finally
+      {
+         if (oldProfileList == null)
+         {
+            System.clearProperty(PropertyManager.RUNTIME_PROFILES);            
+         }
+         else
+         {
+            System.setProperty(PropertyManager.RUNTIME_PROFILES, oldProfileList);            
+         }
+         PropertyManager.refresh();
+         if (container != null)
+         {
+            container.stop();            
+         }
+         
+         if (container2 != null)
+         {
+            container2.stop();            
+         }
+      }
+      assertEquals("myJob1", component.name);
+      assertEquals(container, component.container);
+      assertEquals("myJob2", component2.name);
+      assertEquals(container2, component2.container);
+      
+   }
+   
    public static class MyContainerLifecyclePlugin extends BaseContainerLifecyclePlugin
    {
 
@@ -286,6 +348,8 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    
    public static class MyComponent
    {
+      public ExoContainer container;
+      public String name;
       public boolean started;
       public final CountDownLatch doneSignal = new CountDownLatch(1);
       public Boolean result;
@@ -314,9 +378,19 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    {
 
       public void execute(JobExecutionContext context) throws JobExecutionException
-      {
+      {         
          MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
          component.doSomething();
       }
    }
+   public static class MyJobMultiplePortalContainers implements Job
+   {
+
+      public void execute(JobExecutionContext context) throws JobExecutionException
+      {         
+         MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
+         component.name = context.getJobDetail().getName();
+         component.container = PortalContainer.getInstance();
+      }
+   }   
 }

@@ -222,5 +222,26 @@
             </properties-param>
          </init-params>
       </component-plugin>      
+      <component-plugin profiles="MultiplePortalContainers">
+         <name>AddJob</name>
+         <set-method>addPeriodJob</set-method>
+         <type>org.exoplatform.services.scheduler.PeriodJob</type>
+         <description>add a job to the JobSchedulerService</description>
+         <init-params>
+            <properties-param>
+               <name>job.info</name>
+               <description>Test QueueTaks</description>
+               <property name="jobName" value="myJob1" />
+               <property profiles="portal-container2" name="jobName" value="myJob2" />
+               <property name="groupName" value="group2" />
+               <property name="job" value="org.exoplatform.services.scheduler.test.TestSchedulerService$MyJobMultiplePortalContainers" />
+
+               <property name="repeatCount" value="-1" />
+               <property name="period" value="500" />
+               <property name="startTime" value="" />
+               <property name="endTime" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>      
    </external-component-plugins>
 </configuration>
