@@ -155,7 +155,7 @@ public class CachingContainer extends MCIntegrationContainer
             caching.adapterByType.clear();
             caching.adaptersByType.clear();
             caching.instanceByKey.clear();
-            caching.adaptersByType.clear();
+            caching.instanceByType.clear();
             caching.instancesByType.clear();
          }
       }
