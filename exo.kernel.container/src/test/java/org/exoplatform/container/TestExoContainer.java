@@ -44,6 +44,28 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TestExoContainer extends AbstractTestContainer
 {
 
+   public class CachedComponent
+   {
+      public CachedComponent()
+      {
+      }
+
+      public int hash()
+      {
+         return this.hashCode();
+      }
+   }
+
+   public void testRemoveComponent() throws Exception
+   {
+      RootContainer container = RootContainer.getInstance();
+      container.registerComponentInstance(new CachedComponent());
+
+      assertNotNull(container.getComponentInstanceOfType(CachedComponent.class));
+      container.unregisterComponent(CachedComponent.class);
+      assertNull(container.getComponentInstanceOfType(CachedComponent.class));
+   }
+
    public void testContainerLifecyclePlugin()
    {
       final RootContainer container = createRootContainer("test-exo-container.xml");
