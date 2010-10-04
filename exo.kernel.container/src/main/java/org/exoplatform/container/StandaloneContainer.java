@@ -332,12 +332,13 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          J2EEServerInfo env = new J2EEServerInfo();
          
          // (2) exo-configuration.xml in AS (standalone) home directory
-         configurationURL = new URL("file:" + env.getServerHome() + "/exo-configuration.xml");
+         configurationURL = (new File(env.getServerHome() + "/exo-configuration.xml")).toURI().toURL();
 
          // (3) AS_HOME/conf/exo-conf (JBossAS usecase)
          if (!fileExists(configurationURL))
          {
-            configurationURL = new URL("file:" + env.getExoConfigurationDirectory() + "/exo-configuration.xml");
+            configurationURL =
+               (new File(env.getExoConfigurationDirectory() + "/exo-configuration.xml")).toURI().toURL();
          }
          
          // (4) conf/exo-configuration.xml in war/ear(?)

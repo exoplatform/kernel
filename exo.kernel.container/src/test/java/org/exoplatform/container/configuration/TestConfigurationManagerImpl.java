@@ -201,6 +201,32 @@ public class TestConfigurationManagerImpl extends TestCase
       checkURL(url, true);      
    }
 
+   public void testGetFileURL() throws Exception
+   {
+      // Empty CM
+      ConfigurationManager cm = new ConfigurationManagerImpl();
+      URL url = cm.getURL(null);
+      assertNull(url);
+      url = cm.getURL("file:F:\\somepath\\path\\configuration.xml");
+      assertEquals("file:/F:/somepath/path/configuration.xml", url.toString());
+
+      //make context configuration starting fith "file:D:..."
+      try
+      {
+         cm.addConfiguration("file:D:\\somepath\\config.xml");
+      }
+      catch (Exception e)
+      {
+         // thats is ok, because such config does not exists, 
+         // but ConfigurationManagerInmp.contextPath going to be initialized
+         // thats all we need to reproduce bug.
+      }
+
+      // now lets check relative url
+      url = cm.getURL("configuration.xml");
+      assertEquals("file:/D:/somepath/configuration.xml", url.toString());
+   }
+
    public void testImport() throws Exception
    {
       // no import
