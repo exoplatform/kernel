@@ -581,7 +581,7 @@ public class TestRPCServiceImpl extends BasicTestCase
             
             public String execute(Serializable[] args) throws Throwable
             {
-               Thread.sleep(20000);
+               Thread.sleep(30000);
                return "OldCoordinator";
             }
          }); 
