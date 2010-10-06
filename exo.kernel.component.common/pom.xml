@@ -93,6 +93,10 @@
          <groupId>javax.transaction</groupId>
          <artifactId>jta</artifactId>
       </dependency>
+      <dependency>
+         <groupId>jgroups</groupId>
+         <artifactId>jgroups</artifactId>
+      </dependency>
    </dependencies>
    <build>
       <plugins>
