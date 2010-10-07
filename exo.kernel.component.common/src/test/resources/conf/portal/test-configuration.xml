@@ -52,11 +52,6 @@
    </component>
 
    <component>
-      <key>org.exoplatform.services.naming.InitialContextBinder</key>
-      <type>org.exoplatform.services.naming.InitialContextBinder</type>
-   </component>
-
-   <component>
       <key>org.exoplatform.services.mail.MailService</key>
       <type>org.exoplatform.services.mail.impl.MailServiceImpl</type>
       <init-params>
@@ -76,6 +71,84 @@
    <component>
       <type>org.exoplatform.services.scheduler.impl.QuartzSheduler</type>
    </component>
+
+   <component>
+      <key>org.exoplatform.services.naming.InitialContextInitializer</key>
+      <type>org.exoplatform.services.naming.InitialContextInitializer</type>
+      <component-plugins>
+         <component-plugin>
+            <name>bind.datasource</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+            <init-params>
+               <value-param>
+                  <name>bind-name</name>
+                  <value>jdbcjcr</value>
+               </value-param>
+               <value-param>
+                  <name>class-name</name>
+                  <value>javax.sql.DataSource</value>
+               </value-param>
+               <value-param>
+                  <name>factory</name>
+                  <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+               </value-param>
+               <properties-param>
+                  <name>ref-addresses</name>
+                  <description>ref-addresses</description>
+                  <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+                  <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal" />
+                  <property name="username" value="sa" />
+                  <property name="password" value="" />
+               </properties-param>
+            </init-params>
+         </component-plugin>
+
+         <component-plugin>
+            <name>tx.userTransaction</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+            <init-params>
+               <value-param>
+                  <name>bind-name</name>
+                  <value>UserTransaction</value>
+               </value-param>
+               <value-param>
+                  <name>class-name</name>
+                  <value>javax.transaction.UserTransaction</value>
+               </value-param>
+               <value-param>
+                  <name>factory</name>
+                  <value>org.objectweb.jotm.UserTransactionFactory</value>
+                  <!-- value>org.exoplatform.services.transaction.UserTransactionFactory</value -->
+               </value-param>
+               <properties-param>
+                  <name>ref-addresses</name>
+                  <description>ref-addresses</description>
+                  <property name="timeout" value="60" />
+               </properties-param>
+            </init-params>
+         </component-plugin>
+      </component-plugins>
+      <init-params>
+         <value-param> 
+            <name>bindings-store-path</name> 
+            <value>target/store-path.xml</value> 
+         </value-param> 
+         <properties-param>
+            <name>default-properties</name>
+            <description>Default initial context properties</description>
+            <property name="java.naming.factory.initial" value="org.exoplatform.services.naming.SimpleContextFactory" />
+         </properties-param>
+         <!-- properties-param>
+            <name>mandatory-properties</name>
+            <description>Mandatory initial context properties</description>
+            <property name="java.naming.factory.initial" value="org.exoplatform.services.naming.SimpleContextFactory" />
+            <property name="java.naming.provider.url" value="rmi://localhost:9999" />
+         </properties-param -->
+      </init-params>
+   </component>
+
 
    <component>
       <key>org.exoplatform.services.scheduler.JobSchedulerService</key>

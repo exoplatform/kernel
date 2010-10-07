@@ -18,17 +18,23 @@
  */
 package org.exoplatform.services.naming;
 
-import junit.framework.TestCase;
-
-import org.exoplatform.container.StandaloneContainer;
-
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.xml.stream.XMLStreamException;
+
+import junit.framework.TestCase;
+
+import org.exoplatform.container.PortalContainer;
 
 /**
  * Created by The eXo Platform SAS .<br/> Prerequisites: default-context-factory
@@ -42,14 +48,14 @@ public class InitialContextTest extends TestCase
 
    private static String TEST_CONTEXT_FACTORY = "org.exoplatform.services.naming.SimpleContextFactory";
 
-   private StandaloneContainer container;
+   private PortalContainer container;
 
    public void setUp() throws Exception
    {
 
-      StandaloneContainer.setConfigurationPath("src/test/java/conf/standalone/test-configuration.xml");
+      //      StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-configuration.xml");
 
-      container = StandaloneContainer.getInstance();
+      container = PortalContainer.getInstance();
    }
 
    public void testConfig() throws Exception
@@ -96,6 +102,29 @@ public class InitialContextTest extends TestCase
       {
          System.out.println("---- " + en.nextElement());
       }
+   }
+
+   /* 
+    * Tests if InitialContextInitializer correctly gets bindings-store-path from 
+    * param-value and pass it to InitialContexBinder, thus provides usage of different files
+    * for different instances of the class. 
+    */
+   public void testDifferentFileUsage() throws FileNotFoundException, NamingException, XMLStreamException
+   {
+
+      InitialContextInitializer initializer =
+         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
+
+      Map<String, String> refAddr = new HashMap<String, String>();
+      refAddr.put("driverClassName", "org.hsqldb.jdbcDriver");
+      refAddr.put("url", "jdbc:hsqldb:file:target/temp/data/portal");
+      refAddr.put("username", "sa");
+      refAddr.put("password", "");
+
+      initializer.bind("testjdbcjcr1", "javax.sql.DataSource", "org.apache.commons.dbcp.BasicDataSourceFactory", null,
+         refAddr);
+
+      assertTrue(new File("target/store-path.xml").exists());
    }
 
 }

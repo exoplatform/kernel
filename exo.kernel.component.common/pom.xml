@@ -105,7 +105,6 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <excludes>
-                  <exclude>**/InitialContextTest.java</exclude>
                   <exclude>**/TransactionTest.java</exclude>
                </excludes>
             </configuration>

@@ -25,8 +25,8 @@ import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Stack;
 import java.util.Map.Entry;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NameAlreadyBoundException;
@@ -91,20 +91,16 @@ public class InitialContextBinder
     *          initial context initializer
     * @param initParams
     *          initialization parameters
-    * @throws XMLStreamException 
     * @throws FileNotFoundException 
-    * @throws FileNotFoundException
     * @throws XMLStreamException
-    * @throws NamingException 
     * @throws NamingException
     */
-   InitialContextBinder(InitialContextInitializer initialContextInitializer) throws FileNotFoundException,
-      XMLStreamException, NamingException
+   InitialContextBinder(InitialContextInitializer initialContextInitializer, String bindingsStorePath)
+      throws FileNotFoundException, XMLStreamException, NamingException
    {
       this.initialContextInitializer = initialContextInitializer;
-
       this.bindings = new ConcurrentHashMap<String, Reference>();
-      this.bindingsStorePath = System.getProperty("java.io.tmpdir") + File.separator + "bind-references.xml";
+      this.bindingsStorePath = bindingsStorePath;
 
       if (new File(bindingsStorePath).exists())
       {
@@ -114,6 +110,15 @@ public class InitialContextBinder
             bind(entry.getKey(), entry.getValue());
          }
       }
+   }
+
+   /**
+    * InitialContextBinder constructor.
+    */
+   InitialContextBinder(InitialContextInitializer initialContextInitializer) throws FileNotFoundException,
+      XMLStreamException, NamingException
+   {
+      this(initialContextInitializer, InitialContextInitializer.DEFAULT_BINDING_STORE_PATH);
    }
 
    /**

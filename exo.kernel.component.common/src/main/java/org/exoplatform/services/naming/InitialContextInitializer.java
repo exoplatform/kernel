@@ -23,9 +23,11 @@ import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.Property;
+import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +56,11 @@ public class InitialContextInitializer
    final public static String PROPERTIES_DEFAULT = "default-properties";
 
    final public static String PROPERTIES_MANDATORY = "mandatory-properties";
+
+   final public static String BINDINGS_STORE_PATH = "bindings-store-path";
+
+   final public static String DEFAULT_BINDING_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator
+      + "bind-references.xml";
 
    private static Log LOG = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
 
@@ -107,8 +114,18 @@ public class InitialContextInitializer
       initialContext = new InitialContext();
       bindReferencesPlugins = new ArrayList<BindReferencePlugin>();
 
+      ValueParam bindingStorePathParam = params.getValueParam(BINDINGS_STORE_PATH);
+
       // binder
-      binder = new InitialContextBinder(this);
+      if (bindingStorePathParam == null)
+      {
+         binder = new InitialContextBinder(this, DEFAULT_BINDING_STORE_PATH);
+      }
+      else
+      {
+         binder = new InitialContextBinder(this, bindingStorePathParam.getValue());
+      }
+
    }
 
    private void setSystemProperty(String propName, String propValue, String propParamName)
@@ -133,7 +150,7 @@ public class InitialContextInitializer
       initialContext.rebind(name, reference);
 
       // binder
-      binder = new InitialContextBinder(this);
+      binder = new InitialContextBinder(this, DEFAULT_BINDING_STORE_PATH);
    }
 
    /**
