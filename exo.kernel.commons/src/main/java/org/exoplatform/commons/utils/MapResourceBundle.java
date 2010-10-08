@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,40 +41,42 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
     */
    private static final long serialVersionUID = -7020823660841958748L;
 
-   private final static String REGEXP = "#\\{.*\\}";
+   private final static Pattern PATTERN = Pattern.compile("#\\{.*\\}");
 
-   private Map props = new HashMap();
+   private Map<String, String> props;
 
    private Locale locale;
 
    public MapResourceBundle(Locale l)
    {
       this.locale = l;
+      this.props = new HashMap<String, String>();
    }
 
    public MapResourceBundle(ResourceBundle rB, Locale l)
    {
+      Map<String, String> props = new HashMap<String, String>();
+      doMerge(props, rB);
+
+      //
       this.locale = l;
-      initMap(rB);
+      this.props = props;
    }
 
-   private void initMap(ResourceBundle rB)
+   private static void doMerge(Map<String, String> props, ResourceBundle rB)
    {
-      Enumeration e = rB.getKeys();
+      Enumeration<String> e = rB.getKeys();
       while (e.hasMoreElements())
       {
-         String s = (String)e.nextElement();
-         try
+         String key = e.nextElement();
+         if (props.get(key) == null)
          {
-            if (props.get(s) == null)
+            Object o = rB.getObject(key);
+            if (o instanceof String)
             {
-               String[] newArray = rB.getStringArray(s);
-               props.put(s, newArray);
+               String value = (String)o;
+               props.put(key.intern(), value.intern());
             }
-         }
-         catch (ClassCastException ex)
-         {
-            props.put(s, rB.getObject(s));
          }
       }
    }
@@ -85,9 +86,20 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
       return props.get(key);
    }
 
-   public Enumeration getKeys()
+   public Enumeration<String> getKeys()
    {
-      return new Vector(props.keySet()).elements();
+      final Iterator<String> i = props.keySet().iterator();
+      return new Enumeration<String>()
+      {
+         public boolean hasMoreElements()
+         {
+            return i.hasNext();
+         }
+         public String nextElement()
+         {
+            return i.next();
+         }
+      };
    }
 
    public Locale getLocale()
@@ -95,55 +107,45 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
       return this.locale;
    }
 
-   public void add(String key, Object value)
+   public void add(String key, Object o)
    {
-      props.put(key, value);
+      if (key != null && o instanceof String)
+      {
+         String value = (String)o;
+         props.put(key.intern(), value.intern());
+      }
    }
 
    public void remove(String key)
    {
-      props.remove(key);
+      if (key != null)
+      {
+         props.remove(key);
+      }
    }
 
    public void merge(ResourceBundle bundle)
    {
-      Enumeration e = bundle.getKeys();
-      while (e.hasMoreElements())
-      {
-         String s = (String)e.nextElement();
-         Object value = bundle.getObject(s);
-         try
-         {
-            String[] newArray = bundle.getStringArray(s);
-            if (props.get(s) == null)
-            {
-               props.put(s, newArray);
-            }
-         }
-         catch (ClassCastException ex)
-         {
-            props.put(s, value);
-         }
-      }
+      doMerge(props, bundle);
    }
 
    public void resolveDependencies()
    {
-      Map tempMap = new HashMap(props);
-      Set keys = tempMap.keySet();
-      Pattern pattern = Pattern.compile(REGEXP);
-      for (Iterator iter = keys.iterator(); iter.hasNext();)
+      Map<String, String> tempMap = new HashMap<String ,String>(props);
+      for (String element : props.keySet())
       {
-         String element = (String)iter.next();
-         String value = lookupKey(tempMap, element, pattern, new HashSet<String>());
-         tempMap.put(element, value);
+         String value = lookupKey(tempMap, element, new HashSet<String>());
+         if (value != null)
+         {
+            tempMap.put(element.intern(), value.intern());
+         }
       }
       props = tempMap;
    }
 
-   private String lookupKey(Map props, String key, Pattern pattern, Set<String> callStack)
+   private String lookupKey(Map<String, String> props, String key, Set<String> callStack)
    {
-      String s = (String)props.get(key);
+      String s = props.get(key);
       if (s == null || callStack.contains(key))
       {
          // The value cannot be found or it has already been asked which means that
@@ -151,17 +153,17 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
          return key;
       }
       callStack.add(key);
-      Matcher matcher = pattern.matcher(s);
+      Matcher matcher = PATTERN.matcher(s);
       if (matcher.find())
       {
-         return recursivedResolving(props, s, pattern, callStack);
+         return recursivedResolving(props, s, callStack);
       }
       // The value could be resolved thus it can be removed from the callStack
       callStack.remove(key);
       return s;
    }
 
-   private String recursivedResolving(Map props, String value, Pattern pattern, Set<String> callStack)
+   private String recursivedResolving(Map props, String value, Set<String> callStack)
    {
       String resolved = value;
       StringBuilder sB = new StringBuilder();
@@ -172,7 +174,7 @@ public class MapResourceBundle extends ResourceBundle implements Serializable
          int lastIndex = resolved.indexOf('}', firstIndex);
          String realKey = resolved.substring(firstIndex + 2, lastIndex);
          sB.append(resolved.substring(0, firstIndex));
-         sB.append(lookupKey(props, realKey, pattern, callStack));
+         sB.append(lookupKey(props, realKey, callStack));
          sB.append(resolved.substring(lastIndex + 1));
          resolved = sB.toString();
       }
