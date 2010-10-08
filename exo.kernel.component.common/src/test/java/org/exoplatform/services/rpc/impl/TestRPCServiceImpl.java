@@ -221,7 +221,17 @@ public class TestRPCServiceImpl extends BasicTestCase
          {
             // OK
          }
+         try
+         {
+            service.isCoordinator();
+            fail("We expect a RPCException since the current state is not the expected one");
+         }
+         catch (RPCException e)
+         {
+            // OK
+         }
          service.start();
+         assertEquals(true, service.isCoordinator());
          service.executeCommandOnAllNodes(foo, true);
          service.executeCommandOnAllNodes(foo, 10);
          service.executeCommandOnCoordinator(foo, true);
@@ -668,6 +678,8 @@ public class TestRPCServiceImpl extends BasicTestCase
          service2.registerCommand(LongTask);          
          service1.start();
          service2.start();
+         assertEquals(true, service1.isCoordinator());
+         assertEquals(false, service2.isCoordinator());
          List<Object> result;
          Object o;
          result = service1.executeCommandOnAllNodes(CmdUnknownOnNode2, true);
@@ -739,6 +751,16 @@ public class TestRPCServiceImpl extends BasicTestCase
          assertNotNull(result);
          assertTrue(result.size() == 1);
          assertTrue("We expect an RPCException due to a member that has left", result.get(0) instanceof MemberHasLeftException);
+         try
+         {
+            service1.isCoordinator();
+            fail("We expect a RPCException since the current state is not the expected one");
+         }
+         catch (RPCException e)
+         {
+            // OK
+         }
+         assertEquals(true, service2.isCoordinator());         
       }
       finally
       {

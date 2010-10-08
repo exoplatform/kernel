@@ -130,6 +130,11 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
    protected volatile Address coordinator;
 
    /**
+    * Indicates whether the current node is the coordinator of the cluster or not
+    */
+   protected volatile boolean isCoordinator;
+   
+   /**
     * The default value of the timeout
     */
    private long defaultTimeout = DEFAULT_TIMEOUT;
@@ -430,6 +435,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
    {
       this.members = view.getMembers();
       this.coordinator = members != null && members.size() > 0 ? members.get(0) : null;
+      this.isCoordinator = coordinator != null && coordinator.equals(channel.getLocalAddress());
    }
 
    /**
@@ -498,6 +504,19 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public boolean isCoordinator() throws RPCException
+   {
+      if (state != State.STARTED)
+      {
+         throw new RPCException("Cannot know whether the local node is a coordinator or not if " +
+         		"the service is not started, the current state of the service is " + state);
+      }
+      return isCoordinator;
+   }
+
+   /**
     * Gives the {@link RemoteCommand} corresponding to the given id
     * @param commandId the command id of the command to retrieve
     * @return the corresponding {@link RemoteCommand}
@@ -553,6 +572,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          security.checkPermission(RPCService.ACCESS_RPC_SERVICE_PERMISSION);
       }
       this.state = State.STOPPED;
+      this.isCoordinator = false;
       if (channel != null && channel.isOpen())
       {
          if (LOG.isInfoEnabled())

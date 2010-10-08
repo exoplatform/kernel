@@ -124,4 +124,11 @@ public interface RPCService
     * doesn't have the {@link RuntimePermission} <code>ACCESS_RPC_SERVICE_PERMISSION</code>
     */
    void unregisterCommand(RemoteCommand command) throws SecurityException;
+   
+   /**
+    * Indicates whether the local node is the coordinator of the cluster
+    * @return <code>true</code> if the coordinator is the coordinator, <code>false</code> otherwise
+    * throws RPCException in case the {@link RPCService} is in an illegal state
+    */
+   boolean isCoordinator() throws RPCException;   
 }
