@@ -37,14 +37,23 @@ public class QName
    protected final int hashCode;
 
    public QName(String namespace, String name)
-   {
-      this.namespace = (namespace != null ? namespace : "").intern();
-      this.name = (name != null ? name : "");
-
-      this.stringName = ("[" + this.namespace + "]" + this.name);
-
-      int hk = 31 + this.namespace.hashCode();
-      this.hashCode = hk * 31 + this.name.hashCode();
+   {   
+   	  if (namespace == null) 
+   	  {
+   	     namespace = "";
+   	  }
+   	  if (name == null)
+   	  {
+   	     name = "";
+   	  }  
+   	  String stringName = ("[" + namespace + "]" + name);
+   	  int hashCode = (31 + namespace.hashCode()) * 31 + name.hashCode();
+   	  
+      //   	
+      this.namespace = namespace;
+      this.name = name;
+      this.stringName = stringName;
+      this.hashCode = hashCode;
    }
 
    public String getNamespace()
