@@ -29,6 +29,8 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
+import org.exoplatform.services.rpc.TopologyChangeEvent;
+import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
@@ -61,6 +63,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -103,7 +106,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     * The default value of the cluster name
     */
    public static final String CLUSTER_NAME = "RPCService-Cluster";
-
+   
    /**
     * The configurator used to create the JGroups Channel
     */
@@ -151,6 +154,11 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     * incoming messages.
     */
    private final CountDownLatch startSignal = new CountDownLatch(1);
+   
+   /**
+    * All the registered {@link TopologyChangeListener}
+    */
+   private final List<TopologyChangeListener> listeners = new CopyOnWriteArrayList<TopologyChangeListener>();
 
    /**
     * Current State of the {@link RPCServiceImpl}
@@ -434,8 +442,32 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
    public void viewAccepted(View view)
    {
       this.members = view.getMembers();
+      Address currentCoordinator = coordinator;
       this.coordinator = members != null && members.size() > 0 ? members.get(0) : null;
       this.isCoordinator = coordinator != null && coordinator.equals(channel.getLocalAddress());
+      onTopologyChange(currentCoordinator != null && !currentCoordinator.equals(coordinator));
+   }
+
+   /**
+    * Called anytime the topology has changed, this method will notify all the listeners
+    * currently registered
+    * @param coordinatorHasChanged this parameter is set to <code>true</code> if the 
+    * coordinator has changed, <code>false</code> otherwise
+    */
+   private void onTopologyChange(boolean coordinatorHasChanged)
+   {
+      TopologyChangeEvent event = new TopologyChangeEvent(coordinatorHasChanged, isCoordinator);
+      for (TopologyChangeListener listener : listeners)
+      {
+         try
+         {
+            listener.onChange(event);
+         }
+         catch (Exception e)
+         {
+            LOG.warn("An error occurs with the listener of type " + listener.getClass(), e);
+         }
+      }
    }
 
    /**
@@ -514,6 +546,40 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          		"the service is not started, the current state of the service is " + state);
       }
       return isCoordinator;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void registerTopologyChangeListener(TopologyChangeListener listener) throws SecurityException
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(RPCService.ACCESS_RPC_SERVICE_PERMISSION);
+      }
+      if (listener == null)
+      {
+         return;
+      }
+      listeners.add(listener);   
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void unregisterTopologyChangeListener(TopologyChangeListener listener) throws SecurityException
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(RPCService.ACCESS_RPC_SERVICE_PERMISSION);
+      }
+      if (listener == null)
+      {
+         return;
+      }
+      listeners.remove(listener);
    }
 
    /**

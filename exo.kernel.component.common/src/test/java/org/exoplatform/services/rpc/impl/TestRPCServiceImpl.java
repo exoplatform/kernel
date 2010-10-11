@@ -25,6 +25,8 @@ import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.rpc.SingleMethodCallCommand;
+import org.exoplatform.services.rpc.TopologyChangeEvent;
+import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.rpc.impl.RPCServiceImpl.MemberHasLeftException;
 import org.exoplatform.test.BasicTestCase;
 import org.jgroups.Address;
@@ -519,7 +521,7 @@ public class TestRPCServiceImpl extends BasicTestCase
       paramConf.setName(RPCServiceImpl.PARAM_JGROUPS_CONFIG);
       paramConf.setValue("jar:/conf/portal/udp.xml");      
       params.addParameter(paramConf);
-      RPCServiceImpl service1 = null, service2 = null;
+      RPCServiceImpl service1 = null, service2 = null;      
       try
       {
          service1 = new RPCServiceImpl(container.getContext(), params, configManager);
@@ -591,7 +593,7 @@ public class TestRPCServiceImpl extends BasicTestCase
             
             public String execute(Serializable[] args) throws Throwable
             {
-               Thread.sleep(30000);
+               Thread.sleep(3000);
                return "OldCoordinator";
             }
          }); 
@@ -675,9 +677,31 @@ public class TestRPCServiceImpl extends BasicTestCase
                return "NewCoordinator";
             }
          };
-         service2.registerCommand(LongTask);          
+         service2.registerCommand(LongTask);
+         MyListener listener1 = new MyListener();
+         service1.registerTopologyChangeListener(listener1);
+         MyListener listener2 = new MyListener();
+         service2.registerTopologyChangeListener(listener2);
+         assertFalse(listener1.coordinatorHasChanged);
+         assertFalse(listener1.isCoordinator);
+         assertEquals(0, listener1.count);
+         assertFalse(listener2.coordinatorHasChanged);
+         assertFalse(listener2.isCoordinator);
+         assertEquals(0, listener2.count);
          service1.start();
+         assertFalse(listener1.coordinatorHasChanged);
+         assertTrue(listener1.isCoordinator);
+         assertEquals(1, listener1.count);
+         assertFalse(listener2.coordinatorHasChanged);
+         assertFalse(listener2.isCoordinator);
+         assertEquals(0, listener2.count);
          service2.start();
+         assertFalse(listener1.coordinatorHasChanged);
+         assertTrue(listener1.isCoordinator);
+         assertEquals(2, listener1.count);
+         assertFalse(listener2.coordinatorHasChanged);
+         assertFalse(listener2.isCoordinator);
+         assertEquals(1, listener2.count);
          assertEquals(true, service1.isCoordinator());
          assertEquals(false, service2.isCoordinator());
          List<Object> result;
@@ -740,6 +764,12 @@ public class TestRPCServiceImpl extends BasicTestCase
          };
          t.start();
          service1.stop();
+         assertFalse(listener1.coordinatorHasChanged);
+         assertTrue(listener1.isCoordinator);
+         assertEquals(2, listener1.count);
+         assertTrue(listener2.coordinatorHasChanged);
+         assertTrue(listener2.isCoordinator);
+         assertEquals(2, listener2.count);         
          doneSignal.await();
          assertNull(error.get() != null ? error.get().getMessage() : "", error.get());
          result = service2.excecuteCommand(allMembers, OK, true, 0);
@@ -1079,6 +1109,24 @@ public class TestRPCServiceImpl extends BasicTestCase
       public short testTypes(short... values)
       {
          return (short)(values[0] + 3);
+      }
+   }
+   
+   private static class MyListener implements TopologyChangeListener
+   {
+
+      private boolean coordinatorHasChanged;
+      private boolean isCoordinator;
+      private int count;
+      
+      /**
+       * @see org.exoplatform.services.rpc.TopologyChangeListener#onChange(org.exoplatform.services.rpc.TopologyChangeEvent)
+       */
+      public void onChange(TopologyChangeEvent event)
+      {
+         this.coordinatorHasChanged = event.isCoordinatorHasChanged();
+         this.isCoordinator = event.isCoordinator();
+         count++;
       }
    }
 }

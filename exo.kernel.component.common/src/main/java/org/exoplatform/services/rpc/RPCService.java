@@ -130,5 +130,21 @@ public interface RPCService
     * @return <code>true</code> if the coordinator is the coordinator, <code>false</code> otherwise
     * throws RPCException in case the {@link RPCService} is in an illegal state
     */
-   boolean isCoordinator() throws RPCException;   
+   boolean isCoordinator() throws RPCException;
+   
+   /**
+    * Register a new {@link TopologyChangeListener}
+    * @param listener the listener to be registered
+    * @throws SecurityException if the {@link SecurityManager} is installed and the call method
+    * doesn't have the {@link RuntimePermission} <code>ACCESS_RPC_SERVICE_PERMISSION</code>
+    */
+   void registerTopologyChangeListener(TopologyChangeListener listener) throws SecurityException;
+   
+   /**
+    * Unregister a {@link TopologyChangeListener} if it exists
+    * @param listener the listener to unregister
+    * @throws SecurityException if the {@link SecurityManager} is installed and the call method
+    * doesn't have the {@link RuntimePermission} <code>ACCESS_RPC_SERVICE_PERMISSION</code>
+    */
+   void unregisterTopologyChangeListener(TopologyChangeListener listener) throws SecurityException;
 }
