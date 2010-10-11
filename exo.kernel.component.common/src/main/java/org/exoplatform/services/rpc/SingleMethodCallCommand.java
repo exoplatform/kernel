@@ -88,9 +88,9 @@ public class SingleMethodCallCommand implements RemoteCommand
       }
       this.component = component;
       this.method = component.getClass().getDeclaredMethod(methodName, parameterTypes);
-      if (Modifier.isPrivate(method.getModifiers()))
+      if (!Modifier.isPublic(method.getModifiers()))
       {
-         throw new IllegalArgumentException("The method '" + methodName + "' cannot be private");
+         throw new IllegalArgumentException("The method '" + methodName + "' is not public");
       }
       this.id = getId(component, method);
    }
