@@ -85,33 +85,53 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
    /**
     * The name of the parameter for the location of the JGroups configuration.
     */
-   public static final String PARAM_JGROUPS_CONFIG = "jgroups-configuration";
+   protected static final String PARAM_JGROUPS_CONFIG = "jgroups-configuration";
 
    /**
     * The name of the parameter for the name of the cluster.
     */
-   public static final String PARAM_CLUSTER_NAME = "jgroups-cluster-name";
+   protected static final String PARAM_CLUSTER_NAME = "jgroups-cluster-name";
 
    /**
     * The name of the parameter for the default timeout
     */
-   public static final String PARAM_DEFAULT_TIMEOUT = "jgroups-default-timeout";
+   protected static final String PARAM_DEFAULT_TIMEOUT = "jgroups-default-timeout";
 
+   /**
+    * The name of the parameter to allow the failover
+    */
+   protected static final String PARAM_ALLOW_FAILOVER = "allow-failover";
+
+   /**
+    * The name of the parameter for the retry timeout
+    */
+   protected static final String PARAM_RETRY_TIMEOUT = "retry-timeout";
+   
    /**
     * The value of the default timeout
     */
-   public static final int DEFAULT_TIMEOUT = 0;
+   protected static final int DEFAULT_TIMEOUT = 0;
+   
+   /**
+    * The value of the default retry timeout
+    */
+   protected static final int DEFAULT_RETRY_TIMEOUT = 20000;
 
    /**
     * The default value of the cluster name
     */
-   public static final String CLUSTER_NAME = "RPCService-Cluster";
+   protected static final String CLUSTER_NAME = "RPCService-Cluster";
    
    /**
     * The configurator used to create the JGroups Channel
     */
    private final ProtocolStackConfigurator configurator;
 
+   /**
+    * The lock used to synchronize all the threads waiting for a topology change.
+    */
+   private final Object topologyChangeLock = new Object();
+   
    /**
     * The name of the cluster
     */
@@ -142,6 +162,16 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     */
    private long defaultTimeout = DEFAULT_TIMEOUT;
 
+   /**
+    * The value of the retry timeout
+    */
+   private long retryTimeout = DEFAULT_RETRY_TIMEOUT;
+   
+   /**
+    * Indicates whether the failover capabilities are enabled
+    */
+   private boolean allowFailover = true;
+   
    /**
     * The dispatcher used to launch the command of the cluster nodes
     */
@@ -210,6 +240,24 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          if (LOG.isDebugEnabled())
          {
             LOG.debug("The default timeout of the RPCServiceImpl has been set to " + defaultTimeout);
+         }
+      }
+      String sAllowFailover = getValueParam(params, PARAM_ALLOW_FAILOVER);
+      if (sAllowFailover != null)
+      {
+         allowFailover = Boolean.valueOf(sAllowFailover);
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("The parameter '" + PARAM_ALLOW_FAILOVER + "' of the RPCServiceImpl has been set to " + allowFailover);
+         }
+      }
+      sTimeout = getValueParam(params, PARAM_RETRY_TIMEOUT);
+      if (sTimeout != null)
+      {
+         retryTimeout = Integer.parseInt(sTimeout);
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("The retry timeout of the RPCServiceImpl has been set to " + retryTimeout);
          }
       }
       this.state = State.INITIALIZED;
@@ -294,18 +342,31 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       v.add(coordinator);
       List<Object> lResults = excecuteCommand(v, command, synchronous, timeout, args);
       Object result = lResults == null || lResults.size() == 0 ? null : lResults.get(0);
-      if (result instanceof MemberHasLeftException)
+      if (allowFailover && result instanceof MemberHasLeftException)
       {
+         // The failover capabilities have been enabled and the coordinator seems to have left
          if (coordinator.equals(this.coordinator))
          {
-            throw new RPCException("The coordinator did not change, we faced an unexpected situation",
-               (MemberHasLeftException)result);
+            synchronized(topologyChangeLock)
+            {
+               if (coordinator.equals(this.coordinator))
+               {
+                  if (LOG.isTraceEnabled())
+                     LOG.trace("The coordinator did not change yet, we will relaunch the command after " + retryTimeout + " ms or once a topology change has been detected");                  
+                  try
+                  {
+                     topologyChangeLock.wait(retryTimeout);
+                  }
+                  catch (InterruptedException e)
+                  {
+                     Thread.currentThread().interrupt();
+                  }                  
+               }
+            }
          }
-         else
-         {
-            // The coordinator has changed, we will automatically retry with the new coordinator
-            return executeCommandOnCoordinator(command, synchronous, timeout, args);
-         }
+         if (LOG.isTraceEnabled())
+            LOG.trace("The coordinator has changed, we will automatically retry with the new coordinator");                  
+         return executeCommandOnCoordinator(command, synchronous, timeout, args);
       }
       else if (result instanceof RPCException)
       {
@@ -441,11 +502,18 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     */
    public void viewAccepted(View view)
    {
-      this.members = view.getMembers();
-      Address currentCoordinator = coordinator;
-      this.coordinator = members != null && members.size() > 0 ? members.get(0) : null;
-      this.isCoordinator = coordinator != null && coordinator.equals(channel.getLocalAddress());
-      onTopologyChange(currentCoordinator != null && !currentCoordinator.equals(coordinator));
+      boolean coordinatorHasChanged;
+      synchronized (topologyChangeLock)
+      {
+         this.members = view.getMembers();
+         Address currentCoordinator = coordinator;
+         this.coordinator = members != null && members.size() > 0 ? members.get(0) : null;
+         this.isCoordinator = coordinator != null && coordinator.equals(channel.getLocalAddress());
+         coordinatorHasChanged = currentCoordinator != null && !currentCoordinator.equals(coordinator);
+         // Release all the nodes
+         topologyChangeLock.notifyAll();
+      }
+      onTopologyChange(coordinatorHasChanged);
    }
 
    /**
@@ -665,7 +733,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     * Gives the value of the default timeout
     * @return the default timeout
     */
-   public long getDefaultTimeout()
+   protected long getDefaultTimeout()
    {
       return defaultTimeout;
    }
@@ -674,9 +742,28 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     * Gives the name of the cluster
     * @return the name of the cluster
     */
-   public String getClusterName()
+   protected String getClusterName()
    {
       return clusterName;
+   }
+   
+   /**
+    * Gives the value of the retry timeout
+    * @return the value of the retry timeout
+    */
+   protected long getRetryTimeout()
+   {
+      return retryTimeout;
+   }
+
+   /**
+    * Indicates whether the failover capabilities are enabled or not
+    * @return <code>true</code> if the failover capabilities are allowed, <code>false</code>
+    * otherwise
+    */
+   protected boolean isAllowFailover()
+   {
+      return allowFailover;
    }
 
    /**

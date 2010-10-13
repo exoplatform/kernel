@@ -106,6 +106,8 @@ public class TestRPCServiceImpl extends BasicTestCase
       {
          service = new RPCServiceImpl(container.getContext(), params, configManager);
          assertEquals(RPCServiceImpl.DEFAULT_TIMEOUT, service.getDefaultTimeout());
+         assertEquals(RPCServiceImpl.DEFAULT_RETRY_TIMEOUT, service.getRetryTimeout());
+         assertEquals(true, service.isAllowFailover());
          assertEquals(RPCServiceImpl.CLUSTER_NAME + "-" + container.getContext().getName(), service.getClusterName());
       }
       finally
@@ -133,6 +135,8 @@ public class TestRPCServiceImpl extends BasicTestCase
       {
          service = new RPCServiceImpl(container.getContext(), params, configManager);
          assertEquals(60, service.getDefaultTimeout());
+         assertEquals(RPCServiceImpl.DEFAULT_RETRY_TIMEOUT, service.getRetryTimeout());
+         assertEquals(true, service.isAllowFailover());
          assertEquals(RPCServiceImpl.CLUSTER_NAME + "-" + container.getContext().getName(), service.getClusterName());
       }
       finally
@@ -142,7 +146,72 @@ public class TestRPCServiceImpl extends BasicTestCase
             service.stop();            
          }
       }
-      ValueParam paramClusterName = new ValueParam();
+      ValueParam paramRetryTimeout = new ValueParam();
+      paramRetryTimeout.setName(RPCServiceImpl.PARAM_RETRY_TIMEOUT);
+      paramRetryTimeout.setValue("fakeValue");
+      params.addParameter(paramRetryTimeout);
+      try
+      {
+         new RPCServiceImpl(container.getContext(), params, configManager);
+         fail("We expect a NumberFormatException since the retry timeout is not properly set");
+      }
+      catch (NumberFormatException e)
+      {
+         // OK
+      }      
+      paramRetryTimeout.setValue("60");
+      try
+      {
+         service = new RPCServiceImpl(container.getContext(), params, configManager);
+         assertEquals(60, service.getDefaultTimeout());
+         assertEquals(60, service.getRetryTimeout());
+         assertEquals(true, service.isAllowFailover());
+         assertEquals(RPCServiceImpl.CLUSTER_NAME + "-" + container.getContext().getName(), service.getClusterName());
+      }
+      finally
+      {
+         if (service != null)
+         {
+            service.stop();            
+         }
+      }
+      ValueParam paramAllowFailover = new ValueParam();
+      paramAllowFailover.setName(RPCServiceImpl.PARAM_ALLOW_FAILOVER);
+      paramAllowFailover.setValue("fakeValue");
+      params.addParameter(paramAllowFailover);
+      try
+      {
+         service = new RPCServiceImpl(container.getContext(), params, configManager);
+         assertEquals(60, service.getDefaultTimeout());
+         assertEquals(60, service.getRetryTimeout());
+         assertEquals(false, service.isAllowFailover());
+         assertEquals(RPCServiceImpl.CLUSTER_NAME + "-" + container.getContext().getName(), service.getClusterName());
+      }
+      finally
+      {
+         if (service != null)
+         {
+            service.stop();            
+         }
+      }
+      paramAllowFailover.setValue("TRUE");
+      try
+      {
+         service = new RPCServiceImpl(container.getContext(), params, configManager);
+         assertEquals(60, service.getDefaultTimeout());
+         assertEquals(60, service.getRetryTimeout());
+         assertEquals(true, service.isAllowFailover());
+         assertEquals(RPCServiceImpl.CLUSTER_NAME + "-" + container.getContext().getName(), service.getClusterName());
+      }
+      finally
+      {
+         if (service != null)
+         {
+            service.stop();            
+         }
+      }
+      
+      ValueParam paramClusterName = new ValueParam();      
       paramClusterName.setName(RPCServiceImpl.PARAM_CLUSTER_NAME);
       paramClusterName.setValue("MyName");
       params.addParameter(paramClusterName);
