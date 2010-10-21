@@ -62,6 +62,16 @@
 			</object-param>
 		</init-params>
 	</component>
+	<component>
+		<key>PropertyManagerConfigurator</key>
+		<type>org.exoplatform.container.PropertyConfigurator</type>
+		<init-params>
+			<properties-param>
+				<name>properties</name>
+				<property name="_portal.container" value="myPortal-pcdef" />
+			</properties-param>
+		</init-params>
+	</component>		
 	<external-component-plugins>
 		<!-- The full qualified name of the PortalContainerConfig -->
 		<target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
@@ -78,7 +88,7 @@
 					<object type="org.exoplatform.container.definition.PortalContainerDefinition">
 						<!-- The name of the portal container -->
 						<field name="name">
-							<string>myPortal-pcdef</string>
+							<string>${_portal.container}</string>
 						</field>
 						<!-- The name of the context name of the rest web application -->
 						<field name="restContextName">
@@ -107,7 +117,7 @@
 				<values-param>
 					<name>apply.specific</name>
 					<value>fake</value>
-					<value>myPortal-pcdef</value>
+					<value>${_portal.container}</value>
 				</values-param>
 				<object-param profiles="AddDependencies">
 					<name>change</name>
@@ -233,7 +243,7 @@
 				<!-- The list of the name of the portal containers to disable -->
 				<values-param>
 					<name>names</name>
-					<value>myPortal-pcdef</value>
+					<value>${_portal.container}</value>
 				</values-param>
 			</init-params>
 		</component-plugin>

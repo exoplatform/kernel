@@ -17,10 +17,12 @@
 package org.exoplatform.container.definition;
 
 import org.exoplatform.container.component.BaseComponentPlugin;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValuesParam;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,7 +47,12 @@ public class PortalContainerDefinitionDisablePlugin extends BaseComponentPlugin
       ValuesParam vsp = params.getValuesParam("names");
       if (vsp != null && !vsp.getValues().isEmpty())
       {
-         this.names = new HashSet<String>(vsp.getValues());
+         this.names = new HashSet<String>(vsp.getValues().size());
+         List<String> lnames = vsp.getValues();
+         for (String name : lnames)
+         {
+            names.add(Deserializer.resolveVariables(name));
+         }         
       }
    }
 

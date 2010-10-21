@@ -17,6 +17,7 @@
 package org.exoplatform.container.definition;
 
 import org.exoplatform.container.component.BaseComponentPlugin;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.container.xml.ValuesParam;
@@ -62,17 +63,22 @@ public class PortalContainerDefinitionChangePlugin extends BaseComponentPlugin
       ValueParam vp = params.getValueParam("apply.all");
       if (vp != null && vp.getValue().length() > 0)
       {
-         this.all = Boolean.valueOf(vp.getValue());
+         this.all = Boolean.valueOf(Deserializer.resolveVariables(vp.getValue()));
       }
       vp = params.getValueParam("apply.default");
       if (vp != null && vp.getValue().length() > 0)
       {
-         this.bDefault = Boolean.valueOf(vp.getValue());
+         this.bDefault = Boolean.valueOf(Deserializer.resolveVariables(vp.getValue()));
       }
       ValuesParam vsp = params.getValuesParam("apply.specific");
       if (vsp != null && !vsp.getValues().isEmpty())
       {
-         this.names = new HashSet<String>(vsp.getValues());
+         this.names = new HashSet<String>(vsp.getValues().size());
+         List<String> lnames = vsp.getValues();
+         for (String name : lnames)
+         {
+            names.add(Deserializer.resolveVariables(name));
+         }
       }
       this.changes = params.getObjectParamValues(PortalContainerDefinitionChange.class);
    }

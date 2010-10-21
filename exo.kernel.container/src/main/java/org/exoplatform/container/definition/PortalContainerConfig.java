@@ -205,8 +205,10 @@ public class PortalContainerConfig implements Startable
       this.serverInfo = serverInfo;
       this.defaultDefinition = create(params);
       this.ignoreUnregisteredWebapp =
-         params != null && params.getValueParam("ignore.unregistered.webapp") != null
-            && Boolean.valueOf(params.getValueParam("ignore.unregistered.webapp").getValue());
+         params != null
+            && params.getValueParam("ignore.unregistered.webapp") != null
+            && Boolean.valueOf(Deserializer.resolveVariables(params.getValueParam("ignore.unregistered.webapp")
+               .getValue()));
    }
 
    /**
@@ -266,7 +268,7 @@ public class PortalContainerConfig implements Startable
          if (vp != null && vp.getValue().trim().length() > 0)
          {
             // A realm name has been defined in the value parameter, thus we use it
-            def.setRealmName(vp.getValue().trim());
+            def.setRealmName(Deserializer.resolveVariables(vp.getValue().trim()));
          }
       }
       else
@@ -294,7 +296,7 @@ public class PortalContainerConfig implements Startable
          if (vp != null && vp.getValue().trim().length() > 0)
          {
             // A rest context name has been defined in the value parameter, thus we use it
-            def.setRestContextName(vp.getValue().trim());
+            def.setRestContextName(Deserializer.resolveVariables(vp.getValue().trim()));
          }
       }
       else
@@ -322,7 +324,7 @@ public class PortalContainerConfig implements Startable
          if (vp != null && vp.getValue().trim().length() > 0)
          {
             // A name has been defined in the value parameter, thus we use it
-            def.setName(vp.getValue().trim());
+            def.setName(Deserializer.resolveVariables(vp.getValue().trim()));
          }
       }
       else

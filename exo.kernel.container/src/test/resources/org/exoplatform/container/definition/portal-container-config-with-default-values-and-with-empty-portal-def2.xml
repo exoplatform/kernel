@@ -16,20 +16,33 @@
 			<!-- The name of the default portal container -->
 			<value-param>
 				<name>default.portal.container</name>
-				<value>myPortal</value>
+				<value>${_default.portal.container}</value>
 			</value-param>
 			<!-- The name of the default rest ServletContext -->
 			<value-param>
 				<name>default.rest.context</name>
-				<value>myRest</value>
+				<value>${_default.rest.context}</value>
 			</value-param>
 			<!-- The name of the default realm -->
 			<value-param>
 				<name>default.realm.name</name>
-				<value>my-exo-domain</value>
+				<value>${_default.realm.name}</value>
 			</value-param>
 		</init-params>
 	</component>
+	<component>
+		<key>PropertyManagerConfigurator</key>
+		<type>org.exoplatform.container.PropertyConfigurator</type>
+		<init-params>
+			<properties-param>
+				<name>properties</name>
+				<property name="_default.portal.container" value="myPortal" />
+				<property name="_default.rest.context" value="myRest" />
+				<property name="_default.realm.name" value="my-exo-domain" />
+				<property name="_portal.container" value="myPortal-pcdef" />
+			</properties-param>
+		</init-params>
+	</component>	
 	<external-component-plugins>
 		<!-- The full qualified name of the PortalContainerConfig -->
 		<target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
@@ -46,7 +59,7 @@
 					<object type="org.exoplatform.container.definition.PortalContainerDefinition">
 						<!-- The name of the portal container -->
 						<field name="name">
-							<string>myPortal-pcdef</string>
+							<string>${_portal.container}</string>
 						</field>
 					</object>
 				</object-param>
@@ -67,7 +80,7 @@
 				<!-- The list of the name of the portal containers to disable -->
 				<values-param>
 					<name>names</name>
-					<value>myPortal-pcdef</value>
+					<value>${_portal.container}</value>
 				</values-param>
 			</init-params>
 		</component-plugin>
