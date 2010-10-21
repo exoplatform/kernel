@@ -12,6 +12,16 @@
 	<component>
 		<type>org.exoplatform.container.definition.PortalContainerConfig</type>
 	</component>
+	<component>
+		<key>PropertyManagerConfigurator</key>
+		<type>org.exoplatform.container.PropertyConfigurator</type>
+		<init-params>
+			<properties-param>
+				<name>properties</name>
+				<property name="_value.true" value="true" />
+			</properties-param>
+		</init-params>
+	</component>	
 	<external-component-plugins>
 		<!-- The full qualified name of the PortalContainerConfig -->
 		<target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
@@ -69,7 +79,7 @@
 			<init-params>
 				<value-param>
 					<name>apply.all</name>
-					<value>true</value>
+					<value>${_value.true}</value>
 				</value-param>
 				<object-param>
 					<name>change1</name>
@@ -92,7 +102,7 @@
 			<init-params>
 				<value-param>
 					<name>apply.default</name>
-					<value>true</value>
+					<value>${_value.true}</value>
 				</value-param>
 				<object-param>
 					<name>change2</name>
@@ -139,7 +149,7 @@
 			<init-params>
 				<value-param>
 					<name>apply.default</name>
-					<value>true</value>
+					<value>${_value.true}</value>
 				</value-param>			
 				<values-param>
 					<name>apply.specific</name>

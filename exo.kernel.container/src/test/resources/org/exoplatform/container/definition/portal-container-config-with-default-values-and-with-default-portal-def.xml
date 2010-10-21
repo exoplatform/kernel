@@ -16,17 +16,17 @@
 			<!-- The name of the default portal container -->
 			<value-param>
 				<name>default.portal.container</name>
-				<value>myPortal</value>
+				<value>${_default.portal.container}</value>
 			</value-param>
 			<!-- The name of the default rest ServletContext -->
 			<value-param>
 				<name>default.rest.context</name>
-				<value>myRest</value>
+				<value>${_default.rest.context}</value>
 			</value-param>
 			<!-- The name of the default realm -->
 			<value-param>
 				<name>default.realm.name</name>
-				<value>my-exo-domain</value>
+				<value>${_default.realm.name}</value>
 			</value-param>
 			<!-- The default portal container definition -->
 			<!-- It cans be used to avoid duplicating configuration -->
@@ -37,19 +37,19 @@
 					<!-- If this value is not null, it will replace the value defined
 					by the value-param "default.portal.container" -->
 					<field name="name">
-						<string>myPortal-dpcdef</string>
+						<string>${_portal.container}</string>
 					</field>
 					<!-- The name of the context name of the rest web application -->
 					<!-- If this value is not null, it will replace the value defined
 					by the value-param "default.rest.context" -->
 					<field name="restContextName">
-						<string>myRest-dpcdef</string>
+						<string>${_rest.context}</string>
 					</field>
 					<!-- The name of the realm -->
 					<!-- If this value is not null, it will replace the value defined
 					by the value-param "default.realm.name" -->
 					<field name="realmName">
-						<string>my-exo-domain-dpcdef</string>
+						<string>${_realm.name}</string>
 					</field>
 					<!-- A map of settings tied to the default portal container -->
 					<field name="settings">
@@ -100,4 +100,19 @@
 			</object-param>
 		</init-params>
 	</component>
+	<component>
+		<key>PropertyManagerConfigurator</key>
+		<type>org.exoplatform.container.PropertyConfigurator</type>
+		<init-params>
+			<properties-param>
+				<name>properties</name>
+				<property name="_default.portal.container" value="myPortal" />
+				<property name="_default.rest.context" value="myRest" />
+				<property name="_default.realm.name" value="my-exo-domain" />
+				<property name="_portal.container" value="myPortal-dpcdef" />
+				<property name="_rest.context" value="myRest-dpcdef" />
+				<property name="_realm.name" value="my-exo-domain-dpcdef" />
+			</properties-param>
+		</init-params>
+	</component>	
 </configuration>

@@ -19,9 +19,11 @@
 package org.exoplatform.container.definition;
 
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.xml.Deserializer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.servlet.ServletContext;
 
@@ -38,6 +40,11 @@ import javax.servlet.ServletContext;
 public class PortalContainerDefinition
 {
 
+   /**
+    * Indicates whether the current instance has been initialized
+    */
+   private final AtomicBoolean initialized = new AtomicBoolean();
+   
    /**
     * The name of the related {@link PortalContainer}
     */
@@ -72,6 +79,7 @@ public class PortalContainerDefinition
 
    public String getName()
    {
+      init();
       return name;
    }
 
@@ -92,6 +100,7 @@ public class PortalContainerDefinition
 
    public String getRealmName()
    {
+      init();
       return realmName;
    }
 
@@ -102,6 +111,7 @@ public class PortalContainerDefinition
 
    public String getRestContextName()
    {
+      init();
       return restContextName;
    }
 
@@ -129,4 +139,26 @@ public class PortalContainerDefinition
    {
       this.externalSettingsPath = externalSettingsPath;
    }
+   
+   /**
+    * Ensure that all the parameter values have been resolved in order to allow to
+    * use variables to define their values. It will be executed only if it has the current
+    * instance has not been initialized
+    */
+   private void init()
+   {
+      if (!initialized.get())
+      {
+         synchronized (this)
+         {
+            if (!initialized.get())
+            {
+               setName(Deserializer.resolveVariables(name));
+               setRestContextName(Deserializer.resolveVariables(restContextName));
+               setRealmName(Deserializer.resolveVariables(realmName));
+               initialized.set(true);
+            }
+         }
+      }
+   }   
 }

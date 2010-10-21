@@ -31,14 +31,25 @@
 			<!-- Indicates whether the unregistered webapps have to be ignored -->
 			<value-param profiles="ignore.unregistered.webapp-false">
 				<name>ignore.unregistered.webapp</name>
-				<value>false</value>
+				<value>${_ignore.unregistered.webapp.false}</value>
 			</value-param>
 			<value-param profiles="ignore.unregistered.webapp-true">
 				<name>ignore.unregistered.webapp</name>
-				<value>true</value>
+				<value>${_ignore.unregistered.webapp.true}</value>
 			</value-param>
 		</init-params>
 	</component>
+	<component>
+		<key>PropertyManagerConfigurator</key>
+		<type>org.exoplatform.container.PropertyConfigurator</type>
+		<init-params>
+			<properties-param>
+				<name>properties</name>
+				<property name="_ignore.unregistered.webapp.true" value="true" />
+				<property name="_ignore.unregistered.webapp.false" value="false" />
+			</properties-param>
+		</init-params>
+	</component>	
 	<external-component-plugins>
 		<!-- The full qualified name of the PortalContainerConfig -->
 		<target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>

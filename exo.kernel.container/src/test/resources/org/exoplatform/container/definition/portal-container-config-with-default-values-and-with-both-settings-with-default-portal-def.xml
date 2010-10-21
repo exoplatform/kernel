@@ -16,17 +16,17 @@
 			<!-- The name of the default portal container -->
 			<value-param>
 				<name>default.portal.container</name>
-				<value>myPortal</value>
+				<value>${_default.portal.container}</value>
 			</value-param>
 			<!-- The name of the default rest ServletContext -->
 			<value-param>
 				<name>default.rest.context</name>
-				<value>myRest</value>
+				<value>${_default.rest.context}</value>
 			</value-param>
 			<!-- The name of the default realm -->
 			<value-param>
 				<name>default.realm.name</name>
-				<value>my-exo-domain</value>
+				<value>${_default.realm.name}</value>
 			</value-param>
 			<!-- The default portal container definition -->
 			<!-- It cans be used to avoid duplicating configuration -->
@@ -142,6 +142,12 @@
 				<name>properties</name>
 				<property name="property_String" value="property_value_1" />
 				<property name="property_Int" value="60" />
+				<property name="_default.portal.container" value="myPortal" />
+				<property name="_default.rest.context" value="myRest" />
+				<property name="_default.realm.name" value="my-exo-domain" />
+				<property name="_portal.container" value="myPortal-pcdef" />
+				<property name="_rest.context" value="myRest-pcdef" />
+				<property name="_realm.name" value="my-exo-domain-pcdef" />
 			</properties-param>
 		</init-params>
 	</component>
@@ -161,15 +167,15 @@
 					<object type="org.exoplatform.container.definition.PortalContainerDefinition">
 						<!-- The name of the portal container -->
 						<field name="name">
-							<string>myPortal-pcdef</string>
+							<string>${_portal.container}</string>
 						</field>
 						<!-- The name of the context name of the rest web application -->
 						<field name="restContextName">
-							<string>myRest-pcdef</string>
+							<string>${_rest.context}</string>
 						</field>
 						<!-- The name of the realm -->
 						<field name="realmName">
-							<string>my-exo-domain-pcdef</string>
+							<string>${_realm.name}</string>
 						</field>
 						<!-- A map of settings tied to the portal container -->
 						<field name="settings">
