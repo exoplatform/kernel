@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.naming;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -102,7 +102,7 @@ public class InitialContextBinder
       this.bindings = new ConcurrentHashMap<String, Reference>();
       this.bindingsStorePath = bindingsStorePath;
 
-      if (new File(bindingsStorePath).exists())
+      if (PrivilegedFileHelper.exists(new File(bindingsStorePath)))
       {
          Map<String, Reference> importedRefs = readBindings();
          for (Entry<String, Reference> entry : importedRefs.entrySet())
@@ -179,7 +179,8 @@ public class InitialContextBinder
    protected synchronized void saveBindings() throws FileNotFoundException, XMLStreamException
    {
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-      XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(bindingsStorePath), "UTF-8");
+      XMLStreamWriter writer =
+         outputFactory.createXMLStreamWriter(PrivilegedFileHelper.fileOutputStream(bindingsStorePath), "UTF-8");
 
       writer.writeStartDocument("UTF-8", "1.0");
       writer.writeStartElement(BIND_REFERENCES_ELEMENT);
@@ -236,7 +237,8 @@ public class InitialContextBinder
       Map<String, Reference> importedRefs = new HashMap<String, Reference>();
 
       XMLInputFactory factory = XMLInputFactory.newInstance();
-      XMLEventReader reader = factory.createXMLEventReader(new FileInputStream(bindingsStorePath), "UTF-8");
+      XMLEventReader reader =
+         factory.createXMLEventReader(PrivilegedFileHelper.fileInputStream(bindingsStorePath), "UTF-8");
 
       while (reader.hasNext())
       {

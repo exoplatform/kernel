@@ -19,23 +19,29 @@
 package org.exoplatform.container.configuration;
 
 import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.JiBXException;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Set;
 
@@ -45,6 +51,9 @@ import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -66,7 +75,7 @@ public class ConfigurationUnmarshaller
     * A private copy of the list of kernel namespaces
     */
    private static final String[] KERNEL_NAMESPACES = Namespaces.getKernelNamespaces();
-   
+
    private class Reporter implements ErrorHandler
    {
 
@@ -89,15 +98,14 @@ public class ConfigurationUnmarshaller
       {
          if (exception.getMessage().equals("cvc-elt.1: Cannot find the declaration of element 'configuration'."))
          {
-            log
-               .info("The document "
-                  + url
-                  + " does not contain a schema declaration, it should have an "
-                  + "XML declaration similar to\n"
-                  + "<configuration\n"
-                  + "   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                  + "   xsi:schemaLocation=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\"\n"
-                  + "   xmlns=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\">");
+            log.info("The document "
+               + url
+               + " does not contain a schema declaration, it should have an "
+               + "XML declaration similar to\n"
+               + "<configuration\n"
+               + "   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+               + "   xsi:schemaLocation=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\"\n"
+               + "   xmlns=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\">");
          }
          else
          {
@@ -137,9 +145,9 @@ public class ConfigurationUnmarshaller
     * @throws IOException any IOException thrown by using the provided URL
     * @throws NullPointerException if the provided URL is null
     */
-   public boolean isValid(URL url) throws NullPointerException, IOException
+   public boolean isValid(final URL url) throws NullPointerException, IOException
    {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory
          .setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
       factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", KERNEL_NAMESPACES);
@@ -148,11 +156,44 @@ public class ConfigurationUnmarshaller
 
       try
       {
-         DocumentBuilder builder = factory.newDocumentBuilder();
+         DocumentBuilder builder = null;
+         try
+         {
+            builder = AccessController.doPrivileged(new PrivilegedExceptionAction<DocumentBuilder>()
+            {
+               public DocumentBuilder run() throws Exception
+               {
+                  return factory.newDocumentBuilder();
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof ParserConfigurationException)
+            {
+               throw (ParserConfigurationException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+         
          Reporter reporter = new Reporter(url);
          builder.setErrorHandler(reporter);
          builder.setEntityResolver(Namespaces.resolver);
-         builder.parse(url.openStream());
+         builder.parse(SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
+         {
+            public InputStream run() throws Exception
+            {
+               return url.openStream();
+            }
+         }));
          return reporter.valid;
       }
       catch (ParserConfigurationException e)
@@ -167,7 +208,7 @@ public class ConfigurationUnmarshaller
       }
    }
 
-   public Configuration unmarshall(URL url) throws Exception
+   public Configuration unmarshall(final URL url) throws Exception
    {
       if (PropertyManager.isDevelopping())
       {
@@ -218,39 +259,95 @@ public class ConfigurationUnmarshaller
 
       //
       factory.setNamespaceAware(true);
-      DocumentBuilder builder = factory.newDocumentBuilder();
-      Document doc = builder.parse(url.openStream());
 
-      // Filter DOM
-      ProfileDOMFilter filter = new ProfileDOMFilter(profiles);
-      filter.process(doc.getDocumentElement());
+      final DocumentBuilderFactory builderFactory = factory;
+      try
+      {
+         return AccessController.doPrivileged(new PrivilegedExceptionAction<Configuration>()
+         {
+            public Configuration run() throws Exception
+            {
+               DocumentBuilder builder = builderFactory.newDocumentBuilder();
+               Document doc = builder.parse(url.openStream());
 
-      // SAX event stream -> String
-      StringWriter buffer = new StringWriter();
-      SAXTransformerFactory tf = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-      TransformerHandler hd = tf.newTransformerHandler();
-      StreamResult result = new StreamResult(buffer);
-      hd.setResult(result);
-      Transformer serializer = tf.newTransformer();
-      serializer.setOutputProperty(OutputKeys.ENCODING, "UTF8");
-      serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+               // Filter DOM
+               ProfileDOMFilter filter = new ProfileDOMFilter(profiles);
+               filter.process(doc.getDocumentElement());
 
-      // Transform -> SAX event stream
-      SAXResult saxResult = new SAXResult(new NoKernelNamespaceSAXFilter(hd));
+               // SAX event stream -> String
+               StringWriter buffer = new StringWriter();
+               SAXTransformerFactory tf = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+               TransformerHandler hd = tf.newTransformerHandler();
+               StreamResult result = new StreamResult(buffer);
+               hd.setResult(result);
+               Transformer serializer = tf.newTransformer();
+               serializer.setOutputProperty(OutputKeys.ENCODING, "UTF8");
+               serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-      // DOM -> Transform
-      serializer.transform(new DOMSource(doc), saxResult);
+               // Transform -> SAX event stream
+               SAXResult saxResult = new SAXResult(new NoKernelNamespaceSAXFilter(hd));
 
-      // Reuse the parsed document
-      String document = buffer.toString();
+               // DOM -> Transform
+               serializer.transform(new DOMSource(doc), saxResult);
 
-      // Debug
-      if (log.isTraceEnabled())
-         log.trace("About to parse configuration file " + document);
+               // Reuse the parsed document
+               String document = buffer.toString();
 
-      //
-      IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
-      IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
-      return (Configuration)uctx.unmarshalDocument(new StringReader(document), null);
+               // Debug
+               if (log.isTraceEnabled())
+                  log.trace("About to parse configuration file " + document);
+
+               //
+               IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
+               IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
+
+               return (Configuration)uctx.unmarshalDocument(new StringReader(document), null);
+            }
+         });
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof JiBXException)
+         {
+            throw (JiBXException)cause;
+         }
+         else if (cause instanceof ParserConfigurationException)
+         {
+            throw (ParserConfigurationException)cause;
+         }
+         else if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof SAXException)
+         {
+            throw (SAXException)cause;
+         }
+         else if (cause instanceof IllegalArgumentException)
+         {
+            throw (IllegalArgumentException)cause;
+         }
+         else if (cause instanceof TransformerException)
+         {
+            throw (TransformerException)cause;
+         }
+         else if (cause instanceof TransformerConfigurationException)
+         {
+            throw (TransformerConfigurationException)cause;
+         }
+         else if (cause instanceof TransformerFactoryConfigurationError)
+         {
+            throw (TransformerFactoryConfigurationError)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 }

@@ -25,8 +25,13 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
+
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
@@ -42,8 +47,35 @@ public class QuartzSheduler implements Startable
 
    public QuartzSheduler(ExoContainerContext ctx) throws Exception
    {
-      SchedulerFactory sf = new StdSchedulerFactory();
-      scheduler_ = sf.getScheduler();
+      final SchedulerFactory sf = new StdSchedulerFactory();
+
+      try
+      {
+         scheduler_ = AccessController.doPrivileged(new PrivilegedExceptionAction<Scheduler>()
+         {
+            public Scheduler run() throws Exception
+            {
+               return sf.getScheduler();
+            }
+         });
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof SchedulerException)
+         {
+            throw (SchedulerException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+      
       // If the scheduler has already been started, it is necessary to put the scheduler
       // in standby mode to ensure that the jobs of the ExoContainer won't launched too early
       scheduler_.standby();

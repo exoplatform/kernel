@@ -18,8 +18,11 @@
  */
 package org.exoplatform.commons.reflect;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,7 +87,7 @@ public class AnnotationIntrospector
       return tpl;
    }
 
-   public static <A extends Annotation> Map<Method, A> resolveMethodAnnotations(Class<?> clazz,
+   public static <A extends Annotation> Map<Method, A> resolveMethodAnnotations(final Class<?> clazz,
       Class<A> methodAnnotation)
    {
       if (clazz == null)
@@ -100,7 +103,15 @@ public class AnnotationIntrospector
       Map<Method, A> methods = new HashMap<Method, A>();
 
       //
-      for (Method method : clazz.getDeclaredMethods())
+      PrivilegedAction<Method[]> action = new PrivilegedAction<Method[]>()
+      {
+         public Method[] run()
+         {
+            return clazz.getDeclaredMethods();
+         }
+      };
+
+      for (Method method : SecurityHelper.doPriviledgedAction(action))
       {
          A annotation = method.getAnnotation(methodAnnotation);
          if (annotation != null)

@@ -18,8 +18,11 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+
 import java.io.IOException;
 import java.net.URL;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -55,6 +58,7 @@ class UnifiedClassLoader extends ClassLoader
    UnifiedClassLoader(ClassLoader... cls)
    {
       super(Thread.currentThread().getContextClassLoader());
+
       if (cls == null || cls.length == 0)
       {
          throw new IllegalArgumentException("The array of ClassLoader cannot be empty");
@@ -108,5 +112,16 @@ class UnifiedClassLoader extends ClassLoader
          }
       }
       return Collections.enumeration(urls);
+   }
+
+   static protected UnifiedClassLoader createUnifiedClassLoaderInPrivilegedMode(final ClassLoader... cls)
+   {
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<UnifiedClassLoader>()
+      {
+         public UnifiedClassLoader run()
+         {
+            return new UnifiedClassLoader(cls);
+         }
+      });
    }
 }

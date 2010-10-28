@@ -24,20 +24,4 @@
    <name>eXo Kernel :: Commons :: Test Util</name>
    <description>eXo Commons Test Util</description>
 
-   <dependencies>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons</artifactId>
-      </dependency>
-   </dependencies>
-
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-         </plugin>
-      </plugins>
-   </build>
-
 </project>

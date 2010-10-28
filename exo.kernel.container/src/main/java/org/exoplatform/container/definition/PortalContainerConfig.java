@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.definition;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.PropertyConfigurator;
@@ -977,7 +978,7 @@ public class PortalContainerConfig implements Startable
                serverInfo.getExoConfigurationDirectory() + "/portal/" + (isPath4DefaultPCD ? "" : def.getName() + "/")
                   + path;
             File file = new File(fullPath);
-            if (file.exists())
+            if (PrivilegedFileHelper.exists(file))
             {
                // The file exists so we will use it
                url = file.toURI().toURL();

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.xml;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -265,7 +266,7 @@ public class Deserializer
                   {
                      // No value could be found so far, thus we try to get it from the 
                      // system properties
-                     value = System.getProperty(key);                     
+                     value = PrivilegedSystemHelper.getProperty(key);
                   }
                }
                if (value != null)

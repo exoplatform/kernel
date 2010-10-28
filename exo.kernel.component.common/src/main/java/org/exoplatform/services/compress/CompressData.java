@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.compress;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -68,7 +70,7 @@ public class CompressData
    {
       try
       {
-         InputStream is = new FileInputStream(file);
+         InputStream is = PrivilegedFileHelper.fileInputStream(file);
          datas_.add(new InputStreamDataInstance(entryName, is));
       }
       catch (FileNotFoundException e)
@@ -98,7 +100,7 @@ public class CompressData
    public void createZipFile(String fileName) throws Exception
    {
       File fileZip = new File(fileName + ".zip");
-      FileOutputStream out = new FileOutputStream(fileZip);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(fileZip);
       ZipOutputStream zos = new ZipOutputStream(out);
       int size = datas_.size();
       byte InputData[] = new byte[BUFFER];
@@ -170,7 +172,7 @@ public class CompressData
    public void createJarFile(String fileName) throws Exception
    {
       File fileZip = new File(fileName + ".jar");
-      FileOutputStream out = new FileOutputStream(fileZip);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(fileZip);
       JarOutputStream jos = new JarOutputStream(out);
       int size = datas_.size();
       if (size < 0)
@@ -289,6 +291,7 @@ public class CompressData
          file_ = file;
       }
 
+      @Override
       public InputStream getInputStream()
       {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -332,6 +335,7 @@ public class CompressData
          return is;
       }
 
+      @Override
       public void getJarOut(boolean containParent, JarOutputStream jos) throws Exception
       {
          String path = file_.getAbsolutePath();
@@ -355,7 +359,7 @@ public class CompressData
             }
             if (f.isFile())
             {
-               bufInput = new FileInputStream(f);
+               bufInput = PrivilegedFileHelper.fileInputStream(f);
             }
             else
                filePath += "/";
@@ -417,6 +421,7 @@ public class CompressData
          return jarOutput;
       }
 
+      @Override
       public void getZipOut(boolean containParent, ZipOutputStream zos) throws Exception
       {
          String path = file_.getAbsolutePath();
@@ -460,16 +465,19 @@ public class CompressData
          is_ = is;
       }
 
+      @Override
       public InputStream getInputStream()
       {
          return is_;
       }
 
+      @Override
       public void getJarOut(boolean containParent, JarOutputStream jos) throws Exception
       {
 
       }
 
+      @Override
       public void getZipOut(boolean containParent, ZipOutputStream zos) throws Exception
       {
 

@@ -19,6 +19,7 @@
 package org.exoplatform.container;
 
 import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
@@ -31,6 +32,7 @@ import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
 
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -161,7 +163,13 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       this.webAppContexts = Collections.singleton(new WebAppInitContext(portalContext));
       this.portalContext = portalContext;
       this.portalMergedContext = new PortalContainerContext(this);
-      this.portalMergedClassLoader = new PortalContainerClassLoader(this);
+      this.portalMergedClassLoader = SecurityHelper.doPriviledgedAction(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return new PortalContainerClassLoader(PortalContainer.this);
+         }
+      });
       this.webAppClassLoaders = Collections.unmodifiableMap(Collections.singletonMap(name, portalMergedClassLoader));
    }
 
@@ -195,8 +203,8 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
             if (cl == null)
             {
                cl =
-                  new UnifiedClassLoader(new ClassLoader[]{Thread.currentThread().getContextClassLoader(),
-                     portalMergedClassLoader});
+                  UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+                     Thread.currentThread().getContextClassLoader(), portalMergedClassLoader});
                Map<String, ClassLoader> cls = new HashMap<String, ClassLoader>(webAppClassLoaders);
                cls.put(contextName, cl);
                this.webAppClassLoaders = Collections.unmodifiableMap(cls);
@@ -615,12 +623,14 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       return started_;
    }
 
+   @Override
    public void start()
    {
       super.start();
       started_ = true;
    }
 
+   @Override
    public void stop()
    {
       super.stop();

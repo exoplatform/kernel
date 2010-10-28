@@ -39,7 +39,7 @@ public class TestUnifiedClassLoader extends TestCase
    {
       try
       {
-         new UnifiedClassLoader();
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode();
          fail("An IllegalArgumentException is expected");
       }
       catch (IllegalArgumentException e)
@@ -47,7 +47,7 @@ public class TestUnifiedClassLoader extends TestCase
       }
       try
       {
-         new UnifiedClassLoader(new ClassLoader[0]);
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[0]);
          fail("An IllegalArgumentException is expected");
       }
       catch (IllegalArgumentException e)
@@ -57,61 +57,95 @@ public class TestUnifiedClassLoader extends TestCase
    
    public void testGetResource() throws Exception
    {
-      UnifiedClassLoader mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, null), new MockClassLoader(null, null)});
+      UnifiedClassLoader mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{new MockClassLoader(null, null),
+            new MockClassLoader(null, null)});
       assertNull(mcl.getResource(null));
       URL result = new URL("file:///foo");
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, null), new MockClassLoader(result, null)});
-      assertEquals(result, mcl.getResource(null));      
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(result, null), new MockClassLoader(null, null)});
-      assertEquals(result, mcl.getResource(null));      
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(new URL("file:///foo2"), null), new MockClassLoader(result, null)});
-      assertEquals(result, mcl.getResource(null));      
+      
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{new MockClassLoader(null, null),
+            new MockClassLoader(result, null)});
+      assertEquals(result, mcl.getResource(null));
+
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{new MockClassLoader(result, null),
+            new MockClassLoader(null, null)});
+      assertEquals(result, mcl.getResource(null));
+
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+            new MockClassLoader(new URL("file:///foo2"), null), new MockClassLoader(result, null)});
+      assertEquals(result, mcl.getResource(null));
    }
    
    public void testGetResources() throws Exception
    {
-      UnifiedClassLoader mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>())), new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>()))});
+      UnifiedClassLoader mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+            new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>())),
+            new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>()))});
       Enumeration<URL> eResult = mcl.getResources(null);
       assertNotNull(eResult);
       assertFalse(eResult.hasMoreElements());
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, null), new MockClassLoader(null, null)});
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{new MockClassLoader(null, null),
+            new MockClassLoader(null, null)});
       eResult = mcl.getResources(null);
       assertNotNull(eResult);
       assertFalse(eResult.hasMoreElements());
-      URL result = new URL("file:///foo");
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))), new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>()))});
-      eResult = mcl.getResources(null);
-      assertNotNull(eResult);
-      assertTrue(eResult.hasMoreElements());
-      assertEquals(result, eResult.nextElement());
-      assertFalse(eResult.hasMoreElements());
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))), new MockClassLoader(null, null)});
-      eResult = mcl.getResources(null);
-      assertNotNull(eResult);
-      assertTrue(eResult.hasMoreElements());
-      assertEquals(result, eResult.nextElement());
-      assertFalse(eResult.hasMoreElements());
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>())), new MockClassLoader(null, Collections.enumeration(Arrays.asList(result)))});
+      final URL result = new URL("file:///foo");
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))),
+            new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>()))});
       eResult = mcl.getResources(null);
       assertNotNull(eResult);
       assertTrue(eResult.hasMoreElements());
       assertEquals(result, eResult.nextElement());
       assertFalse(eResult.hasMoreElements());
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, null), new MockClassLoader(null, Collections.enumeration(Arrays.asList(result)))});
+      mcl =
+         UnifiedClassLoader
+            .createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+               new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))),
+               new MockClassLoader(null, null)});
       eResult = mcl.getResources(null);
       assertNotNull(eResult);
       assertTrue(eResult.hasMoreElements());
       assertEquals(result, eResult.nextElement());
       assertFalse(eResult.hasMoreElements());
-      URL result1 = new URL("file:///foo");      
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))), new MockClassLoader(null, Collections.enumeration(Arrays.asList(result1)))});
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+            new MockClassLoader(null, Collections.enumeration(new ArrayList<URL>())),
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result)))});
       eResult = mcl.getResources(null);
       assertNotNull(eResult);
       assertTrue(eResult.hasMoreElements());
       assertEquals(result, eResult.nextElement());
       assertFalse(eResult.hasMoreElements());
-      URL result2 = new URL("file:///foo2");
-      mcl = new UnifiedClassLoader(new ClassLoader[]{new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))), new MockClassLoader(null, Collections.enumeration(Arrays.asList(result2)))});
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{new MockClassLoader(null, null),
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result)))});
+      eResult = mcl.getResources(null);
+      assertNotNull(eResult);
+      assertTrue(eResult.hasMoreElements());
+      assertEquals(result, eResult.nextElement());
+      assertFalse(eResult.hasMoreElements());
+      final URL result1 = new URL("file:///foo");
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))),
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result1)))});
+      eResult = mcl.getResources(null);
+      assertNotNull(eResult);
+      assertTrue(eResult.hasMoreElements());
+      assertEquals(result, eResult.nextElement());
+      assertFalse(eResult.hasMoreElements());
+      final URL result2 = new URL("file:///foo2");
+      mcl =
+         UnifiedClassLoader.createUnifiedClassLoaderInPrivilegedMode(new ClassLoader[]{
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result))),
+            new MockClassLoader(null, Collections.enumeration(Arrays.asList(result2)))});
       eResult = mcl.getResources(null);
       assertNotNull(eResult);
       assertTrue(eResult.hasMoreElements());
@@ -134,11 +168,13 @@ public class TestUnifiedClassLoader extends TestCase
          this.getResourcesResult = getResourcesResult;
       }
 
+      @Override
       public URL getResource(String name)
       {
          return getResourceResult;
       }
 
+      @Override
       public Enumeration<URL> getResources(String name)
       {
          return getResourcesResult;

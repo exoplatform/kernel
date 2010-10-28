@@ -32,7 +32,7 @@ import javax.management.MBeanParameterInfo;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class TestExoMBeanOperation extends AbstractTestExoMBean
+public class TestExoMBeanOperation extends AbstractExoMBeanTest
 {
 
    public void test1() throws Exception

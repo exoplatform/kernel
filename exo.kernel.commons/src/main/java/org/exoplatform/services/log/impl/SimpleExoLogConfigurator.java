@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.log.impl;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.log.AbstractLogConfigurator;
 
 import java.util.Iterator;
@@ -44,7 +45,7 @@ public class SimpleExoLogConfigurator extends AbstractLogConfigurator
       for (Iterator it = properties.entrySet().iterator(); it.hasNext();)
       {
          Map.Entry entry = (Map.Entry)it.next();
-         System.setProperty((String)entry.getKey(), (String)entry.getValue());
+         PrivilegedSystemHelper.setProperty((String)entry.getKey(), (String)entry.getValue());
       }
 
       this.properties = properties;

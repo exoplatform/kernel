@@ -31,7 +31,7 @@ import javax.management.modelmbean.RequiredModelMBean;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public abstract class AbstractTestExoMBean extends TestCase
+public abstract class AbstractExoMBeanTest extends TestCase
 {
 
    protected MBeanServer server;

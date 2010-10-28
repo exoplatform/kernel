@@ -18,15 +18,21 @@
  */
 package org.exoplatform.xml.object;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.JiBXException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -143,6 +149,7 @@ public class XMLObject
       addField(new XMLField(name, fieldType, obj));
    }
 
+   @Override
    public String toString()
    {
       StringBuffer b = new StringBuffer();
@@ -197,7 +204,7 @@ public class XMLObject
 
    public byte[] toByteArray(String encoding) throws Exception
    {
-      IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
+      IBindingFactory bfact = getBindingFactoryInPriviledgedMode(XMLObject.class);
       IMarshallingContext mctx = bfact.createMarshallingContext();
       mctx.setIndent(2);
       ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -207,7 +214,7 @@ public class XMLObject
 
    static public XMLObject getXMLObject(InputStream is) throws Exception
    {
-      IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
+      IBindingFactory bfact = getBindingFactoryInPriviledgedMode(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
       XMLObject xmlobject = (XMLObject)uctx.unmarshalDocument(is, "UTF-8");
       return xmlobject;
@@ -243,8 +250,49 @@ public class XMLObject
          int modifier = field[i].getModifiers();
          if (Modifier.isStatic(modifier) || Modifier.isTransient(modifier))
             continue;
-         field[i].setAccessible(true);
+         
+         final Field fld = field[i];
+
+         SecurityHelper.doPriviledgedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               fld.setAccessible(true);
+               return null;
+            }
+         });
+
          fields.put(field[i].getName(), field[i]);
+      }
+   }
+
+   static protected IBindingFactory getBindingFactoryInPriviledgedMode(final Class clazz) throws JiBXException
+   {
+      try
+      {
+         return AccessController.doPrivileged(new PrivilegedExceptionAction<IBindingFactory>()
+         {
+            public IBindingFactory run() throws Exception
+            {
+               return BindingDirectory.getFactory(clazz);
+            }
+         });
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof JiBXException)
+         {
+            throw (JiBXException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
       }
    }
 }

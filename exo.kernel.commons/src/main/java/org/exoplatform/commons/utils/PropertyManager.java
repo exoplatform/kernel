@@ -76,7 +76,7 @@ public class PropertyManager
             String propertyValue = cache.get(propertyName);
             if (propertyValue == null)
             {
-               propertyValue = System.getProperty(propertyName);
+               propertyValue = PrivilegedSystemHelper.getProperty(propertyName);
                if (propertyValue != null)
                {
                   cache.put(propertyName, propertyValue);
@@ -87,7 +87,7 @@ public class PropertyManager
       }
       else
       {
-         return System.getProperty(propertyName);
+         return PrivilegedSystemHelper.getProperty(propertyName);
       }
    }
 
@@ -110,7 +110,7 @@ public class PropertyManager
 
    private static boolean internalIsDevelopping()
    {
-      return "true".equals(System.getProperty(DEVELOPING, "false"));
+      return "true".equals(PrivilegedSystemHelper.getProperty(DEVELOPING, "false"));
    }
 
    /**
@@ -121,7 +121,7 @@ public class PropertyManager
     */
    public synchronized static void setProperty(String propertyName, String propertyValue)
    {
-      System.setProperty(propertyName, propertyValue);
+      PrivilegedSystemHelper.setProperty(propertyName, propertyValue);
 
       // Remove instead of put to avoid concurrent race
       cache.remove(propertyName);

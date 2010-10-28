@@ -18,7 +18,10 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.container.configuration.MockConfigurationManagerImpl;
@@ -38,6 +41,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.test.mocks.servlet.MockServletContext;
 
 import java.io.File;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -110,7 +114,14 @@ public class RootContainer extends ExoContainer
       log.info("Active profiles " + profiles);
 
       //
-      Runtime.getRuntime().addShutdownHook(new ShutdownThread(this));
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            Runtime.getRuntime().addShutdownHook(new ShutdownThread(RootContainer.this));
+            return null;
+         }
+      });
       this.profiles = profiles;
       this.registerComponentInstance(J2EEServerInfo.class, serverenv_);
    }
@@ -409,14 +420,14 @@ public class RootContainer extends ExoContainer
          RootContainer rootContainer = new RootContainer();
          ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles);
          service.addConfiguration(ContainerUtil.getConfigurationURL("conf/configuration.xml"));
-         if (System.getProperty("maven.exoplatform.dir") != null)
+         if (PrivilegedSystemHelper.getProperty("maven.exoplatform.dir") != null)
          {
             service.addConfiguration(ContainerUtil.getConfigurationURL("conf/test-configuration.xml"));
          }
          String confDir = rootContainer.getServerEnvironment().getExoConfigurationDirectory();
          String overrideConf = confDir + "/configuration.xml";
          File file = new File(overrideConf);
-         if (file.exists())
+         if (PrivilegedFileHelper.exists(file))
          {
             service.addConfiguration("file:" + overrideConf);
          }
@@ -644,12 +655,14 @@ public class RootContainer extends ExoContainer
          container_ = container;
       }
 
+      @Override
       public void run()
       {
          container_.stop();
       }
    }
 
+   @Override
    public void stop()
    {
       super.stop();

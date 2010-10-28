@@ -18,9 +18,6 @@
  */
 package org.exoplatform.commons.test;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import java.security.Permission;
 
 /**
@@ -30,11 +27,6 @@ import java.security.Permission;
  */
 public class TestSecurityManager extends SecurityManager
 {
-
-   /**
-    * The logger 
-    */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.test.TestSecurityManager");
 
    /**
     * {@inheritDoc}
@@ -75,9 +67,11 @@ public class TestSecurityManager extends SecurityManager
                      return;
                   }
 
+                  // known tests classes
                   if (fileName.startsWith("Test") || fileName.endsWith("Test.java")
-                     || fileName.endsWith("TestBase.java") || fileName.equals("Probe.java")
-                     || fileName.equals("ExportBase.java"))
+                     || fileName.endsWith("TestBase.java") || fileName.endsWith("TestCase.java")
+                     || fileName.equals("Probe.java") || fileName.equals("ExportBase.java")
+                     || fileName.equals("AbstractTestContainer.java") || fileName.equals("ContainerBuilder.java"))
                   {
                      testCode = true;
                   }
@@ -99,11 +93,6 @@ public class TestSecurityManager extends SecurityManager
                      testCode = true;
                   }
                }
-               else if (className.startsWith("org.slf4j.impl.Log4jLoggerFactory")
-                  || className.startsWith("com.arjuna.ats.jta.logging.jtaLogger"))
-               {
-                  return;
-               }
             }
 
             e = e.getCause();
@@ -116,7 +105,7 @@ public class TestSecurityManager extends SecurityManager
          }
 
          // Only for test purpose
-         //         LOG.error("Check permission failed", se);
+         //         se.printStackTrace();
          throw se;
       }
    }

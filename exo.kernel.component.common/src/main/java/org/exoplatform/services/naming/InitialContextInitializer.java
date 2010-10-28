@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.naming;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.xml.InitParams;
@@ -59,8 +60,8 @@ public class InitialContextInitializer
 
    final public static String BINDINGS_STORE_PATH = "bindings-store-path";
 
-   final public static String DEFAULT_BINDING_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator
-      + "bind-references.xml";
+   final public static String DEFAULT_BINDING_STORE_PATH = PrivilegedSystemHelper.getProperty("java.io.tmpdir")
+      + File.separator + "bind-references.xml";
 
    private static Log LOG = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
 
@@ -93,7 +94,7 @@ public class InitialContextInitializer
             Property prop = (Property)props.next();
             String propName = prop.getName();
             String propValue = prop.getValue();
-            String existedProp = System.getProperty(propName);
+            String existedProp = PrivilegedSystemHelper.getProperty(propName);
             if (isMandatory)
             {
                setSystemProperty(propName, propValue, propParam.getName());
@@ -130,21 +131,21 @@ public class InitialContextInitializer
 
    private void setSystemProperty(String propName, String propValue, String propParamName)
    {
-      System.setProperty(propName, propValue);
+      PrivilegedSystemHelper.setProperty(propName, propValue);
       if (propName.equals(Context.INITIAL_CONTEXT_FACTORY))
       {
          defaultContextFactory = propValue;
       }
-      LOG.info("Using mandatory system property: " + propName + " = " + System.getProperty(propName));
+      LOG.info("Using mandatory system property: " + propName + " = " + PrivilegedSystemHelper.getProperty(propName));
    }
 
    // for out-of-container testing
    private InitialContextInitializer(String name, Reference reference) throws NamingException, FileNotFoundException,
       XMLStreamException
    {
-      if (System.getProperty(Context.INITIAL_CONTEXT_FACTORY) == null)
+      if (PrivilegedSystemHelper.getProperty(Context.INITIAL_CONTEXT_FACTORY) == null)
       {
-         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, defaultContextFactory);
+         PrivilegedSystemHelper.setProperty(Context.INITIAL_CONTEXT_FACTORY, defaultContextFactory);
       }
       initialContext = new InitialContext();
       initialContext.rebind(name, reference);

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.transaction.impl.jotm;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -30,6 +31,8 @@ import org.objectweb.jotm.TransactionFactoryImpl;
 import org.objectweb.jotm.XidImpl;
 
 import java.rmi.RemoteException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 import javax.transaction.RollbackException;
@@ -64,8 +67,35 @@ public class TransactionServiceJotmImpl implements TransactionService
       current = Current.getCurrent();
       if (current == null)
       {
-         TransactionFactory tm = new TransactionFactoryImpl();
-         current = new Current(tm);
+         try
+         {
+            SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws Exception
+               {
+                  TransactionFactory tm = new TransactionFactoryImpl();
+                  current = new Current(tm);
+                  return null;
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof RemoteException)
+            {
+               throw (RemoteException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+
 
          // Change the timeout only if JOTM is not initialized yet
          if (params != null)

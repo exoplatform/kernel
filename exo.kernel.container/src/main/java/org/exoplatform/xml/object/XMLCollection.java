@@ -18,7 +18,6 @@
  */
 package org.exoplatform.xml.object;
 
-import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
@@ -93,7 +92,7 @@ public class XMLCollection
 
    public byte[] toByteArray(String encoding) throws Exception
    {
-      IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
+      IBindingFactory bfact = XMLObject.getBindingFactoryInPriviledgedMode(XMLObject.class);
       IMarshallingContext mctx = bfact.createMarshallingContext();
       mctx.setIndent(2);
       ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -103,7 +102,7 @@ public class XMLCollection
 
    static public XMLCollection getXMLCollection(InputStream is) throws Exception
    {
-      IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
+      IBindingFactory bfact = XMLObject.getBindingFactoryInPriviledgedMode(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
       return (XMLCollection)uctx.unmarshalDocument(is, null);
    }

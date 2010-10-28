@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
@@ -143,7 +144,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          if (components != null)
             container.registerArray(components);
          container.start();
-         System.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
+         PrivilegedSystemHelper.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
          System.out.println("StandaloneContainer initialized using:  " + configurationURL);
       }
       return container;
@@ -285,6 +286,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    /**
     * {@inheritDoc}
     */
+   @Override
    public void stop()
    {
       super.stop();

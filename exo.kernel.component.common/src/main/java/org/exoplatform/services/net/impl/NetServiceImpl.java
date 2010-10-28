@@ -18,9 +18,11 @@
  */
 package org.exoplatform.services.net.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.net.NetService;
 
 import java.net.Socket;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS Author : HoaPham phamvuxuanhoa@yahoo.com Jan
@@ -29,14 +31,20 @@ import java.net.Socket;
 public class NetServiceImpl implements NetService
 {
 
-   public long ping(String host, int port) throws Exception
+   public long ping(final String host, final int port) throws Exception
    {
       long startTime = 0;
       long endTime = 0;
       try
       {
          startTime = System.currentTimeMillis();
-         Socket socket = new Socket(host, port);
+         Socket socket = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Socket>()
+         {
+            public Socket run() throws Exception
+            {
+               return new Socket(host, port);
+            }
+         });
          endTime = System.currentTimeMillis();
       }
       catch (Exception e)

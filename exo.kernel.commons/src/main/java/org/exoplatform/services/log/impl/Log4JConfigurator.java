@@ -19,8 +19,10 @@
 package org.exoplatform.services.log.impl;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.AbstractLogConfigurator;
 
+import java.security.PrivilegedAction;
 import java.util.Properties;
 
 /**
@@ -33,11 +35,16 @@ import java.util.Properties;
  */
 public class Log4JConfigurator extends AbstractLogConfigurator
 {
-
-   public void configure(Properties properties)
+   public void configure(final Properties properties)
    {
-      PropertyConfigurator.configure(properties);
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            PropertyConfigurator.configure(properties);
+            return null;
+         }
+      });
       this.properties = properties;
    }
-
 }

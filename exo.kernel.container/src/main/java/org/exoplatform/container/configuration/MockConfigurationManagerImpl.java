@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.configuration;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.ExoContainer;
 
 import java.net.URL;
@@ -39,9 +40,10 @@ public class MockConfigurationManagerImpl extends ConfigurationManagerImpl
    public MockConfigurationManagerImpl(ServletContext context) throws Exception
    {
       super(context, ExoContainer.getProfiles());
-      confDir_ = System.getProperty("mock.portal.dir") + "/WEB-INF";
+      confDir_ = PrivilegedSystemHelper.getProperty("mock.portal.dir") + "/WEB-INF";
    }
 
+   @Override
    public URL getURL(String uri) throws Exception
    {
       if (uri.startsWith("jar:"))

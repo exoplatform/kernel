@@ -19,6 +19,7 @@
 package org.exoplatform.services.rpc.impl;
 
 import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -215,19 +216,39 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       {
          throw new IllegalArgumentException("The RPCServiceImpl requires some parameters");
       }
-      URL properties = getProperties(params, configManager);
+      final URL properties = getProperties(params, configManager);
       if (LOG.isInfoEnabled())
       {
          LOG.info("The JGroups configuration used for the RPCServiceImpl will be loaded from " + properties);
       }
+
       try
       {
-         this.configurator = ConfiguratorFactory.getStackConfigurator(properties);
+         this.configurator = AccessController.doPrivileged(new PrivilegedExceptionAction<ProtocolStackConfigurator>()
+         {
+            public ProtocolStackConfigurator run() throws Exception
+            {
+               return ConfiguratorFactory.getStackConfigurator(properties);
+            }
+         });
       }
-      catch (ChannelException e)
+      catch (PrivilegedActionException pae)
       {
-         throw new RuntimeException("Cannot load the JGroups configuration from " + properties, e);
+         Throwable cause = pae.getCause();
+         if (cause instanceof ChannelException)
+         {
+            throw new RuntimeException("Cannot load the JGroups configuration from " + properties, cause);
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
       }
+
       this.clusterName = getClusterName(ctx, params);
       if (LOG.isDebugEnabled())
       {
@@ -670,23 +691,36 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       {
          security.checkPermission(RPCService.ACCESS_RPC_SERVICE_PERMISSION);
       }
+
       try
       {
-         this.channel = new JChannel(configurator);
-         channel.setOpt(Channel.AUTO_RECONNECT, true);
-         this.dispatcher = new MessageDispatcher(channel, null, this, this);
-         doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+         AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
          {
             public Void run() throws Exception
             {
+               channel = new JChannel(configurator);
+               channel.setOpt(Channel.AUTO_RECONNECT, true);
+               dispatcher = new MessageDispatcher(channel, null, RPCServiceImpl.this, RPCServiceImpl.this);
                channel.connect(clusterName);
                return null;
             }
          });
       }
-      catch (ChannelException e)
+      catch (PrivilegedActionException pae)
       {
-         throw new RuntimeException("Cannot initialize the Channel needed for the RPCServiceImpl", e);
+         Throwable cause = pae.getCause();
+         if (cause instanceof ChannelException)
+         {
+            throw new RuntimeException("Cannot initialize the Channel needed for the RPCServiceImpl", cause);
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
       }
       finally
       {
@@ -705,6 +739,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       {
          security.checkPermission(RPCService.ACCESS_RPC_SERVICE_PERMISSION);
       }
+
       this.state = State.STOPPED;
       this.isCoordinator = false;
       if (channel != null && channel.isOpen())
@@ -719,7 +754,15 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
                return null;
             }
          });
-         channel.close();
+
+         SecurityHelper.doPriviledgedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               channel.close();
+               return null;
+            }
+         });
          channel = null;
       }
       if (dispatcher != null)
@@ -832,33 +875,6 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          clusterName = CLUSTER_NAME;
       }
       return clusterName += "-" + ctx.getName();
-   }
-
-   /**
-    * Execute a privilege action
-    */
-   private static <E> E doPriviledgedExceptionAction(PrivilegedExceptionAction<E> action) throws ChannelException
-   {
-      try
-      {
-         return AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof ChannelException)
-         {
-            throw (ChannelException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
    }
 
    /**

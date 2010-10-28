@@ -19,12 +19,15 @@
 package org.exoplatform.container.monitor.jvm;
 
 import org.exoplatform.commons.utils.ExoProperties;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.picocontainer.Startable;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -51,89 +54,185 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
          while (i.hasNext())
          {
             Map.Entry entry = (Map.Entry)i.next();
-            System.setProperty((String)entry.getKey(), (String)entry.getValue());
+            PrivilegedSystemHelper.setProperty((String)entry.getKey(), (String)entry.getValue());
          }
       }
    }
 
    public String getName()
    {
-      return mxbean_.getName();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getName();
+         }
+      });
    }
 
    public String getSpecName()
    {
-      return mxbean_.getSpecName();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getSpecName();
+         }
+      });
    }
 
    public String getSpecVendor()
    {
-      return mxbean_.getSpecVendor();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getSpecVendor();
+         }
+      });
    }
 
    public String getSpecVersion()
    {
-      return mxbean_.getSpecVersion();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getSpecVersion();
+         }
+      });
    }
 
    public String getManagementSpecVersion()
    {
-      return mxbean_.getManagementSpecVersion();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getManagementSpecVersion();
+         }
+      });
    }
 
    public String getVmName()
    {
-      return mxbean_.getVmName();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getVmName();
+         }
+      });
    }
 
    public String getVmVendor()
    {
-      return mxbean_.getVmVendor();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getVmVendor();
+         }
+      });
    }
 
    public String getVmVersion()
    {
-      return mxbean_.getVmVersion();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getVmVersion();
+         }
+      });
    }
 
    public List getInputArguments()
    {
-      return mxbean_.getInputArguments();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<List>()
+      {
+         public List run()
+         {
+            return mxbean_.getInputArguments();
+         }
+      });
    }
 
    public Map getSystemProperties()
    {
-      return mxbean_.getSystemProperties();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Map>()
+      {
+         public Map run()
+         {
+            return mxbean_.getSystemProperties();
+         }
+      });
    }
 
    public boolean getBootClassPathSupported()
    {
-      return mxbean_.isBootClassPathSupported();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
+      {
+         public Boolean run()
+         {
+            return mxbean_.isBootClassPathSupported();
+         }
+      });
    }
 
    public String getBootClassPath()
    {
-      return mxbean_.getBootClassPath();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getBootClassPath();
+         }
+      });
    }
 
    public String getClassPath()
    {
-      return mxbean_.getClassPath();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getClassPath();
+         }
+      });
    }
 
    public String getLibraryPath()
    {
-      return mxbean_.getLibraryPath();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      {
+         public String run()
+         {
+            return mxbean_.getLibraryPath();
+         }
+      });
    }
 
    public long getStartTime()
    {
-      return mxbean_.getStartTime();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Long>()
+      {
+         public Long run()
+         {
+            return mxbean_.getStartTime();
+         }
+      });
    }
 
    public long getUptime()
    {
-      return mxbean_.getUptime();
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Long>()
+      {
+         public Long run()
+         {
+            return mxbean_.getUptime();
+         }
+      });
    }
 
    public boolean isManagementSupported()
@@ -144,7 +243,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
    public String getSystemPropertiesAsText()
    {
       StringBuffer b = new StringBuffer();
-      Iterator i = System.getProperties().entrySet().iterator();
+      Iterator i = PrivilegedSystemHelper.getProperties().entrySet().iterator();
       while (i.hasNext())
       {
          Map.Entry entry = (Map.Entry)i.next();
@@ -161,6 +260,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
    {
    }
 
+   @Override
    public String toString()
    {
       StringBuilder b = new StringBuilder();

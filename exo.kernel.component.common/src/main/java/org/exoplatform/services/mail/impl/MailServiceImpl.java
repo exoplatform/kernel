@@ -18,12 +18,15 @@
  */
 package org.exoplatform.services.mail.impl;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.mail.Attachment;
 import org.exoplatform.services.mail.MailService;
 import org.exoplatform.services.mail.Message;
 
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -52,18 +55,30 @@ public class MailServiceImpl implements MailService
 
    public MailServiceImpl(InitParams params) throws Exception
    {
-      props_ = new Properties(System.getProperties());
+      props_ = new Properties(PrivilegedSystemHelper.getProperties());
       props_.putAll(params.getPropertiesParam("config").getProperties());
       if ("true".equals(props_.getProperty("mail.smtp.auth")))
       {
          String username = props_.getProperty("mail.smtp.auth.username");
          String password = props_.getProperty("mail.smtp.auth.password");
-         ExoAuthenticator auth = new ExoAuthenticator(username, password);
-         mailSession_ = Session.getInstance(props_, auth);
+         final ExoAuthenticator auth = new ExoAuthenticator(username, password);
+         mailSession_ = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Session>()
+         {
+            public Session run()
+            {
+               return Session.getInstance(props_, auth);
+            }
+         });
       }
       else
       {
-         mailSession_ = Session.getInstance(props_, null);
+         mailSession_ = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Session>()
+         {
+            public Session run()
+            {
+               return Session.getInstance(props_, null);
+            }
+         });
       }
    }
 

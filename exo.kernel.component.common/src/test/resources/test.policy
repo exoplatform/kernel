@@ -7,9 +7,21 @@ grant codeBase "@MAIN_CLASSES@-"{
 };
 
 grant codeBase "@TEST_CLASSES@-"{
-   permission java.lang.RuntimePermission "modifyPermisssion";
+   permission java.lang.RuntimePermission "accessRPCService";
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{
    permission java.security.AllPermission;
 };
+
+grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons/-"{
+   permission java.security.AllPermission;
+};
+
+grant codeBase "@MAIN_CLASSES@../../../exo.kernel.container/-"{
+   permission java.security.AllPermission;
+};
+
+
+
+

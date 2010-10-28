@@ -26,6 +26,11 @@
       </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons.test</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.mc-int-demo</artifactId>
       </dependency>
    </dependencies>
@@ -51,8 +56,46 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+               <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                <skip>true</skip>
             </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>prepare-test-policy</id>
+                  <phase>process-test-resources</phase>
+                  <configuration>
+                     <tasks>
+                        <echo>Creating Access Policy for tests</echo>
+                        <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
+                        <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
+                        <makeurl file="${project.build.testOutputDirectory}" property="testOutputDirectoryURL" />
+                        <copy todir="${project.build.testOutputDirectory}" overwrite="true">
+                           <fileset dir="${project.basedir}/src/test/resources/">
+                              <include name="test.policy" />
+                           </fileset>
+                           <filterset>
+                              <filter token="MAVEN_REPO" value="${localRepositoryURL}" />
+                              <filter token="MAIN_CLASSES" value="${outputDirectoryURL}" />
+                              <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
+                           </filterset>
+                        </copy>
+                     </tasks>                     
+                  </configuration>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>ant</groupId>
+                  <artifactId>ant-optional</artifactId>
+                  <version>1.5.3-1</version>
+               </dependency>
+            </dependencies>
          </plugin>
       </plugins>
    </build>
@@ -68,6 +111,7 @@
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
+                     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <excludes>
                         <exclude>**/it/Test*.java</exclude>
                      </excludes>
@@ -196,6 +240,7 @@
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
+                     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <excludes>
                         <exclude>**/it/Test*.java</exclude>
                      </excludes>
@@ -319,6 +364,7 @@
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
+                     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <excludes>
                         <exclude>**/it/Test*.java</exclude>
                      </excludes>

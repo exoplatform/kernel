@@ -19,6 +19,7 @@
 package org.exoplatform.container.util;
 
 import org.exoplatform.commons.utils.PropertiesLoader;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,10 +72,18 @@ public class ContainerUtil
       return constructors;
    }
 
-   static public Collection<URL> getConfigurationURL(String configuration) throws Exception
+   static public Collection<URL> getConfigurationURL(final String configuration) throws Exception
    {
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      Collection c = Collections.list(cl.getResources(configuration));
+      final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+      Collection c = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Collection>()
+      {
+         public Collection run() throws IOException
+         {
+            return Collections.list(cl.getResources(configuration));
+         }
+      });
+
       Map<String, URL> map = new HashMap<String, URL>();
       Iterator i = c.iterator();
       while (i.hasNext())

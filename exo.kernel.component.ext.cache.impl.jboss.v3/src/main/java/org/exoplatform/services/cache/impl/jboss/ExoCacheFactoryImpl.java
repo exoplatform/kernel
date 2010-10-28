@@ -26,15 +26,15 @@ import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.impl.jboss.fifo.FIFOExoCacheCreator;
+import org.exoplatform.services.cache.impl.jboss.util.PrivilegedCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheFactory;
-import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.config.Configuration;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
-import org.jboss.cache.config.Configuration.CacheMode;
 
 import java.io.Serializable;
 import java.net.URL;
@@ -143,7 +143,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       final String region = config.getName();
       final String customConfig = mappingCacheNameConfig.get(region);
       Cache<Serializable, Object> cache;
-      final CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
+
+      final CacheFactory<Serializable, Object> factory = PrivilegedCacheHelper.createCacheFactory();
       final ExoCache<Serializable, Object> eXoCache;
       try
       {
@@ -152,14 +153,16 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             // A custom configuration has been set
             if (LOG.isInfoEnabled())
                LOG.info("A custom configuration has been set for the cache '" + region + "'.");
-            cache = factory.createCache(configManager.getInputStream(customConfig), false);
+            cache = PrivilegedCacheHelper.createCache(factory, configManager.getInputStream(customConfig), false);
          }
          else
          {
             // No custom configuration has been found, a configuration template will be used 
             if (LOG.isInfoEnabled())
                LOG.info("The configuration template will be used for the the cache '" + region + "'.");
-            cache = factory.createCache(configManager.getInputStream(cacheConfigTemplate), false);
+
+            cache =
+               PrivilegedCacheHelper.createCache(factory, configManager.getInputStream(cacheConfigTemplate), false);
             if (!config.isDistributed())
             {
                // The cache is local
@@ -174,9 +177,9 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          // Create the cache
          eXoCache = creator.create(config, cache);
          // Create the cache
-         cache.create();
+         PrivilegedCacheHelper.create(cache);
          // Start the cache
-         cache.start();
+         PrivilegedCacheHelper.start(cache);
       }
       catch (Exception e)
       {

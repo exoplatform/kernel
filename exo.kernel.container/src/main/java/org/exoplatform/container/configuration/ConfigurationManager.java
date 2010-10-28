@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.configuration;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.Configuration;
 
@@ -44,7 +45,7 @@ public interface ConfigurationManager
     * Constant that indicates whether the logger of the configuration
     * must be in debug more or not.
     */
-   public static final boolean LOG_DEBUG = System.getProperty(LOG_DEBUG_PROPERTY) != null;
+   public static final boolean LOG_DEBUG = PrivilegedSystemHelper.getProperty(LOG_DEBUG_PROPERTY) != null;
    
    public Configuration getConfiguration();
 

@@ -25,6 +25,7 @@ import org.exoplatform.services.cache.CachedObjectSelector;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ObjectCacheInfo;
+import org.exoplatform.services.cache.impl.jboss.util.PrivilegedCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -248,7 +249,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     */
    protected V putOnly(K key, V value)
    {
-      return cache.put(getFqn(key), key, value);
+      return PrivilegedCacheHelper.put(cache, getFqn(key), key, value);
    }
 
    /**
@@ -280,7 +281,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
                total++;
             }
          }
-         cache.endBatch(true);
+         PrivilegedCacheHelper.endBatch(cache, true);
          // End transaction
          for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
          {
@@ -312,7 +313,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       if (node != null)
       {
          result = node.getDirect((K)name);
-         if (cache.removeNode(fqn))
+         if (PrivilegedCacheHelper.removeNode(cache, fqn))
          {
             onRemove((K)name, result);
          }

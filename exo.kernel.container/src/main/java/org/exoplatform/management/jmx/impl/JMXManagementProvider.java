@@ -18,12 +18,16 @@
  */
 package org.exoplatform.management.jmx.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +143,7 @@ public class JMXManagementProvider implements ManagementProvider
       return null;  
    }
 
-   private void attemptToRegister(ObjectName name, Object mbean)
+   private void attemptToRegister(final ObjectName name, final Object mbean)
    {
       synchronized (server)
       {
@@ -151,7 +155,14 @@ public class JMXManagementProvider implements ManagementProvider
             }
             try
             {
-               server.unregisterMBean(name);            
+               SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+               {
+                  public Void run() throws Exception
+                  {
+                     server.unregisterMBean(name);
+                     return null;
+                  }
+               });
             }
             catch (Exception e)
             {
@@ -160,7 +171,14 @@ public class JMXManagementProvider implements ManagementProvider
          }
          try
          {
-            server.registerMBean(mbean, name);
+            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws Exception
+               {
+                  server.registerMBean(mbean, name);
+                  return null;
+               }
+            });
          }
          catch (Exception e)
          {
@@ -171,10 +189,40 @@ public class JMXManagementProvider implements ManagementProvider
 
    public void unmanage(Object key)
    {
-      ObjectName name = (ObjectName)key;
+      final ObjectName name = (ObjectName)key;
       try
       {
-         server.unregisterMBean(name);
+         try
+         {
+            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws Exception
+               {
+                  server.unregisterMBean(name);
+                  return null;
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof InstanceNotFoundException)
+            {
+               throw (InstanceNotFoundException)cause;
+            }
+            else if (cause instanceof MBeanRegistrationException)
+            {
+               throw (MBeanRegistrationException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
       catch (InstanceNotFoundException e)
       {

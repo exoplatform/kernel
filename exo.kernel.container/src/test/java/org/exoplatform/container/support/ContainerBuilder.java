@@ -19,6 +19,7 @@
 package org.exoplatform.container.support;
 
 import junit.framework.AssertionFailedError;
+
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainerContext;
@@ -30,11 +31,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -120,7 +119,7 @@ public class ContainerBuilder
       return this;
    }
 
-   public ContainerBuilder profiledBy(String ... profiles)
+   public ContainerBuilder profiledBy(String... profiles)
    {
       this.profiles = Tools.set(profiles);
       return this;

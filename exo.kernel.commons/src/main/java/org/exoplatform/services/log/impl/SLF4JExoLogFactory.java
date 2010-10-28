@@ -18,10 +18,13 @@
  */
 package org.exoplatform.services.log.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LocationAwareLogger;
+
+import java.security.PrivilegedAction;
 
 /**
  * A factory for {@link org.exoplatform.services.log.impl.LocationAwareSLF4JExoLog} and
@@ -37,9 +40,17 @@ public class SLF4JExoLogFactory extends AbstractExoLogFactory
    /**
     * {@inheritDoc}
     */
-   protected Log getLogger(String name)
+   @Override
+   protected Log getLogger(final String name)
    {
-      Logger slf4jlogger = LoggerFactory.getLogger(name);
+      Logger slf4jlogger = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Logger>()
+      {
+         public Logger run()
+         {
+            return LoggerFactory.getLogger(name);
+         }
+      });
+
       if (slf4jlogger instanceof LocationAwareLogger)
       {
          return new LocationAwareSLF4JExoLog((LocationAwareLogger)slf4jlogger);

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -25,6 +27,8 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 
 import javax.management.MBeanServer;
 
@@ -67,16 +71,16 @@ public class J2EEServerInfo
    public J2EEServerInfo()
    {
 
-      String jonasHome = System.getProperty("jonas.base");
-      String jbossHome = System.getProperty("jboss.home.dir");
-      String jettyHome = System.getProperty("jetty.home");
-      String websphereHome = System.getProperty("was.install.root");
-      String weblogicHome = System.getProperty("wls.home");
-      String catalinaHome = System.getProperty("catalina.home");
-      String testHome = System.getProperty("maven.exoplatform.dir");
+      String jonasHome = PrivilegedSystemHelper.getProperty("jonas.base");
+      String jbossHome = PrivilegedSystemHelper.getProperty("jboss.home.dir");
+      String jettyHome = PrivilegedSystemHelper.getProperty("jetty.home");
+      String websphereHome = PrivilegedSystemHelper.getProperty("was.install.root");
+      String weblogicHome = PrivilegedSystemHelper.getProperty("wls.home");
+      String catalinaHome = PrivilegedSystemHelper.getProperty("catalina.home");
+      String testHome = PrivilegedSystemHelper.getProperty("maven.exoplatform.dir");
 
       // The name of the configuration directory
-      final String confDirName = System.getProperty(EXO_CONF_DIR_NAME_PARAM, "exo-conf");
+      final String confDirName = PrivilegedSystemHelper.getProperty(EXO_CONF_DIR_NAME_PARAM, "exo-conf");
       if (jonasHome != null)
       {
          serverName_ = "jonas";
@@ -90,7 +94,7 @@ public class J2EEServerInfo
 
          // try find and use jboss.server.config.url
          // based on http://www.jboss.org/community/docs/DOC-10730
-         String jbossConfigUrl = System.getProperty("jboss.server.config.url");
+         String jbossConfigUrl = PrivilegedSystemHelper.getProperty("jboss.server.config.url");
          if (jbossConfigUrl != null)
          {
             try
@@ -109,8 +113,15 @@ public class J2EEServerInfo
          //
          try
          {
-            Class clazz =
-               Thread.currentThread().getContextClassLoader().loadClass("org.jboss.mx.util.MBeanServerLocator");
+            Class clazz = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Class>()
+            {
+               public Class run() throws Exception
+               {
+                  return Thread.currentThread().getContextClassLoader()
+                     .loadClass("org.jboss.mx.util.MBeanServerLocator");
+               }
+            });
+
             Method m = clazz.getMethod("locateJBoss");
             mbeanServer = (MBeanServer)m.invoke(null);
          }
@@ -154,15 +165,21 @@ public class J2EEServerInfo
       {
          // throw new UnsupportedOperationException("unknown server platform") ;
          serverName_ = "standalone";
-         serverHome_ = System.getProperty("user.dir");
+         serverHome_ = PrivilegedSystemHelper.getProperty("user.dir");
          exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       if (mbeanServer == null)
       {
-         mbeanServer = ManagementFactory.getPlatformMBeanServer();
+         mbeanServer = SecurityHelper.doPriviledgedAction(new PrivilegedAction<MBeanServer>()
+         {
+            public MBeanServer run()
+            {
+               return ManagementFactory.getPlatformMBeanServer();
+            }
+         });
       }
 
-      String exoConfHome = System.getProperty(EXO_CONF_PARAM);
+      String exoConfHome = PrivilegedSystemHelper.getProperty(EXO_CONF_PARAM);
       if (exoConfHome != null && exoConfHome.length() > 0)
       {
          log.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
