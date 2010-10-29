@@ -394,9 +394,9 @@ public class PrivilegedFileHelper
     */
    public static void deleteOnExit(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
       {
-         public Object run()
+         public Void run()
          {
             file.deleteOnExit();
             return null;

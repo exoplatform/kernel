@@ -45,9 +45,9 @@ public class PrivilegedCacheHelper
     */
    public static <K, V> void start(final Cache<K, V> cache)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
       {
-         public Object run()
+         public Void run()
          {
             cache.start();
             return null;
@@ -63,9 +63,9 @@ public class PrivilegedCacheHelper
     */
    public static <K, V> void stop(final Cache<K, V> cache)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
       {
-         public Object run()
+         public Void run()
          {
             cache.stop();
             return null;
@@ -81,9 +81,9 @@ public class PrivilegedCacheHelper
     */
    public static <K, V> void create(final Cache<K, V> cache)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
       {
-         public Object run()
+         public Void run()
          {
             cache.create();
             return null;
@@ -99,9 +99,9 @@ public class PrivilegedCacheHelper
     */
    public static <K, V> void endBatch(final Cache<K, V> cache, final boolean successful)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
       {
-         public Object run()
+         public Void run()
          {
             cache.endBatch(successful);
             return null;

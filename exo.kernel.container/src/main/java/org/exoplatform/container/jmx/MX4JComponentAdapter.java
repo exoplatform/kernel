@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.jmx;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
@@ -31,6 +32,7 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.AbstractComponentAdapter;
 
 import java.lang.reflect.Method;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 /**
@@ -134,7 +136,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       return instance_;
    }
 
-   private void addComponentPlugin(boolean debug, Object component,
+   private void addComponentPlugin(boolean debug, final Object component,
       List<org.exoplatform.container.xml.ComponentPlugin> plugins, ExoContainer container) throws Exception
    {
       if (plugins == null)
@@ -150,15 +152,24 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             cplugin.setDescription(plugin.getDescription());
             Class clazz = component.getClass();
 
-            Method m = getSetMethod(clazz, plugin.getSetMethod(), pluginClass);
+            final Method m = getSetMethod(clazz, plugin.getSetMethod(), pluginClass);
             if (m == null)
             {
                log.error("Cannot find the method '" + plugin.getSetMethod() + "' that has only one parameter of type '"
                   + pluginClass.getName() + "' in the class '" + clazz.getName() + "'.");
                continue;
             }
-            Object[] params = {cplugin};
-            m.invoke(component, params);
+            final Object[] params = {cplugin};
+
+            SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws Exception
+               {
+                  m.invoke(component, params);
+                  return null;
+               }
+            });
+
             if (debug)
                log.debug("==> add component plugin: " + cplugin);
 

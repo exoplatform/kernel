@@ -19,6 +19,7 @@
 package org.exoplatform.container;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
@@ -35,6 +36,7 @@ import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 /**
@@ -199,11 +201,19 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
     * @param path, path to configuration file
     * @throws MalformedURLException if path is wrong
     */
-   public static void addConfigurationPath(String path) throws MalformedURLException
+   public static void addConfigurationPath(final String path) throws MalformedURLException
    {
       if ((path == null) || (path.length() == 0))
          return;
-      URL confURL = new File(path).toURI().toURL();
+
+      URL confURL = SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+      {
+         public URL run() throws Exception
+         {
+            return new File(path).toURI().toURL();
+         }
+      });
+
       configurationURL = fileExists(confURL) ? confURL : null;
    }
 
@@ -305,11 +315,18 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       return smanager_;
    }
 
-   private static boolean fileExists(URL url)
+   private static boolean fileExists(final URL url)
    {
       try
       {
-         url.openStream().close();
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               url.openStream().close();
+               return null;
+            }
+         });
          return true;
       }
       catch (Exception e)
@@ -331,16 +348,29 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       // or
       if (configurationURL == null)
       {
-         J2EEServerInfo env = new J2EEServerInfo();
+         final J2EEServerInfo env = new J2EEServerInfo();
          
          // (2) exo-configuration.xml in AS (standalone) home directory
-         configurationURL = (new File(env.getServerHome() + "/exo-configuration.xml")).toURI().toURL();
+         configurationURL =
+            SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+            {
+               public URL run() throws Exception
+               {
+                  return (new File(env.getServerHome() + "/exo-configuration.xml")).toURI().toURL();
+               }
+            });
 
          // (3) AS_HOME/conf/exo-conf (JBossAS usecase)
          if (!fileExists(configurationURL))
          {
             configurationURL =
-               (new File(env.getExoConfigurationDirectory() + "/exo-configuration.xml")).toURI().toURL();
+               SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+               {
+                  public URL run() throws Exception
+                  {
+                     return (new File(env.getExoConfigurationDirectory() + "/exo-configuration.xml")).toURI().toURL();
+                  }
+               });
          }
          
          // (4) conf/exo-configuration.xml in war/ear(?)

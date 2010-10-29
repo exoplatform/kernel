@@ -55,8 +55,7 @@ public class MockConfigurationManagerImpl extends ConfigurationManagerImpl
       else if (uri.startsWith("classpath:"))
       {
          String path = removePrefix("classpath:/", uri);
-         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         return cl.getResource(path);
+         return PrivilegedSystemHelper.getResource(path);
       }
       else if (uri.startsWith("war:"))
       {

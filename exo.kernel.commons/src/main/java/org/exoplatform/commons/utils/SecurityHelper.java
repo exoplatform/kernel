@@ -18,12 +18,17 @@
  */
 package org.exoplatform.commons.utils;
 
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Helps running code in privileged 
@@ -87,6 +92,108 @@ public class SecurityHelper
          if (cause instanceof SQLException)
          {
             throw (SQLException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Launches action in privileged mode. Can throw only ParserConfigurationException, SAXException.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws IOException
+    */
+   public static <E> E doPriviledgedParserConfigurationOrSAXExceptionAction(PrivilegedExceptionAction<E> action)
+      throws ParserConfigurationException, SAXException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof ParserConfigurationException)
+         {
+            throw (ParserConfigurationException)cause;
+         }
+         else if (cause instanceof SAXException)
+         {
+            throw (SAXException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Launches action in privileged mode. Can throw only SAXException.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws IOException
+    */
+   public static <E> E doPriviledgedSAXExceptionAction(PrivilegedExceptionAction<E> action) throws SAXException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof SAXException)
+         {
+            throw (SAXException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Launches action in privileged mode. Can throw only SAXException.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws IOException
+    */
+   public static <E> E doPriviledgedMalformedURLExceptionAction(PrivilegedExceptionAction<E> action)
+      throws MalformedURLException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof MalformedURLException)
+         {
+            throw (MalformedURLException)cause;
          }
          else if (cause instanceof RuntimeException)
          {

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.commons.utils;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Properties;
@@ -74,9 +76,9 @@ public class PrivilegedSystemHelper
     */
    public static void setProperty(final String key, final String value)
    {
-      PrivilegedAction<String> action = new PrivilegedAction<String>()
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
       {
-         public String run()
+         public Void run()
          {
             System.setProperty(key, value);
             return null;
@@ -103,4 +105,43 @@ public class PrivilegedSystemHelper
       };
       return AccessController.doPrivileged(action);
    }
+
+   /**
+    * Get resource in privileged mode.
+    * 
+    * @param key
+    * @param def
+    * @return
+    */
+   public static URL getResource(final String name)
+   {
+      PrivilegedAction<URL> action = new PrivilegedAction<URL>()
+      {
+         public URL run()
+         {
+            return Thread.currentThread().getContextClassLoader().getResource(name);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
+   /**
+    * Get resource as stream in privileged mode.
+    * 
+    * @param key
+    * @param def
+    * @return
+    */
+   public static InputStream getResourceAsStream(final String name)
+   {
+      PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
+      {
+         public InputStream run()
+         {
+            return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
 }
