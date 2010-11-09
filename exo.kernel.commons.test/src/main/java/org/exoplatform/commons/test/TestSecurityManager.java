@@ -61,12 +61,6 @@ public class TestSecurityManager extends SecurityManager
                      return;
                   }
 
-                  // workaround for tests
-                  if (fileName.equals("RequestHandlerImpl.java"))
-                  {
-                     return;
-                  }
-
                   // known tests classes
                   if (fileName.startsWith("Test") || fileName.endsWith("Test.java")
                      || fileName.endsWith("TestBase.java") || fileName.endsWith("TestCase.java")
@@ -104,7 +98,7 @@ public class TestSecurityManager extends SecurityManager
             return;
          }
 
-         // Only for test purpose
+         // Only for debug purpose
          //         se.printStackTrace();
          throw se;
       }
