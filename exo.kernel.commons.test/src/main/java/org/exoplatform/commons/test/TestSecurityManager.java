@@ -55,17 +55,13 @@ public class TestSecurityManager extends SecurityManager
 
                if (className.startsWith("org.exoplatform"))
                {
-                  // hide Exception during JCR initialization
-                  if (fileName.equals("BaseStandaloneTest.java"))
-                  {
-                     return;
-                  }
-
                   // known tests classes
                   if (fileName.startsWith("Test") || fileName.endsWith("Test.java")
                      || fileName.endsWith("TestBase.java") || fileName.endsWith("TestCase.java")
                      || fileName.equals("Probe.java") || fileName.equals("ExportBase.java")
-                     || fileName.equals("AbstractTestContainer.java") || fileName.equals("ContainerBuilder.java"))
+                     || fileName.equals("AbstractTestContainer.java") || fileName.equals("ContainerBuilder.java")
+                     || fileName.equals("WorkspaceStorageCacheBaseCase.java")
+                     || fileName.equals("ExoRepositoryStub.java"))
                   {
                      testCode = true;
                   }
@@ -76,13 +72,8 @@ public class TestSecurityManager extends SecurityManager
                }
                else if (className.startsWith("org.apache.jackrabbit.test"))
                {
-                  // Allow access to instances
-                  if (fileName.equals("RepositoryHelper.java"))
-                  {
-                     return;
-                  }
-
-                  if (fileName.endsWith("Test.java") || fileName.equals("JCRTestResult.java"))
+                  if (fileName.endsWith("Test.java") || fileName.equals("JCRTestResult.java")
+                     || fileName.equals("RepositoryHelper.java") || fileName.equals("RepositoryStub.java"))
                   {
                      testCode = true;
                   }
@@ -99,7 +90,13 @@ public class TestSecurityManager extends SecurityManager
          }
 
          // Only for debug purpose
-         //         se.printStackTrace();
+         //         if (!se
+         //            .getMessage()
+         //            .equals(
+         //               "access denied (java.lang.RuntimePermission accessClassInPackage.com.sun.xml.internal.bind.v2.runtime.reflect)"))
+         //         {
+         //            se.printStackTrace();
+         //         }
          throw se;
       }
    }

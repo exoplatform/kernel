@@ -28,6 +28,10 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Iterator;
 
 /**
@@ -51,8 +55,14 @@ public class CommandService
    {
       this.catalogFactory = CatalogFactoryBase.getInstance();
 
-      ConfigParser parser = new ConfigParser();
-      this.digester = parser.getDigester();
+      final ConfigParser parser = new ConfigParser();
+      this.digester = AccessController.doPrivileged(new PrivilegedAction<Digester>()
+      {
+         public Digester run()
+         {
+            return parser.getDigester();
+         }
+      });
    }
 
    public void addPlugin(ComponentPlugin plugin)
@@ -79,13 +89,44 @@ public class CommandService
     * @throws IOException
     * @throws SAXException
     */
-   public void putCatalog(InputStream xml) throws IOException, SAXException
+   public void putCatalog(final InputStream xml) throws IOException, SAXException
    {
       // ConfigParser parser = new ConfigParser();
       // Prepare our Digester instance
       // Digester digester = parser.getDigester();
       digester.clear();
-      digester.parse(xml);
+
+      try
+      {
+         AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               digester.parse(xml);
+               return null;
+            }
+         });
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof SAXException)
+         {
+            throw (SAXException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
 
       // parser.getDigester().parse(xml);
    }

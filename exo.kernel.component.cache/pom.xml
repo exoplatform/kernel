@@ -49,7 +49,6 @@
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
-         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>

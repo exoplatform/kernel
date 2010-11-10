@@ -142,6 +142,39 @@ public class SecurityHelper
    }
 
    /**
+    * Launches action in privileged mode. Can throw only ParserConfigurationException.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws IOException
+    */
+   public static <E> E doPriviledgedParserConfigurationAction(PrivilegedExceptionAction<E> action)
+      throws ParserConfigurationException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof ParserConfigurationException)
+         {
+            throw (ParserConfigurationException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
     * Launches action in privileged mode. Can throw only SAXException.
     * 
     * @param <E>

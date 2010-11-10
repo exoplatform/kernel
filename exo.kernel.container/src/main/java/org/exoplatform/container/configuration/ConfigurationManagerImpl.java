@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.configuration;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.Deserializer;
@@ -28,6 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -294,13 +297,20 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    public InputStream getInputStream(String uri) throws Exception
    {
-      URL url = getURL(uri);
+      final URL url = getURL(uri);
       if (url == null)
       {
          throw new IOException("Resource (" + uri
             + ") could not be found or the invoker doesn't have adequate privileges to get the resource");
       }
-      return url.openStream();
+
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
+      {
+         public InputStream run() throws Exception
+         {
+            return url.openStream();
+         }
+      });
    }
 
    public URL getURL(String url) throws Exception
@@ -308,7 +318,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       return getURL(scontext_, url);
    }
 
-   private URL getURL(ServletContext context, String url) throws Exception
+   private URL getURL(final ServletContext context, String url) throws Exception
    {
       if (url == null)
       {
@@ -316,22 +326,41 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       }
       else if (url.startsWith("jar:"))
       {
-         String path = removePrefix("jar:/", url);
-         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         return cl.getResource(path);
+         final String path = removePrefix("jar:/", url);
+         final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         return SecurityHelper.doPriviledgedAction(new PrivilegedAction<URL>()
+         {
+            public URL run()
+            {
+               return cl.getResource(path);
+            }
+         });
       }
       else if (url.startsWith("classpath:"))
       {
-         String path = removePrefix("classpath:/", url);
-         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         return cl.getResource(path);
+         final String path = removePrefix("classpath:/", url);
+         final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         return SecurityHelper.doPriviledgedAction(new PrivilegedAction<URL>()
+         {
+            public URL run()
+            {
+               return cl.getResource(path);
+            }
+         });
       }
       else if (url.startsWith("war:"))
       {
          String path = removePrefix("war:", url);
          if (context != null)
          {
-            return context.getResource(WAR_CONF_LOCATION + path);
+            final String fPath = path;
+            return SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+            {
+               public URL run() throws Exception
+               {
+                  return context.getResource(WAR_CONF_LOCATION + fPath);
+               }
+            });
          }
          if (scontextClassLoader_ != null)
          {
@@ -340,7 +369,14 @@ public class ConfigurationManagerImpl implements ConfigurationManager
                // The ClassLoader doesn't support the first "/"
                path = path.substring(1);
             }
-            return scontextClassLoader_.getResource(path);
+            final String fPath = path;
+            return SecurityHelper.doPriviledgedAction(new PrivilegedAction<URL>()
+            {
+               public URL run()
+               {
+                  return scontextClassLoader_.getResource(fPath);
+               }
+            });
          }
          throw new Exception("unsupport war uri in this configuration service");
       }

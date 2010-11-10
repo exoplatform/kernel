@@ -27,6 +27,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.<br/> The plugin for configuring
@@ -50,18 +53,34 @@ public class CommonsXMLConfigurationPlugin extends BaseComponentPlugin
       ValueParam confFile = params.getValueParam("config-file");
       if (confFile != null)
       {
-         String path = confFile.getValue();
-         ConfigParser parser = new ConfigParser();
+         final String path = confFile.getValue();
+         final ConfigParser parser = new ConfigParser();
          // may work for StandaloneContainer
-         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         URL res = cl.getResource(path);
+         
+         URL res = AccessController.doPrivileged(new PrivilegedAction<URL>()
+         {
+            public URL run()
+            {
+               return Thread.currentThread().getContextClassLoader().getResource(path);
+            }
+         });
+         
          // for PortalContainer
          if (res == null)
             res = configurationManager.getResource(path);
          if (res == null)
             throw new Exception("Resource not found " + path);
          log.info("Catalog configuration found at " + res);
-         parser.parse(res);
+         
+         final URL fRes = res;
+         AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               parser.parse(fRes);
+               return null;
+            }
+         });
       }
 
    }

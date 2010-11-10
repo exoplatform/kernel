@@ -19,6 +19,7 @@
 package org.exoplatform.commons.utils;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -33,7 +34,14 @@ public class MimeTypeResolver
    {
       try
       {
-         mimeTypes.load(getClass().getResourceAsStream("mimetypes.properties"));
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               mimeTypes.load(getClass().getResourceAsStream("mimetypes.properties"));
+               return null;
+            }
+         });
       }
       catch (IOException e)
       {
