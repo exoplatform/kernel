@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.log.impl;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.AbstractLogConfigurator;
 
+import java.lang.reflect.Method;
 import java.security.PrivilegedAction;
 import java.util.Properties;
 
@@ -41,7 +41,16 @@ public class Log4JConfigurator extends AbstractLogConfigurator
       {
          public Object run()
          {
-            PropertyConfigurator.configure(properties);
+            try
+            {
+               Class<?> propertyConfiguratorClass = Class.forName("org.apache.log4j.PropertyConfigurator");
+               Method m = propertyConfiguratorClass.getMethod("configure", Properties.class);
+               m.invoke(null, properties);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
             return null;
          }
       });
