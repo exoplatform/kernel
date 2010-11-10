@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.log.impl;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.exoplatform.services.log.AbstractLogConfigurator;
 
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 /**
@@ -31,13 +31,21 @@ import java.util.Properties;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: Log4JConfigurator.java 34394 2009-07-23 09:23:31Z dkatayev $
  */
+
 public class Log4JConfigurator extends AbstractLogConfigurator
 {
-
    public void configure(Properties properties)
    {
-      PropertyConfigurator.configure(properties);
+      try
+      {
+         Class<?> propertyConfiguratorClass = Class.forName("org.apache.log4j.PropertyConfigurator");
+         Method m = propertyConfiguratorClass.getMethod("configure", Properties.class);
+         m.invoke(null, properties);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
       this.properties = properties;
    }
-
 }
