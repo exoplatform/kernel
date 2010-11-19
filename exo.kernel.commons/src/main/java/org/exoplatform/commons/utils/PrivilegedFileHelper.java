@@ -232,6 +232,45 @@ public class PrivilegedFileHelper
    }
 
    /**
+    * Create new file.
+    * 
+    * @param file
+    * @return
+    * @throws IOException
+    */
+   public static boolean createNewFile(final File file) throws IOException
+   {
+      PrivilegedExceptionAction<Boolean> action = new PrivilegedExceptionAction<Boolean>()
+      {
+         public Boolean run() throws Exception
+         {
+            return file.createNewFile();
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
     * Create temporary file in privileged mode.
     * 
     * @param prefix
@@ -421,6 +460,44 @@ public class PrivilegedFileHelper
          }
       };
       return AccessController.doPrivileged(action);
+   }
+
+   /**
+    * Get file canonical path in privileged mode.
+    * 
+    * @param file
+    * @return
+    * @throws IOException
+    */
+   public static String getCanonicalPath(final File file) throws IOException
+   {
+      PrivilegedExceptionAction<String> action = new PrivilegedExceptionAction<String>()
+      {
+         public String run() throws Exception
+         {
+            return file.getCanonicalPath();
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /**
