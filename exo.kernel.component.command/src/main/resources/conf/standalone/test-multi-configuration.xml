@@ -24,41 +24,6 @@
    <component>
       <key>org.exoplatform.services.command.impl.CommandService</key>
       <type>org.exoplatform.services.command.impl.CommandService</type>
-      <component-plugins>
-         <component-plugin>
-            <name>config.catalog</name>
-            <set-method>addPlugin</set-method>
-            <type>org.exoplatform.services.command.impl.CommonsXMLConfigurationPlugin</type>
-            <init-params>
-               <value-param>
-                  <name>config-file</name>
-                  <value>conf/test-commands.xml</value>
-               </value-param>
-            </init-params>
-         </component-plugin>
-         <component-plugin>
-            <name>config.catalog</name>
-            <set-method>addPlugin</set-method>
-            <type>org.exoplatform.services.command.impl.CommonsXMLConfigurationPlugin</type>
-            <init-params>
-               <value-param>
-                  <name>config-file</name>
-                  <value>conf/test-commands2.xml</value>
-               </value-param>
-            </init-params>
-         </component-plugin>
-         <component-plugin>
-            <name>config.catalog</name>
-            <set-method>addPlugin</set-method>
-            <type>org.exoplatform.services.command.impl.CommonsXMLConfigurationPlugin</type>
-            <init-params>
-               <value-param>
-                  <name>config-file</name>
-                  <value>conf/test-commands3.xml</value>
-               </value-param>
-            </init-params>
-         </component-plugin>
-      </component-plugins>
    </component>
 
 </configuration>
