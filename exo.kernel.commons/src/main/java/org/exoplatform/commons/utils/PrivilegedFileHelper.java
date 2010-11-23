@@ -653,7 +653,7 @@ public class PrivilegedFileHelper
     * @param file
     * @return
     */
-   public static File[] listFiles(final File file, final FileFilter filter)
+   public static File[] listFiles(final File file, final FilenameFilter filter)
    {
       PrivilegedAction<File[]> action = new PrivilegedAction<File[]>()
       {
@@ -665,4 +665,21 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Get file's list in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
+   public static File[] listFiles(final File file, final FileFilter filter)
+   {
+      PrivilegedAction<File[]> action = new PrivilegedAction<File[]>()
+      {
+         public File[] run()
+         {
+            return file.listFiles(filter);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
 }
