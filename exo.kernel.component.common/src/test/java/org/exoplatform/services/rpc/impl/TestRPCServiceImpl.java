@@ -833,7 +833,7 @@ public class TestRPCServiceImpl extends BasicTestCase
          };
          t.start();
          service1.stop();
-         Thread.sleep(5000);
+         listener2.waitTopologyChange();
          assertFalse(listener1.coordinatorHasChanged);
          assertTrue(listener1.isCoordinator);
          assertEquals(2, listener1.count);
@@ -1188,6 +1188,8 @@ public class TestRPCServiceImpl extends BasicTestCase
       private boolean coordinatorHasChanged;
       private boolean isCoordinator;
       private int count;
+
+      private CountDownLatch lock;
       
       /**
        * @see org.exoplatform.services.rpc.TopologyChangeListener#onChange(org.exoplatform.services.rpc.TopologyChangeEvent)
@@ -1197,6 +1199,17 @@ public class TestRPCServiceImpl extends BasicTestCase
          this.coordinatorHasChanged = event.isCoordinatorHasChanged();
          this.isCoordinator = event.isCoordinator();
          count++;
+         
+         if (lock != null)
+         {
+            lock.countDown();
+         }
+      }
+
+      public void waitTopologyChange() throws InterruptedException
+      {
+         lock = new CountDownLatch(1);
+         lock.await();
       }
    }
 }
