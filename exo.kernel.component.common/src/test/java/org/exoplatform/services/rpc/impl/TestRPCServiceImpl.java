@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.rpc.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -30,13 +37,6 @@ import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.rpc.impl.RPCServiceImpl.MemberHasLeftException;
 import org.exoplatform.test.BasicTestCase;
 import org.jgroups.Address;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This is the unit test class for the service {@link RPCServiceImpl}
@@ -833,6 +833,7 @@ public class TestRPCServiceImpl extends BasicTestCase
          };
          t.start();
          service1.stop();
+         Thread.sleep(5000);
          assertFalse(listener1.coordinatorHasChanged);
          assertTrue(listener1.isCoordinator);
          assertEquals(2, listener1.count);

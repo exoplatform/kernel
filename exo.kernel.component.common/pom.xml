@@ -128,7 +128,6 @@
                </systemProperties>           
                <excludes>
                   <exclude>**/TransactionTest.java</exclude>
-                  <exclude>**/TestRPCServiceImpl.java</exclude>
                </excludes>
             </configuration>
          </plugin>
