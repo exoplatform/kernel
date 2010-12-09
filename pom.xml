@@ -43,9 +43,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/trunk</developerConnection>
-      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/trunk</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/branches/2.3-IMPR</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/branches/2.3-IMPR</developerConnection>
+      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/branches/2.3-IMPR</url>
    </scm>
 
    <modules>
