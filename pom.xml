@@ -30,7 +30,7 @@
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.2.6-GA</version>
+   <version>2.2.7-GA-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
@@ -43,9 +43,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/tags/2.2.6-GA</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/tags/2.2.6-GA</developerConnection>
-      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/tags/2.2.6-GA</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/branches/2.2.x/</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/branches/2.2.x/</developerConnection>
+      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/branches/2.2.x</url>
    </scm>
 
    <modules>
