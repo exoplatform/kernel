@@ -30,6 +30,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -208,6 +209,44 @@ public class PrivilegedFileHelper
          public FileInputStream run() throws Exception
          {
             return new FileInputStream(file);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof FileNotFoundException)
+         {
+            throw (FileNotFoundException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Create FileInputStream in privileged mode.
+    * 
+    * @param file
+    * @return
+    * @throws FileNotFoundException
+    */
+   public static ZipInputStream zipInputStream(final File file) throws FileNotFoundException
+   {
+      PrivilegedExceptionAction<ZipInputStream> action = new PrivilegedExceptionAction<ZipInputStream>()
+      {
+         public ZipInputStream run() throws Exception
+         {
+            return new ZipInputStream(new FileInputStream(file));
          }
       };
       try
