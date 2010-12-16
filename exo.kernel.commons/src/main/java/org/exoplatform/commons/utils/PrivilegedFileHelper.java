@@ -30,6 +30,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
@@ -54,6 +55,44 @@ public class PrivilegedFileHelper
          public FileOutputStream run() throws Exception
          {
             return new FileOutputStream(file);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof FileNotFoundException)
+         {
+            throw (FileNotFoundException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Create ZipOutputStream in privileged mode.
+    * 
+    * @param file
+    * @return
+    * @throws FileNotFoundException
+    */
+   public static ZipOutputStream zipOutputStream(final File file) throws FileNotFoundException
+   {
+      PrivilegedExceptionAction<ZipOutputStream> action = new PrivilegedExceptionAction<ZipOutputStream>()
+      {
+         public ZipOutputStream run() throws Exception
+         {
+            return new ZipOutputStream(new FileOutputStream(file));
          }
       };
       try
