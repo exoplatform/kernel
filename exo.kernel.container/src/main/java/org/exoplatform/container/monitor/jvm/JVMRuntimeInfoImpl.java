@@ -61,7 +61,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getName()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -72,7 +72,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getSpecName()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -83,7 +83,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getSpecVendor()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -94,7 +94,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getSpecVersion()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -105,7 +105,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getManagementSpecVersion()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -116,7 +116,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getVmName()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -127,7 +127,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getVmVendor()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -138,7 +138,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getVmVersion()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -149,7 +149,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public List getInputArguments()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<List>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<List>()
       {
          public List run()
          {
@@ -160,7 +160,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public Map getSystemProperties()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Map>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Map>()
       {
          public Map run()
          {
@@ -171,7 +171,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public boolean getBootClassPathSupported()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
          public Boolean run()
          {
@@ -182,7 +182,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getBootClassPath()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -193,7 +193,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getClassPath()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -204,7 +204,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public String getLibraryPath()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
@@ -215,7 +215,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public long getStartTime()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Long>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Long>()
       {
          public Long run()
          {
@@ -226,7 +226,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
 
    public long getUptime()
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Long>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Long>()
       {
          public Long run()
          {

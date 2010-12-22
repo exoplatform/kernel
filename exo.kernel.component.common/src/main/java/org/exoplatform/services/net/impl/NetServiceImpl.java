@@ -38,7 +38,7 @@ public class NetServiceImpl implements NetService
       try
       {
          startTime = System.currentTimeMillis();
-         Socket socket = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Socket>()
+         Socket socket = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Socket>()
          {
             public Socket run() throws Exception
             {

@@ -43,7 +43,7 @@ public class SLF4JExoLogFactory extends AbstractExoLogFactory
    @Override
    protected Log getLogger(final String name)
    {
-      Logger slf4jlogger = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Logger>()
+      Logger slf4jlogger = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Logger>()
       {
          public Logger run()
          {

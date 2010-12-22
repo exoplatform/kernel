@@ -62,7 +62,7 @@ public class MailServiceImpl implements MailService
          String username = props_.getProperty("mail.smtp.auth.username");
          String password = props_.getProperty("mail.smtp.auth.password");
          final ExoAuthenticator auth = new ExoAuthenticator(username, password);
-         mailSession_ = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Session>()
+         mailSession_ = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Session>()
          {
             public Session run()
             {
@@ -72,7 +72,7 @@ public class MailServiceImpl implements MailService
       }
       else
       {
-         mailSession_ = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Session>()
+         mailSession_ = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Session>()
          {
             public Session run()
             {

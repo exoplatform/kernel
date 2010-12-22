@@ -37,7 +37,7 @@ public class Log4JConfigurator extends AbstractLogConfigurator
 {
    public void configure(final Properties properties)
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {

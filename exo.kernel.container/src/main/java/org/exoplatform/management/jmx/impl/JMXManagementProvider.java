@@ -155,7 +155,7 @@ public class JMXManagementProvider implements ManagementProvider
             }
             try
             {
-               SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+               SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
                {
                   public Void run() throws Exception
                   {

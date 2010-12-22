@@ -206,7 +206,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       if ((path == null) || (path.length() == 0))
          return;
 
-      URL confURL = SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+      URL confURL = SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
       {
          public URL run() throws Exception
          {
@@ -319,7 +319,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    {
       try
       {
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
             public Void run() throws Exception
             {
@@ -352,7 +352,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          
          // (2) exo-configuration.xml in AS (standalone) home directory
          configurationURL =
-            SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+            SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
             {
                public URL run() throws Exception
                {
@@ -364,7 +364,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          if (!fileExists(configurationURL))
          {
             configurationURL =
-               SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+               SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
                {
                   public URL run() throws Exception
                   {

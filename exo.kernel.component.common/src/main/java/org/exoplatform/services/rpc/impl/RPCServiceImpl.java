@@ -755,7 +755,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
             }
          });
 
-         SecurityHelper.doPriviledgedAction(new PrivilegedAction<Void>()
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
             public Void run()
             {

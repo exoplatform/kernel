@@ -253,7 +253,7 @@ public class XMLObject
          
          final Field fld = field[i];
 
-         SecurityHelper.doPriviledgedAction(new PrivilegedAction<Void>()
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
             public Void run()
             {

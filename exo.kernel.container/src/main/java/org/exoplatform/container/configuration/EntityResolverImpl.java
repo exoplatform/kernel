@@ -69,7 +69,7 @@ class EntityResolverImpl implements EntityResolver
             final String path = systemIdToResourcePath.get(systemId);
             if (path != null)
             {
-               InputStream in = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+               InputStream in = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
                {
                   public InputStream run()
                   {

@@ -163,7 +163,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       this.webAppContexts = Collections.singleton(new WebAppInitContext(portalContext));
       this.portalContext = portalContext;
       this.portalMergedContext = new PortalContainerContext(this);
-      this.portalMergedClassLoader = SecurityHelper.doPriviledgedAction(new PrivilegedAction<ClassLoader>()
+      this.portalMergedClassLoader = SecurityHelper.doPrivilegedAction(new PrivilegedAction<ClassLoader>()
       {
          public ClassLoader run()
          {

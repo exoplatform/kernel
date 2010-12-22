@@ -69,7 +69,7 @@ public class TransactionServiceJotmImpl implements TransactionService
       {
          try
          {
-            SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
                public Void run() throws Exception
                {

@@ -304,7 +304,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
             + ") could not be found or the invoker doesn't have adequate privileges to get the resource");
       }
 
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
       {
          public InputStream run() throws Exception
          {
@@ -328,7 +328,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       {
          final String path = removePrefix("jar:/", url);
          final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         return SecurityHelper.doPriviledgedAction(new PrivilegedAction<URL>()
+         return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
          {
             public URL run()
             {
@@ -340,7 +340,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       {
          final String path = removePrefix("classpath:/", url);
          final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         return SecurityHelper.doPriviledgedAction(new PrivilegedAction<URL>()
+         return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
          {
             public URL run()
             {
@@ -354,7 +354,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
          if (context != null)
          {
             final String fPath = path;
-            return SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+            return SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
             {
                public URL run() throws Exception
                {
@@ -370,7 +370,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
                path = path.substring(1);
             }
             final String fPath = path;
-            return SecurityHelper.doPriviledgedAction(new PrivilegedAction<URL>()
+            return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
             {
                public URL run()
                {

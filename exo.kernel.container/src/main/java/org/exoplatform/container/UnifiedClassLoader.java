@@ -116,7 +116,7 @@ class UnifiedClassLoader extends ClassLoader
 
    static protected UnifiedClassLoader createUnifiedClassLoaderInPrivilegedMode(final ClassLoader... cls)
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<UnifiedClassLoader>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<UnifiedClassLoader>()
       {
          public UnifiedClassLoader run()
          {

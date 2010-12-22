@@ -76,7 +76,7 @@ public class ContainerUtil
    {
       final ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
-      Collection c = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Collection>()
+      Collection c = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Collection>()
       {
          public Collection run() throws IOException
          {

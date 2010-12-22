@@ -113,7 +113,7 @@ public class J2EEServerInfo
          //
          try
          {
-            Class clazz = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Class>()
+            Class clazz = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Class>()
             {
                public Class run() throws Exception
                {
@@ -170,7 +170,7 @@ public class J2EEServerInfo
       }
       if (mbeanServer == null)
       {
-         mbeanServer = SecurityHelper.doPriviledgedAction(new PrivilegedAction<MBeanServer>()
+         mbeanServer = SecurityHelper.doPrivilegedAction(new PrivilegedAction<MBeanServer>()
          {
             public MBeanServer run()
             {

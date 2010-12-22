@@ -111,7 +111,7 @@ public class AnnotationIntrospector
          }
       };
 
-      for (Method method : SecurityHelper.doPriviledgedAction(action))
+      for (Method method : SecurityHelper.doPrivilegedAction(action))
       {
          A annotation = method.getAnnotation(methodAnnotation);
          if (annotation != null)

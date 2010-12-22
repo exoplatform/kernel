@@ -48,7 +48,7 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedIOExceptionAction(PrivilegedExceptionAction<E> action) throws IOException
+   public static <E> E doPrivilegedIOExceptionAction(PrivilegedExceptionAction<E> action) throws IOException
    {
       try
       {
@@ -80,7 +80,7 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedSQLExceptionAction(PrivilegedExceptionAction<E> action) throws SQLException
+   public static <E> E doPrivilegedSQLExceptionAction(PrivilegedExceptionAction<E> action) throws SQLException
    {
       try
       {
@@ -112,7 +112,7 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedParserConfigurationOrSAXExceptionAction(PrivilegedExceptionAction<E> action)
+   public static <E> E doPrivilegedParserConfigurationOrSAXExceptionAction(PrivilegedExceptionAction<E> action)
       throws ParserConfigurationException, SAXException
    {
       try
@@ -149,7 +149,7 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedParserConfigurationAction(PrivilegedExceptionAction<E> action)
+   public static <E> E doPrivilegedParserConfigurationAction(PrivilegedExceptionAction<E> action)
       throws ParserConfigurationException
    {
       try
@@ -182,7 +182,7 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedSAXExceptionAction(PrivilegedExceptionAction<E> action) throws SAXException
+   public static <E> E doPrivilegedSAXExceptionAction(PrivilegedExceptionAction<E> action) throws SAXException
    {
       try
       {
@@ -214,7 +214,7 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedMalformedURLExceptionAction(PrivilegedExceptionAction<E> action)
+   public static <E> E doPrivilegedMalformedURLExceptionAction(PrivilegedExceptionAction<E> action)
       throws MalformedURLException
    {
       try
@@ -246,7 +246,7 @@ public class SecurityHelper
     * @param action
     * @return
     */
-   public static <E> E doPriviledgedAction(PrivilegedAction<E> action)
+   public static <E> E doPrivilegedAction(PrivilegedAction<E> action)
    {
       return AccessController.doPrivileged(action);
    }
@@ -258,7 +258,7 @@ public class SecurityHelper
     * @param action
     * @return
     */
-   public static <E> E doPriviledgedExceptionAction(PrivilegedExceptionAction<E> action)
+   public static <E> E doPrivilegedExceptionAction(PrivilegedExceptionAction<E> action)
       throws PrivilegedActionException
    {
       return AccessController.doPrivileged(action);

@@ -187,7 +187,7 @@ public class ConfigurationUnmarshaller
          Reporter reporter = new Reporter(url);
          builder.setErrorHandler(reporter);
          builder.setEntityResolver(Namespaces.resolver);
-         builder.parse(SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
+         builder.parse(SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
          {
             public InputStream run() throws Exception
             {

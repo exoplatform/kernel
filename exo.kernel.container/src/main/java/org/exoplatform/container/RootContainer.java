@@ -114,7 +114,7 @@ public class RootContainer extends ExoContainer
       log.info("Active profiles " + profiles);
 
       //
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Void>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
          {

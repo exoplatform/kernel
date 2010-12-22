@@ -34,7 +34,7 @@ public class MimeTypeResolver
    {
       try
       {
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
             public Void run() throws Exception
             {

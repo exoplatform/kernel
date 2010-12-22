@@ -161,7 +161,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             }
             final Object[] params = {cplugin};
 
-            SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
                public Void run() throws Exception
                {
