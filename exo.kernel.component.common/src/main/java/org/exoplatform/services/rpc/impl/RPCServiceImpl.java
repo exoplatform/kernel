@@ -478,6 +478,66 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
    /**
     * {@inheritDoc}
     */
+   public List<Object> executeCommandOnAllNodes(String commandId, boolean synchronous, Serializable... args)
+      throws RPCException, SecurityException
+   {
+      RemoteCommand command = commands.get(commandId);
+      if (command == null)
+      {
+         throw new RPCException("Command " + commandId + " unkown, please register your command first");
+      }
+
+      return executeCommandOnAllNodes(command, synchronous, args);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<Object> executeCommandOnAllNodes(String commandId, long timeout, Serializable... args)
+      throws RPCException, SecurityException
+   {
+      RemoteCommand command = commands.get(commandId);
+      if (command == null)
+      {
+         throw new RPCException("Command " + commandId + " unkown, please register your command first");
+      }
+
+      return executeCommandOnAllNodes(command, timeout, args);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Object executeCommandOnCoordinator(String commandId, boolean synchronous, Serializable... args)
+      throws RPCException, SecurityException
+   {
+      RemoteCommand command = commands.get(commandId);
+      if (command == null)
+      {
+         throw new RPCException("Command " + commandId + " unkown, please register your command first");
+      }
+
+      return executeCommandOnCoordinator(command, synchronous, args);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Object executeCommandOnCoordinator(String commandId, long timeout, Serializable... args) throws RPCException,
+      SecurityException
+   {
+      RemoteCommand command = commands.get(commandId);
+      if (command == null)
+      {
+         throw new RPCException("Command " + commandId + " unkown, please register your command first");
+      }
+
+      return executeCommandOnCoordinator(command, timeout, args);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public Object handle(Message msg)
    {
       String commandId = null;
@@ -974,4 +1034,5 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          super(message);
       }
    }
+
 }
