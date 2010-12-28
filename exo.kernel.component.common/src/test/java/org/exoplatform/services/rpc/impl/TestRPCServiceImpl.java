@@ -50,7 +50,6 @@ public class TestRPCServiceImpl extends BasicTestCase
    private PortalContainer container;
    private ConfigurationManager configManager;
    
-   @Override
    public void setUp() throws Exception
    {
       container = PortalContainer.getInstance();
@@ -1064,58 +1063,6 @@ public class TestRPCServiceImpl extends BasicTestCase
       }         
    }
    
-   public void testCallCommandsById() throws Exception
-   {
-      InitParams params = new InitParams();
-      ValueParam paramConf = new ValueParam();
-      paramConf.setName(RPCServiceImpl.PARAM_JGROUPS_CONFIG);
-      paramConf.setValue("jar:/conf/portal/udp.xml");      
-      params.addParameter(paramConf);
-      RPCServiceImpl service = null;
-      try
-      {
-         service = new RPCServiceImpl(container.getContext(), params, configManager);
-         RemoteCommand dummy = new RemoteCommand()
-         {
-            
-            public String getId()
-            {
-               return "dummy";
-            }
-            
-            public String execute(Serializable[] args) throws Throwable
-            {
-               return "OK";
-            }
-         };
-         service.registerCommand(dummy);
-         service.start();
-
-         Object o = service.executeCommandOnCoordinator("dummy", true);
-         assertEquals("OK", o);
-
-         List<Object> result = service.executeCommandOnAllNodes("dummy", true);
-         assertNotNull(result);
-         assertTrue(result.size() == 1);
-         assertEquals(result.get(0), "OK");
-
-         o = service.executeCommandOnCoordinator("dummy", RPCServiceImpl.DEFAULT_TIMEOUT);
-         assertEquals("OK", o);
-
-         result = service.executeCommandOnAllNodes("dummy", RPCServiceImpl.DEFAULT_TIMEOUT);
-         assertNotNull(result);
-         assertTrue(result.size() == 1);
-         assertEquals(result.get(0), "OK");
-      }
-      finally
-      {
-         if (service != null)
-         {
-            service.stop();            
-         }
-      }        
-   }
-
    public static class MyService
    {
       private int value = 0;
