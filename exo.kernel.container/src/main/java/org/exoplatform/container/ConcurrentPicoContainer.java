@@ -423,7 +423,18 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
       {
          ComponentAdapter componentAdapter = iterator.next();
-         if (getInstance(componentAdapter).equals(componentInstance))
+         Object o;
+         try
+         {
+            o = getInstance(componentAdapter);
+         }
+         catch (Exception e)
+         {
+            // Ignore me,
+            // may be caused by lazy initialization mechanism
+            continue;
+         }
+         if (componentInstance.equals(o))
          {
             return unregisterComponent(componentAdapter.getComponentKey());
          }

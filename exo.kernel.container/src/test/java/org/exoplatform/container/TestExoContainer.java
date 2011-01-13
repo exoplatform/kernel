@@ -64,6 +64,17 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(container.getComponentInstanceOfType(CachedComponent.class));
       container.unregisterComponent(CachedComponent.class);
       assertNull(container.getComponentInstanceOfType(CachedComponent.class));
+
+      container.registerComponent(new DummyAdapter());
+      try
+      {
+         container.unregisterComponentByInstance(new Integer(0));
+      }
+      catch (Exception e)
+      {
+         fail("Component unregistration failed");
+      }
+      container.unregisterComponent("testKey");
    }
 
    public void testContainerLifecyclePlugin()
@@ -519,6 +530,34 @@ public class TestExoContainer extends AbstractTestContainer
       {
          this.plugin_ = plugin;
          this.a = plugin.a;         
+      }
+   }
+
+   private class DummyAdapter implements ComponentAdapter
+   {
+
+      public void verify(PicoContainer arg0) throws PicoIntrospectionException
+      {
+      }
+
+      public Object getComponentKey()
+      {
+         return "testKey";
+      }
+
+      public Object getComponentInstance(PicoContainer arg0) throws PicoInitializationException,
+         PicoIntrospectionException
+      {
+         throw (PicoInitializationException)new Exception();
+      }
+
+      public Class getComponentImplementation()
+      {
+         return null;
+      }
+
+      public void accept(PicoVisitor arg0)
+      {
       }
    }
 }
