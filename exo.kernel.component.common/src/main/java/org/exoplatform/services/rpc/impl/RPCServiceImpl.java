@@ -426,7 +426,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          throw new RPCException("Command " + commandId + " unknown, please register your command first");
       }
       final Message msg = new Message();
-      msg.setObject(new MessageBody(commandId, args));
+      msg.setObject(new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args));
       RspList rsps = AccessController.doPrivileged(new PrivilegedAction<RspList>()
       {
          public RspList run()
@@ -486,7 +486,15 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          // Ensure that the service is fully started before trying to execute any command
          startSignal.await();
          MessageBody body = (MessageBody)msg.getObject();
-         RemoteCommand command = getCommand(commandId = body.getCommandId());
+         commandId = body.getCommandId();
+         if (!body.accept(channel.getLocalAddress()))
+         {
+            if (LOG.isTraceEnabled())
+               LOG.trace("Command : " + commandId + " needs to be executed on the coordinator " +
+                     "only and the local node is not the coordinator, the command will be ignored");
+            return null;
+         }
+         RemoteCommand command = getCommand(commandId);
          if (command == null)
          {
             return new RPCException("Command " + commandId + " unkown, please register your command first");
@@ -888,18 +896,29 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       private String commandId;
 
       /**
-       * The list of parameters;
+       * The list of parameters
        */
       private Serializable[] args;
+      
+      /**
+       * The hash code of the expected destination
+       */
+      private int destination;
 
       public MessageBody()
       {
       }
 
-      public MessageBody(String commandId, Serializable[] args)
+      /**
+       * @param dest The destination of the message
+       * @param commandId the id of the command to execute
+       * @param args the arguments to use
+       */
+      public MessageBody(Address dest, String commandId, Serializable[] args)
       {
          this.commandId = commandId;
          this.args = args;
+         this.destination = dest == null ? 0 : dest.hashCode();
       }
 
       public String getCommandId()
@@ -910,6 +929,17 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       public Serializable[] getArgs()
       {
          return args;
+      }      
+
+      /**
+       * Indicates whether or not the given message body accepts the given address
+       * @param address the address to check
+       * @return <code>true</code> if the message is for everybody or if the given address is the expected address,
+       * <code>false</code> otherwise
+       */
+      public boolean accept(Address address)
+      {
+         return destination == 0 || destination == address.hashCode();
       }
 
       /**
@@ -917,6 +947,11 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
        */
       public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
       {
+         boolean unicast = in.readBoolean();
+         if (unicast)
+         {
+            this.destination = in.readInt();            
+         }
          this.commandId = in.readUTF();
          int size = in.readInt();
          if (size == -1)
@@ -938,6 +973,12 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
        */
       public void writeExternal(ObjectOutput out) throws IOException
       {
+         boolean unicast = destination != 0;
+         out.writeBoolean(unicast);
+         if (unicast)
+         {
+            out.writeInt(destination);            
+         }         
          out.writeUTF(commandId);
          if (args == null)
          {

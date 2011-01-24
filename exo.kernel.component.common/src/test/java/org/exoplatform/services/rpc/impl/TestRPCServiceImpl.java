@@ -33,6 +33,7 @@ import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
@@ -824,6 +825,7 @@ public class TestRPCServiceImpl extends BasicTestCase
                catch (Throwable e)
                {
                   error.set(e);
+                  e.printStackTrace();
                }
                finally
                {
@@ -1179,6 +1181,74 @@ public class TestRPCServiceImpl extends BasicTestCase
       public short testTypes(short... values)
       {
          return (short)(values[0] + 3);
+      }
+   }
+   
+   public void testExecOnCoordinator() throws Exception
+   {
+      InitParams params = new InitParams();
+      ValueParam paramConf = new ValueParam();
+      paramConf.setName(RPCServiceImpl.PARAM_JGROUPS_CONFIG);
+      paramConf.setValue("jar:/conf/portal/udp.xml");
+      params.addParameter(paramConf);
+
+      final List<Boolean> calledCommands = Collections.synchronizedList(new ArrayList<Boolean>());
+
+      RPCServiceImpl service1 = null;
+      RPCServiceImpl service2 = null;
+      try
+      {
+         service1 = new RPCServiceImpl(container.getContext(), params, configManager);
+         RemoteCommand service1Cmd = new RemoteCommand()
+         {
+            public String getId()
+            {
+               return "CoordinatorExecutedCommand";
+            }
+
+            public String execute(Serializable[] args) throws Throwable
+            {
+               calledCommands.add(Boolean.TRUE);
+               return "service 1";
+            }
+         };
+         service1.registerCommand(service1Cmd);
+
+         service2 = new RPCServiceImpl(container.getContext(), params, configManager);
+         RemoteCommand service2Cmd = new RemoteCommand()
+         {
+            public String getId()
+            {
+               return "CoordinatorExecutedCommand";
+            }
+
+            public String execute(Serializable[] args) throws Throwable
+            {
+               calledCommands.add(Boolean.TRUE);
+               return "service 2";
+            }
+         };
+         service2.registerCommand(service2Cmd);
+         // starting services
+         service1.start();
+         service2.start();
+
+         Object o = service1.executeCommandOnCoordinator(service1Cmd, true);
+         assertEquals("service 1", o);
+
+         // it should be executed once
+         assertEquals(1, calledCommands.size());
+      }
+      finally
+      {
+         if (service1 != null)
+         {
+            service1.stop();
+         }
+         if (service2 != null)
+         {
+            service2.stop();
+         }
       }
    }
    
