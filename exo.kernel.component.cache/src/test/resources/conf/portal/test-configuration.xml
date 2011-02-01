@@ -223,6 +223,31 @@
                </object>
             </object-param>
 
+            <object-param>
+               <name>TestConcurrentCreationPlugin</name>
+               <description>cache used to test the concurrent creation</description>
+               <object type="org.exoplatform.services.cache.ExoCacheConfig">
+                  <field name="name">
+                     <string>TestConcurrentCreation</string>
+                  </field>
+                  <field name="implementation">
+                     <string>org.exoplatform.services.cache.test.TestCacheService$MyExoCache</string>
+                  </field>
+               </object>
+            </object-param>
+
+            <object-param>
+               <name>TestErrorCreationPlugin</name>
+               <description>cache used to test the concurrent creation</description>
+               <object type="org.exoplatform.services.cache.ExoCacheConfig">
+                  <field name="name">
+                     <string>TestErrorCreation</string>
+                  </field>
+                  <field name="implementation">
+                     <string>org.exoplatform.services.cache.test.TestCacheService$MyExoCacheFake</string>
+                  </field>
+               </object>
+            </object-param>
          </init-params>
       </component-plugin>
    </external-component-plugins>
