@@ -42,7 +42,7 @@ public class MimeTypeResolver
          {
             public Void run() throws Exception
             {
-               Scanner scanner = new Scanner(getClass().getResourceAsStream("mimetypes.properties"));
+               Scanner scanner = new Scanner(getClass().getResourceAsStream("mimetypes.properties"), "ISO-8859-1");
                try
                {
                   while (scanner.hasNextLine())
