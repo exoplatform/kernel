@@ -36,7 +36,6 @@ public class MimeTypeResolver
 
    public MimeTypeResolver()
    {
-      Scanner scanner = null;
       try
       {
          SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
@@ -44,10 +43,18 @@ public class MimeTypeResolver
             public Void run() throws Exception
             {
                Scanner scanner = new Scanner(getClass().getResourceAsStream("mimetypes.properties"));
-               while (scanner.hasNextLine())
+               try
                {
-                  processLine(scanner.nextLine());
+                  while (scanner.hasNextLine())
+                  {
+                     processLine(scanner.nextLine());
+                  }
                }
+               finally
+               {
+                  scanner.close();
+               }
+
                return null;
             }
          });
@@ -55,13 +62,6 @@ public class MimeTypeResolver
       catch (IOException e)
       {
          throw new InternalError("Unable to load mimetypes: " + e.toString());
-      }
-      finally
-      {
-         if (scanner != null)
-         {
-            scanner.close();
-         }
       }
    }
 
@@ -97,7 +97,7 @@ public class MimeTypeResolver
    public String getMimeType(String filename)
    {
       String ext = filename.substring(filename.lastIndexOf(".") + 1);
-      if (ext.equals(""))
+      if (ext.isEmpty())
       {
          ext = filename;
       }
@@ -141,7 +141,7 @@ public class MimeTypeResolver
 
          if (resultExt.isEmpty())
          {
-            resultExt = new String(ext);
+            resultExt = ext;
          }
       }
       return resultExt;
@@ -154,30 +154,27 @@ public class MimeTypeResolver
     */
    protected void processLine(String aLine)
    {
-      Scanner scanner = new Scanner(aLine);
-      scanner.useDelimiter("=");
-      while (scanner.hasNext())
+      int p = aLine.indexOf("=");
+
+      String ext = aLine.substring(0, p);
+      String mimetype = aLine.substring(p + 1);
+
+      // add mimetype
+      List<String> values = mimeTypes.get(ext);
+      if (values == null)
       {
-         String ext = scanner.next();
-         String mimetype = scanner.next();
-
-         // add mimetype
-         List<String> values = mimeTypes.get(ext);
-         if (values == null)
-         {
-            values = new ArrayList<String>();
-            mimeTypes.put(ext, values);
-         }
-         values.add(mimetype);
-
-         // add extension
-         values = extentions.get(mimetype);
-         if (values == null)
-         {
-            values = new ArrayList<String>();
-            extentions.put(mimetype, values);
-         }
-         values.add(ext);
+         values = new ArrayList<String>();
+         mimeTypes.put(ext, values);
       }
+      values.add(mimetype);
+
+      // add extension
+      values = extentions.get(mimetype);
+      if (values == null)
+      {
+         values = new ArrayList<String>();
+         extentions.put(mimetype, values);
+      }
+      values.add(ext);
    }
 }
