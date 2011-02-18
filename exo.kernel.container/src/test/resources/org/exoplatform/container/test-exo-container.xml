@@ -58,4 +58,20 @@
 			</component-plugin>
 		</component-plugins>
 	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C0</type>
+	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C1</type>
+		<component-plugins>
+			<component-plugin>
+				<name>testStartOrder</name>
+				<set-method>add</set-method>
+				<type>org.exoplatform.container.TestExoContainer$P</type>
+			</component-plugin>
+		</component-plugins>
+	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C2</type>
+	</component>
 </configuration>

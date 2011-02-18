@@ -26,6 +26,7 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoInitializationException;
 import org.picocontainer.PicoIntrospectionException;
 import org.picocontainer.PicoVisitor;
+import org.picocontainer.Startable;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 import java.net.URL;
@@ -118,6 +119,18 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(b);
       assertEquals(a, b.a);
    }
+   
+   public void testStartOrder()
+   {
+      final RootContainer container = createRootContainer("test-exo-container.xml", "testStartOrder");
+      C0 c0 = (C0)container.getComponentInstanceOfType(C0.class);
+      assertNotNull(c0);
+      C1 c1 = (C1)container.getComponentInstanceOfType(C1.class);
+      assertNotNull(c1);
+      C2 c2 = (C2)container.getComponentInstanceOfType(C2.class);
+      assertNotNull(c2);
+      assertTrue(c1.started);      
+   }   
    
    public void testCache()
    {
@@ -560,4 +573,101 @@ public class TestExoContainer extends AbstractTestContainer
       {
       }
    }
+   
+   public static class C0 implements Startable
+   {
+      C1 c1;
+      public C0(C1 c1)
+      {
+         this.c1 = c1;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+      
+   }
+   
+   public static class C1 implements Startable
+   {
+      public boolean started;
+      
+      P p;
+      
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            p.init();
+            this.started = true;
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {         
+      }
+      
+      public void add(P p)
+      {
+         this.p = p;
+      }
+   }
+   public static class P extends BaseComponentPlugin
+   {
+      public C0 c0;
+      public C1 c1;
+      public C2 c2;
+      public P(C0 c0, C1 c1, C2 c2)
+      {
+         this.c0 = c0;
+         this.c1 = c1;
+         this.c2 = c2;
+      }
+      
+      public void init()
+      {
+         if (!c2.started)
+            throw new IllegalStateException("C2 should be started");
+      }
+   }
+   
+   public static class C2 implements Startable
+   {
+      public boolean started;
+      
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         started = true;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {         
+      }
+   }   
 }

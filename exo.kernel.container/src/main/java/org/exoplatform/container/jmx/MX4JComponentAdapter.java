@@ -100,26 +100,27 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
                // to component plugins
                return instance_;
             }
+            exocontainer.addComponentToCtx(getComponentKey(), instance);
+            if (debug)
+               log.debug("==> create  component : " + instance_);
+            if (component != null && component.getComponentPlugins() != null)
+            {
+               addComponentPlugin(debug, instance, component.getComponentPlugins(), exocontainer);
+            }
+            ExternalComponentPlugins ecplugins = manager.getConfiguration().getExternalComponentPlugins(componentKey);
+            if (ecplugins != null)
+            {
+               addComponentPlugin(debug, instance, ecplugins.getComponentPlugins(), exocontainer);
+            }
+            // check if component implement the ComponentLifecycle
+            if (instance instanceof ComponentLifecycle)
+            {
+               ComponentLifecycle lc = (ComponentLifecycle)instance;
+               lc.initComponent(exocontainer);
+            }
             instance_ = instance;
          }
 
-         if (debug)
-            log.debug("==> create  component : " + instance_);
-         if (component != null && component.getComponentPlugins() != null)
-         {
-            addComponentPlugin(debug, instance_, component.getComponentPlugins(), exocontainer);
-         }
-         ExternalComponentPlugins ecplugins = manager.getConfiguration().getExternalComponentPlugins(componentKey);
-         if (ecplugins != null)
-         {
-            addComponentPlugin(debug, instance_, ecplugins.getComponentPlugins(), exocontainer);
-         }
-         // check if component implement the ComponentLifecycle
-         if (instance_ instanceof ComponentLifecycle)
-         {
-            ComponentLifecycle lc = (ComponentLifecycle)instance_;
-            lc.initComponent(exocontainer);
-         }
       }
       catch (Exception ex)
       {
@@ -132,7 +133,10 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
          }
          throw new RuntimeException(msg, ex);
       }
-
+      finally
+      {
+         exocontainer.removeComponentFromCtx(getComponentKey());
+      }
       return instance_;
    }
 
