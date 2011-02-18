@@ -19,9 +19,11 @@
 package org.exoplatform.container.configuration;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 
 import java.net.URL;
+import java.security.PrivilegedAction;
 
 import javax.servlet.ServletContext;
 
@@ -48,9 +50,15 @@ public class MockConfigurationManagerImpl extends ConfigurationManagerImpl
    {
       if (uri.startsWith("jar:"))
       {
-         String path = removePrefix("jar:/", uri);
-         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         return cl.getResource(path);
+         final String path = removePrefix("jar:/", uri);
+         final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
+         {
+            public URL run()
+            {
+               return cl.getResource(path);
+            }
+         });
       }
       else if (uri.startsWith("classpath:"))
       {
