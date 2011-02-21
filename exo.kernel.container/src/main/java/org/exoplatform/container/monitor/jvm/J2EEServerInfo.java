@@ -76,6 +76,7 @@ public class J2EEServerInfo
       String jettyHome = PrivilegedSystemHelper.getProperty("jetty.home");
       String websphereHome = PrivilegedSystemHelper.getProperty("was.install.root");
       String weblogicHome = PrivilegedSystemHelper.getProperty("wls.home");
+      String glassfishHome = PrivilegedSystemHelper.getProperty("com.sun.aas.instanceRoot");
       String catalinaHome = PrivilegedSystemHelper.getProperty("catalina.home");
       String testHome = PrivilegedSystemHelper.getProperty("maven.exoplatform.dir");
 
@@ -85,7 +86,6 @@ public class J2EEServerInfo
       {
          serverName_ = "jonas";
          serverHome_ = jonasHome;
-         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (jbossHome != null)
       {
@@ -104,11 +104,8 @@ public class J2EEServerInfo
             catch (Throwable e)
             {
                // don't care about it
-               exoConfDir_ = serverHome_ + "/" + confDirName;
             }
          }
-         else
-            exoConfDir_ = serverHome_ + "/" + confDirName;
 
          //
          try
@@ -134,38 +131,41 @@ public class J2EEServerInfo
       {
          serverName_ = "jetty";
          serverHome_ = jettyHome;
-         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (websphereHome != null)
       {
          serverName_ = "websphere";
          serverHome_ = websphereHome;
-         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (weblogicHome != null)
       {
          serverName_ = "weblogic";
          serverHome_ = weblogicHome;
-         exoConfDir_ = serverHome_ + "/" + confDirName;
-         // Catalina has to be processed at the end as other servers may embed it
+      }
+      else if (glassfishHome != null)
+      {
+         serverName_ = "glassfish";
+         serverHome_ = glassfishHome;
       }
       else if (catalinaHome != null)
       {
+         // Catalina has to be processed at the end as other servers may embed it
          serverName_ = "tomcat";
          serverHome_ = catalinaHome;
-         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else if (testHome != null)
       {
          serverName_ = "test";
          serverHome_ = testHome;
-         exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       else
       {
          // throw new UnsupportedOperationException("unknown server platform") ;
          serverName_ = "standalone";
          serverHome_ = PrivilegedSystemHelper.getProperty("user.dir");
+      }
+      if (exoConfDir_ == null)
+      {
          exoConfDir_ = serverHome_ + "/" + confDirName;
       }
       if (mbeanServer == null)
