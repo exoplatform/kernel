@@ -19,9 +19,11 @@
 package org.exoplatform.container;
 
 import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.management.ManageableContainer;
+import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.InitParams;
@@ -31,6 +33,7 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 
 import java.lang.reflect.Constructor;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -96,27 +99,46 @@ public class ExoContainer extends ManageableContainer
 
    public ExoContainer()
    {
-      context = new ExoContainerContext(this);
-      context.setName(this.getClass().getName());
-      registerComponentInstance(context);
+      context = new ExoContainerContext(this, this.getClass().getName());
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            registerComponentInstance(context);
+            return null;
+         }
+      });
+      
       this.parent = null;
    }
 
    public ExoContainer(PicoContainer parent)
    {
       super(parent);
-      context = new ExoContainerContext(this);
-      context.setName(this.getClass().getName());
-      registerComponentInstance(context);
+      context = new ExoContainerContext(this, this.getClass().getName());
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            registerComponentInstance(context);
+            return null;
+         }
+      });
       this.parent = parent;
    }
 
    public ExoContainer(ComponentAdapterFactory factory, PicoContainer parent)
    {
       super(factory, parent);
-      context = new ExoContainerContext(this);
-      context.setName(this.getClass().getName());
-      registerComponentInstance(context);
+      context = new ExoContainerContext(this, this.getClass().getName());
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            registerComponentInstance(context);
+            return null;
+         }
+      });
       this.parent = parent;
    }
 
@@ -168,6 +190,10 @@ public class ExoContainer extends ManageableContainer
    @Override
    public void dispose()
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       destroyContainerInternal();
       super.dispose();
    }
@@ -178,6 +204,10 @@ public class ExoContainer extends ManageableContainer
     */
    public void start(boolean init)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       if (init)
       {
          // Initialize the container first
@@ -189,6 +219,9 @@ public class ExoContainer extends ManageableContainer
    @Override
    public void start()
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       super.start();
       startContainerInternal();
    }
@@ -196,6 +229,10 @@ public class ExoContainer extends ManageableContainer
    @Override
    public void stop()
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       stopContainerInternal();
       super.stop();
    }
@@ -271,6 +308,10 @@ public class ExoContainer extends ManageableContainer
 
    public void addComponentLifecylePlugin(ComponentLifecyclePlugin plugin)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       List<String> list = plugin.getManageableComponents();
       for (String component : list)
          componentLifecylePlugin_.put(component, plugin);
@@ -278,6 +319,10 @@ public class ExoContainer extends ManageableContainer
 
    public void addContainerLifecylePlugin(ContainerLifecyclePlugin plugin)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       containerLifecyclePlugin_.add(plugin);
    }
 

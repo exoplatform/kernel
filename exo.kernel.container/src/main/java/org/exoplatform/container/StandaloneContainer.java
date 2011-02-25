@@ -36,6 +36,7 @@ import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
@@ -83,8 +84,15 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
 
       //
       configurationManager = new ConfigurationManagerImpl(configClassLoader, ExoContainer.getProfiles());
-      this.registerComponentInstance(ConfigurationManager.class, configurationManager);
-      registerComponentImplementation(SessionManagerImpl.class);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            registerComponentInstance(ConfigurationManager.class, configurationManager);
+            registerComponentImplementation(SessionManagerImpl.class);
+            return null;
+         }
+      });      
    }
 
    /**
@@ -137,7 +145,14 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       if (container == null)
       {
          container = new StandaloneContainer(configClassLoader);
-         ExoContainerContext.setTopContainer(container);
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               ExoContainerContext.setTopContainer(container);
+               return null;
+            }
+         });
          if (useDefault)
             container.initDefaultConf();
          // initialize configurationURL
@@ -145,7 +160,14 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          container.populate(configurationURL);
          if (components != null)
             container.registerArray(components);
-         container.start();
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               container.start();
+               return null;
+            }
+         });
          PrivilegedSystemHelper.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
          System.out.println("StandaloneContainer initialized using:  " + configurationURL);
       }
@@ -401,7 +423,14 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    {
       configurationManager.addConfiguration(conf);
       configurationManager.processRemoveConfiguration();
-      ContainerUtil.addComponents(this, configurationManager);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            ContainerUtil.addComponents(StandaloneContainer.this, configurationManager);
+            return null;
+         }
+      });
    }
 
 }

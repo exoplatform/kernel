@@ -18,8 +18,11 @@
  */
 package org.exoplatform.container.web;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.util.EnvSpecific;
+
+import java.security.PrivilegedAction;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -53,8 +56,15 @@ public class PortalContainerCreator implements ServletContextListener
       try
       {
          EnvSpecific.initThreadEnv(ctx);
-         RootContainer rootContainer = RootContainer.getInstance();
-         rootContainer.createPortalContainers();
+         final RootContainer rootContainer = RootContainer.getInstance();
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               rootContainer.createPortalContainers();
+               return null;
+            }
+         });         
       }
       finally
       {

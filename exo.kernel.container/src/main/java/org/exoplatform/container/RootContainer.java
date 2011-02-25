@@ -29,6 +29,7 @@ import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.definition.PortalContainerDefinition;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.monitor.jvm.OperatingSystemInfo;
+import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.management.annotations.Managed;
@@ -123,7 +124,14 @@ public class RootContainer extends ExoContainer
          }
       });
       this.profiles = profiles;
-      this.registerComponentInstance(J2EEServerInfo.class, serverenv_);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            registerComponentInstance(J2EEServerInfo.class, serverenv_);
+            return null;
+         }
+      });
    }
 
    public OperatingSystemInfo getOSEnvironment()
@@ -162,7 +170,7 @@ public class RootContainer extends ExoContainer
       return serverenv_;
    }
 
-   public PortalContainer getPortalContainer(String name)
+   public PortalContainer getPortalContainer(final String name)
    {
       PortalContainer pcontainer = (PortalContainer)this.getComponentInstance(name);
       if (pcontainer == null)
@@ -174,14 +182,29 @@ public class RootContainer extends ExoContainer
             {
                MockServletContext scontext = new MockServletContext(name);
                pcontainer = new PortalContainer(this, scontext);
-               PortalContainer.setInstance(pcontainer);
-               ConfigurationManagerImpl cService = new MockConfigurationManagerImpl(scontext);
+               final PortalContainer currentPortalContainer = pcontainer;
+               SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+               {
+                  public Void run()
+                  {
+                     PortalContainer.setInstance(currentPortalContainer);
+                     return null;
+                  }
+               });
+               final ConfigurationManagerImpl cService = new MockConfigurationManagerImpl(scontext);
                cService.addConfiguration(ContainerUtil.getConfigurationURL("conf/portal/configuration.xml"));
                cService.addConfiguration(ContainerUtil.getConfigurationURL("conf/portal/test-configuration.xml"));
                cService.processRemoveConfiguration();
-               pcontainer.registerComponentInstance(ConfigurationManager.class, cService);
-               registerComponentInstance(name, pcontainer);
-               pcontainer.start(true);
+               SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+               {
+                  public Void run()
+                  {
+                     currentPortalContainer.registerComponentInstance(ConfigurationManager.class, cService);
+                     registerComponentInstance(name, currentPortalContainer);
+                     currentPortalContainer.start(true);
+                     return null;
+                  }
+               });
             }
             catch (Exception ex)
             {
@@ -200,6 +223,10 @@ public class RootContainer extends ExoContainer
     */
    public void registerPortalContainer(ServletContext context)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       PortalContainerConfig config = getPortalContainerConfig();
       if (config.hasDefinition())
       {
@@ -286,6 +313,10 @@ public class RootContainer extends ExoContainer
 
    public synchronized void createPortalContainer(ServletContext context)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
       boolean hasChanged = false;
@@ -399,6 +430,10 @@ public class RootContainer extends ExoContainer
 
    synchronized public void removePortalContainer(ServletContext servletContext)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       this.unregisterComponent(servletContext.getServletContextName());
    }
 
@@ -417,8 +452,8 @@ public class RootContainer extends ExoContainer
    {
       try
       {
-         RootContainer rootContainer = new RootContainer();
-         ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles);
+         final RootContainer rootContainer = new RootContainer();
+         final ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles);
          service.addConfiguration(ContainerUtil.getConfigurationURL("conf/configuration.xml"));
          if (PrivilegedSystemHelper.getProperty("maven.exoplatform.dir") != null)
          {
@@ -432,13 +467,23 @@ public class RootContainer extends ExoContainer
             service.addConfiguration("file:" + overrideConf);
          }
          service.processRemoveConfiguration();
-         rootContainer.registerComponentInstance(ConfigurationManager.class, service);
-         rootContainer.start(true);
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               rootContainer.registerComponentInstance(ConfigurationManager.class, service);
+               rootContainer.start(true);
+               return null;
+            }
+         });
          return rootContainer;
       }
       catch (Exception e)
       {
          log.error("Could not build root container", e);
+         // The logger is not necessary configured so we have to use the standard
+         // output stream
+         e.printStackTrace();
          return null;
       }
    }
@@ -475,8 +520,15 @@ public class RootContainer extends ExoContainer
                      {
                         time += System.currentTimeMillis();
                         log.info("Root container is built (build time " + time + "ms)");
-                        ExoContainerContext.setTopContainer(result);
                         singleton_ = result;
+                        SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+                        {
+                           public Void run()
+                           {
+                              ExoContainerContext.setTopContainer(singleton_);
+                              return null;
+                           }
+                        }); 
                         log.info("Root container booted");
                      }
                      else
@@ -497,6 +549,10 @@ public class RootContainer extends ExoContainer
 
    static public void setInstance(RootContainer rcontainer)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       singleton_ = rcontainer;
    }
 
@@ -536,6 +592,10 @@ public class RootContainer extends ExoContainer
     */
    public void addInitTask(ServletContext context, PortalContainerInitTask task, String portalContainer)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       final PortalContainer container = getPortalContainer(portalContainer);
       if (!task.alreadyExists(container))
       {

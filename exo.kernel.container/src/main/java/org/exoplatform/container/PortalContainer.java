@@ -23,6 +23,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
+import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
@@ -141,14 +142,28 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     */
    final ServletContext portalContext;
 
-   public PortalContainer(RootContainer parent, ServletContext portalContext)
+   public PortalContainer(RootContainer parent, final ServletContext portalContext)
    {
       super(new MX4JComponentAdapterFactory(), parent);
-      registerComponentInstance(ServletContext.class, portalContext);
-      context.setName(portalContext.getServletContextName());
-      pinfo_ = new PortalContainerInfo(portalContext);
-      registerComponentInstance(PortalContainerInfo.class, pinfo_);
       this.name = portalContext.getServletContextName();
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            context.setName(name);
+            return null;
+         }
+      });
+      pinfo_ = new PortalContainerInfo(portalContext);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            registerComponentInstance(ServletContext.class, portalContext);
+            registerComponentInstance(PortalContainerInfo.class, pinfo_);
+            return null;
+         }
+      });
       final PortalContainerConfig config = parent.getPortalContainerConfig();
       final List<String> dependencies = config == null ? null : config.getDependencies(name);
       if (dependencies == null || dependencies.isEmpty())
@@ -239,6 +254,9 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     */
    public synchronized void registerContext(ServletContext context)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
       final WebAppInitContext webappCtx = new WebAppInitContext(context);
       if (!webAppContexts.contains(webappCtx))
       {
@@ -263,6 +281,10 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     */
    public synchronized void unregisterContext(ServletContext context)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       final WebAppInitContext webappCtx = new WebAppInitContext(context);
       if (webAppContexts.contains(webappCtx))
       {
@@ -309,6 +331,10 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    
    public SessionContainer createSessionContainer(String id, String owner)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       SessionContainer scontainer = getSessionManager().getSessionContainer(id);
       if (scontainer != null)
          getSessionManager().removeSessionContainer(id);
@@ -321,6 +347,10 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    public void removeSessionContainer(String sessionID)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       getSessionManager().removeSessionContainer(sessionID);
    }
 
@@ -351,7 +381,15 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       if (container == null)
       {
          container = RootContainer.getInstance().getPortalContainer(DEFAULT_PORTAL_CONTAINER_NAME);
-         PortalContainer.setInstance(container);
+         final PortalContainer currentPortalContainer = container;
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               PortalContainer.setInstance(currentPortalContainer);
+               return null;
+            }
+         });
       }
       return container;
    }

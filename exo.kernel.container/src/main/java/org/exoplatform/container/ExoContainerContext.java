@@ -18,10 +18,12 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -39,7 +41,7 @@ public final class ExoContainerContext implements java.io.Serializable
 
    private HashMap<String, Object> attributes = new HashMap<String, Object>();
 
-   private ExoContainer container;
+   private final ExoContainer container;
 
    private String name;
 
@@ -48,6 +50,12 @@ public final class ExoContainerContext implements java.io.Serializable
    public ExoContainerContext(ExoContainer container)
    {
       this.container = container;
+   }
+
+   public ExoContainerContext(ExoContainer container, String name)
+   {
+      this.container = container;
+      this.name = name;
    }
 
    public ExoContainer getContainer()
@@ -114,6 +122,9 @@ public final class ExoContainerContext implements java.io.Serializable
 
    public void setName(String name)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
       this.name = name;
    }
 
@@ -126,6 +137,10 @@ public final class ExoContainerContext implements java.io.Serializable
 
    static void setTopContainer(ExoContainer cont)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       if (topContainer != null && cont != null)
          throw new IllegalStateException("Two top level containers created, but must be only one.");
       log.info("Set the top container in its context");
@@ -150,6 +165,9 @@ public final class ExoContainerContext implements java.io.Serializable
 
    public static void setCurrentContainer(ExoContainer instance)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);      
       currentContainer.set(instance);
    }
 
@@ -164,7 +182,8 @@ public final class ExoContainerContext implements java.io.Serializable
 
    public Set<String> getAttributeNames()
    {
-      return attributes.keySet();
+      // Gives a safe copy
+      return new HashSet<String>(attributes.keySet());
    }
 
    public Object getAttribute(String name)
@@ -174,6 +193,10 @@ public final class ExoContainerContext implements java.io.Serializable
 
    public void setAttribute(String name, Object value)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
       attributes.put(name, value);
    }
 }

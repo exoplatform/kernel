@@ -10,6 +10,10 @@ grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "accessRPCService";
 };
 
+grant codeBase "@TEST_CLASSES@-"{
+   permission java.lang.RuntimePermission "manageContainer";
+};
+
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{
    permission java.security.AllPermission;
 };

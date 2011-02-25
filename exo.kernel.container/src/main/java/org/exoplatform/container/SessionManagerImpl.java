@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.security.ContainerPermissions;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -43,11 +45,19 @@ public class SessionManagerImpl extends Hashtable<String, SessionContainer> impl
 
    final public void removeSessionContainer(String id)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       remove(id);
    }
 
    final public void addSessionContainer(SessionContainer scontainer)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       put(scontainer.getSessionId(), scontainer);
    }
 }

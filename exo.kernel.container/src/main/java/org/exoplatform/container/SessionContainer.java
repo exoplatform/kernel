@@ -19,6 +19,7 @@
 package org.exoplatform.container;
 
 import org.exoplatform.container.client.ClientInfo;
+import org.exoplatform.container.security.ContainerPermissions;
 
 import java.util.HashMap;
 
@@ -28,7 +29,7 @@ import java.util.HashMap;
  */
 public class SessionContainer extends HashMap<Object, Object>
 {
-   private static ThreadLocal threadLocal_ = new ThreadLocal();
+   private static ThreadLocal<SessionContainer> threadLocal_ = new ThreadLocal<SessionContainer>();
 
    final public static int INIT_STATUS = 0;
 
@@ -149,7 +150,7 @@ public class SessionContainer extends HashMap<Object, Object>
 
    public static Object getComponent(Class key)
    {
-      SessionContainer scontainer = (SessionContainer)threadLocal_.get();
+      SessionContainer scontainer = getInstance();
       return scontainer.get(key);
    }
 
@@ -170,11 +171,15 @@ public class SessionContainer extends HashMap<Object, Object>
 
    static public SessionContainer getInstance()
    {
-      return (SessionContainer)threadLocal_.get();
+      return threadLocal_.get();
    }
 
    static public void setInstance(SessionContainer scontainer)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       threadLocal_.set(scontainer);
    }
 

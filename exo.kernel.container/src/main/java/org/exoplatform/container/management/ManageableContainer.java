@@ -32,7 +32,6 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
 import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -154,13 +153,6 @@ public class ManageableContainer extends CachingContainer
    public final MBeanServer getMBeanServer()
    {
       return server;
-   }
-
-   @Override
-   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
-      throws DuplicateComponentKeyRegistrationException
-   {
-      return super.registerComponent(componentAdapter);
    }
 
    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)

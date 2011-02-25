@@ -16,6 +16,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.security.ContainerPermissions;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.Parameter;
@@ -218,6 +219,10 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
       throws DuplicateComponentKeyRegistrationException
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);     
+      
       Object componentKey = componentAdapter.getComponentKey();
 
       if (componentKeyToAdapterCache.putIfAbsent(componentKey, componentAdapter) != null)
@@ -230,6 +235,10 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
 
    public ComponentAdapter unregisterComponent(Object componentKey)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);     
+      
       ComponentAdapter adapter = componentKeyToAdapterCache.remove(componentKey);
       componentAdapters.remove(adapter);
       orderedComponentAdapters.remove(adapter);
@@ -504,11 +513,19 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
 
    public boolean addChildContainer(PicoContainer child)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+      
       return children.add(child);
    }
 
    public boolean removeChildContainer(PicoContainer child)
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+
       return children.remove(child);
    }
 
