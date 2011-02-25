@@ -188,21 +188,24 @@ public class ExoContainer extends ManageableContainer
    }
 
    @Override
-   public void dispose()
+   public synchronized void dispose()
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
-      destroyContainerInternal();
-      super.dispose();
+      if (canBeDisposed())
+      {
+         destroyContainerInternal();
+         super.dispose();         
+      }
    }
 
    /**
     * Starts the container
     * @param init indicates if the container must be initialized first
     */
-   public void start(boolean init)
+   public synchronized void start(boolean init)
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
@@ -217,24 +220,31 @@ public class ExoContainer extends ManageableContainer
    }
    
    @Override
-   public void start()
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      super.start();
-      startContainerInternal();
-   }
-
-   @Override
-   public void stop()
+   public synchronized void start()
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
-      stopContainerInternal();
-      super.stop();
+      if (canBeStarted())
+      {
+         super.start();
+         startContainerInternal();         
+      }
+   }
+
+   @Override
+   public synchronized void stop()
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+      
+      if (canBeStopped())
+      {
+         stopContainerInternal();
+         super.stop();         
+      }
    }
 
    /**

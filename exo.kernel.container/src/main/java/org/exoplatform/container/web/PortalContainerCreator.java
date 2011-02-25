@@ -45,6 +45,16 @@ public class PortalContainerCreator implements ServletContextListener
     */
    public void contextDestroyed(ServletContextEvent event)
    {
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            // Ensure that the root container is stopped properly since the shutdown hook
+            // doesn't work in some cases for example with tomcat when we call the stop command
+            RootContainer.getInstance().stop();
+            return null;
+         }
+      });
    }
 
    /**

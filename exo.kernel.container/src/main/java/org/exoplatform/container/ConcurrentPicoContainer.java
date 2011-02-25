@@ -35,7 +35,6 @@ import org.picocontainer.defaults.DefaultComponentAdapterFactory;
 import org.picocontainer.defaults.DefaultPicoContainer;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 import org.picocontainer.defaults.InstanceComponentAdapter;
-import org.picocontainer.defaults.LifecycleVisitor;
 import org.picocontainer.defaults.VerifyingVisitor;
 
 import java.io.Serializable;
@@ -460,6 +459,30 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    }
 
    /**
+    * Indicates whether or not the container can be started
+    */
+   protected boolean canBeStarted()
+   {
+      return !disposed.get() && !started.get();
+   }
+
+   /**
+    * Indicates whether or not the container can be stopped
+    */
+   protected boolean canBeStopped()
+   {
+      return !disposed.get() && started.get();
+   }
+
+   /**
+    * Indicates whether or not the container can be disposed
+    */
+   protected boolean canBeDisposed()
+   {
+      return !disposed.get();
+   }
+   
+   /**
     * Start the components of this PicoContainer and all its logical child containers.
     * Any component implementing the lifecycle interface {@link org.picocontainer.Startable} will be started.
     * @see #makeChildContainer()
@@ -468,7 +491,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
     */
    public void start()
    {
-      if (disposed.get() || started.get())
+      if (!canBeStarted())
          return;
       LifecycleVisitor.start(this);
       started.set(true);
@@ -483,7 +506,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
     */
    public void stop()
    {
-      if (disposed.get() || !started.get())
+      if (!canBeStopped())
          return;
       LifecycleVisitor.stop(this);
       started.set(false);
@@ -498,7 +521,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
     */
    public void dispose()
    {
-      if (disposed.get())
+      if (!canBeDisposed())
          return;
       LifecycleVisitor.dispose(this);
       disposed.set(true);

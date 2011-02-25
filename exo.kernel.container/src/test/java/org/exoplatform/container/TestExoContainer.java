@@ -22,6 +22,7 @@ import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.support.ContainerBuilder;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.ComponentAdapter;
+import org.picocontainer.Disposable;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoInitializationException;
 import org.picocontainer.PicoIntrospectionException;
@@ -669,5 +670,170 @@ public class TestExoContainer extends AbstractTestContainer
       public void stop()
       {         
       }
-   }   
+   }
+   
+   public void testLifeCycle() throws Throwable
+   {
+      ConcurrentPicoContainer container = new ConcurrentPicoContainer();
+      assertTrue(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertTrue(container.canBeDisposed());
+      container.registerComponentImplementation(LC1.class);
+      container.registerComponentImplementation(LC2.class);
+      container.registerComponentImplementation(LC3.class);
+      container.registerComponentImplementation(LC4.class);
+      container.registerComponentImplementation(LC5.class);
+      try
+      {
+         container.start();
+         fail("Should fail due to the start method of C1");
+      }
+      catch (Exception e)
+      {
+         // igonre me
+      }
+      LC1 c1 = (LC1)container.getComponentInstanceOfType(LC1.class);
+      LC2 c2 = (LC2)container.getComponentInstanceOfType(LC2.class);
+      LC3 c3 = (LC3)container.getComponentInstanceOfType(LC3.class);
+      LC4 c4 = (LC4)container.getComponentInstanceOfType(LC4.class);
+      LC5 c5 = (LC5)container.getComponentInstanceOfType(LC5.class);
+      assertFalse(c2.started && c3.started && c4.started);
+      assertTrue(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertTrue(container.canBeDisposed());
+      container.stop();
+      assertTrue(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertTrue(container.canBeDisposed());
+      container.dispose();
+      assertTrue(c1.disposed && c2.disposed && c5.disposed);
+      assertFalse(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertFalse(container.canBeDisposed());
+      container = new ConcurrentPicoContainer();
+      assertTrue(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertTrue(container.canBeDisposed());
+      container.registerComponentImplementation(LC2.class);
+      container.registerComponentImplementation(LC3.class);
+      container.registerComponentImplementation(LC4.class);
+      container.registerComponentImplementation(LC5.class);
+      container.start();
+      c2 = (LC2)container.getComponentInstanceOfType(LC2.class);
+      c3 = (LC3)container.getComponentInstanceOfType(LC3.class);
+      c4 = (LC4)container.getComponentInstanceOfType(LC4.class);
+      assertTrue(c2.started && c3.started && c4.started);
+      assertFalse(container.canBeStarted());
+      assertTrue(container.canBeStopped());
+      assertTrue(container.canBeDisposed());
+      container.stop();
+      assertTrue(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertTrue(container.canBeDisposed());
+      container.dispose();
+      assertTrue(c1.disposed && c2.disposed && c5.disposed);      
+      assertFalse(container.canBeStarted());
+      assertFalse(container.canBeStopped());
+      assertFalse(container.canBeDisposed());
+   }
+   
+   public static class LC1 implements Startable, Disposable
+   {
+
+      public boolean started;
+      public boolean stopped;
+      public boolean disposed;
+      
+      public void start()
+      {
+         throw new RuntimeException();
+      }
+
+      public void stop()
+      {
+         stopped = true;
+      }
+
+      public void dispose()
+      {
+         disposed = true;
+      }      
+   }
+   
+   public static class LC2 implements Startable, Disposable
+   {
+
+      public boolean started;
+      public boolean stopped;
+      public boolean disposed;
+      
+      public void start()
+      {
+         started = true;
+      }
+
+      public void stop()
+      {
+         throw new RuntimeException();
+      }
+
+      public void dispose()
+      {
+         disposed = true;
+      }      
+   }
+   
+   public static class LC3 implements Startable, Disposable
+   {
+
+      public boolean started;
+      public boolean stopped;
+      public boolean disposed;
+      
+      public void start()
+      {
+         started = true;
+      }
+
+      public void stop()
+      {
+         stopped = true;
+      }
+
+      public void dispose()
+      {
+         throw new RuntimeException();
+      }      
+   }
+   
+   public static class LC4 implements Startable
+   {
+
+      public boolean started;
+      public boolean stopped;
+      public boolean disposed;
+      
+      public void start()
+      {
+         started = true;
+      }
+
+      public void stop()
+      {
+         stopped = true;
+      }     
+   }
+   
+   public static class LC5 implements Disposable
+   {
+
+      public boolean started;
+      public boolean stopped;
+      public boolean disposed;
+
+      public void dispose()
+      {
+         disposed = true;
+      }      
+   }    
 }
