@@ -86,10 +86,17 @@ public class ContainerUtil
 
       Map<String, URL> map = new HashMap<String, URL>();
       Iterator i = c.iterator();
+      String forbiddenSuffix = "WEB-INF/" + configuration;
       while (i.hasNext())
       {
          URL url = (URL)i.next();
          String key = url.toString();
+         // The content of the WEB-INF folder is part of the CL in JBoss AS 6 so 
+         // we have to get rid of it in order to prevent any boot issues
+         if (key.endsWith(forbiddenSuffix))
+         {
+            continue;
+         }
          // jboss bug, jboss has a very weird behavior. It copy all the jar files
          // and
          // deploy them to a temp dir and include both jars, the one in sar and tmp
