@@ -11,8 +11,8 @@ function getModule(params) {
     
   module.commons = 
     new Project("org.exoplatform.kernel", "exo.kernel.commons", "jar", module.version).
-    addDependency(new Project("commons-lang", "commons-lang", "jar", "2.4")).
-    addDependency(new Project("xpp3", "xpp3", "jar", "1.1.3.4.O")).
+    addDependency(new Project("commons-lang", "commons-lang", "jar", "2.6")).
+    addDependency(new Project("xpp3", "xpp3", "jar", "1.1.4c")).
 //    addDependency(new Project("xstream", "xstream", "jar", "1.2")).
     addDependency(new Project("dom4j", "dom4j", "jar", "1.6.1"));
     
@@ -21,9 +21,9 @@ function getModule(params) {
     addDependency(module.commons).
     addDependency(new Project("picocontainer", "picocontainer", "jar", "1.1")).
 //    addDependency(new Project("org.codehaus.groovy", "groovy-all", "jar", "1.5.6")).
-    addDependency(new Project("commons-beanutils", "commons-beanutils", "jar", "1.8.0")).
-    addDependency(new Project("org.jibx", "jibx-run", "jar", "1.2.1")).
-    addDependency(new Project("org.jibx", "jibx-bind", "jar", "1.2.1")).
+    addDependency(new Project("commons-beanutils", "commons-beanutils", "jar", "1.8.3")).
+    addDependency(new Project("org.jibx", "jibx-run", "jar", "1.2.2")).
+    addDependency(new Project("org.jibx", "jibx-bind", "jar", "1.2.2")).
     addDependency(new Project("asm", "asm", "jar", "1.5.3")).
     addDependency(new Project("cglib", "cglib", "jar", "2.2"));
 
@@ -39,13 +39,13 @@ function getModule(params) {
   module.component = {};
   module.component.common = 
     new Project("org.exoplatform.kernel", "exo.kernel.component.common", "jar", module.version).
-    addDependency(new Project("quartz", "quartz", "jar", "1.5.2")).
+    addDependency(new Project("org.quartz-scheduler", "quartz", "jar", "1.8.4")).
     addDependency(new Project("javax.activation", "activation", "jar", "1.1")).
-    addDependency(new Project("javax.mail", "mail", "jar", "1.4.2"));
+    addDependency(new Project("javax.mail", "mail", "jar", "1.4.4"));
 
   module.component.command = 
     new Project("org.exoplatform.kernel", "exo.kernel.component.command", "jar", module.version).
-    addDependency(new Project("commons-chain", "commons-chain", "jar", "1.0")).
+    addDependency(new Project("commons-chain", "commons-chain", "jar", "1.2")).
     addDependency(new Project("commons-digester", "commons-digester", "jar", "1.8.1"));
     
   module.component.cache = 
