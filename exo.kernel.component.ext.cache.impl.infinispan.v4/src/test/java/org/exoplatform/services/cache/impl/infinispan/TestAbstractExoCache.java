@@ -39,8 +39,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -67,11 +67,6 @@ public class TestAbstractExoCache extends BasicTestCase
       this.cache = (AbstractExoCache<Serializable, Object>)service.getCacheInstance("myCache");
    }
 
-   protected void tearDown() throws Exception
-   {
-      cache.clearCache();
-   }
-
    public void testPut() throws Exception
    {
       cache.put(new MyKey("a"), "a");
@@ -82,6 +77,8 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(3, cache.getCacheSize());
       cache.put(new MyKey("d"), "c");
       assertEquals(4, cache.getCacheSize());
+
+      cache.clearCache();
    }
 
    public void testClearCache() throws Exception
@@ -92,6 +89,8 @@ public class TestAbstractExoCache extends BasicTestCase
       assertTrue(cache.getCacheSize() > 0);
       cache.clearCache();
       assertTrue(cache.getCacheSize() == 0);
+
+      cache.clearCache();
    }
 
    public void testGet() throws Exception
@@ -103,6 +102,8 @@ public class TestAbstractExoCache extends BasicTestCase
       cache.remove(new MyKey("a"));
       assertEquals(null, cache.get(new MyKey("a")));
       assertEquals(null, cache.get(new MyKey("x")));
+
+      cache.clearCache();
    }
 
    public void testRemove() throws Exception
@@ -117,6 +118,8 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(1, cache.getCacheSize());
       assertEquals(null, cache.remove(new MyKey("x")));
       assertEquals(1, cache.getCacheSize());
+
+      cache.clearCache();
    }
 
    public void testPutMap() throws Exception
@@ -159,6 +162,8 @@ public class TestAbstractExoCache extends BasicTestCase
       values.put(new MyKey("d"), "d");
       cache.putMap(values);
       assertEquals(2, cache.getCacheSize());
+
+      cache.clearCache();
    }
 
    public void testGetCachedObjects() throws Exception
@@ -173,6 +178,8 @@ public class TestAbstractExoCache extends BasicTestCase
       assertTrue(values.contains("a"));
       assertTrue(values.contains("b"));
       assertTrue(values.contains("c"));
+
+      cache.clearCache();
    }
 
    public void testRemoveCachedObjects() throws Exception
@@ -188,6 +195,8 @@ public class TestAbstractExoCache extends BasicTestCase
       assertTrue(values.contains("b"));
       assertTrue(values.contains("c"));
       assertEquals(0, cache.getCacheSize());
+
+      cache.clearCache();
    }
 
    public void testSelect() throws Exception
@@ -214,6 +223,8 @@ public class TestAbstractExoCache extends BasicTestCase
       };
       cache.select(selector);
       assertEquals(3, count.intValue());
+
+      cache.clearCache();
    }
 
    public void testGetHitsNMisses() throws Exception
@@ -227,6 +238,8 @@ public class TestAbstractExoCache extends BasicTestCase
       cache.get(new MyKey("z"));
       assertEquals(1, cache.getCacheHit() - hits);
       assertEquals(2, cache.getCacheMiss() - misses);
+
+      cache.clearCache();
    }
 
    private ExoCacheFactory getExoCacheFactoryInstance() throws ExoCacheInitException
@@ -424,6 +437,8 @@ public class TestAbstractExoCache extends BasicTestCase
          throw errors.get(0);
       }
       System.out.println("Total Time = " + (System.currentTimeMillis() - time));
+
+      cache.clearCache();
    }
 
    public static class MyCacheListener implements CacheListener<Serializable, Object>

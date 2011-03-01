@@ -262,8 +262,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public boolean removeGlobalJobListener(String name) throws Exception
    {
-      JobListener jlistener = getGlobalJobListener(name);
-      return scheduler_.removeGlobalJobListener(jlistener);
+      return scheduler_.removeGlobalJobListener(name);
    }
 
    public void addJobListener(ComponentPlugin plugin) throws Exception
@@ -322,8 +321,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public boolean removeGlobaTriggerListener(String name) throws Exception
    {
-      TriggerListener tlistener = getGlobalTriggerListener(name);
-      return scheduler_.removeGlobalTriggerListener(tlistener);
+      return scheduler_.removeGlobalTriggerListener(name);
    }
 
    public void addTriggerListener(ComponentPlugin plugin) throws Exception

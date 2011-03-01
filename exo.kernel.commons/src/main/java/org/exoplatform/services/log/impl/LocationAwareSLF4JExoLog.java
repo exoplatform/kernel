@@ -84,61 +84,61 @@ public class LocationAwareSLF4JExoLog implements Log
 
    public void trace(Object o)
    {
-      logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, String.valueOf(o), null);
+      logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, String.valueOf(o), null, null);
    }
 
    public void trace(Object o, Throwable throwable)
    {
-      logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, String.valueOf(o), throwable);
+      logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, String.valueOf(o), null, throwable);
    }
 
    public void debug(Object o)
    {
-      logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, String.valueOf(o), null);
+      logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, String.valueOf(o), null, null);
    }
 
    public void debug(Object o, Throwable throwable)
    {
-      logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, String.valueOf(o), throwable);
+      logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, String.valueOf(o), null, throwable);
    }
 
    public void info(Object o)
    {
-      logger.log(null, FQCN, LocationAwareLogger.INFO_INT, String.valueOf(o), null);
+      logger.log(null, FQCN, LocationAwareLogger.INFO_INT, String.valueOf(o), null, null);
    }
 
    public void info(Object o, Throwable throwable)
    {
-      logger.log(null, FQCN, LocationAwareLogger.INFO_INT, String.valueOf(o), throwable);
+      logger.log(null, FQCN, LocationAwareLogger.INFO_INT, String.valueOf(o), null, throwable);
    }
 
    public void warn(Object o)
    {
-      logger.log(null, FQCN, LocationAwareLogger.WARN_INT, String.valueOf(o), null);
+      logger.log(null, FQCN, LocationAwareLogger.WARN_INT, String.valueOf(o), null, null);
    }
 
    public void warn(Object o, Throwable throwable)
    {
-      logger.log(null, FQCN, LocationAwareLogger.WARN_INT, String.valueOf(o), throwable);
+      logger.log(null, FQCN, LocationAwareLogger.WARN_INT, String.valueOf(o), null, throwable);
    }
 
    public void error(Object o)
    {
-      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null);
+      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null, null);
    }
 
    public void error(Object o, Throwable throwable)
    {
-      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), throwable);
+      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null, throwable);
    }
 
    public void fatal(Object o)
    {
-      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null);
+      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null, null);
    }
 
    public void fatal(Object o, Throwable throwable)
    {
-      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), throwable);
+      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null, throwable);
    }
 }

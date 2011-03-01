@@ -63,8 +63,8 @@
          <artifactId>xpp3</artifactId>
       </dependency>
       <dependency>
-         <groupId>jotm</groupId>
-         <artifactId>jotm</artifactId>
+         <groupId>org.ow2.jotm</groupId>
+         <artifactId>jotm-core</artifactId>
          <exclusions>
             <exclusion>
                <groupId>javax.resource</groupId>
@@ -82,7 +82,7 @@
          <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>quartz</groupId>
+         <groupId>org.quartz-scheduler</groupId>
          <artifactId>quartz</artifactId>
       </dependency>
       <dependency>
