@@ -20,7 +20,7 @@
 -->
 <binding>
   <!-- the default deserializer to use for String -->
-  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.cleanString"/>
+  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
  
   <!-- xml object mapping -->
   <mapping class="org.exoplatform.xml.object.XMLBaseObject" abstract="true" label="base-object">
