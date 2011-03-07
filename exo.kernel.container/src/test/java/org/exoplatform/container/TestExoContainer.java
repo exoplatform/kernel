@@ -111,6 +111,30 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(value, plugin.myClass_);
    }
    
+   public void testStackOverFlow2()
+   {
+      final RootContainer container = createRootContainer("test-exo-container.xml");      
+      SOE1 soe1 = (SOE1)container.getComponentInstanceOfType(SOE1.class);
+      assertNotNull(soe1);
+      SOEPlugin soe1Plugin = soe1.plugin;
+      assertNotNull(soe1Plugin);
+      assertNotNull(soe1Plugin.soe2);
+      assertEquals(soe1, soe1Plugin.soe2.soe1);      
+   }
+   
+   public void testStackOverFlow3()
+   {
+      final RootContainer container = createRootContainer("test-exo-container.xml");      
+      SOE2 soe2 = (SOE2)container.getComponentInstanceOfType(SOE2.class);
+      assertNotNull(soe2);
+      assertNotNull(soe2.soe1);
+      SOEPlugin soe1Plugin = soe2.soe1.plugin;
+      assertNotNull(soe1Plugin);
+      assertNotNull(soe1Plugin.soe2);
+      assertEquals(soe2.soe1, soe1Plugin.soe2.soe1);
+      assertEquals(container.getComponentInstanceOfType(SOE1.class), soe2.soe1);
+   }
+   
    public void testCyclicRef()
    {
       final RootContainer container = createRootContainer("test-exo-container.xml", "testCyclicRef");
@@ -835,5 +859,32 @@ public class TestExoContainer extends AbstractTestContainer
       {
          disposed = true;
       }      
-   }    
+   }
+   
+   public static class SOE1
+   {
+      public SOEPlugin plugin;
+      public void addPlugin(SOEPlugin plugin)
+      {
+         this.plugin = plugin;
+      }
+   }
+   
+   public static class SOEPlugin extends BaseComponentPlugin
+   {
+      public SOE2 soe2;
+      public SOEPlugin(SOE2 soe2)
+      {
+         this.soe2 = soe2;
+      }
+   }  
+   
+   public static class SOE2
+   {
+      public SOE1 soe1;
+      public SOE2()
+      {
+         this.soe1 = (SOE1)ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(SOE1.class);
+      }
+   }   
 }

@@ -182,7 +182,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
          }
          catch (Exception ex)
          {
-            log.error("Failed to instanciate plugin " + plugin.getName() + "for component " + component + ": "
+            log.error("Failed to instanciate plugin " + plugin.getName() + " for component " + component + ": "
                + ex.getMessage(), ex);
          }
       }

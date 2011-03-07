@@ -88,6 +88,12 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    private final AtomicBoolean disposed = new AtomicBoolean();
 
    private final Set<PicoContainer> children = new CopyOnWriteArraySet<PicoContainer>();
+   
+   /**
+    * Context used to keep in memory the components that are currently being created.
+    * This context is used to prevent cyclic resolution due to component plugins.
+    */
+   private final ThreadLocal<Map<Object, Object>> depResolutionCtx = new ThreadLocal<Map<Object, Object>>();
 
    /**
     * Creates a new container with a custom ComponentAdapterFactory and a parent container.
@@ -391,12 +397,64 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       }
    }
 
+   /**
+    * If no {@link ComponentAdapter} can be found it returns <tt>null</tt> otherwise
+    * it first try to get it from the dependency resolution context if it still cannot
+    * be found we get the instance from the {@link ComponentAdapter}.
+    * @see org.picocontainer.PicoContainer#getComponentInstanceOfType(java.lang.Class)
+    */
    public Object getComponentInstanceOfType(Class componentType)
    {
       final ComponentAdapter componentAdapter = getComponentAdapterOfType(componentType);
-      return componentAdapter == null ? null : getInstance(componentAdapter);
+      if (componentAdapter == null)
+         return null;
+      Map<Object, Object> map = depResolutionCtx.get();
+      if (map != null)
+      {
+         Object result = map.get(componentType);
+         if (result != null)
+         {
+            return result;
+         }
+      }
+      return getInstance(componentAdapter);
    }
-
+   
+   /**
+    * Add the component corresponding to the given key, to the dependency resolution
+    * context
+    * @param key The key of the component to add to the context
+    * @param component The instance of the component to add to the context
+    */
+   public void addComponentToCtx(Object key, Object component)
+   {
+      Map<Object, Object> map = depResolutionCtx.get();
+      if (map == null)
+      {
+         map = new HashMap<Object, Object>();
+         depResolutionCtx.set(map);
+      }
+      map.put(key, component);
+   }
+   
+   /**
+    * Remove the component corresponding to the given key, from the dependency resolution
+    * context
+    * @param key The key of the component to remove from the context
+    */
+   public void removeComponentFromCtx(Object key)
+   {
+      Map<Object, Object> map = depResolutionCtx.get();
+      if (map != null)
+      {
+         map.remove(key);
+         if (map.isEmpty())
+         {
+            depResolutionCtx.set(null);
+         }
+      }
+   }
+   
    private Object getInstance(ComponentAdapter componentAdapter)
    {
       // check wether this is our adapter

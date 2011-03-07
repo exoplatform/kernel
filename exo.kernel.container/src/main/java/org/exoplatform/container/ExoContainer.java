@@ -81,12 +81,6 @@ public class ExoContainer extends ManageableContainer
    }
 
    static Log log = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
-   
-   /**
-    * Context used to keep in memory the components that are currently being created.
-    * This context is used to prevent cyclic resolution due to component plugins.
-    */
-   private final ThreadLocal<Map<Object, Object>> depResolutionCtx = new ThreadLocal<Map<Object, Object>>();
 
    private Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =
       new HashMap<String, ComponentLifecyclePlugin>();
@@ -369,7 +363,7 @@ public class ExoContainer extends ManageableContainer
             }
             else
             {
-               args[i] = getComponentInstanceOfTypeInternal(parameters[i]);
+               args[i] = getComponentInstanceOfType(parameters[i]);
                if (args[i] == null)
                {
                   satisfied = false;
@@ -392,60 +386,5 @@ public class ExoContainer extends ManageableContainer
    {
       ConfigurationManager cm = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
       return cm == null ? null : cm.getConfiguration();
-   }
-   
-   /**
-    * Add the component corresponding to the given key, to the dependency resolution
-    * context
-    * @param key The key of the component to add to the context
-    * @param component The instance of the component to add to the context
-    */
-   public void addComponentToCtx(Object key, Object component)
-   {
-      Map<Object, Object> map = depResolutionCtx.get();
-      if (map == null)
-      {
-         map = new HashMap<Object, Object>();
-         depResolutionCtx.set(map);
-      }
-      map.put(key, component);
-   }
-   
-   /**
-    * Remove the component corresponding to the given key, from the dependency resolution
-    * context
-    * @param key The key of the component to remove from the context
-    */
-   public void removeComponentFromCtx(Object key)
-   {
-      Map<Object, Object> map = depResolutionCtx.get();
-      if (map != null)
-      {
-         map.remove(key);
-         if (map.isEmpty())
-         {
-            depResolutionCtx.set(null);
-         }
-      }
-   }
-   
-   /**
-    * Try to get the component from the dependency resolution context and if it cannot be found
-    * it will try to get it from the method <code>getComponentInstanceOfType</code>
-    * @param componentType the type of the component to find
-    * @return the instance of the component corresponding to the given component type
-    */
-   private Object getComponentInstanceOfTypeInternal(Class componentType)
-   {
-      Map<Object, Object> map = depResolutionCtx.get();
-      if (map != null)
-      {
-         Object result = map.get(componentType);
-         if (result != null)
-         {
-            return result;
-         }
-      }
-      return getComponentInstanceOfType(componentType);
    }
 }

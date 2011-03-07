@@ -45,6 +45,19 @@
 			</component-plugin>
 		</component-plugins>
 	</component>
+	<component>
+		<type>org.exoplatform.container.TestExoContainer$SOE1</type>
+		<component-plugins>
+			<component-plugin>
+				<name>stackoverflow-test-plugin</name>
+				<set-method>addPlugin</set-method>
+				<type>org.exoplatform.container.TestExoContainer$SOEPlugin</type>
+			</component-plugin>
+		</component-plugins>
+	</component>
+	<component>
+		<type>org.exoplatform.container.TestExoContainer$SOE2</type>
+	</component>
 	<component profiles="testCyclicRef">
 		<type>org.exoplatform.container.TestExoContainer$A</type>
 	</component>
