@@ -93,7 +93,7 @@ public class ExoContainer extends ManageableContainer
 
    public ExoContainer()
    {
-      context = new ExoContainerContext(this, this.getClass().getName());
+      context = new ExoContainerContext(this, this.getClass().getSimpleName());
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
@@ -109,7 +109,7 @@ public class ExoContainer extends ManageableContainer
    public ExoContainer(PicoContainer parent)
    {
       super(parent);
-      context = new ExoContainerContext(this, this.getClass().getName());
+      context = new ExoContainerContext(this, this.getClass().getSimpleName());
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
@@ -124,7 +124,7 @@ public class ExoContainer extends ManageableContainer
    public ExoContainer(ComponentAdapterFactory factory, PicoContainer parent)
    {
       super(factory, parent);
-      context = new ExoContainerContext(this, this.getClass().getName());
+      context = new ExoContainerContext(this, this.getClass().getSimpleName());
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
