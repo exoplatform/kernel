@@ -25,7 +25,7 @@ import org.exoplatform.management.jmx.annotations.Property;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -36,7 +36,7 @@ public class PropertiesInfo
 {
 
    /** . */
-   private Map<String, PropertyInfo> properties;
+   private final Map<String, PropertyInfo> properties;
 
    public PropertiesInfo(Map<String, PropertyInfo> properties)
    {
@@ -57,7 +57,7 @@ public class PropertiesInfo
       }
       if (blah != null)
       {
-         Map<String, PropertyInfo> properties = new HashMap<String, PropertyInfo>();
+         Map<String, PropertyInfo> properties = new LinkedHashMap<String, PropertyInfo>();
          for (Property property : blah)
          {
             PropertyInfo propertyInfo = new PropertyInfo(clazz, property);

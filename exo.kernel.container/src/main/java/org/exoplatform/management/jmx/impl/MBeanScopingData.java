@@ -18,14 +18,14 @@
  */
 package org.exoplatform.management.jmx.impl;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class MBeanScopingData extends HashMap<String, String>
+public class MBeanScopingData extends LinkedHashMap<String, String>
 {
    public MBeanScopingData(int initialCapacity, float loadFactor)
    {

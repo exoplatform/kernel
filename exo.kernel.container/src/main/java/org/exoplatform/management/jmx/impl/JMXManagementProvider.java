@@ -28,7 +28,7 @@ import org.exoplatform.services.log.Log;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +76,7 @@ public class JMXManagementProvider implements ManagementProvider
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         LOG.warn("Could not create the ExoModelMBean for the class " + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())), e);
       }
 
       //
@@ -93,7 +93,7 @@ public class JMXManagementProvider implements ManagementProvider
             }
             catch (MalformedObjectNameException e)
             {
-               e.printStackTrace();
+               LOG.warn("Could not create the ObjectName for the class " + context.getResource().getClass(), e);
             }
          }
 
@@ -102,12 +102,14 @@ public class JMXManagementProvider implements ManagementProvider
             // Merge with the container hierarchy context
             try
             {
-               Map<String, String> props = new Hashtable<String, String>();
+               Map<String, String> props = new LinkedHashMap<String, String>();
 
                // Merge scoping properties
                List<MBeanScopingData> list = context.getScopingData(MBeanScopingData.class);
-               for (MBeanScopingData scopingData : list)
+               // Read in revert order because wee received list of parents in upward order
+               for (int i = list.size(); i > 0; i--)
                {
+                  MBeanScopingData scopingData = list.get(i - 1);
                   props.putAll(scopingData);
                }
 
@@ -134,7 +136,7 @@ public class JMXManagementProvider implements ManagementProvider
             }
             catch (MalformedObjectNameException e)
             {
-               e.printStackTrace();
+               LOG.warn("Could not register the MBean for the class " + context.getResource().getClass(), e);
             }
          }
       }
@@ -226,11 +228,11 @@ public class JMXManagementProvider implements ManagementProvider
       }
       catch (InstanceNotFoundException e)
       {
-         e.printStackTrace();
+         LOG.warn("Could not unregister the MBean " + name, e);
       }
       catch (MBeanRegistrationException e)
       {
-         e.printStackTrace();
+         LOG.warn("Could not unregister the MBean " + name, e);
       }
    }
 }

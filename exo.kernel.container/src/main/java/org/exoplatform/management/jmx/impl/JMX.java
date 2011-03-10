@@ -18,7 +18,6 @@
  */
 package org.exoplatform.management.jmx.impl;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 import javax.management.MalformedObjectNameException;
@@ -38,14 +37,7 @@ public class JMX
    }
 
    /**
-    * This method create an object name from a generic map argument. The main reason is that
-    * the method {@link javax.management.ObjectName#getInstance(String, java.util.Hashtable)} has
-    * uses a non generic Hashtable with Java 5 and use a Hashtable<String, String> constructor in Java 6.
-    *
-    * The suitable solution is therefore to use a non generic Hashtable but that creates compilation warning therefore
-    * we encapsulate there this code in order to use the warning supression in that single place.
-    *
-    * @see ObjectName#getInstance(String, java.util.Hashtable)
+    * This method create an object name from a generic map argument.
     *
     * @param domain  The domain part of the object name.
     * @param table A hash table containing one or more key
@@ -62,11 +54,20 @@ public class JMX
     * quoting.
     * @exception NullPointerException One of the parameters is null.
     */
-   @SuppressWarnings("unchecked")
    public static ObjectName createObjectName(String domain, Map<String, String> table)
       throws MalformedObjectNameException, NullPointerException
    {
-      Hashtable tmp = new Hashtable(table);
-      return ObjectName.getInstance(domain, tmp);
+      StringBuilder name = new StringBuilder(128);
+      name.append(domain).append(':');
+      int i = 0;
+      for (Map.Entry<String, String> entry : table.entrySet())
+      {
+         if (i++ > 0)
+         {
+            name.append(",");            
+         }
+         name.append(entry.getKey()).append('=').append(entry.getValue());
+      }
+      return  ObjectName.getInstance(name.toString());
    }
 }
