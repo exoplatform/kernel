@@ -28,6 +28,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
@@ -73,7 +74,39 @@ public class SecurityHelper
    }
 
    /**
-    * Launches action in privileged mode. Can throw only IO exception.
+    * Launches action in privileged mode. Can throw only NamingException.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws IOException
+    */
+   public static <E> E doPrivilegedNamingExceptionAction(PrivilegedExceptionAction<E> action) throws NamingException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof NamingException)
+         {
+            throw (NamingException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Launches action in privileged mode. Can throw only SQL exception.
     * 
     * @param <E>
     * @param action

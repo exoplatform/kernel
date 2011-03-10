@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.naming;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+
+import java.security.PrivilegedExceptionAction;
 import java.util.Hashtable;
 
 import javax.naming.Binding;
@@ -57,12 +60,18 @@ public class SimpleContext implements Context
       Object obj = objects.get(name);
       if (obj instanceof Reference)
       {
-         Reference ref = (Reference)obj;
+         final Reference ref = (Reference)obj;
          String factoryCN = ref.getFactoryClassName();
          try
          {
-            ObjectFactory factory = (ObjectFactory)Class.forName(factoryCN).newInstance();
-            obj = factory.getObjectInstance(ref, null, null, null);
+            final ObjectFactory factory = (ObjectFactory)Class.forName(factoryCN).newInstance();
+            obj = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  return factory.getObjectInstance(ref, null, null, null);
+               }
+            });
          }
          catch (Exception e)
          {
