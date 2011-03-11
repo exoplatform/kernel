@@ -38,8 +38,12 @@ public interface JobSchedulerService
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo) throws Exception;
 
+   public void addPeriodJob(ComponentPlugin plugin) throws Exception;
+   
    public void addCronJob(JobInfo jinfo, String exp) throws Exception;
-
+   
+   public void addCronJob(ComponentPlugin plugin) throws Exception;
+   
    public boolean removeJob(JobInfo jinfo) throws Exception;
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo, JobDataMap jdatamap) throws Exception;
