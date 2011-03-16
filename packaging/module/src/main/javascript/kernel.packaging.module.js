@@ -4,7 +4,7 @@ eXo.require("eXo.projects.Product") ;
 function getModule(params) {
   var module = new Module();
 
-  module.version = "${project.version}" ;//
+  module.version = "${project.version}";
   module.relativeMavenRepo =  "org/exoplatform/kernel" ;
   module.relativeSRCRepo =  "kernel" ;
   module.name = "kernel" ;
@@ -13,18 +13,15 @@ function getModule(params) {
     new Project("org.exoplatform.kernel", "exo.kernel.commons", "jar", module.version).
     addDependency(new Project("commons-lang", "commons-lang", "jar", "2.6")).
     addDependency(new Project("xpp3", "xpp3", "jar", "1.1.4c")).
-//    addDependency(new Project("xstream", "xstream", "jar", "1.2")).
     addDependency(new Project("dom4j", "dom4j", "jar", "1.6.1"));
     
   module.container = 
     new Project("org.exoplatform.kernel", "exo.kernel.container", "jar", module.version).
     addDependency(module.commons).
     addDependency(new Project("picocontainer", "picocontainer", "jar", "1.1")).
-//    addDependency(new Project("org.codehaus.groovy", "groovy-all", "jar", "1.5.6")).
     addDependency(new Project("commons-beanutils", "commons-beanutils", "jar", "1.8.3")).
     addDependency(new Project("org.jibx", "jibx-run", "jar", "1.2.2")).
     addDependency(new Project("org.jibx", "jibx-bind", "jar", "1.2.2")).
-    addDependency(new Project("asm", "asm", "jar", "1.5.3")).
     addDependency(new Project("cglib", "cglib", "jar", "2.2"));
 
   module.misc = {} ;
