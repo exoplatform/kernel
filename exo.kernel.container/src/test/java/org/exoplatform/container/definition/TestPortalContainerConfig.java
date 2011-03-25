@@ -1626,6 +1626,22 @@ public class TestPortalContainerConfig extends AbstractTestContainer
          assertEquals("-property_value_1-", config.getSetting("foo", "complex-value9"));
          assertEquals("-property_value_1-", config.getSetting("myPortal", "complex-value9"));
          assertEquals("-property_value_1-", config.getSetting("myPortal-pcdef", "complex-value9"));
+         assertNull(config.getSetting("foo", "complex-value10"));
+         assertNull(config.getSetting("myPortal", "complex-value10"));
+         assertEquals("--value--", config.getSetting("myPortal-pcdef", "complex-value10"));
+         assertNull(config.getSetting("foo", "complex-value11"));
+         assertNull(config.getSetting("myPortal", "complex-value11"));
+         assertEquals("-default-", config.getSetting("myPortal-pcdef", "complex-value11"));
+         assertEquals("-default-", config.getSetting("foo", "complex-value12"));
+         assertEquals("-default-", config.getSetting("myPortal", "complex-value12"));
+         assertEquals("-value-", config.getSetting("myPortal-pcdef", "complex-value12"));
+         assertEquals("-property_value_1-", config.getSetting("foo", "complex-value13"));
+         assertEquals("-property_value_1-", config.getSetting("myPortal", "complex-value13"));
+         assertEquals("-property_value_1-", config.getSetting("myPortal-pcdef", "complex-value13"));
+         assertEquals("-default-", config.getSetting("foo", "complex-value14"));
+         assertEquals("-default-", config.getSetting("myPortal", "complex-value14"));
+         assertEquals("-default-", config.getSetting("myPortal-pcdef", "complex-value14"));
+         
          assertEquals("-system value-", config.getSetting("foo", "cpv1"));
          assertEquals("-system value-", config.getSetting("myPortal", "cpv1"));
          assertEquals("-system value-", config.getSetting("myPortal-pcdef", "cpv1"));
@@ -1635,6 +1651,12 @@ public class TestPortalContainerConfig extends AbstractTestContainer
          assertEquals("-property_value_1-", config.getSetting("foo", "cpv3"));
          assertEquals("-property_value_1-", config.getSetting("myPortal", "cpv3"));
          assertEquals("-property_value_1-", config.getSetting("myPortal-pcdef", "cpv3"));
+         assertEquals("-value-", config.getSetting("foo", "cpv4"));
+         assertEquals("-value-", config.getSetting("myPortal", "cpv4"));
+         assertEquals("-value-", config.getSetting("myPortal-pcdef", "cpv4"));
+         assertEquals("-system value-", config.getSetting("foo", "cpv5"));
+         assertEquals("-system value-", config.getSetting("myPortal", "cpv5"));
+         assertEquals("-system value-", config.getSetting("myPortal-pcdef", "cpv5"));
          assertEquals("new value0", config.getSetting("foo", "string"));
          assertEquals(new Integer(200), config.getSetting("foo", "int"));
          assertEquals(new Integer(60), config.getSetting("foo", "int2"));

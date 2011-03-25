@@ -62,6 +62,22 @@
 							</entry>
 							<entry>
 								<key>
+									<string>cpv4</string>
+								</key>
+								<value>
+									<string>-${property2_String:value}-</string>
+								</value>
+							</entry>
+							<entry>
+								<key>
+									<string>cpv5</string>
+								</key>
+								<value>
+									<string>-${TestPortalContainerConfig-string:value}-</string>
+								</value>
+							</entry>
+							<entry>
+								<key>
 									<string>foo2</string>
 								</key>
 								<value>

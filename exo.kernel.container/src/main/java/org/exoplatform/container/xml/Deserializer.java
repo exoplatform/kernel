@@ -203,7 +203,7 @@ public class Deserializer
       if (input == null)
          return input;
       char[] chars = input.toCharArray();
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       boolean properties = false;
       int state = NORMAL;
       int start = 0;
@@ -230,6 +230,13 @@ public class Deserializer
             {
                String value = null;
                String key = input.substring(start + 2, i);
+               String defaultValue = null;
+               int index = key.indexOf(':');
+               if (index > -1)
+               {
+                  defaultValue = key.substring(index + 1);
+                  key = key.substring(0, index);
+               }
                if (key.equals(Deserializer.EXO_CONTAINER_PROP_NAME))
                {
                   // The requested key is the name of current container
@@ -268,6 +275,10 @@ public class Deserializer
                      // system properties
                      value = PrivilegedSystemHelper.getProperty(key);
                   }
+               }
+               if (value == null && defaultValue != null)
+               {
+                  value = defaultValue;
                }
                if (value != null)
                {
