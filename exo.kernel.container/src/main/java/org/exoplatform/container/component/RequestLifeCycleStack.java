@@ -19,7 +19,6 @@
 package org.exoplatform.container.component;
 
 import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.component.ComponentRequestLifecycle;
 import org.picocontainer.PicoContainer;
 
 import java.util.ArrayList;
@@ -35,7 +34,8 @@ import java.util.Set;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-class RequestLifeCycleStack extends LinkedList<RequestLifeCycle>
+class RequestLifeCycleStack
+   extends LinkedList<RequestLifeCycle>
 {
 
    /** . */
@@ -49,7 +49,7 @@ class RequestLifeCycleStack extends LinkedList<RequestLifeCycle>
    {
       if (allComponents.contains(lifeCycle))
       {
-         addLast(new RequestLifeCycle(null, Collections.<ComponentRequestLifecycle>emptyList()));
+         addLast(new RequestLifeCycle(null, Collections.<ComponentRequestLifecycle> emptyList()));
       }
       else
       {
@@ -63,14 +63,17 @@ class RequestLifeCycleStack extends LinkedList<RequestLifeCycle>
    void begin(ExoContainer container, boolean local)
    {
       // Need to make a copy as modifying the list is cached by the container
-      List<ComponentRequestLifecycle> components = new ArrayList<ComponentRequestLifecycle>((List<ComponentRequestLifecycle>)container.getComponentInstancesOfType(ComponentRequestLifecycle.class));
+      List<ComponentRequestLifecycle> components =
+               new ArrayList<ComponentRequestLifecycle>((List<ComponentRequestLifecycle>) container
+                        .getComponentInstancesOfType(ComponentRequestLifecycle.class));
 
       //
       if (!local)
       {
-         for (PicoContainer current = container.getParent();current != null;current = current.getParent())
+         for (PicoContainer current = container.getParent(); current != null; current = current.getParent())
          {
-            components.addAll((List<ComponentRequestLifecycle>)current.getComponentInstancesOfType(ComponentRequestLifecycle.class));
+            components.addAll((List<ComponentRequestLifecycle>) current
+                     .getComponentInstancesOfType(ComponentRequestLifecycle.class));
          }
 
       }

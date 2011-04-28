@@ -41,7 +41,8 @@ import org.picocontainer.PicoVisitor;
  * @author <a href="mailto:ajustin@redhat.com">Ales Justin</a>
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
-public class MCComponentAdapter implements ComponentAdapter
+public class MCComponentAdapter
+   implements ComponentAdapter
 {
    /**
     * Kernel controller retrieved from associated mc kernel.
@@ -75,8 +76,8 @@ public class MCComponentAdapter implements ComponentAdapter
     * @param delegate original component adapter
     * @param interceptMC mc-integration configuration in the form of annotation
     */
-   public MCComponentAdapter(KernelController controller, ComponentAdapter delegate, 
-                             InterceptMC interceptMC, AbstractBeanMetaData data)
+   public MCComponentAdapter(KernelController controller, ComponentAdapter delegate, InterceptMC interceptMC,
+            AbstractBeanMetaData data)
    {
       if (controller == null)
       {
@@ -128,7 +129,8 @@ public class MCComponentAdapter implements ComponentAdapter
     * @throws PicoInitializationException
     * @throws PicoIntrospectionException
     */
-   public Object getComponentInstance(PicoContainer container) throws PicoInitializationException, PicoIntrospectionException
+   public Object getComponentInstance(PicoContainer container) throws PicoInitializationException,
+            PicoIntrospectionException
    {
       Object target = lastComponentInstance;
       if (target != null)
@@ -163,7 +165,8 @@ public class MCComponentAdapter implements ComponentAdapter
          }
          if (ctrl.getStates().isBeforeState(ctx.getState(), ControllerState.INSTALLED))
          {
-            throw new IllegalArgumentException("Missing some dependency: " + ctx.getDependencyInfo().getUnresolvedDependencies(null));
+            throw new IllegalArgumentException("Missing some dependency: "
+                     + ctx.getDependencyInfo().getUnresolvedDependencies(null));
          }
 
          target = ctx.getTarget();
@@ -172,7 +175,8 @@ public class MCComponentAdapter implements ComponentAdapter
       }
       catch (Throwable ex)
       {
-         throw new RuntimeException("Failed to perform MC interception on component: " + delegate.getComponentImplementation(), ex);
+         throw new RuntimeException("Failed to perform MC interception on component: "
+                  + delegate.getComponentImplementation(), ex);
       }
    }
 
@@ -188,11 +192,11 @@ public class MCComponentAdapter implements ComponentAdapter
 
       switch (mode)
       {
-         case ALL:
+         case ALL :
             return BeanAccessMode.ALL;
-         case FIELDS:
+         case FIELDS :
             return BeanAccessMode.FIELDS;
-         default:
+         default :
             return BeanAccessMode.STANDARD;
       }
    }

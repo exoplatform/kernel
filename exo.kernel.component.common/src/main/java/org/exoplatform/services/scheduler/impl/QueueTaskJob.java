@@ -23,6 +23,9 @@ import org.exoplatform.services.scheduler.BaseJob;
 import org.exoplatform.services.scheduler.JobContext;
 import org.exoplatform.services.scheduler.QueueTasks;
 import org.exoplatform.services.scheduler.Task;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham
@@ -32,6 +35,11 @@ import org.exoplatform.services.scheduler.Task;
  */
 public class QueueTaskJob extends BaseJob
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.scheduler.impl.QueueTaskJob");
+   
    public void execute(JobContext context) throws Exception
    {
       PortalContainer manager = PortalContainer.getInstance();
@@ -45,7 +53,7 @@ public class QueueTaskJob extends BaseJob
          }
          catch (Exception ex)
          {
-            ex.printStackTrace();
+            LOG.error(ex.getLocalizedMessage(), ex);
          }
          task = qtasks.poll();
       }

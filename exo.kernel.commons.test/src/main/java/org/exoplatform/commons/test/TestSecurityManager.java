@@ -73,7 +73,7 @@ public class TestSecurityManager extends SecurityManager
                else if (className.startsWith("org.apache.jackrabbit.test"))
                {
                   if (fileName.endsWith("Test.java") || fileName.equals("JCRTestResult.java")
-                     || fileName.equals("RepositoryHelper.java") || fileName.equals("RepositoryStub.java"))
+                           || fileName.equals("RepositoryHelper.java") || fileName.equals("RepositoryStub.java"))
                   {
                      testCode = true;
                   }
@@ -93,7 +93,8 @@ public class TestSecurityManager extends SecurityManager
          //         if (!se
          //            .getMessage()
          //            .equals(
-         //               "access denied (java.lang.RuntimePermission accessClassInPackage.com.sun.xml.internal.bind.v2.runtime.reflect)"))
+         //               "access denied (java.lang.RuntimePermission 
+         //                   accessClassInPackage.com.sun.xml.internal.bind.v2.runtime.reflect)"))
          //         {
          //            se.printStackTrace();
          //         }

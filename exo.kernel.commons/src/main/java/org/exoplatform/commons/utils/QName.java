@@ -37,18 +37,18 @@ public class QName
    protected final int hashCode;
 
    public QName(String namespace, String name)
-   {   
-   	  if (namespace == null) 
-   	  {
-   	     namespace = "";
-   	  }
-   	  if (name == null)
-   	  {
-   	     name = "";
-   	  }  
-   	  String stringName = ("[" + namespace + "]" + name);
-   	  int hashCode = (31 + namespace.hashCode()) * 31 + name.hashCode();
-   	  
+   {
+      if (namespace == null)
+      {
+         namespace = "";
+      }
+      if (name == null)
+      {
+         name = "";
+      }
+      String stringName = ("[" + namespace + "]" + name);
+      int hashCode = (31 + namespace.hashCode()) * 31 + name.hashCode();
+
       //   	
       this.namespace = namespace;
       this.name = name;
@@ -95,7 +95,7 @@ public class QName
       if (!(o instanceof QName))
          return false;
 
-      return hashCode == o.hashCode() && getAsString().equals(((QName)o).getAsString());
+      return hashCode == o.hashCode() && getAsString().equals(((QName) o).getAsString());
    }
 
    @Override

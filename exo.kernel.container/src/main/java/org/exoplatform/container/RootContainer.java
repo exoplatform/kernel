@@ -78,7 +78,7 @@ public class RootContainer extends ExoContainer
 
    private PortalContainerConfig config_;
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.RootContainer");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.RootContainer");
 
    private static volatile boolean booting = false;
 
@@ -208,7 +208,7 @@ public class RootContainer extends ExoContainer
             }
             catch (Exception ex)
             {
-               ex.printStackTrace();
+               LOG.error(ex.getLocalizedMessage(), ex);
             }
          }
       }
@@ -483,7 +483,7 @@ public class RootContainer extends ExoContainer
          log.error("Could not build root container", e);
          // The logger is not necessary configured so we have to use the standard
          // output stream
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
          return null;
       }
    }

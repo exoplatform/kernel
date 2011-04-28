@@ -24,6 +24,9 @@
  * */
 package org.exoplatform.container.client.http;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -45,6 +48,11 @@ public class ClientTypeMap
    final static public String XHTML_MIME_TYPE = "text/xhtml";
 
    final static public String XHTMLMP_MIME_TYPE = "application/vnd.wap.xhtml+xml";
+   
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.client.http.ClientTypeMap");
 
    private ArrayList<HttpClientType> clientList_;
 
@@ -107,7 +115,7 @@ public class ClientTypeMap
       }
       catch (Exception ex)
       {
-         ex.printStackTrace();
+         LOG.error(ex.getLocalizedMessage(), ex);
       }
    }
 
@@ -146,7 +154,7 @@ public class ClientTypeMap
             }
             catch (PatternSyntaxException e)
             {
-               e.printStackTrace();
+               LOG.error(e.getLocalizedMessage(), e);
                return clientList_.get(0);
             }
          }

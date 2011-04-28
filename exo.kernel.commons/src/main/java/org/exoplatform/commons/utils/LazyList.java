@@ -18,6 +18,9 @@
  */
 package org.exoplatform.commons.utils;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.AbstractList;
@@ -48,6 +51,11 @@ import java.util.RandomAccess;
 public class LazyList<E> extends AbstractList<E> implements RandomAccess
 {
 
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.utils.LazyList");
+   
    /** The batch size. */
    private final int batchSize;
 
@@ -114,7 +122,7 @@ public class LazyList<E> extends AbstractList<E> implements RandomAccess
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
             throw new IllegalStateException("Cannot load resource at index " + index, e);
          }
       }

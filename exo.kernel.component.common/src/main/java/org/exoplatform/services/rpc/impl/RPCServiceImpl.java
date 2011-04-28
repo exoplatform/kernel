@@ -373,7 +373,8 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
                if (coordinator.equals(this.coordinator))
                {
                   if (LOG.isTraceEnabled())
-                     LOG.trace("The coordinator did not change yet, we will relaunch the command after " + retryTimeout + " ms or once a topology change has been detected");                  
+                     LOG.trace("The coordinator did not change yet, we will relaunch the command after " 
+                              + retryTimeout + " ms or once a topology change has been detected");                  
                   try
                   {
                      topologyChangeLock.wait(retryTimeout);
@@ -640,7 +641,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       if (state != State.STARTED)
       {
          throw new RPCException("Cannot know whether the local node is a coordinator or not if " +
-         		"the service is not started, the current state of the service is " + state);
+                  "the service is not started, the current state of the service is " + state);
       }
       return isCoordinator;
    }

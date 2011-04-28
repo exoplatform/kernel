@@ -43,18 +43,26 @@ import java.util.Set;
  * <ul>
  * <li>The class must be annotated by {@link org.exoplatform.management.annotations.Managed}</li>
  * <li>The class may be annoated by {@link org.exoplatform.management.annotations.ManagedDescription}</li>
- * <li>Any property described by its getter and/or setter getter annotated by {@link org.exoplatform.management.annotations.Managed} is exposed as an attribute/li>
+ * <li>Any property described by its getter and/or setter getter annotated 
+ * by {@link org.exoplatform.management.annotations.Managed} is exposed as an attribute </li>
  * <li>Any property providing an annotated getter is readable</li>
  * <li>Any property providing an annotated setter is writable</li>
- * <li>Any getter/setter annotated by {@link org.exoplatform.management.annotations.ManagedName} redefines the attribute name</li>
- * <li>Any getter/setter annotated by {@link org.exoplatform.management.annotations.ManagedDescription} defines the attribute description</li>
+ * <li>Any getter/setter annotated by {@link org.exoplatform.management.annotations.ManagedName} 
+ * redefines the attribute name</li>
+ * <li>Any getter/setter annotated by {@link org.exoplatform.management.annotations.ManagedDescription} 
+ * defines the attribute description</li>
  * <li>When corresponding getter/setter redefines the attribute name, the value must be the same otherwhise
  * an exception is thrown at built time</li>
- * <li>Any method annotated by {@link org.exoplatform.management.annotations.Managed} is exposed as a management operation</li>
- * <li>Any method annotated by {@link org.exoplatform.management.annotations.ManagedDescription} defines the operation description</li>
- * <li>Any non setter/getter method annotated by {@link org.exoplatform.management.annotations.ManagedName} causes a built time exception</li>
- * <li>Any method argument annotated by {@link org.exoplatform.management.annotations.ManagedName} defines the management name of the corresponding operation parameter</li>
- * <li>Any method argument annotated by {@link org.exoplatform.management.annotations.ManagedDescription} defines the management description of the corresponding operation parameter</li>
+ * <li>Any method annotated by {@link org.exoplatform.management.annotations.Managed} is exposed 
+ * as a management operation</li>
+ * <li>Any method annotated by {@link org.exoplatform.management.annotations.ManagedDescription} 
+ * defines the operation description</li>
+ * <li>Any non setter/getter method annotated by {@link org.exoplatform.management.annotations.ManagedName} 
+ * causes a built time exception</li>
+ * <li>Any method argument annotated by {@link org.exoplatform.management.annotations.ManagedName} 
+ * defines the management name of the corresponding operation parameter</li>
+ * <li>Any method argument annotated by {@link org.exoplatform.management.annotations.ManagedDescription} 
+ * defines the management description of the corresponding operation parameter</li>
  * </ul>
  * </p>
  *
@@ -76,7 +84,8 @@ public class MetaDataBuilder
     * Create a new builder.
     *
     * @param clazz the clazz
-    * @throws IllegalArgumentException if the class is null or is not annotated by {@link org.exoplatform.management.annotations.Managed}
+    * @throws IllegalArgumentException if the class is null or is not annotated 
+    * by {@link org.exoplatform.management.annotations.Managed}
     */
    public MetaDataBuilder(Class clazz) throws IllegalArgumentException
    {
@@ -113,14 +122,14 @@ public class MetaDataBuilder
 
       //
       ManagedDescription typeDescriptionAnn =
-         AnnotationIntrospector.resolveClassAnnotations(clazz, ManagedDescription.class);
+               AnnotationIntrospector.resolveClassAnnotations(clazz, ManagedDescription.class);
       String typeDescription = typeDescriptionAnn != null ? typeDescriptionAnn.value() : null;
 
       //
       Map<Method, Managed> managedMethods = AnnotationIntrospector.resolveMethodAnnotations(clazz, Managed.class);
       Map<Method, ManagedName> methodNames = AnnotationIntrospector.resolveMethodAnnotations(clazz, ManagedName.class);
       Map<Method, ManagedDescription> methodDescriptions =
-         AnnotationIntrospector.resolveMethodAnnotations(clazz, ManagedDescription.class);
+               AnnotationIntrospector.resolveMethodAnnotations(clazz, ManagedDescription.class);
 
       //
       Map<Method, ManagedMethodMetaData> bilto = new HashMap<Method, ManagedMethodMetaData>();
@@ -150,11 +159,11 @@ public class MetaDataBuilder
             {
                if (parameterAnnotation instanceof ManagedName)
                {
-                  mmpMD.setName(((ManagedName)parameterAnnotation).value());
+                  mmpMD.setName(((ManagedName) parameterAnnotation).value());
                }
                else if (parameterAnnotation instanceof ManagedDescription)
                {
-                  mmpMD.setDescription(((ManagedDescription)parameterAnnotation).value());
+                  mmpMD.setDescription(((ManagedDescription) parameterAnnotation).value());
                }
             }
             managedMethod.addParameter(mmpMD);
@@ -226,7 +235,8 @@ public class MetaDataBuilder
             if (managedName != null)
             {
                throw new IllegalArgumentException("Managed operation " + method.getName()
-                  + " cannot be annoated with @" + ManagedName.class.getName() + " with value " + managedName.value());
+                        + " cannot be annoated with @" + ManagedName.class.getName() + " with value "
+                        + managedName.value());
             }
 
             //
@@ -278,7 +288,7 @@ public class MetaDataBuilder
                if (!getterName.value().equals(setterName.value()))
                {
                   throw new IllegalArgumentException("Getter name=" + getterName.value()
-                     + " does not match the setter name=" + setterName.value());
+                           + " does not match the setter name=" + setterName.value());
                }
             }
             attributeName = getterName.value();
@@ -290,7 +300,7 @@ public class MetaDataBuilder
 
          //
          ManagedPropertyMetaData managedProperty =
-            new ManagedPropertyMetaData(attributeName, getter, getterDescription, setter, setterDescription, mpm);
+                  new ManagedPropertyMetaData(attributeName, getter, getterDescription, setter, setterDescription, mpm);
 
          managedProperty.setDescription(propertyDescription);
 
@@ -299,7 +309,7 @@ public class MetaDataBuilder
          if (previousManagedProperty != null)
          {
             throw new IllegalArgumentException("The same property was declared twice old=" + previousManagedProperty
-               + " new=" + managedProperty);
+                     + " new=" + managedProperty);
          }
 
          //

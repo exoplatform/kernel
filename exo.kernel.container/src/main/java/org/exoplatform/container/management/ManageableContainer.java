@@ -44,7 +44,8 @@ import javax.management.MBeanServer;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableContainer extends CachingContainer
+public class ManageableContainer
+   extends CachingContainer
 {
 
    private static MBeanServer findMBeanServer()
@@ -54,7 +55,8 @@ public class ManageableContainer extends CachingContainer
    }
 
    /** . */
-   private static final ThreadLocal<ManageableComponentAdapterFactory> hack = new ThreadLocal<ManageableComponentAdapterFactory>();
+   private static final ThreadLocal<ManageableComponentAdapterFactory> hack =
+            new ThreadLocal<ManageableComponentAdapterFactory>();
 
    /** . */
    final ManagementContextImpl managementContext;
@@ -70,7 +72,7 @@ public class ManageableContainer extends CachingContainer
 
    public ManageableContainer()
    {
-      this((PicoContainer)null);
+      this((PicoContainer) null);
    }
 
    public ManageableContainer(PicoContainer parent)
@@ -95,12 +97,12 @@ public class ManageableContainer extends CachingContainer
       ManagementContextImpl parentCtx = null;
       if (parent instanceof ManageableContainer)
       {
-         ManageableContainer manageableParent = (ManageableContainer)parent;
+         ManageableContainer manageableParent = (ManageableContainer) parent;
          parentCtx = manageableParent.managementContext;
       }
 
       //
-      this.parent = parent instanceof ManageableContainer ? (ManageableContainer)parent : null;
+      this.parent = parent instanceof ManageableContainer ? (ManageableContainer) parent : null;
 
       //
       if (parentCtx != null)
@@ -138,7 +140,7 @@ public class ManageableContainer extends CachingContainer
    }
 
    private static ManageableComponentAdapterFactory getComponentAdapterFactory(
-      ComponentAdapterFactory componentAdapterFactory)
+            ComponentAdapterFactory componentAdapterFactory)
    {
       ManageableComponentAdapterFactory factory = new ManageableComponentAdapterFactory(componentAdapterFactory);
       hack.set(factory);
@@ -156,7 +158,7 @@ public class ManageableContainer extends CachingContainer
    }
 
    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-      throws PicoRegistrationException
+            throws PicoRegistrationException
    {
       ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
       if (managementContext != null)
@@ -166,7 +168,7 @@ public class ManageableContainer extends CachingContainer
          // Register if it is a management provider
          if (componentInstance instanceof ManagementProvider)
          {
-            ManagementProvider provider = (ManagementProvider)componentInstance;
+            ManagementProvider provider = (ManagementProvider) componentInstance;
             addProvider(provider);
          }
       }

@@ -19,6 +19,8 @@
 package org.exoplatform.services.idgenerator.impl;
 
 import org.exoplatform.services.idgenerator.IDGeneratorService;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -31,6 +33,11 @@ import java.security.SecureRandom;
  */
 public class IDGeneratorServiceImpl implements IDGeneratorService
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl");
+   
    private static String hexServerIP_ = null;
 
    private static final SecureRandom seeder_ = new SecureRandom();
@@ -69,7 +76,7 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
             // "ContentSetUtil: Could not get the local IP address using InetAddress.getLocalHost()!"
             // );
             // todo: find better way to get around this...
-            uhe.printStackTrace();
+            LOG.error(uhe.getLocalizedMessage(), uhe);
             return null;
          }
          byte serverIP[] = localInetAddress.getAddress();

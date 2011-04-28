@@ -18,6 +18,9 @@
  */
 package org.exoplatform.commons.utils;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.net.InetAddress;
 import java.security.SecureRandom;
 
@@ -30,6 +33,11 @@ import java.security.SecureRandom;
  */
 public class IdentifierUtil
 {
+
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.utils.IdentifierUtil");
 
    private static String hexServerIP_ = null;
 
@@ -54,7 +62,7 @@ public class IdentifierUtil
             // "ContentSetUtil: Could not get the local IP address using InetAddress.getLocalHost()!"
             // );
             // todo: find better way to get around this...
-            uhe.printStackTrace();
+            LOG.error(uhe.getLocalizedMessage(), uhe);
             return null;
          }
          byte serverIP[] = localInetAddress.getAddress();

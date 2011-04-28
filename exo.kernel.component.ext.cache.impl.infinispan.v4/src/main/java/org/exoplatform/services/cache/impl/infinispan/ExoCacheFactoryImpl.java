@@ -104,7 +104,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    /**
     * The mapping between the global configuration and the cache managers
     */   
-   private final Map<GlobalConfiguration, DefaultCacheManager> mappingGlobalConfigCacheManager = new HashMap<GlobalConfiguration, DefaultCacheManager>(); 
+   private final Map<GlobalConfiguration, DefaultCacheManager> mappingGlobalConfigCacheManager = 
+      new HashMap<GlobalConfiguration, DefaultCacheManager>(); 
 
    /**
     * The default creator

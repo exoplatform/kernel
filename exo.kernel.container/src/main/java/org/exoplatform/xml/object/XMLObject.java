@@ -19,6 +19,8 @@
 package org.exoplatform.xml.object;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
@@ -45,6 +47,12 @@ import java.util.Map;
  */
 public class XMLObject
 {
+   
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.xml.object.XMLObject");
+   
    public static String CURRENT_VERSION = "1.0";
 
    static Map cacheFields_ = new HashMap();
@@ -180,7 +188,7 @@ public class XMLObject
          }
          catch (Exception ex)
          {
-            System.err.println("ERROR: Cannot set  field: " + xmlfield.getName() + " of " + type);
+            LOG.error("ERROR: Cannot set  field: " + xmlfield.getName() + " of " + type, ex);
             throw ex;
          }
       }

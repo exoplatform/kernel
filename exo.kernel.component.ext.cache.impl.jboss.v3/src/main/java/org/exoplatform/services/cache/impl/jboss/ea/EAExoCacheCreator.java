@@ -68,7 +68,7 @@ public class EAExoCacheCreator extends AbstractExoCacheCreator
    }
 
    /**
-    * @see org.exoplatform.services.cache.impl.jboss.ExoCacheCreator#create(org.exoplatform.services.cache.ExoCacheConfig, org.jboss.cache.Cache)
+    * {@inheritDoc}
     */
    public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache)
       throws ExoCacheInitException
@@ -143,14 +143,17 @@ public class EAExoCacheCreator extends AbstractExoCacheCreator
       }
 
       @ManagedName("MaxNodes")
-      @ManagedDescription("This is the maximum number of nodes allowed in this region. 0 denotes immediate expiry, -1 denotes no limit.")
+      @ManagedDescription("This is the maximum number of nodes allowed in this region. 0 denotes immediate expiry, " +
+      		"-1 denotes no limit.")
       public int getMaxSize()
       {
          return ea.getMaxNodes();
       }
 
       @ManagedName("MinTimeToLive")
-      @ManagedDescription("the minimum amount of time a node must be allowed to live after being accessed before it is allowed to be considered for eviction. 0 denotes that this feature is disabled, which is the default value.")
+      @ManagedDescription("the minimum amount of time a node must be allowed to live after being accessed before " +
+      		"it is allowed to be considered for eviction. 0 denotes that this feature is disabled, " +
+      		"which is the default value.")
       public long getLiveTime()
       {
          return ea.getMinTimeToLive();

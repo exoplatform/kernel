@@ -18,12 +18,20 @@
  */
 package org.exoplatform.container.util;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.InputStream;
 
 //import net.sourceforge.wurfl.wurflapi.WurflSource;
 
 public class ExoWurflSource /* implements WurflSource */
 {
+   
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.util.ExoWurflSource");
 
    public InputStream getWurflInputStream()
    {
@@ -35,7 +43,7 @@ public class ExoWurflSource /* implements WurflSource */
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
          return null;
       }
    }

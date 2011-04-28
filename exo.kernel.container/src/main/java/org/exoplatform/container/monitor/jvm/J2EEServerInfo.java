@@ -124,7 +124,7 @@ public class J2EEServerInfo
          }
          catch (Exception ignore)
          {
-            ignore.printStackTrace();
+            log.error(ignore.getLocalizedMessage(), ignore);
          }
       }
       else if (jettyHome != null)

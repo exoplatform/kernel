@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.exception;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 /**
  * @author: Tuan Nguyen
  * @version: $Id: ExoServiceException.java 5332 2006-04-29 18:32:44Z geaz $
@@ -26,6 +29,11 @@ package org.exoplatform.services.exception;
  */
 public class ExoServiceException extends Exception
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.exception.ExoServiceException");
+   
    protected Object[] params_;
 
    protected String key_ = "SystemException";
@@ -39,7 +47,7 @@ public class ExoServiceException extends Exception
    public ExoServiceException(Throwable ex)
    {
       super(ex.getMessage());
-      ex.printStackTrace();
+      LOG.error(ex.getLocalizedMessage(), ex);
    }
 
    public ExoServiceException(String s)

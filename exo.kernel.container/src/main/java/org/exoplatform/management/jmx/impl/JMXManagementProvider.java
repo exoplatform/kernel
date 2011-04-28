@@ -76,7 +76,8 @@ public class JMXManagementProvider implements ManagementProvider
       }
       catch (Exception e)
       {
-         LOG.warn("Could not create the ExoModelMBean for the class " + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())), e);
+         LOG.warn("Could not create the ExoModelMBean for the class " + 
+                  (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())), e);
       }
 
       //

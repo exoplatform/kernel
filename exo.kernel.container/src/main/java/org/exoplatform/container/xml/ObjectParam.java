@@ -19,6 +19,8 @@
 package org.exoplatform.container.xml;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +36,11 @@ import java.util.List;
  */
 public class ObjectParam extends Parameter
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.xml.ObjectParam");
+   
    private String type;
 
    private String package_;
@@ -100,7 +107,7 @@ public class ObjectParam extends Parameter
          // prop.name_ +
          // ", value prop.value " + prop.value_) ;
          // }
-         ex.printStackTrace();
+         LOG.error(ex.getLocalizedMessage(), ex);
       }
    }
 

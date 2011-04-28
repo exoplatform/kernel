@@ -43,7 +43,8 @@ public interface ExoCacheCreator
     * @param cache the cache to initialize
     * @exception ExoCacheInitException if an exception happens while initializing the cache
     */
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException;
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, 
+            Cache<Serializable, Object> cache) throws ExoCacheInitException;
 
    /**
     * Returns the type of {@link org.exoplatform.services.cache.ExoCacheConfig} expected by the creator  

@@ -18,6 +18,9 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -29,6 +32,11 @@ import java.lang.management.MemoryUsage;
  */
 public class MemoryInfo
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.monitor.jvm.MemoryInfo");
+   
    private MemoryMXBean mxbean_;
 
    public MemoryInfo()
@@ -58,7 +66,7 @@ public class MemoryInfo
 
    public void printMemoryInfo()
    {
-      System.out.println("  Memory Heap Usage: " + mxbean_.getHeapMemoryUsage());
-      System.out.println("  Memory Non Heap Usage" + mxbean_.getNonHeapMemoryUsage());
+      LOG.info("  Memory Heap Usage: " + mxbean_.getHeapMemoryUsage());
+      LOG.info("  Memory Non Heap Usage" + mxbean_.getNonHeapMemoryUsage());
    }
 }

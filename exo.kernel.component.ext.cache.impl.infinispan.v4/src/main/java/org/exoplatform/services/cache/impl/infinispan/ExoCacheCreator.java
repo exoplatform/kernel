@@ -45,7 +45,8 @@ public interface ExoCacheCreator
     * @param cacheGetter a {@link Callable} instance from which we can get the cache
     * @exception ExoCacheInitException if an exception happens while initializing the cache
     */
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Configuration cacheConfig, Callable<Cache<Serializable, Object>> cacheGetter) throws ExoCacheInitException;
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Configuration cacheConfig, 
+            Callable<Cache<Serializable, Object>> cacheGetter) throws ExoCacheInitException;
 
    /**
     * Returns the type of {@link org.exoplatform.services.cache.ExoCacheConfig} expected by the creator  

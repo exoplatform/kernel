@@ -121,14 +121,17 @@ public class LRUExoCacheCreator extends AbstractExoCacheCreator
       }
 
       @ManagedName("MinTimeToLive")
-      @ManagedDescription("the minimum amount of time a node must be allowed to live after being accessed before it is allowed to be considered for eviction. 0 denotes that this feature is disabled, which is the default value.")
+      @ManagedDescription("the minimum amount of time a node must be allowed to live after" +
+      		" being accessed before it is allowed to be considered for eviction. 0 denotes " +
+      		"that this feature is disabled, which is the default value.")
       public long getLiveTime()
       {
          return lru.getMinTimeToLive();
       }
 
       @ManagedName("MaxNodes")
-      @ManagedDescription("This is the maximum number of nodes allowed in this region. 0 denotes immediate expiry, -1 denotes no limit.")
+      @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
+      		"0 denotes immediate expiry, -1 denotes no limit.")
       public int getMaxSize()
       {
          return lru.getMaxNodes();
@@ -136,7 +139,8 @@ public class LRUExoCacheCreator extends AbstractExoCacheCreator
 
       @Managed
       @ManagedName("TimeToLive")
-      @ManagedDescription("The amount of time a node is not written to or read (in milliseconds) before the node is swept away. 0 denotes immediate expiry, -1 denotes no limit.")
+      @ManagedDescription("The amount of time a node is not written to or read (in milliseconds) " +
+      		"before the node is swept away. 0 denotes immediate expiry, -1 denotes no limit.")
       public long getTimeToLive()
       {
          return lru.getTimeToLive();
@@ -144,7 +148,8 @@ public class LRUExoCacheCreator extends AbstractExoCacheCreator
 
       @Managed
       @ManagedName("MaxAges")
-      @ManagedDescription("Lifespan of a node (in milliseconds) regardless of idle time before the node is swept away. 0 denotes immediate expiry, -1 denotes no limit.")
+      @ManagedDescription("Lifespan of a node (in milliseconds) regardless of idle time before " +
+      		"the node is swept away. 0 denotes immediate expiry, -1 denotes no limit.")
       public long getMaxAge()
       {
          return lru.getMaxAge();

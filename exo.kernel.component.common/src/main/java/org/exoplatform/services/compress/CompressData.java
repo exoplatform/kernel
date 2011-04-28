@@ -19,6 +19,8 @@
 package org.exoplatform.services.compress;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,6 +45,11 @@ import java.util.zip.ZipOutputStream;
  */
 public class CompressData
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.compress.CompressData");
+
    private String base_;
 
    private List<DataInstance> datas_ = new ArrayList<DataInstance>();
@@ -61,7 +68,7 @@ public class CompressData
       base_ = base;
    }
 
-   private String getBase()
+   public String getBase()
    {
       return base_;
    }
@@ -75,7 +82,7 @@ public class CompressData
       }
       catch (FileNotFoundException e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
       }
    }
 
@@ -296,7 +303,7 @@ public class CompressData
       {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-         if (getType() == "Zip")
+         if (getType().equals("Zip"))
          {
             ZipOutputStream zos = new ZipOutputStream(baos);
             try
@@ -305,7 +312,7 @@ public class CompressData
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               LOG.error(e.getLocalizedMessage(), e);
             }
          }
          else
@@ -318,7 +325,7 @@ public class CompressData
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               LOG.error(e.getLocalizedMessage(), e);
             }
          }
          InputStream is = new ByteArrayInputStream(baos.toByteArray());
@@ -329,7 +336,7 @@ public class CompressData
          }
          catch (IOException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
 
          return is;

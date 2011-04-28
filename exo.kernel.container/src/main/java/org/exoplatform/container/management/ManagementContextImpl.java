@@ -21,11 +21,13 @@ package org.exoplatform.container.management;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.management.ManagementAware;
+import org.exoplatform.management.ManagementContext;
+import org.exoplatform.management.annotations.ManagedBy;
 import org.exoplatform.management.spi.ManagedResource;
 import org.exoplatform.management.spi.ManagedTypeMetaData;
 import org.exoplatform.management.spi.ManagementProvider;
-import org.exoplatform.management.ManagementContext;
-import org.exoplatform.management.annotations.ManagedBy;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -40,6 +42,11 @@ import java.util.Map;
  */
 public class ManagementContextImpl implements ManagementContext, ManagedResource
 {
+
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.management.ManagementContextImpl");
 
    /** . */
    private final Map<Class<?>, Object> scopingDataList;
@@ -167,19 +174,19 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
          }
          catch (NoSuchMethodException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
          catch (InstantiationException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
          catch (IllegalAccessException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
          catch (InvocationTargetException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
       }
       else

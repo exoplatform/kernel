@@ -32,6 +32,8 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -60,6 +62,11 @@ import java.util.List;
 public class StandaloneContainer extends ExoContainer implements SessionManagerContainer
 {
 
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.StandaloneContainer");
+   
    private static final long serialVersionUID = 12L;
 
    private static StandaloneContainer container;
@@ -169,7 +176,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
             }
          });
          PrivilegedSystemHelper.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
-         System.out.println("StandaloneContainer initialized using:  " + configurationURL);
+         LOG.info("StandaloneContainer initialized using:  " + configurationURL);
       }
       return container;
    }
@@ -187,7 +194,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          String n = (String)comp[0];
          Object o = comp[1];
          container.registerComponentInstance(n, o);
-         System.out.println("StandaloneContainer: injecting \"" + n + "\"");
+         LOG.info("StandaloneContainer: injecting \"" + n + "\"");
       }
    }
 

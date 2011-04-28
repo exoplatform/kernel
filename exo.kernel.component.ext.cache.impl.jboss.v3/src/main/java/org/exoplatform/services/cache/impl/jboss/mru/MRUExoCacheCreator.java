@@ -49,7 +49,8 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
    /**
     * {@inheritDoc}
     */
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) throws ExoCacheInitException
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache) 
+      throws ExoCacheInitException
    {
       if (config instanceof MRUExoCacheConfig)
       {
@@ -66,7 +67,8 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
    /**
     * Creates a new ExoCache instance with the relevant parameters
     */
-   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache, int maxNodes, long minTimeToLive)
+   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Cache<Serializable, Object> cache, 
+            int maxNodes, long minTimeToLive)
       throws ExoCacheInitException
    {
       final MRUAlgorithmConfig mru = new MRUAlgorithmConfig(maxNodes);
@@ -86,14 +88,17 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
          }
 
          @ManagedName("MaxNodes")
-         @ManagedDescription("This is the maximum number of nodes allowed in this region. 0 denotes immediate expiry, -1 denotes no limit.")
+         @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
+         		"0 denotes immediate expiry, -1 denotes no limit.")
          public int getMaxSize()
          {
             return mru.getMaxNodes();
          }
 
          @ManagedName("MinTimeToLive")
-         @ManagedDescription("the minimum amount of time a node must be allowed to live after being accessed before it is allowed to be considered for eviction. 0 denotes that this feature is disabled, which is the default value.")
+         @ManagedDescription("the minimum amount of time a node must be allowed to live after " +
+         		"being accessed before it is allowed to be considered for eviction. " +
+         		"0 denotes that this feature is disabled, which is the default value.")
          public long getLiveTime()
          {
             return mru.getMinTimeToLive();

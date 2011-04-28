@@ -18,6 +18,9 @@
  */
 package org.exoplatform.commons.debug;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +36,11 @@ import java.util.Map;
  */
 public class ObjectDebuger
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.debug.ObjectDebuger");
+
    static public void printObject(Object o) throws Exception
    {
       // System. out.println(asString(o)) ;
@@ -53,7 +61,7 @@ public class ObjectDebuger
       }
       catch (Exception ex)
       {
-         ex.printStackTrace();
+         LOG.error(ex.getLocalizedMessage(), ex);
          b.append("\n").append(ex.getMessage());
       }
       return b.toString();

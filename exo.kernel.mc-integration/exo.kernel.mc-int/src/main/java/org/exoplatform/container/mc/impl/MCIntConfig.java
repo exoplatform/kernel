@@ -53,7 +53,8 @@ import java.util.Map;
  *    <annotation>@org.exoplatform.container.mc.impl.InterceptMC</annotation>
  * </bean>
  * <bean name="InjectingBean2">
- *    <annotation>@org.exoplatform.container.mc.impl.InterceptMC(injectionMode=org.exoplatform.container.mc.impl.MCInjectionMode.STANDARD)</annotation>
+ *    <annotation>@org.exoplatform.container.mc.impl.InterceptMC(injectionMode=
+ *    org.exoplatform.container.mc.impl.MCInjectionMode.STANDARD)</annotation>
  * </bean>
  * </pre>
  * <p>

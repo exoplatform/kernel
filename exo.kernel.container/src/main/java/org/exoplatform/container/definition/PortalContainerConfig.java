@@ -569,7 +569,7 @@ public class PortalContainerConfig implements Startable
          if (PropertyManager.isDevelopping())
          {
             log.debug("The context '" + contextName + "' has not been added as " +
-            		"dependency of any portal containers");
+               "dependency of any portal containers");
          }
          // by default we will return the default portal container
          return defaultDefinition.getName();

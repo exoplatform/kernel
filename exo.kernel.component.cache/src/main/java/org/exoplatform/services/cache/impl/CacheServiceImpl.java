@@ -203,7 +203,8 @@ public class CacheServiceImpl implements CacheService
 
    public Collection<ExoCache<? extends Serializable, ?>> getAllCacheInstances()
    {
-      Collection<ExoCache<? extends Serializable, ?>> caches = new ArrayList<ExoCache<? extends Serializable,?>>(cacheMap_.size());
+      Collection<ExoCache<? extends Serializable, ?>> caches = 
+         new ArrayList<ExoCache<? extends Serializable,?>>(cacheMap_.size());
       for (FutureTask<ExoCache<? extends Serializable,?>> task : cacheMap_.values())
       {
          ExoCache<? extends Serializable, ?> cache = null;

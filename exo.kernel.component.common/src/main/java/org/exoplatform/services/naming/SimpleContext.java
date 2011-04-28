@@ -19,6 +19,8 @@
 package org.exoplatform.services.naming;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.Hashtable;
@@ -43,6 +45,11 @@ import javax.naming.spi.ObjectFactory;
 
 public class SimpleContext implements Context
 {
+   
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.naming.SimpleContext");
 
    private static Hashtable objects = new Hashtable();
 
@@ -75,7 +82,7 @@ public class SimpleContext implements Context
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
             throw new NamingException("Exception: " + e);
          }
       }
@@ -142,8 +149,7 @@ public class SimpleContext implements Context
 
    public NamingEnumeration<Binding> listBindings(String arg0) throws NamingException
    {
-      // TODO Auto-generated method stub
-      return null;
+      throw new NamingException("Not supported");
    }
 
    public void destroySubcontext(Name arg0) throws NamingException

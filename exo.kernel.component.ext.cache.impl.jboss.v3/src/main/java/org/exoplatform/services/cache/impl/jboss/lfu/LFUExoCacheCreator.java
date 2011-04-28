@@ -114,14 +114,17 @@ public class LFUExoCacheCreator extends AbstractExoCacheCreator
       }
 
       @ManagedName("MinTimeToLive")
-      @ManagedDescription("the minimum amount of time a node must be allowed to live after being accessed before it is allowed to be considered for eviction. 0 denotes that this feature is disabled, which is the default value.")
+      @ManagedDescription("the minimum amount of time a node must be allowed to live after being accessed " +
+      		"before it is allowed to be considered for eviction. 0 denotes that this feature is disabled, " +
+      		"which is the default value.")
       public long getLiveTime()
       {
          return lfu.getMinTimeToLive();
       }
 
       @ManagedName("MaxNodes")
-      @ManagedDescription("This is the maximum number of nodes allowed in this region. 0 denotes immediate expiry, -1 denotes no limit.")
+      @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
+      		"0 denotes immediate expiry, -1 denotes no limit.")
       public int getMaxSize()
       {
          return lfu.getMaxNodes();
@@ -129,7 +132,10 @@ public class LFUExoCacheCreator extends AbstractExoCacheCreator
 
       @Managed
       @ManagedName("MinNodes")
-      @ManagedDescription("This is the minimum number of nodes allowed in this region. This value determines what the eviction queue should prune down to per pass. e.g. If minNodes is 10 and the cache grows to 100 nodes, the cache is pruned down to the 10 most frequently used nodes when the eviction timer makes a pass through the eviction algorithm.")
+      @ManagedDescription("This is the minimum number of nodes allowed in this region. This value determines " +
+      		"what the eviction queue should prune down to per pass. e.g. If minNodes is 10 and the cache grows " +
+      		"to 100 nodes, the cache is pruned down to the 10 most frequently used nodes when the eviction timer " +
+      		"makes a pass through the eviction algorithm.")
       public long getMinNodes()
       {
          return lfu.getMinNodes();

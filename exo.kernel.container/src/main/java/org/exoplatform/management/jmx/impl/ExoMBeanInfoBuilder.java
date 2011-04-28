@@ -18,12 +18,12 @@
  */
 package org.exoplatform.management.jmx.impl;
 
+import org.exoplatform.container.management.MetaDataBuilder;
 import org.exoplatform.management.annotations.ImpactType;
 import org.exoplatform.management.spi.ManagedMethodMetaData;
 import org.exoplatform.management.spi.ManagedMethodParameterMetaData;
 import org.exoplatform.management.spi.ManagedPropertyMetaData;
 import org.exoplatform.management.spi.ManagedTypeMetaData;
-import org.exoplatform.container.management.MetaDataBuilder;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -154,7 +154,8 @@ public class ExoMBeanInfoBuilder
       for (ManagedMethodMetaData methodMD : typeMD.getMethods())
       {
          ModelMBeanOperationInfo operationInfo =
-            buildOperationInfo(methodMD.getMethod(), methodMD.getDescription(), Role.OP, methodMD.getParameters(), methodMD.getImpact());
+                  buildOperationInfo(methodMD.getMethod(), methodMD.getDescription(), Role.OP,
+                           methodMD.getParameters(), methodMD.getImpact());
          operations.add(operationInfo);
       }
 
