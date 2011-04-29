@@ -48,7 +48,9 @@ public class Jdk14Configurator extends AbstractLogConfigurator
       }
       catch (IOException e)
       {
-         e.printStackTrace();
+         // We need to use the standard out print since we are actually 
+         // configuring the logger
+         e.printStackTrace(); //NOSONAR
       }
       this.properties = properties;
    }

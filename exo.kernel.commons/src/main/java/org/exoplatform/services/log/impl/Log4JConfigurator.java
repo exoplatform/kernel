@@ -49,7 +49,9 @@ public class Log4JConfigurator extends AbstractLogConfigurator
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               // We need to use the standard out print since we are actually 
+               // configuring the logger
+               e.printStackTrace(); //NOSONAR
             }
             return null;
          }

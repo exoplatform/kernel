@@ -29,8 +29,6 @@ import org.exoplatform.container.component.BaseComponentPlugin;
  */
 public abstract class Listener<S, D> extends BaseComponentPlugin
 {
-   // TODO: Should have the event name here to avoid the conflict with the plugin
-   // name
 
    /**
     * This method should be invoked when an event with the same name is

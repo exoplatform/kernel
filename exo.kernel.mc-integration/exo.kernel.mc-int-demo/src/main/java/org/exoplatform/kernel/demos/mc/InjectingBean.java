@@ -35,8 +35,9 @@ import org.jboss.dependency.spi.Controller;
 import org.jboss.kernel.plugins.bootstrap.basic.KernelConstants;
 import org.jboss.kernel.spi.config.KernelConfigurator;
 
-import javax.transaction.TransactionManager;
 import java.util.Map;
+
+import javax.transaction.TransactionManager;
 
 /**
  * This POJO demonstrates how to use annotations to perform injections of JBoss Microcontainer components
@@ -169,32 +170,38 @@ public class InjectingBean implements org.picocontainer.Startable
     * @param bindings
     */
    @MapValue(
-         value = {
-               @EntryValue(
-                     key = @Value(type = Class.class, string = @StringValue(value = "org.jboss.dependency.spi.Controller", type = Class.class)),
-                     value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_CONTROLLER_NAME))
-               ),
-               @EntryValue(
-                     key = @Value(type = Class.class, string = @StringValue(value = "org.jboss.kernel.Kernel", type = Class.class)),
-                     value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_NAME))
-               ),
-               @EntryValue(
-                     key = @Value(type = Class.class, string = @StringValue(value = "org.jboss.kernel.spi.dependency.KernelController", type = Class.class)),
-                     value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_CONTROLLER_NAME))
-               ),
-               @EntryValue(
-                     key = @Value(type = Class.class, string = @StringValue(value = "org.jboss.kernel.spi.registry.KernelBus", type = Class.class)),
-                     value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_BUS_NAME))
-               ),
-               @EntryValue(
-                     key = @Value(type = Class.class, string = @StringValue(value = "org.jboss.kernel.spi.registry.KernelRegistry", type = Class.class)),
-                     value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_REGISTRY_NAME))
-               ),
-               @EntryValue(
-                     key = @Value(type = Class.class, string = @StringValue(value = "org.jboss.kernel.spi.config.KernelConfigurator", type = Class.class)),
-                     value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_CONFIGURATOR_NAME))
-               )
-         }
+      value = {
+         @EntryValue(
+            key = @Value(type = Class.class, 
+                         string = @StringValue(value = "org.jboss.dependency.spi.Controller", type = Class.class)),
+            value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_CONTROLLER_NAME))
+         ),
+         @EntryValue(
+            key = @Value(type = Class.class, 
+                         string = @StringValue(value = "org.jboss.kernel.Kernel", type = Class.class)),
+            value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_NAME))
+         ),
+         @EntryValue(
+            key = @Value(type = Class.class, 
+                         string = @StringValue(value = "org.jboss.kernel.spi.dependency.KernelController", type = Class.class)),
+            value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_CONTROLLER_NAME))
+         ),
+         @EntryValue(
+            key = @Value(type = Class.class, 
+                         string = @StringValue(value = "org.jboss.kernel.spi.registry.KernelBus", type = Class.class)),
+            value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_BUS_NAME))
+         ),
+         @EntryValue(
+            key = @Value(type = Class.class, 
+                         string = @StringValue(value = "org.jboss.kernel.spi.registry.KernelRegistry", type = Class.class)),
+            value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_REGISTRY_NAME))
+         ),
+         @EntryValue(
+            key = @Value(type = Class.class, 
+                         string = @StringValue(value = "org.jboss.kernel.spi.config.KernelConfigurator", type = Class.class)),
+            value = @Value(inject = @Inject(bean = KernelConstants.KERNEL_CONFIGURATOR_NAME))
+         )
+      }
    )
    public void setBindings(Map<Class<?>, Object> bindings)
    {

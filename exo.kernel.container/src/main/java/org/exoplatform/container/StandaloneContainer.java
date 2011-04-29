@@ -71,7 +71,6 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
 
    private static StandaloneContainer container;
 
-   // TODO use ONLY attribute from context instead
    private static URL configurationURL = null;
 
    private static boolean useDefault = true;
@@ -420,9 +419,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       }
       catch (Exception ex)
       {
-         // TODO https://jira.jboss.org/jira/browse/EXOJCR-198
-         //System.err.println("Error of default config init: ");
-         //ex.printStackTrace();
+         // ignore me
       }
    }
 

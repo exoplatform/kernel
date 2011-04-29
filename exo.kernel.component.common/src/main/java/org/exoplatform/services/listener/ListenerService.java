@@ -142,7 +142,7 @@ public class ListenerService
     * @param name The name of the event
     * @param source The source object instance
     * @param data The data object instance
-    * @throws Exception TODO: Should not delegate to the method broadcast(Event)
+    * @throws Exception if an exception occurs
     */
    final public <S, D> void broadcast(String name, S source, D data) throws Exception
    {

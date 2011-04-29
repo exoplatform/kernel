@@ -474,8 +474,6 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
          return parent.getComponentInstance(componentAdapter.getComponentKey());
       }
 
-      // TODO: decide .. exception or null?
-      // exceptrion: mx: +1, joehni +1
       return null;
    }
 

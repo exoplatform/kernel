@@ -52,7 +52,6 @@ public class SimpleCommandLineParser implements CommandLineParser
 
       context.remove(parametersPropertyName);
 
-      // TODO make regexp parser
       // the rules:
       // first word is command name (should be returned)
       // else are parameters of command (should be put into Context under name ==
