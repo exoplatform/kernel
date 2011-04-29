@@ -19,6 +19,7 @@
 package org.exoplatform.commons.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +43,21 @@ public class MimeTypeResolver
          {
             public Void run() throws Exception
             {
-               Scanner scanner = new Scanner(getClass().getResourceAsStream("mimetypes.properties"), "ISO-8859-1");
+               Scanner scanner = null;
+               String mimeTypeProperties = System.getProperty("org.exoplatform.mimetypes");
+               if (mimeTypeProperties != null)
+               {
+                  InputStream stream =
+                     Thread.currentThread().getContextClassLoader().getResourceAsStream(mimeTypeProperties);
+                  if (stream != null)
+                  {
+                     scanner = new Scanner(stream, "ISO-8859-1");
+                  }
+               }
+               if (scanner == null)
+               {
+                  scanner = new Scanner(getClass().getResourceAsStream("mimetypes.properties"), "ISO-8859-1");
+               }
                try
                {
                   while (scanner.hasNextLine())
