@@ -49,7 +49,6 @@ public class QName
       String stringName = ("[" + namespace + "]" + name);
       int hashCode = (31 + namespace.hashCode()) * 31 + name.hashCode();
 
-      //   	
       this.namespace = namespace;
       this.name = name;
       this.stringName = stringName;

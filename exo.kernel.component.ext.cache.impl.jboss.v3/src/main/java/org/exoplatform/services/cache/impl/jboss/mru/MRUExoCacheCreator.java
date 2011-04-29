@@ -89,7 +89,7 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
 
          @ManagedName("MaxNodes")
          @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
-         		"0 denotes immediate expiry, -1 denotes no limit.")
+               "0 denotes immediate expiry, -1 denotes no limit.")
          public int getMaxSize()
          {
             return mru.getMaxNodes();
@@ -97,8 +97,8 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
 
          @ManagedName("MinTimeToLive")
          @ManagedDescription("the minimum amount of time a node must be allowed to live after " +
-         		"being accessed before it is allowed to be considered for eviction. " +
-         		"0 denotes that this feature is disabled, which is the default value.")
+               "being accessed before it is allowed to be considered for eviction. " +
+               "0 denotes that this feature is disabled, which is the default value.")
          public long getLiveTime()
          {
             return mru.getMinTimeToLive();

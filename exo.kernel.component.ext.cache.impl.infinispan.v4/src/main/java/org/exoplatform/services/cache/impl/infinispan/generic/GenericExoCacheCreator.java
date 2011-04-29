@@ -167,7 +167,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
 
       @ManagedName("Lifespan")
       @ManagedDescription("Maximum lifespan of a cache entry, after which the entry is expired cluster-wide." +
-      		" -1 means the entries never expire.")
+            " -1 means the entries never expire.")
       public long getLiveTime()
       {
          return cacheConfig.getExpirationLifespan();
@@ -176,7 +176,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       @Managed
       @ManagedName("MaxIdle")
       @ManagedDescription("Maximum idle time a cache entry will be maintained in the cache. " +
-      		"If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
+            "If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
       public long getMaxIdle()
       {
          return cacheConfig.getExpirationMaxIdle();
@@ -185,7 +185,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       @Managed
       @ManagedName("WakeUpInterval")
       @ManagedDescription("Interval between subsequent eviction runs. If you wish to disable the periodic eviction " +
-      		"process altogether, set wakeupInterval to -1.")
+            "process altogether, set wakeupInterval to -1.")
       public long getWakeUpInterval()
       {
          return cacheConfig.getEvictionWakeUpInterval();
