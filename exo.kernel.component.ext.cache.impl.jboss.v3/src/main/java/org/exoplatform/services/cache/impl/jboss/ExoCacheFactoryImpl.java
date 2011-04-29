@@ -37,7 +37,6 @@ import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
 
 import java.io.Serializable;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -349,14 +348,14 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     */
    private static class ConfigurationKey
    {
-      private final URL jgroupsConfigFile;
+      private final String jgroupsConfigFile;
       private final Configuration conf;
       
       public ConfigurationKey(Configuration initialConf) throws CloneNotSupportedException
       {
          // Clone it first since it will be modified
          this.conf = initialConf.clone();
-         this.jgroupsConfigFile = conf.getJGroupsConfigFile();
+         this.jgroupsConfigFile = (conf.getJGroupsConfigFile() == null ? null : conf.getJGroupsConfigFile().toString());
          // remove the jgroupsConfigFile from the conf
          conf.setJgroupsConfigFile(null);
          // remove the EvictionConfig to ignore it
