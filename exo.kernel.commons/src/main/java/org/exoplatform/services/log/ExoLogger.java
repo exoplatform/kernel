@@ -129,8 +129,7 @@ public abstract class ExoLogger
       {
          // We need to use the standard out print since we are actually 
          // configuring the logger
-         System.err.println("Could not load logger class factory " + e.getMessage()
-            + " will use fail over logger instead"); //NOSONAR
+         System.err.println("Could not load logger class factory " + e.getMessage() + " will use fail over logger instead"); //NOSONAR
          return failOverFactory.getExoLogger(name);
       }
    }
@@ -156,8 +155,7 @@ public abstract class ExoLogger
       {
          // We need to use the standard out print since we are actually 
          // configuring the logger
-         System.err.println("Could not load logger class factory " + e.getMessage()
-            + " will use fail over logger instead"); //NOSONAR
+         System.err.println("Could not load logger class factory " + e.getMessage() + " will use fail over logger instead"); //NOSONAR
          return failOverFactory.getExoLogger(name);
       }
    }
