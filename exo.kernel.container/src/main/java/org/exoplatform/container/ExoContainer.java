@@ -55,7 +55,17 @@ public class ExoContainer extends ManageableContainer
    private static final long serialVersionUID = -8068506531004854036L;
 
    /**
-    * Returns an unmodifable set of profiles defined by the value returned by invoking
+    * The current list of profiles
+    */
+   private static volatile String PROFILES;
+   
+   /**
+    * The current set of profiles
+    */
+   private static Set<String> SET_PROFILES = Collections.unmodifiableSet(new HashSet<String>());
+   
+   /**
+    * Returns an unmodifiable set of profiles defined by the value returned by invoking
     * {@link PropertyManager#getProperty(String)} with the {@link org.exoplatform.commons.utils.PropertyManager#RUNTIME_PROFILES}
     * property.
     *
@@ -63,11 +73,40 @@ public class ExoContainer extends ManageableContainer
     */
    public static Set<String> getProfiles()
    {
-      //
+      String profiles = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
+      if ((profiles == null && PROFILES != null) || (profiles != null && !profiles.equals(PROFILES)))
+      {
+         synchronized (ExoContainer.class)
+         {
+            if ((profiles == null && PROFILES != null) || (profiles != null && !profiles.equals(PROFILES)))
+            {
+               SET_PROFILES = getProfiles(profiles);
+               PROFILES = profiles;
+            }
+         }
+      }      
+ 
+      return SET_PROFILES;
+   }
+   
+   /**
+    * Indicates whether or not a given profile exists
+    * @param profileName the name of the profile to check
+    * @return <code>true</code> if the profile exists, <code>false</code> otherwise.
+    */
+   public static boolean hasProfile(String profileName)
+   {
+      return getProfiles().contains(profileName);
+   }
+   
+   /**
+    * Convert the list of profiles into a Set of String
+    */
+   private static Set<String> getProfiles(String profileList)
+   {
       Set<String> profiles = new HashSet<String>();
 
       // Obtain profile list by runtime properties
-      String profileList = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
       if (profileList != null)
       {
          for (String profile : profileList.split(","))
@@ -77,9 +116,9 @@ public class ExoContainer extends ManageableContainer
       }
 
       //
-      return Collections.unmodifiableSet(profiles);
+      return Collections.unmodifiableSet(profiles);      
    }
-
+   
    static Log log = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
 
    private Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =

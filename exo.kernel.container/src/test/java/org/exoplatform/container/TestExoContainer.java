@@ -16,6 +16,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
@@ -58,6 +59,55 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   public void testHasProfile()
+   {
+      String oldValue = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
+      try
+      {
+         System.clearProperty(PropertyManager.RUNTIME_PROFILES);
+         PropertyManager.refresh();
+         assertFalse(ExoContainer.hasProfile(null));
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo1");
+         assertFalse(ExoContainer.hasProfile(null));
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertTrue(ExoContainer.hasProfile("foo1"));
+         System.clearProperty(PropertyManager.RUNTIME_PROFILES);
+         PropertyManager.refresh();
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo1, foo2, foo3");
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertTrue(ExoContainer.hasProfile("foo1"));
+         assertTrue(ExoContainer.hasProfile("foo2"));
+         assertTrue(ExoContainer.hasProfile("foo3"));
+         PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "  \tfoo   ");
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertTrue(ExoContainer.hasProfile("foo"));
+         PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, ",foo   ");
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertTrue(ExoContainer.hasProfile("foo"));
+         PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo, bar, \t baz \t");
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertTrue(ExoContainer.hasProfile("baz"));
+         PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo1, bar, \t baz1 \t");
+         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertFalse(ExoContainer.hasProfile("baz"));
+         assertTrue(ExoContainer.hasProfile("bar"));
+      }
+      finally
+      {
+         if (oldValue == null)
+         {
+            System.clearProperty(PropertyManager.RUNTIME_PROFILES);
+            PropertyManager.refresh();
+         }
+         else
+         {
+            PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, oldValue);
+         }         
+      }
+   }
+   
    public void testRemoveComponent() throws Exception
    {
       RootContainer container = RootContainer.getInstance();
