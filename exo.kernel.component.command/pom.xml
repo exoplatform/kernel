@@ -77,10 +77,6 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
-               <excludes>
-                  <exclude>**/CommandServiceTest.java</exclude>
-                  <exclude>**/MultiConfigServiceTest.java</exclude>
-               </excludes>
             </configuration>
          </plugin>
          <plugin>

@@ -50,7 +50,7 @@ public class MultiConfigServiceTest extends TestCase
    public void setUp() throws Exception
    {
 
-      StandaloneContainer.setConfigurationPath("src/java/conf/standalone/test-multi-configuration.xml");
+      StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-multi-configuration.xml");
 
       container = StandaloneContainer.getInstance();
    }
