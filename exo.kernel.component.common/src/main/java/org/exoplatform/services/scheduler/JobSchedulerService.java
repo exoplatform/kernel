@@ -19,6 +19,10 @@
 package org.exoplatform.services.scheduler;
 
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobListener;
@@ -32,6 +36,9 @@ import java.util.List;
  * Created by The eXo Platform SAS Author : Hoa Pham hoapham@exoplatform.com Oct
  * 5, 2005
  */
+@Managed
+@NameTemplate(@Property(key = "service", value = "JobSchedulerService"))
+@RESTEndpoint(path = "JobSchedulerService")
 public interface JobSchedulerService
 {
    public void addJob(JobInfo jinfo, Date date) throws Exception;
@@ -101,4 +108,16 @@ public interface JobSchedulerService
    public Date rescheduleJob(String triggerName, String groupName, Trigger newTrigger) throws Exception;
 
    public JobDetail getJob(JobInfo jobInfo) throws Exception;
+   
+   /**
+    * Suspends all the registered jobs
+    * @return <code>true</code> if the jobs could be suspended, <code>false</code> otherwise
+    */
+   public boolean suspend();
+   
+   /**
+    * Resumes all the registered jobs
+    * @return <code>true</code> if the jobs could be resumed, <code>false</code> otherwise
+    */
+   public boolean resume();
 }

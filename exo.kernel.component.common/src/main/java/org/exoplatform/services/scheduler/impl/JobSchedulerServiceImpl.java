@@ -20,6 +20,8 @@ package org.exoplatform.services.scheduler.impl;
 
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.PortalContainerInfo;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.scheduler.CronJob;
@@ -394,6 +396,38 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       return scheduler_.rescheduleJob(triggerName, groupName, newTrigger);
    }
 
+   @Managed
+   @ManagedDescription("Suspend all the existing jobs")
+   public boolean suspend()
+   {
+      try
+      {
+         scheduler_.standby();
+         return true;
+      }
+      catch (SchedulerException e)
+      {
+         log.error("Could not suspend the scheduler", e);
+      }
+      return false;
+   }
+
+   @Managed
+   @ManagedDescription("Resume all the existing jobs")   
+   public boolean resume()
+   {
+      try
+      {
+         scheduler_.start();
+         return true;
+      }
+      catch (SchedulerException e)
+      {
+         log.error("Could not resume the scheduler", e);
+      }
+      return false;
+   }
+   
    public void start()
    {
       try
