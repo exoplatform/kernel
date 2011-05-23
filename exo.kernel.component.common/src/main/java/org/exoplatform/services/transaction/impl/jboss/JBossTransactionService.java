@@ -18,53 +18,31 @@
  */
 package org.exoplatform.services.transaction.impl.jboss;
 
-import org.exoplatform.services.transaction.ExoResource;
-import org.exoplatform.services.transaction.TransactionService;
+import org.exoplatform.services.transaction.impl.AbstractTransactionService;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class JBossTransactionService implements TransactionService
+public class JBossTransactionService extends AbstractTransactionService
 {
 
-   /** . */
-   private volatile TransactionManager tm;
-
-   public TransactionManager getTransactionManager()
-   {
-      if (tm == null)
-      {
-         try
-         {
-            tm = (TransactionManager)new InitialContext().lookup("java:/TransactionManager");
-         }
-         catch (NamingException e)
-         {
-            throw new IllegalStateException(e);
-         }
-      }
-      return tm;
-   }
-
-   public UserTransaction getUserTransaction()
+   /**
+    * {@inheritDoc}
+    */
+   public TransactionManager findTransactionManager()
    {
       try
       {
-         return (UserTransaction)new InitialContext().lookup("java:/TransactionManager");
+         return (TransactionManager)new InitialContext().lookup("java:/TransactionManager");
       }
       catch (NamingException e)
       {
@@ -72,6 +50,26 @@ public class JBossTransactionService implements TransactionService
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public UserTransaction findUserTransaction()
+   {
+      try
+      {
+         return (UserTransaction)new InitialContext().lookup("java:comp/UserTransaction");
+      }
+      catch (NamingException e)
+      {
+         throw new IllegalStateException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public int getDefaultTimeout()
    {
       try
@@ -84,33 +82,5 @@ public class JBossTransactionService implements TransactionService
       {
          throw new IllegalStateException(e);
       }
-   }
-
-   public void setTransactionTimeout(int seconds) throws SystemException
-   {
-      TransactionManager tm = getTransactionManager();
-      tm.setTransactionTimeout(seconds);
-   }
-
-   public void enlistResource(ExoResource exores) throws RollbackException, SystemException
-   {
-      TransactionManager tm = getTransactionManager();
-      Transaction tx = tm.getTransaction();
-      tx.enlistResource(exores.getXAResource());
-   }
-
-   public void delistResource(ExoResource exores) throws RollbackException, SystemException
-   {
-      TransactionManager tm = getTransactionManager();
-      Transaction tx = tm.getTransaction();
-      tx.delistResource(exores.getXAResource(), XAResource.TMNOFLAGS);
-   }
-
-   public Xid createXid()
-   {
-      // Convenient method used by JCR tests to manufacture an xid
-      // it should be removed
-      //
-      throw new UnsupportedOperationException("Only used by JCR impl in tests");
    }
 }

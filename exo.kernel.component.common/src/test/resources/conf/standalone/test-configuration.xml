@@ -21,66 +21,6 @@
 -->
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
-   <!-- 
-   <component>
-      <key>org.exoplatform.services.log.LogConfigurationInitializer</key>
-      <type>org.exoplatform.services.log.LogConfigurationInitializer</type>
-      <init-params>
-
-         <value-param>
-            <name>configurator</name>
-            <value>org.exoplatform.services.log.impl.Log4JConfigurator</value>
-         </value-param>
-         <properties-param>
-            <name>properties</name>
-            <description>Log4J properties</description>
-            <property name="log4j.rootLogger" value="INFO, stdout, file" />
-            <property name="log4j.appender.stdout" value="org.apache.log4j.ConsoleAppender" />
-
-            <property name="log4j.appender.stdout.layout" value="org.apache.log4j.PatternLayout" />
-            <property name="log4j.appender.stdout.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
-            <property name="log4j.appender.stdout.threshold" value="INFO" />
-
-            <property name="log4j.appender.file" value="org.apache.log4j.FileAppender" />
-            <property name="log4j.appender.file.File" value="target/jcr.log" />
-
-            <property name="log4j.appender.file.layout" value="org.apache.log4j.PatternLayout" />
-            <property name="log4j.appender.file.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
-         </properties-param>
-
-         <!-- value-param>
-            <name>logger</name>
-            <value>org.exoplatform.services.log.impl.BufferedSimpleLog</value>
-         </value-param>
-         <value-param>
-            <name>configurator</name>
-            <value>org.exoplatform.services.log.impl.SimpleLogConfigurator</value>
-         </value-param>
-         <properties-param>
-            <name>properties</name>
-            <description>SimpleLog properties</description>
-            <property name="org.apache.commons.logging.simplelog.defaultlog" value="debug" />
-            <property name="org.apache.commons.logging.simplelog.showdatetime" value="true" />
-         </properties-param -->
-
-         <!-- value-param>
-            <name>logger</name>
-            <value>org.exoplatform.services.log.impl.BufferedJdk14Logger</value>
-         </value-param>
-         <value-param>
-            <name>configurator</name>
-            <value>org.exoplatform.services.log.impl.Jdk14Configurator</value>
-         </value-param>
-         <properties-param>
-            <name>properties</name>
-            <description>jdk1.4 Logger properties</description>
-            <property name="handlers" value="java.util.logging.ConsoleHandler" />
-            <property name=".level" value="FINE" />
-            <property name="java.util.logging.ConsoleHandler.level" value="FINE" />
-         </properties-param>
-
-      </init-params>
-   </component -->
 
    <component>
       <key>org.exoplatform.services.naming.InitialContextInitializer</key>
@@ -146,12 +86,6 @@
             <description>Default initial context properties</description>
             <property name="java.naming.factory.initial" value="org.exoplatform.services.naming.SimpleContextFactory" />
          </properties-param>
-         <!-- properties-param>
-            <name>mandatory-properties</name>
-            <description>Mandatory initial context properties</description>
-            <property name="java.naming.factory.initial" value="org.exoplatform.services.naming.SimpleContextFactory" />
-            <property name="java.naming.provider.url" value="rmi://localhost:9999" />
-         </properties-param -->
       </init-params>
    </component>
 
@@ -163,10 +97,6 @@
             <name>timeout</name>
             <value>5</value>
          </value-param>
-         <!-- value-param>
-            <name>track-without-transaction</name>
-            <value>true</value>
-         </value-param -->
       </init-params>
    </component>
 

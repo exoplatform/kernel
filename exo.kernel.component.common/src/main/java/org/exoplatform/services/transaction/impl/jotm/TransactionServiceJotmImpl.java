@@ -23,25 +23,17 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
-import org.exoplatform.services.transaction.ExoResource;
-import org.exoplatform.services.transaction.TransactionService;
+import org.exoplatform.services.transaction.impl.AbstractTransactionService;
 import org.objectweb.jotm.Current;
 import org.objectweb.jotm.TransactionFactory;
 import org.objectweb.jotm.TransactionFactoryImpl;
-import org.objectweb.jotm.XidImpl;
 
 import java.rmi.RemoteException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.List;
 
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 /**
  * Created by The eXo Platform SAS.<br/> JOTM based implementation of
@@ -51,31 +43,47 @@ import javax.transaction.xa.Xid;
  *         Azarenkov</a>
  * @version $Id: $
  */
-public class TransactionServiceJotmImpl implements TransactionService
+public class TransactionServiceJotmImpl extends AbstractTransactionService
 {
 
    protected static Log log = ExoLogger.getLogger("exo.kernel.component.common.TransactionServiceJotmImpl");
 
-   public static final String TRACK_WITHOT_TRANSACTION_PARAM = "track-without-transaction";
-
-   private boolean trackWithoutTransaction = false;
-
-   private Current current;
-
-   public TransactionServiceJotmImpl(InitialContextInitializer initializer, InitParams params) throws RemoteException
+   private final int defaultTimeout;
+   
+   /**
+    * Default constructor
+    * @param initializer we enforce a dependency with the InitialContextInitializer to
+    * ensure that the related binded resources have been defined
+    * @param params the init parameters
+    */
+   public TransactionServiceJotmImpl(InitialContextInitializer initializer, InitParams params)
    {
-      current = Current.getCurrent();
+      if (params != null && params.getValueParam("timeout") != null)
+      {
+         this.defaultTimeout = Integer.parseInt(params.getValueParam("timeout").getValue());
+      }
+      else
+      {
+         this.defaultTimeout = -1;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public TransactionManager findTransactionManager() throws Exception
+   {
+      Current current = Current.getCurrent();
       if (current == null)
       {
          try
          {
-            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+            current = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Current>()
             {
-               public Void run() throws Exception
+               public Current run() throws Exception
                {
                   TransactionFactory tm = new TransactionFactoryImpl();
-                  current = new Current(tm);
-                  return null;
+                  return new Current(tm);
                }
             });
          }
@@ -96,144 +104,33 @@ public class TransactionServiceJotmImpl implements TransactionService
             }
          }
 
-
          // Change the timeout only if JOTM is not initialized yet
-         if (params != null)
+         if (defaultTimeout > 0)
          {
-            if (params.getValueParam("timeout") != null)
-            {
-
-               int t = Integer.parseInt(params.getValueParam("timeout").getValue());
-               current.setDefaultTimeout(t);
-            }
-
-            if (params.getValueParam(TRACK_WITHOT_TRANSACTION_PARAM) != null)
-            {
-               trackWithoutTransaction =
-                  Boolean.parseBoolean(params.getValueParam(TRACK_WITHOT_TRANSACTION_PARAM).getValue());
-            }
+            current.setDefaultTimeout(defaultTimeout);
          }
       }
       else
       {
          log.info("Use externally initialized JOTM: " + current);
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public TransactionManager getTransactionManager()
-   {
       return current;
    }
 
    /**
     * {@inheritDoc}
     */
-   public UserTransaction getUserTransaction()
+   public UserTransaction findUserTransaction()
    {
-      return current;
+      return (UserTransaction)getTransactionManager();
    }
 
    /**
     * {@inheritDoc}
     */
-   public void enlistResource(ExoResource exores) throws RollbackException, SystemException
-   {
-      XAResource xares = exores.getXAResource();
-      ResourceEntry entry = new ResourceEntry(exores);
-      exores.setPayload(entry);
-      Transaction tx = getTransactionManager().getTransaction();
-      if (tx != null)
-      {
-         current.getTransaction().enlistResource(xares);
-      }
-      else if (trackWithoutTransaction)
-      {
-         current.connectionOpened(entry);
-
-         // actual only if current.connectionOpened(entry);
-         // otherwise NPE inside the JOTM's Current 
-         entry.jotmResourceList = popThreadLocalRMEventList();
-         pushThreadLocalRMEventList(entry.jotmResourceList);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void delistResource(ExoResource exores) throws RollbackException, SystemException
-   {
-      XAResource xares = exores.getXAResource();
-      ResourceEntry entry = (ResourceEntry)exores.getPayload();
-      Transaction tx = getTransactionManager().getTransaction();
-      if (tx != null)
-      {
-         current.getTransaction().delistResource(xares, XAResource.TMNOFLAGS);
-      }
-      else if (trackWithoutTransaction)
-      {
-         current.connectionClosed(entry);
-
-         // actual only if current.connectionClosed(entry);
-         if (entry != null && entry.jotmResourceList != null)
-         {
-            entry.jotmResourceList.remove(xares);
-         }
-      }
-
-      exores.setPayload(null);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public Xid createXid()
-   {
-      return new XidImpl();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
+   @Override
    public int getDefaultTimeout()
    {
-      return current.getDefaultTimeout();
+      return ((Current)getTransactionManager()).getDefaultTimeout();
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void setTransactionTimeout(int seconds) throws SystemException
-   {
-      current.setTransactionTimeout(seconds);
-   }
-
-   /**
-    * Push a new event list on the stack of thread local resource event sets. The
-    * list must contain only <code>ResourceManagerEvent</code> objects.
-    * 
-    * @param eventList the possibly null list of events to store forecoming
-    *          <code>ResourceManagerEvent</code> events occuring in the current
-    *          thread.
-    */
-   public void pushThreadLocalRMEventList(List eventList)
-   {
-      current.pushThreadLocalRMEventList(eventList);
-   };
-
-   /**
-    * Pop the current set from the stack of thread local resource event sets The
-    * list contains <code>ResourceManagerEvent</code> objects.
-    * 
-    * @return The possibly null <code>ResourceManagerEvent</code> list of events
-    *         that have occured in the current thread since the last call of
-    *         <code>pushThreadLocalRMEventList</code> or since the thread
-    *         started.
-    */
-   public List popThreadLocalRMEventList()
-   {
-      return current.popThreadLocalRMEventList();
-   };
 }

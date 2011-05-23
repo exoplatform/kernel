@@ -125,10 +125,7 @@
                      <name>jgroups.stack</name>
                      <value>udp</value>
                   </property>
-               </systemProperties>           
-               <excludes>
-                  <exclude>**/TransactionTest.java</exclude>
-               </excludes>
+               </systemProperties>
             </configuration>
          </plugin>
          <plugin>

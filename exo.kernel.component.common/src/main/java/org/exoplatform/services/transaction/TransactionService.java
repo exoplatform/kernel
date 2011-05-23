@@ -22,7 +22,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import javax.transaction.xa.Xid;
+import javax.transaction.xa.XAResource;
 
 /**
  * Created by The eXo Platform SAS.<br/> The transaction service
@@ -62,25 +62,34 @@ public interface TransactionService
     * Enlists XA resource in transaction manager.
     * 
     * @param xares XAResource
-    * @throws RollbackException
-    * @throws SystemException
+    * @return <i>true</i> if the resource was enlisted successfully; otherwise
+    *    <i>false</i>.
+    *
+    * @exception RollbackException Thrown to indicate that
+    *    the transaction has been marked for rollback only.
+    *
+    * @exception IllegalStateException Thrown if the transaction in the
+    *    target object is in the prepared state or the transaction is
+    *    inactive.
+    *
+    * @exception SystemException Thrown if the transaction manager
+    *    encounters an unexpected error condition.
     */
-   void enlistResource(ExoResource xares) throws RollbackException, SystemException;
+   boolean enlistResource(XAResource xares) throws RollbackException, SystemException, IllegalStateException;
 
    /**
     * Delists XA resource from transaction manager.
     * 
     * @param xares XAResource
-    * @throws RollbackException
-    * @throws SystemException
+    * @exception IllegalStateException Thrown if the transaction in the
+    *    target object is inactive.
+    *
+    * @exception SystemException Thrown if the transaction manager
+    *    encounters an unexpected error condition.
+    *
+    * @return <i>true</i> if the resource was delisted successfully; otherwise
+    *     <i>false</i>.
     */
-   void delistResource(ExoResource xares) throws RollbackException, SystemException;
-
-   /**
-    * Creates unique XA transaction identifier.
-    * 
-    * @return Xid
-    */
-   Xid createXid();
+   boolean delistResource(XAResource xares) throws RollbackException, SystemException, IllegalStateException;
 
 }

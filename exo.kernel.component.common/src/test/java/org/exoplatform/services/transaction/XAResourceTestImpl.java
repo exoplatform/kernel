@@ -21,9 +21,7 @@ package org.exoplatform.services.transaction;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -36,14 +34,12 @@ import javax.transaction.xa.Xid;
  * @version $Id: $
  */
 
-public class XAResourceTestImpl implements ExoResource, XAResource
+public class XAResourceTestImpl implements XAResource
 {
 
    private static Log log = ExoLogger.getLogger("exo.kernel.component.common.XAResourceTestImpl");
 
    private int timeout = 5;
-
-   // private transient TransactionService ts;
 
    private int oldFlag;
 
@@ -51,22 +47,9 @@ public class XAResourceTestImpl implements ExoResource, XAResource
 
    private final TransactionService ts;
 
-   private Object payload;
-
    public XAResourceTestImpl(TransactionService ts)
    {
       this.ts = ts;
-   }
-
-   // public XAResourceTestImpl(TransactionService ts)
-   // throws RollbackException, SystemException {
-   // this.ts = ts;
-   // ts.enlistResource(this);
-   // }
-
-   public XAResource getXAResource()
-   {
-      return this;
    }
 
    public void commit(Xid arg0, boolean arg1) throws XAException
@@ -134,45 +117,8 @@ public class XAResourceTestImpl implements ExoResource, XAResource
       this.flag = flag;
    }
 
-   public void enlistResource() throws XAException
-   {
-      try
-      {
-         ts.enlistResource(this);
-      }
-      catch (IllegalStateException e)
-      {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
-      catch (RollbackException e)
-      {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
-      catch (SystemException e)
-      {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
-   }
-
-   public void delistResource() throws XAException
-   {
-   }
-
    public int getOldFlag()
    {
       return oldFlag;
-   }
-
-   public Object getPayload()
-   {
-      return payload;
-   }
-
-   public void setPayload(Object payload)
-   {
-      this.payload = payload;
    }
 }

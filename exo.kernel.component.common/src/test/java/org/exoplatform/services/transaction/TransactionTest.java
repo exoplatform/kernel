@@ -21,14 +21,11 @@ package org.exoplatform.services.transaction;
 import junit.framework.TestCase;
 
 import org.exoplatform.container.StandaloneContainer;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.objectweb.jotm.Current;
 
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 /**
  * Created by The eXo Platform SAS .<br/> Prerequisites: default-context-factory
@@ -40,8 +37,6 @@ import javax.transaction.xa.Xid;
 public class TransactionTest extends TestCase
 {
 
-   private static Log log = ExoLogger.getLogger("exo.kernel.component.common.TransactionTest");
-
    private StandaloneContainer container;
 
    private TransactionService ts;
@@ -49,12 +44,11 @@ public class TransactionTest extends TestCase
    public void setUp() throws Exception
    {
 
-      StandaloneContainer.setConfigurationPath("src/test/java/conf/standalone/test-configuration.xml");
+      StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-configuration.xml");
 
       container = StandaloneContainer.getInstance();
 
       ts = (TransactionService)container.getComponentInstanceOfType(TransactionService.class);
-
    }
 
    public void testUserTransactionBeforeResource() throws Exception
@@ -63,63 +57,67 @@ public class TransactionTest extends TestCase
       UserTransaction ut = ts.getUserTransaction();
       ut.begin();
 
-      Current c = (Current)ut;
-      // System.out.printf(">>>>>>>>>>>"+c.getAllTx()[0]);
-      // c.getAllXid();
-      // System.out.printf(">>>>>>>>>>>"+c.getAllXid());
-      // fail();
-
-      // c.getTransactionManager().
-
       XAResourceTestImpl xares = new XAResourceTestImpl(ts);
       ts.enlistResource(xares);
 
       xares.setFlag(5);
       assertEquals(0, xares.getOldFlag());
+      ts.delistResource(xares);
       ut.commit();
       assertEquals(5, xares.getFlag());
       assertEquals(5, xares.getOldFlag());
-
-      ts.delistResource(xares);
-
    }
 
    public void testUserTransactionAfterResource() throws Exception
    {
 
       XAResourceTestImpl xares = new XAResourceTestImpl(ts);
-      ts.enlistResource(xares);
+      try
+      {
+         ts.enlistResource(xares);
+         fail("IllegalStateException is expected since it cannot be enlisted without an active tx");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
 
       assertEquals(0, xares.getFlag());
       UserTransaction ut = ts.getUserTransaction();
-
       ut.begin();
+      ts.enlistResource(xares);
       xares.setFlag(5);
       assertEquals(0, xares.getOldFlag());
       ut.commit();
       assertEquals(5, xares.getFlag());
       assertEquals(5, xares.getOldFlag());
 
-      ts.delistResource(xares);
+      try
+      {
+         ts.delistResource(xares);
+         fail("IllegalStateException is expected since it cannot be delisted without an active tx");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
 
    }
 
    public void testUserTransactionRollback() throws Exception
    {
-
       XAResourceTestImpl xares = new XAResourceTestImpl(ts);
-      ts.enlistResource(xares);
-
       assertEquals(0, xares.getFlag());
       UserTransaction ut = ts.getUserTransaction();
       ut.begin();
+      ts.enlistResource(xares);      
       xares.setFlag(5);
       assertEquals(5, xares.getFlag());
+      ts.delistResource(xares);
       ut.rollback();
       assertEquals(0, xares.getFlag());
       assertEquals(0, xares.getOldFlag());
 
-      ts.delistResource(xares);
    }
 
    public void testUserTransactionFromJndi() throws Exception
@@ -136,13 +134,10 @@ public class TransactionTest extends TestCase
       assertEquals(0, xares.getFlag());
 
       xares.setFlag(5);
-      // assertEquals(5, xares.getFlag());
+      ts.delistResource(xares);
       ut.commit();
       assertEquals(5, xares.getFlag());
       assertEquals(5, xares.getOldFlag());
-
-      ts.delistResource(xares);
-
    }
 
    public void testReuseUT() throws Exception
@@ -153,8 +148,7 @@ public class TransactionTest extends TestCase
       UserTransaction ut = (UserTransaction)obj;
 
       ut.begin();
-      XAResourceTestImpl xares = new XAResourceTestImpl(ts); //(XAResourceTestImpl)f
-      // .createResoure();
+      XAResourceTestImpl xares = new XAResourceTestImpl(ts); 
       ts.enlistResource(xares);
 
       xares.setFlag(5);
@@ -162,60 +156,52 @@ public class TransactionTest extends TestCase
       assertEquals(5, xares.getFlag());
       assertEquals(5, xares.getOldFlag());
 
+      ut.begin();
       // In a case of reusing Have to enlist the resource once again!
       ts.enlistResource(xares);
-
-      ut.begin();
       xares.setFlag(2);
+      ts.delistResource(xares);
       ut.commit();
       assertEquals(2, xares.getFlag());
       assertEquals(2, xares.getOldFlag());
-
-      ts.delistResource(xares);
-
-   }
-
-   public void testGenerateXid() throws Exception
-   {
-      Xid id = ts.createXid();
-      log.info("XID ==== " + id);
-      assertNotNull(id);
    }
 
    public void testSimpleGlobalTransaction() throws Exception
    {
-      Xid id = ts.createXid();
       XAResourceTestImpl xares = new XAResourceTestImpl(ts);
-      xares.start(id, XAResource.TMNOFLAGS);
+      UserTransaction ut = ts.getUserTransaction();
+      ut.begin();
+      ts.enlistResource(xares);      
       assertEquals(0, xares.getFlag());
       xares.setFlag(1);
-      xares.commit(id, true);
+      ut.commit();
       assertEquals(1, xares.getFlag());
       assertEquals(1, xares.getOldFlag());
    }
 
    public void test2GlobalTransactions() throws Exception
    {
-      Xid id1 = ts.createXid();
       XAResourceTestImpl xares = new XAResourceTestImpl(ts);
-      xares.start(id1, XAResource.TMNOFLAGS);
+      TransactionManager tm = ts.getTransactionManager();
+      tm.begin();
+      ts.enlistResource(xares);      
       assertEquals(0, xares.getFlag());
       xares.setFlag(1);
-      xares.end(id1, XAResource.TMSUSPEND);
+      Transaction tx = tm.suspend();
       assertEquals(1, xares.getFlag());
 
-      Xid id2 = ts.createXid();
-      xares.start(id2, XAResource.TMNOFLAGS);
+      tm.begin();
+      ts.enlistResource(xares);      
       xares.setFlag(2);
 
       // End work
-      xares.end(id2, XAResource.TMSUCCESS);
+      tm.commit();
 
       // Resume work with former transaction
-      xares.start(id1, XAResource.TMRESUME);
+      tm.resume(tx);
 
       // Commit work recorded when associated with xid2
-      xares.commit(id2, true);
+      tm.commit();
       assertEquals(2, xares.getFlag());
       assertEquals(2, xares.getOldFlag());
    }
