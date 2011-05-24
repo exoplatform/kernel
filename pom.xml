@@ -213,6 +213,11 @@
             <artifactId>jotm-core</artifactId>
             <version>2.1.9</version>
          </dependency>
+         <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jta</artifactId>
+            <version>3.7.0</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
