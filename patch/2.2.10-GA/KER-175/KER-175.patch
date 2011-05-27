@@ -1,0 +1,254 @@
+Index: exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java
+===================================================================
+--- exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(revision 4445)
++++ exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(working copy)
+@@ -18,6 +18,8 @@
+  */
+ package org.exoplatform.services.cache.impl.jboss;
+ 
++import org.exoplatform.container.ExoContainer;
++import org.exoplatform.container.ExoContainerContext;
+ import org.exoplatform.container.configuration.ConfigurationManager;
+ import org.exoplatform.container.xml.InitParams;
+ import org.exoplatform.container.xml.ValueParam;
+@@ -32,16 +34,21 @@
+ import org.jboss.cache.CacheFactory;
+ import org.jboss.cache.DefaultCacheFactory;
+ import org.jboss.cache.config.Configuration;
++import org.jboss.cache.config.Configuration.CacheMode;
+ import org.jboss.cache.config.EvictionConfig;
+ import org.jboss.cache.config.EvictionRegionConfig;
+-import org.jboss.cache.config.Configuration.CacheMode;
++import org.jboss.cache.jmx.JmxRegistrationManager;
++import org.picocontainer.Startable;
+ 
+ import java.io.Serializable;
+ import java.util.HashMap;
+ import java.util.LinkedList;
+ import java.util.List;
+ import java.util.Map;
++import java.util.concurrent.CopyOnWriteArrayList;
+ 
++import javax.management.ObjectName;
++
+ /**
+  * This class is the JBoss Cache implementation of the {@link org.exoplatform.services.cache.ExoCacheFactory}
+  * Created by The eXo Platform SAS
+@@ -49,7 +56,7 @@
+  *          exo@exoplatform.com
+  * 17 juil. 2009  
+  */
+-public class ExoCacheFactoryImpl implements ExoCacheFactory
++public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
+ {
+ 
+    /**
+@@ -90,6 +97,11 @@
+    private final Map<String, String> mappingCacheNameConfig = new HashMap<String, String>();
+ 
+    /**
++    * The list of all the JMX Managers registered
++    */
++   private final List<JmxRegistrationManager> jmxManagers = new CopyOnWriteArrayList<JmxRegistrationManager>();
++   
++   /**
+     * The default creator
+     */
+    private final ExoCacheCreator defaultCreator = new FIFOExoCacheCreator();
+@@ -149,6 +161,13 @@
+          cache.create();
+          // Start the cache
+          cache.start();
++         // Create JMX Manager for this cache instance
++         JmxRegistrationManager jmxManager = getJmxRegistrationManager(cache, region);
++         if (jmxManager != null)
++         {
++            jmxManager.registerAllMBeans();
++            jmxManagers.add(jmxManager);
++         }
+       }
+       catch (Exception e)
+       {
+@@ -156,8 +175,34 @@
+       }
+       return eXoCache;
+    }
+-
++   
+    /**
++    * Gives the {@link JmxRegistrationManager} instance corresponding to the given context
++    */
++   private static JmxRegistrationManager getJmxRegistrationManager(Cache<?, ?> parentCache,
++      String cacheName)
++   {
++      try
++      {
++         ExoContainer container = ExoContainerContext.getCurrentContainer();
++         ObjectName containerObjectName = container.getScopingObjectName();
++         final String objectNameBase = (containerObjectName != null ? containerObjectName.toString() + "," : "exo:")+ "cache-name=" + cacheName;
++         return new JmxRegistrationManager(container.getMBeanServer(), parentCache, objectNameBase)
++         {
++            public String getObjectName(String resourceName)
++            {
++               return objectNameBase + JMX_RESOURCE_KEY + resourceName;
++            }
++         };
++      }
++      catch (Exception e)
++      {
++         LOG.error("Could not create the JMX Manager", e);
++      }
++      return null;
++   }
++   
++   /**
+     * Add a list of creators to register
+     * @param plugin the plugin that contains the creators
+     */
+@@ -245,4 +290,22 @@
+          config.setClusterName(clusterName + " " + region);
+       }
+    }
++
++   /**
++    * @see org.picocontainer.Startable#start()
++    */
++   public void start()
++   {
++   }
++
++   /**
++    * @see org.picocontainer.Startable#stop()
++    */
++   public void stop()
++   {
++      for (JmxRegistrationManager jmxManager : jmxManagers)
++      {
++         jmxManager.unregisterAllMBeans();
++      }
++   }
+ }
+Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java
+===================================================================
+--- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(revision 4445)
++++ exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(working copy)
+@@ -31,6 +31,19 @@
+  */
+ public class TestPortalContainer extends AbstractTestContainer
+ {
++   
++   public void testHasScopingObjectName()
++   {
++      URL rootURL = getClass().getResource("empty-config.xml");
++      URL portalURL = getClass().getResource("empty-config.xml");
++      assertNotNull(rootURL);
++      assertNotNull(portalURL);
++      //
++      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
++      assertNull(RootContainer.getInstance().getScopingObjectName());
++      assertNotNull(PortalContainer.getInstance().getScopingObjectName());
++   }
++
+    public void testInitValues()
+    {
+       createRootContainer("portal-container-config-with-settings.xml");
+Index: exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java
+===================================================================
+--- exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(revision 4445)
++++ exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(working copy)
+@@ -25,8 +25,12 @@
+ import org.exoplatform.management.annotations.Managed;
+ import org.exoplatform.management.annotations.ManagedDescription;
+ import org.exoplatform.management.annotations.ManagedName;
++import org.exoplatform.management.jmx.impl.JMX;
+ import org.exoplatform.management.jmx.impl.JMXManagementProvider;
++import org.exoplatform.management.jmx.impl.MBeanScopingData;
+ import org.exoplatform.management.spi.ManagementProvider;
++import org.exoplatform.services.log.ExoLogger;
++import org.exoplatform.services.log.Log;
+ import org.picocontainer.ComponentAdapter;
+ import org.picocontainer.PicoContainer;
+ import org.picocontainer.PicoException;
+@@ -37,9 +41,13 @@
+ import java.util.Collection;
+ import java.util.Collections;
+ import java.util.HashSet;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import javax.management.MBeanServer;
++import javax.management.ObjectName;
+ 
+ /**
+  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
+@@ -48,6 +56,11 @@
+ public class ManageableContainer extends CachingContainer
+ {
+ 
++   /**
++    * The logger
++    */
++   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.management.ManageableContainer");
++
+    private static MBeanServer findMBeanServer()
+    {
+       J2EEServerInfo serverenv_ = new J2EEServerInfo();
+@@ -63,6 +76,9 @@
+    /** . */
+    private MBeanServer server;
+ 
++   private volatile boolean objectNameSet;
++   private ObjectName objectName;
++   
+    /** . */
+    private final Set<ManagementProvider> providers;
+ 
+@@ -163,6 +179,46 @@
+       return super.registerComponent(componentAdapter);
+    }
+ 
++   /**
++    * Gives the ObjectName of the container build from the scoping data
++    * @return
++    */
++   public ObjectName getScopingObjectName()
++   {
++      if (!objectNameSet)
++      {
++         synchronized (this)
++         {
++            if (!objectNameSet)
++            {
++               Map<String, String> props = new LinkedHashMap<String, String>();
++
++               // Merge scoping properties
++               List<MBeanScopingData> list = managementContext.getScopingData(MBeanScopingData.class);
++               if (list != null && !list.isEmpty())
++               {
++                  // Read in revert order because wee received list of parents in upward order
++                  for (int i = list.size(); i > 0; i--)
++                  {
++                     MBeanScopingData scopingData = list.get(i - 1);
++                     props.putAll(scopingData);
++                  }               
++                  try
++                  {
++                     this.objectName = JMX.createObjectName("exo", props);
++                  }
++                  catch (Exception e)
++                  {
++                     LOG.error("Could not create the object name", e);
++                  }                  
++               }
++               this.objectNameSet = true;
++            }
++         }
++      }
++      return objectName;
++   }
++   
+    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+       throws PicoRegistrationException
+    {
