@@ -44,8 +44,8 @@
             <property name="threadNamePrefix" value="ReplicationQueueThread"/>
          </properties>
       </replicationQueueScheduledExecutor>
-      <globalJmxStatistics jmxDomain="infinispan" enabled="true"/>
-      <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="Infinispan-cluster" distributedSyncTimeout="20000">
+      <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/>
+      <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="eXoCache-cluster" distributedSyncTimeout="20000">
       	<properties>
          <property name="configurationFile" value="flush-udp.xml"/>
       	</properties>

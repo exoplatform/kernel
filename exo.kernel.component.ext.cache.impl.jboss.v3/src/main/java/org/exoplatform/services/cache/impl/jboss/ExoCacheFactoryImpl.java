@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -35,12 +38,18 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
+import org.picocontainer.Startable;
 
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.management.ObjectName;
 
 /**
  * This class is the JBoss Cache implementation of the {@link org.exoplatform.services.cache.ExoCacheFactory}
@@ -49,7 +58,7 @@ import java.util.Map;
  *          exo@exoplatform.com
  * 17 juil. 2009  
  */
-public class ExoCacheFactoryImpl implements ExoCacheFactory
+public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
 {
 
    /**
@@ -107,6 +116,11 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    private final Map<ConfigurationKey, Cache<Serializable, Object>> caches =
       new HashMap<ConfigurationKey, Cache<Serializable, Object>>();
 
+   /**
+    * The list of all the JMX Managers registered
+    */
+   private final List<JmxRegistrationManager> jmxManagers = new CopyOnWriteArrayList<JmxRegistrationManager>();
+   
    /**
     * The default creator
     */
@@ -172,13 +186,27 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          }
          final ExoCacheCreator creator = getExoCacheCreator(config);
          // Ensure that new created cache doesn't exist
-         cache = getUniqueInstance(cache, config);
+         final Cache<Serializable, Object> effectiveCacheInstance = getUniqueInstance(cache, config);
          // Create the cache
-         eXoCache = creator.create(config, cache);
-         // Create the cache
-         PrivilegedCacheHelper.create(cache);
-         // Start the cache
-         PrivilegedCacheHelper.start(cache);
+         eXoCache = creator.create(config, effectiveCacheInstance);
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               // Create the cache
+               effectiveCacheInstance.create();
+               // Start the cache
+               effectiveCacheInstance.start();
+               // Create JMX Manager for this cache instance
+               JmxRegistrationManager jmxManager = getJmxRegistrationManager(effectiveCacheInstance, region);
+               if (jmxManager != null)
+               {
+                  jmxManager.registerAllMBeans();
+                  jmxManagers.add(jmxManager);
+               }
+               return null;
+            }
+         });
       }
       catch (Exception e)
       {
@@ -186,7 +214,33 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       }
       return eXoCache;
    }
-
+   
+   /**
+    * Gives the {@link JmxRegistrationManager} instance corresponding to the given context
+    */
+   private static JmxRegistrationManager getJmxRegistrationManager(Cache<?, ?> parentCache,
+      String cacheName)
+   {
+      try
+      {
+         ExoContainer container = ExoContainerContext.getCurrentContainer();
+         ObjectName containerObjectName = container.getScopingObjectName();
+         final String objectNameBase = (containerObjectName != null ? containerObjectName.toString() + "," : "exo:")+ "cache-name=" + cacheName;
+         return new JmxRegistrationManager(container.getMBeanServer(), parentCache, objectNameBase)
+         {
+            public String getObjectName(String resourceName)
+            {
+               return objectNameBase + JMX_RESOURCE_KEY + resourceName;
+            }
+         };
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not create the JMX Manager", e);
+      }
+      return null;
+   }
+   
    /**
     * Add a list of creators to register
     * @param plugin the plugin that contains the creators
@@ -398,5 +452,30 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             return false;
          return true;
       }
+   }
+
+   /**
+    * @see org.picocontainer.Startable#start()
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * @see org.picocontainer.Startable#stop()
+    */
+   public void stop()
+   {
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            for (JmxRegistrationManager jmxManager : jmxManagers)
+            {
+               jmxManager.unregisterAllMBeans();
+            }
+            return null;
+         }
+      });
    }   
 }

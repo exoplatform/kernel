@@ -44,7 +44,7 @@
             <property name="threadNamePrefix" value="ReplicationQueueThread"/>
          </properties>
       </replicationQueueScheduledExecutor>
-      <globalJmxStatistics jmxDomain="infinispan" enabled="false"/>
+      <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true" />
       <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="Infinispan-cluster" distributedSyncTimeout="20000">
       	<properties>
          <property name="configurationFile" value="flush-udp.xml"/>
@@ -55,7 +55,7 @@
    <default>
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="10000" writeSkewCheck="false" concurrencyLevel="500"/>
       <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
-      <jmxStatistics enabled="false"/>
+      <jmxStatistics enabled="true"/>
       <clustering mode="replication">
          <stateRetrieval timeout="20000" fetchInMemoryState="false"/>
          <sync replTimeout="20000"/>

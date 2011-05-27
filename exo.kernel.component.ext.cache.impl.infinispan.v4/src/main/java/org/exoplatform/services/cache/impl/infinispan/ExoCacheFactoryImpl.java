@@ -31,9 +31,10 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
-import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.config.Configuration.CacheMode;
+import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 
@@ -47,6 +48,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
+import javax.management.MBeanServer;
 
 /**
  * This class is the Infinispan implementation of the {@link org.exoplatform.services.cache.ExoCacheFactory}
@@ -111,6 +114,14 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * The default creator
     */
    private final ExoCacheCreator defaultCreator = new GenericExoCacheCreator();
+   
+   private static final MBeanServerLookup MBEAN_SERVER_LOOKUP = new MBeanServerLookup()
+   {
+      public MBeanServer getMBeanServer(Properties properties)
+      {
+         return ExoContainerContext.getTopContainer().getMBeanServer();
+      }      
+   };
 
    public ExoCacheFactoryImpl(ExoContainerContext ctx, InitParams params, ConfigurationManager configManager)
       throws ExoCacheInitException
@@ -170,8 +181,25 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
 
       GlobalConfiguration config = cacheManager.getGlobalConfiguration();
       
-      configureJGroups(config);
+      configureCacheManager(config);
+      cacheManager.start();
       return cacheManager;
+   }
+
+   /**
+    * Configure the cache manager
+    * 
+    * @param config
+    * @throws ExoCacheInitException
+    */
+   private void configureCacheManager(GlobalConfiguration config) throws ExoCacheInitException
+   {
+      // Configure JGroups
+      configureJGroups(config);
+      // Configure the name of the cache manager
+      config.setCacheManagerName(config.getCacheManagerName() + "_" + ctx.getName());
+      // Configure the MBeanServerLookup
+      config.setMBeanServerLookupInstance(MBEAN_SERVER_LOOKUP);
    }
 
    /**
@@ -292,14 +320,17 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             // Create the CacheManager by loading the configuration
             DefaultCacheManager customCacheManager = new DefaultCacheManager(configManager.getInputStream(customConfig), false);
             GlobalConfiguration gc = customCacheManager.getGlobalConfiguration();
-            // Configure JGroups since it could affect the state of the Global Config
-            configureJGroups(gc);
+            // Configure JGroups and JMX since it could affect the state of the Global Config
+            configureCacheManager(gc);
             // Check if a CacheManager with the same GlobalConfiguration exists
             DefaultCacheManager currentCacheManager = mappingGlobalConfigCacheManager.get(gc);
             if (currentCacheManager == null)
             {
                // No cache manager has been defined so far for this Cache Configuration
                currentCacheManager = customCacheManager;
+               // Use a different cache manager name to prevent naming conflict
+               gc.setCacheManagerName(gc.getCacheManagerName() + "_" + region + "_" + ctx.getName());
+               currentCacheManager.start();
                // We register this new cache manager
                mappingGlobalConfigCacheManager.put(gc, customCacheManager);
             }
