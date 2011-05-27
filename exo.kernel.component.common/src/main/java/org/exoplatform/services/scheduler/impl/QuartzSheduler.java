@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.BaseContainerLifecyclePlugin;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -29,7 +30,6 @@ import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
@@ -51,7 +51,7 @@ public class QuartzSheduler implements Startable
 
       try
       {
-         scheduler_ = AccessController.doPrivileged(new PrivilegedExceptionAction<Scheduler>()
+         scheduler_ = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Scheduler>()
          {
             public Scheduler run() throws Exception
             {

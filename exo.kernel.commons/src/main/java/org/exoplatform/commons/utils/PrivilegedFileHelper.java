@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -60,7 +59,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -98,7 +97,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -136,7 +135,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -175,7 +174,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -213,7 +212,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -251,7 +250,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -289,7 +288,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -327,7 +326,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -370,7 +369,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -416,7 +415,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -461,7 +460,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -500,7 +499,7 @@ public class PrivilegedFileHelper
             return new Long(file.length());
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -519,7 +518,7 @@ public class PrivilegedFileHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -537,7 +536,7 @@ public class PrivilegedFileHelper
             return file.getAbsolutePath();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -558,7 +557,7 @@ public class PrivilegedFileHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -593,7 +592,7 @@ public class PrivilegedFileHelper
             return file.delete();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -612,7 +611,7 @@ public class PrivilegedFileHelper
             return file.isDirectory();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -631,7 +630,7 @@ public class PrivilegedFileHelper
             return file.exists();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -649,7 +648,7 @@ public class PrivilegedFileHelper
             return file.mkdirs();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -668,7 +667,7 @@ public class PrivilegedFileHelper
             return new Boolean(srcFile.renameTo(dstfile));
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -686,7 +685,7 @@ public class PrivilegedFileHelper
             return file.list();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -704,7 +703,7 @@ public class PrivilegedFileHelper
             return file.list(filter);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -722,7 +721,7 @@ public class PrivilegedFileHelper
             return file.listFiles();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -740,7 +739,7 @@ public class PrivilegedFileHelper
             return file.listFiles(filter);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -758,6 +757,6 @@ public class PrivilegedFileHelper
             return file.listFiles(filter);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 }

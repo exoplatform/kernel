@@ -20,7 +20,6 @@ package org.exoplatform.commons.utils;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Properties;
 
@@ -47,7 +46,7 @@ public class PrivilegedSystemHelper
             return System.getProperty(key);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -65,7 +64,7 @@ public class PrivilegedSystemHelper
             return System.getProperties();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -84,7 +83,7 @@ public class PrivilegedSystemHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -103,7 +102,7 @@ public class PrivilegedSystemHelper
             return System.getProperty(key, def);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -122,7 +121,7 @@ public class PrivilegedSystemHelper
             return Thread.currentThread().getContextClassLoader().getResource(name);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -141,7 +140,7 @@ public class PrivilegedSystemHelper
             return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
 }

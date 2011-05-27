@@ -39,7 +39,6 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -160,7 +159,7 @@ public class ConfigurationUnmarshaller
          DocumentBuilder builder = null;
          try
          {
-            builder = AccessController.doPrivileged(new PrivilegedExceptionAction<DocumentBuilder>()
+            builder = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<DocumentBuilder>()
             {
                public DocumentBuilder run() throws Exception
                {
@@ -264,7 +263,7 @@ public class ConfigurationUnmarshaller
       final DocumentBuilderFactory builderFactory = factory;
       try
       {
-         return AccessController.doPrivileged(new PrivilegedExceptionAction<Configuration>()
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Configuration>()
          {
             public Configuration run() throws Exception
             {

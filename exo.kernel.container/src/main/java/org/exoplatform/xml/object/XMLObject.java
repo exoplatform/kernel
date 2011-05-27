@@ -31,7 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -278,7 +277,7 @@ public class XMLObject
    {
       try
       {
-         return AccessController.doPrivileged(new PrivilegedExceptionAction<IBindingFactory>()
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
          {
             public IBindingFactory run() throws Exception
             {

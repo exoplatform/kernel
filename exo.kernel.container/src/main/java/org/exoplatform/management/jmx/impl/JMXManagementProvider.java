@@ -25,7 +25,6 @@ import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.LinkedHashMap;
@@ -174,7 +173,7 @@ public class JMXManagementProvider implements ManagementProvider
          }
          try
          {
-            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
                public Void run() throws Exception
                {
@@ -197,7 +196,7 @@ public class JMXManagementProvider implements ManagementProvider
       {
          try
          {
-            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
                public Void run() throws Exception
                {

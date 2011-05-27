@@ -54,7 +54,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -224,7 +223,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
 
       try
       {
-         this.configurator = AccessController.doPrivileged(new PrivilegedExceptionAction<ProtocolStackConfigurator>()
+         this.configurator = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<ProtocolStackConfigurator>()
          {
             public ProtocolStackConfigurator run() throws Exception
             {
@@ -428,7 +427,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       }
       final Message msg = new Message();
       msg.setObject(new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args));
-      RspList rsps = AccessController.doPrivileged(new PrivilegedAction<RspList>()
+      RspList rsps = SecurityHelper.doPrivilegedAction(new PrivilegedAction<RspList>()
       {
          public RspList run()
          {
@@ -703,7 +702,7 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
 
       try
       {
-         AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
          {
             public Void run() throws Exception
             {
@@ -755,19 +754,11 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
       {
          if (LOG.isInfoEnabled())
             LOG.info("Disconnecting and closing the Channel");
-         AccessController.doPrivileged(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               channel.disconnect();
-               return null;
-            }
-         });
-
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
             public Void run()
             {
+               channel.disconnect();
                channel.close();
                return null;
             }

@@ -23,12 +23,12 @@ import org.apache.commons.chain.CatalogFactory;
 import org.apache.commons.chain.config.ConfigParser;
 import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.apache.commons.digester.Digester;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -56,7 +56,7 @@ public class CommandService
       this.catalogFactory = CatalogFactoryBase.getInstance();
 
       final ConfigParser parser = new ConfigParser();
-      this.digester = AccessController.doPrivileged(new PrivilegedAction<Digester>()
+      this.digester = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Digester>()
       {
          public Digester run()
          {
@@ -98,7 +98,7 @@ public class CommandService
 
       try
       {
-         AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
          {
             public Void run() throws Exception
             {

@@ -53,7 +53,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -85,7 +85,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -117,7 +117,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -150,7 +150,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -187,7 +187,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -219,7 +219,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -252,7 +252,7 @@ public class SecurityHelper
    {
       try
       {
-         return AccessController.doPrivileged(action);
+         return doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -281,9 +281,14 @@ public class SecurityHelper
     */
    public static <E> E doPrivilegedAction(PrivilegedAction<E> action)
    {
-      return AccessController.doPrivileged(action);
+//      if (System.getSecurityManager() != null)
+      {
+         // A security manager has been established
+         return AccessController.doPrivileged(action);
+      }
+//      return action.run();
    }
-   
+
    /**
     * Launches action in privileged mode. 
     * 
@@ -294,7 +299,18 @@ public class SecurityHelper
    public static <E> E doPrivilegedExceptionAction(PrivilegedExceptionAction<E> action)
       throws PrivilegedActionException
    {
-      return AccessController.doPrivileged(action);
+//      if (System.getSecurityManager() != null)
+      {
+         // A security manager has been established
+         return AccessController.doPrivileged(action);
+      }
+/*    try
+      {
+         return action.run();
+      }
+      catch (Exception e)
+      {
+         throw new PrivilegedActionException(e);
+      }*/
    }
-   
 }

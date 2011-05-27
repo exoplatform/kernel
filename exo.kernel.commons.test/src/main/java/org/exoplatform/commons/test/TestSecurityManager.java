@@ -18,15 +18,32 @@
  */
 package org.exoplatform.commons.test;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.Permission;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
+ * You can exclude methods by adding the file <code>tsm-excludes.properties</code> into the classpath. The expected format is:
+ * <code>
+ * ${fqn-of-the-class}.${method-name}=${called-method-name}(,${called-method-name})*
+ * </code>
+ * 
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: TestSecurityManager.java 2636 2010-06-16 14:18:23Z tolusha $
  *
  */
 public class TestSecurityManager extends SecurityManager
 {
+   /**
+    * Map of methods to exclude and for each method we define a list of method called to ignore
+    */
+   private final Map<String, Set<String>> excludes = getExcludes();
 
    /**
     * {@inheritDoc}
@@ -52,7 +69,14 @@ public class TestSecurityManager extends SecurityManager
             {
                String className = traceElements[i].getClassName();
                String fileName = traceElements[i].getFileName();
-
+               String methodName = traceElements[i].getMethodName();
+               if (excludes != null && i - 1 >= 0
+                  && excludes.containsKey(className + "." + methodName)
+                  && excludes.get(className + "." + methodName).contains(traceElements[i - 1].getMethodName()))
+               {
+                  // the called method is excluded thus we ignore the exception
+                  return;
+               }
                if (className.startsWith("org.exoplatform"))
                {
                   // known tests classes
@@ -100,5 +124,53 @@ public class TestSecurityManager extends SecurityManager
          //         }
          throw se;
       }
+   }
+
+   /**
+    * @return
+    */
+   private Map<String, Set<String>> getExcludes()
+   {
+      InputStream is = null;
+      try
+      {
+         is = Thread.currentThread().getContextClassLoader().getResourceAsStream("tsm-excludes.properties");
+      }
+      catch (Exception e)
+      {
+         // ignore me
+      }
+      if (is != null)
+      {
+         try
+         {
+            System.out.println("A file 'tsm-excludes.properties' has been found"); //NOSONAR
+            Properties p = new Properties();
+            p.load(is);
+            Map<String, Set<String>> excludes = new HashMap<String, Set<String>>();
+            for (Object key : p.keySet())
+            {
+               String[] values = p.getProperty((String)key).split(",");
+               excludes.put((String)key, new HashSet<String>(Arrays.asList(values)));
+            }
+            return excludes;
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace(); //NOSONAR
+         }
+         finally
+         {
+            try
+            {
+               is.close();
+            }
+            catch (IOException e)
+            {
+               // ignore me
+            }
+         }         
+      }
+      return null;
    }
 }

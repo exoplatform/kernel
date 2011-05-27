@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.cache.impl.jboss.util;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheFactory;
@@ -26,7 +27,6 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.config.ConfigurationException;
 
 import java.io.InputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -53,7 +53,7 @@ public class PrivilegedCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -71,7 +71,7 @@ public class PrivilegedCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -89,7 +89,7 @@ public class PrivilegedCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -107,7 +107,7 @@ public class PrivilegedCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -127,7 +127,7 @@ public class PrivilegedCacheHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -164,7 +164,7 @@ public class PrivilegedCacheHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -200,7 +200,7 @@ public class PrivilegedCacheHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -236,7 +236,7 @@ public class PrivilegedCacheHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -270,6 +270,6 @@ public class PrivilegedCacheHelper
             return new DefaultCacheFactory<K, V>();
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 }
