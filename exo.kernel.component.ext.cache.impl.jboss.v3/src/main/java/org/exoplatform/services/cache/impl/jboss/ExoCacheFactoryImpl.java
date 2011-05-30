@@ -225,7 +225,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
       {
          ExoContainer container = ExoContainerContext.getCurrentContainer();
          ObjectName containerObjectName = container.getScopingObjectName();
-         final String objectNameBase = (containerObjectName != null ? containerObjectName.toString() + "," : "exo:")+ "cache-name=" + cacheName;
+         final String objectNameBase =
+            (containerObjectName != null ? containerObjectName.toString() + "," : "exo:") + "cache-name=" + cacheName;
          return new JmxRegistrationManager(container.getMBeanServer(), parentCache, objectNameBase)
          {
             public String getObjectName(String resourceName)
