@@ -24,7 +24,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 
-import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.transaction.HeuristicMixedException;
@@ -110,49 +109,14 @@ public abstract class AbstractTransactionService implements TransactionService
       final Transaction tx = tm.getTransaction();
       if (tx != null)
       {
-         PrivilegedExceptionAction<Boolean> action = new PrivilegedExceptionAction<Boolean>()
+         int flag = XAResource.TMSUCCESS;
+         switch (tx.getStatus())
          {
-            public Boolean run() throws Exception
-            {
-               int flag = XAResource.TMSUCCESS;
-               switch (tx.getStatus())
-               {
-                  case Status.STATUS_MARKED_ROLLBACK:
-                  case Status.STATUS_ROLLEDBACK:
-                  case Status.STATUS_ROLLING_BACK: flag = XAResource.TMFAIL;                     
-               }      
-               return tx.delistResource(xares, flag);
-            }
-         };
-         try
-         {
-            return SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-
-            if (cause instanceof RollbackException)
-            {
-               throw (RollbackException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+            case Status.STATUS_MARKED_ROLLBACK:
+            case Status.STATUS_ROLLEDBACK:
+            case Status.STATUS_ROLLING_BACK: flag = XAResource.TMFAIL;                     
+         }      
+         return tx.delistResource(xares, flag);
       }
       else
       {
@@ -169,42 +133,7 @@ public abstract class AbstractTransactionService implements TransactionService
       final Transaction tx = tm.getTransaction();
       if (tx != null)
       {
-         PrivilegedExceptionAction<Boolean> action = new PrivilegedExceptionAction<Boolean>()
-         {
-            public Boolean run() throws Exception
-            {               
-               return tx.enlistResource(xares);
-            }
-         };
-         try
-         {
-            return SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-
-            if (cause instanceof RollbackException)
-            {
-               throw (RollbackException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         return tx.enlistResource(xares);
       }
       else
       {
@@ -385,38 +314,7 @@ public abstract class AbstractTransactionService implements TransactionService
          }
 
          // Start the transaction
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.begin();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof NotSupportedException)
-            {
-               throw (NotSupportedException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.begin();
       }
 
       /**
@@ -425,54 +323,7 @@ public abstract class AbstractTransactionService implements TransactionService
       public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
          SecurityException, IllegalStateException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.commit();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof RollbackException)
-            {
-               throw (RollbackException)cause;
-            }
-            else if (cause instanceof HeuristicMixedException)
-            {
-               throw (HeuristicMixedException)cause;
-            }
-            else if (cause instanceof HeuristicRollbackException)
-            {
-               throw (HeuristicRollbackException)cause;
-            }
-            else if (cause instanceof SecurityException)
-            {
-               throw (SecurityException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.commit();
       }
 
       /**
@@ -488,32 +339,7 @@ public abstract class AbstractTransactionService implements TransactionService
        */
       public Transaction getTransaction() throws SystemException
       {
-         try
-         {
-            return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Transaction>()
-            {
-               public Transaction run() throws Exception
-               {
-                  return tm.getTransaction();
-               }
-            });
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         return tm.getTransaction();
       }
 
       /**
@@ -522,42 +348,7 @@ public abstract class AbstractTransactionService implements TransactionService
       public void resume(final Transaction tx) throws InvalidTransactionException, IllegalStateException,
          SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.resume(tx);
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof InvalidTransactionException)
-            {
-               throw (InvalidTransactionException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.resume(tx);
       }
 
       /**
@@ -565,42 +356,7 @@ public abstract class AbstractTransactionService implements TransactionService
        */
       public void rollback() throws IllegalStateException, SecurityException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.rollback();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SecurityException)
-            {
-               throw (SecurityException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.rollback();
       }
 
       /**
@@ -625,33 +381,7 @@ public abstract class AbstractTransactionService implements TransactionService
        */
       public Transaction suspend() throws SystemException
       {
-         PrivilegedExceptionAction<Transaction> action = new PrivilegedExceptionAction<Transaction>()
-         {
-            public Transaction run() throws Exception
-            {
-               return tm.suspend();
-            }
-         };
-         try
-         {
-            return SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         return tm.suspend();
       }
    }
    
@@ -684,38 +414,7 @@ public abstract class AbstractTransactionService implements TransactionService
        */
       public void begin() throws NotSupportedException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.begin();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof NotSupportedException)
-            {
-               throw (NotSupportedException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.begin();
       }
 
       /**
@@ -724,54 +423,7 @@ public abstract class AbstractTransactionService implements TransactionService
       public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
          SecurityException, IllegalStateException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.commit();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof RollbackException)
-            {
-               throw (RollbackException)cause;
-            }
-            else if (cause instanceof HeuristicMixedException)
-            {
-               throw (HeuristicMixedException)cause;
-            }
-            else if (cause instanceof HeuristicRollbackException)
-            {
-               throw (HeuristicRollbackException)cause;
-            }
-            else if (cause instanceof SecurityException)
-            {
-               throw (SecurityException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.commit();
       }
 
       /**
@@ -779,42 +431,7 @@ public abstract class AbstractTransactionService implements TransactionService
        */
       public void rollback() throws IllegalStateException, SecurityException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.rollback();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SecurityException)
-            {
-               throw (SecurityException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.rollback();
       }
 
       /**
