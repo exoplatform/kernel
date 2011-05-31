@@ -32,18 +32,6 @@ import java.net.URL;
 public class TestPortalContainer extends AbstractTestContainer
 {
    
-   public void testHasScopingObjectName()
-   {
-      URL rootURL = getClass().getResource("empty-config.xml");
-      URL portalURL = getClass().getResource("empty-config.xml");
-      assertNotNull(rootURL);
-      assertNotNull(portalURL);
-      //
-      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
-      assertNull(RootContainer.getInstance().getScopingObjectName());
-      assertNotNull(PortalContainer.getInstance().getScopingObjectName());
-   }
-
    public void testInitValues()
    {
       createRootContainer("portal-container-config-with-settings.xml");
