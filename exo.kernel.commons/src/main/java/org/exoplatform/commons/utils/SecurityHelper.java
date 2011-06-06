@@ -281,12 +281,12 @@ public class SecurityHelper
     */
    public static <E> E doPrivilegedAction(PrivilegedAction<E> action)
    {
-//      if (System.getSecurityManager() != null)
+      if (System.getSecurityManager() != null)
       {
          // A security manager has been established
          return AccessController.doPrivileged(action);
       }
-//      return action.run();
+      return action.run();
    }
 
    /**
@@ -299,18 +299,18 @@ public class SecurityHelper
    public static <E> E doPrivilegedExceptionAction(PrivilegedExceptionAction<E> action)
       throws PrivilegedActionException
    {
-//      if (System.getSecurityManager() != null)
+      if (System.getSecurityManager() != null)
       {
          // A security manager has been established
          return AccessController.doPrivileged(action);
       }
-/*    try
+      try
       {
          return action.run();
       }
       catch (Exception e)
       {
          throw new PrivilegedActionException(e);
-      }*/
+      }
    }
 }
