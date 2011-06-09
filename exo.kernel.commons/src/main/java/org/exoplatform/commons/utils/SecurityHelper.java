@@ -308,6 +308,10 @@ public class SecurityHelper
       {
          return action.run();
       }
+      catch (RuntimeException e)
+      {
+         throw e;
+      }
       catch (Exception e)
       {
          throw new PrivilegedActionException(e);
