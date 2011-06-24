@@ -33,17 +33,53 @@ public class TestMimeTypeResolver extends TestCase
 
    private MimeTypeResolver resolver = new MimeTypeResolver();
 
-   public void testGetMimeType()
+   /**
+    * Here we're going to test MimeTypeResolver to obtain corresponding or 
+    * at least most corresponding mime types for files with extensions.
+    */
+   public void testGetMimeTypeFromExtension()
    {
+      // should return default mime type for unknown extension
       assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("file.unknown-file-extension"));
-      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("unknown-file-extension"));
-      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType(""));
 
-      // there are two MIMETypes for jpeg extension [image/jpeg, image/pjpeg], check the first one
-      assertEquals("image/jpeg", resolver.getMimeType("image.jpeg"));
-      assertEquals("image/jpeg", resolver.getMimeType("jpeg"));
+      // shoud return mime type based on last part separated by "." symbol
+      // i. e. should return corresponding mime type for "unknown-file-extension"
+      // but not for "pdf"
+      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("file.pdf.unknown-file-extension"));
 
       assertEquals("application/vnd.ms-outlook", resolver.getMimeType("my.msg"));
+      assertEquals("application/msword", resolver.getMimeType("my.doc"));
+      assertEquals("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+         resolver.getMimeType("my.docx"));
+      assertEquals("application/xls", resolver.getMimeType("my.xls"));
+      assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", resolver.getMimeType("my.xlsx"));
+      assertEquals("application/pdf", resolver.getMimeType("my.pdf"));
+      assertEquals("image/jpeg", resolver.getMimeType("my.jpg"));
+      assertEquals("application/vnd.oasis.opendocument.text", resolver.getMimeType("my.odt"));
+
+   }
+
+   /**
+    * Here we're going to test MimeTypeResolver to obtain corresponding or 
+    * at least most corresponding mime types for files without extensions.
+    */
+   public void testGetMimeTypeFromContent()
+   {
+      // should return default mime type as file name has no extension
+      // and file does not exist to read its content
+      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("unknown-file-extension"));
+
+      // should return default mime type as file name has no extension
+      // (though it has "." its extension is empty string == no extension)
+      // and file does not exist to read its content
+      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("file."));
+
+      assertEquals("image/jpeg", resolver.getMimeType("src/test/resources/testjpg"));
+      assertEquals("application/pdf", resolver.getMimeType("src/test/resources/testpdf"));
+      assertEquals("application/msword", resolver.getMimeType("src/test/resources/testdoc"));
+      assertEquals("text/xml", resolver.getMimeType("src/test/resources/testxml"));
+      assertEquals("application/msword", resolver.getMimeType("src/test/resources/testxls"));
+
    }
 
    public void testGetExtension()

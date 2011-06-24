@@ -26,6 +26,10 @@
 
    <dependencies>
       <dependency>
+         <groupId>eu.medsea.mimeutil</groupId>
+         <artifactId>mime-util</artifactId>
+      </dependency>
+      <dependency>
          <groupId>xpp3</groupId>
          <artifactId>xpp3</artifactId>
       </dependency>

@@ -18,10 +18,18 @@
  */
 package org.exoplatform.commons.utils;
 
+import eu.medsea.mimeutil.MimeUtil;
+
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +37,8 @@ import java.util.Scanner;
 
 public class MimeTypeResolver
 {
+   protected static Log log = ExoLogger.getLogger("org.exoplatform.commons.utils.MimeTypeResolver");
+
    private Map<String, List<String>> mimeTypes = new HashMap<String, List<String>>();
 
    private Map<String, List<String>> extentions = new HashMap<String, List<String>>();
@@ -43,6 +53,7 @@ public class MimeTypeResolver
          {
             public Void run() throws Exception
             {
+               MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
                Scanner scanner = null;
                String mimeTypeProperties = System.getProperty("org.exoplatform.mimetypes");
                if (mimeTypeProperties != null)
@@ -102,23 +113,45 @@ public class MimeTypeResolver
    }
 
    /**
-    * Get MIMEType which corresponds to file extension. If file extension is unknown the default 
-    * MIMEType will be returned. If there are more than one MIMETypes for specific extension the 
-    * first occurred in the list will be returned. 
+    * Get MIMEType which corresponds to file extension or, in case if file extension 
+    * does not exist, file content. If file extension is unknown, or file content 
+    * does not allow to determine MIMEtype, the default MIMEType will be returned. 
+    * If there are more than one MIMETypes for specific extension the first occurred 
+    * in the list will be returned. 
     * 
-    * @param filename
+    * @param fileName
     * @return String MIMEType
     */
-   public String getMimeType(String filename)
+   public String getMimeType(String fileName)
    {
-      String ext = filename.substring(filename.lastIndexOf(".") + 1);
-      if (ext.isEmpty())
-      {
-         ext = filename;
-      }
+      final File file = new File(fileName);
+      String extension = MimeUtil.getExtension(file);
 
-      List<String> values = mimeTypes.get(ext);
-      return values == null ? defaultMimeType : values.get(0);
+      if (extension.isEmpty())
+      {
+         if (PrivilegedFileHelper.exists(file))
+         {
+            Collection<?> mimeTypes = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Collection<?>>()
+            {
+               public Collection<?> run()
+               {
+                  return MimeUtil.getMimeTypes(file);
+               }
+            });
+
+            return mimeTypes.isEmpty() ? defaultMimeType : mimeTypes.toArray()[0].toString();
+         }
+         else
+         {
+            log.warn("You're trying to resolve mime type of non-existing file with no extension.");
+            return defaultMimeType;
+         }
+      }
+      else
+      {
+         List<String> values = mimeTypes.get(extension);
+         return values == null ? defaultMimeType : values.get(0);
+      }
    }
 
    /**
