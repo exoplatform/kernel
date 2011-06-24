@@ -20,6 +20,9 @@ package org.exoplatform.commons.utils;
 
 import junit.framework.TestCase;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Created by The eXo Platform SAS.
  *
@@ -63,7 +66,7 @@ public class TestMimeTypeResolver extends TestCase
     * Here we're going to test MimeTypeResolver to obtain corresponding or 
     * at least most corresponding mime types for files without extensions.
     */
-   public void testGetMimeTypeFromContent()
+   public void testGetMimeTypeFromContent() throws IOException
    {
       // should return default mime type as file name has no extension
       // and file does not exist to read its content
@@ -74,11 +77,23 @@ public class TestMimeTypeResolver extends TestCase
       // and file does not exist to read its content
       assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("file."));
 
-      assertEquals("image/jpeg", resolver.getMimeType("src/test/resources/testjpg"));
-      assertEquals("application/pdf", resolver.getMimeType("src/test/resources/testpdf"));
-      assertEquals("application/msword", resolver.getMimeType("src/test/resources/testdoc"));
-      assertEquals("text/xml", resolver.getMimeType("src/test/resources/testxml"));
-      assertEquals("application/msword", resolver.getMimeType("src/test/resources/testxls"));
+      InputStream is;
+
+      is = TestMimeTypeResolver.class.getResourceAsStream("/testjpg");
+      assertEquals("image/jpeg", resolver.getMimeType("testjpg", is));
+      is.close();
+      is = TestMimeTypeResolver.class.getResourceAsStream("/testpdf");
+      assertEquals("application/pdf", resolver.getMimeType("testpdf", is));
+      is.close();
+      is = TestMimeTypeResolver.class.getResourceAsStream("/testdoc");
+      assertEquals("application/msword", resolver.getMimeType("testdoc", is));
+      is.close();
+      is = TestMimeTypeResolver.class.getResourceAsStream("/testxml");
+      assertEquals("text/xml", resolver.getMimeType("testxml", is));
+      is.close();
+      is = TestMimeTypeResolver.class.getResourceAsStream("/testxls");
+      assertEquals("application/msword", resolver.getMimeType("testxls", is));
+      is.close();
 
    }
 

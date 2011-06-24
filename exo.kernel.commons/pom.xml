@@ -62,6 +62,7 @@
             <directory>src/test/resources</directory>
             <includes>
                <include>**/*.properties</include>
+               <include>**/test*</include>
             </includes>
          </testResource>
       </testResources>
