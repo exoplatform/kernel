@@ -234,11 +234,19 @@ public class ManageableContainer extends CachingContainer
    @Override
    public ComponentAdapter unregisterComponent(Object componentKey)
    {
-      Object componentInstance = getComponentInstance(componentKey);
-
-      if (managementContext != null && componentInstance != null)
+      Object componentInstance;
+      try
       {
-         managementContext.unregister(componentInstance);
+         componentInstance = getComponentInstance(componentKey);
+
+         if (managementContext != null && componentInstance != null)
+         {
+            managementContext.unregister(componentInstance);
+         }
+      }
+      catch (PicoException e)
+      {
+         // Ignore, may be caused by lazy initialization mechanism
       }
       return super.unregisterComponent(componentKey);
    }

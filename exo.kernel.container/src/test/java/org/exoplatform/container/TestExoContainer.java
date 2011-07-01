@@ -104,10 +104,10 @@ public class TestExoContainer extends AbstractTestContainer
          else
          {
             PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, oldValue);
-         }         
+         }
       }
    }
-   
+
    public void testRemoveComponent() throws Exception
    {
       RootContainer container = RootContainer.getInstance();
@@ -149,7 +149,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertTrue(counter.init.get(1) instanceof MyContainerLifecyclePlugin3);
       assertTrue(counter.init.get(2) instanceof MyContainerLifecyclePlugin1);
    }
-   
+
    public void testStackOverFlow()
    {
       final RootContainer container = createRootContainer("test-exo-container.xml");
@@ -160,21 +160,21 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(plugin.cmanager_);
       assertEquals(value, plugin.myClass_);
    }
-   
+
    public void testStackOverFlow2()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");      
+      final RootContainer container = createRootContainer("test-exo-container.xml");
       SOE1 soe1 = (SOE1)container.getComponentInstanceOfType(SOE1.class);
       assertNotNull(soe1);
       SOEPlugin soe1Plugin = soe1.plugin;
       assertNotNull(soe1Plugin);
       assertNotNull(soe1Plugin.soe2);
-      assertEquals(soe1, soe1Plugin.soe2.soe1);      
+      assertEquals(soe1, soe1Plugin.soe2.soe1);
    }
-   
+
    public void testStackOverFlow3()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");      
+      final RootContainer container = createRootContainer("test-exo-container.xml");
       SOE2 soe2 = (SOE2)container.getComponentInstanceOfType(SOE2.class);
       assertNotNull(soe2);
       assertNotNull(soe2.soe1);
@@ -184,7 +184,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(soe2.soe1, soe1Plugin.soe2.soe1);
       assertEquals(container.getComponentInstanceOfType(SOE1.class), soe2.soe1);
    }
-   
+
    public void testCyclicRef()
    {
       final RootContainer container = createRootContainer("test-exo-container.xml", "testCyclicRef");
@@ -194,7 +194,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(b);
       assertEquals(a, b.a);
    }
-   
+
    public void testStartOrder()
    {
       final RootContainer container = createRootContainer("test-exo-container.xml", "testStartOrder");
@@ -204,9 +204,9 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(c1);
       C2 c2 = (C2)container.getComponentInstanceOfType(C2.class);
       assertNotNull(c2);
-      assertTrue(c1.started);      
-   }   
-   
+      assertTrue(c1.started);
+   }
+
    public void testCache()
    {
       URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -229,8 +229,8 @@ public class TestExoContainer extends AbstractTestContainer
             return MyClass.class;
          }
 
-         public Object getComponentInstance(PicoContainer paramPicoContainer)
-            throws PicoInitializationException, PicoIntrospectionException
+         public Object getComponentInstance(PicoContainer paramPicoContainer) throws PicoInitializationException,
+            PicoIntrospectionException
          {
             return new MyClass();
          }
@@ -251,9 +251,9 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(ca, pcontainer.getComponentAdapter("MyKey"));
       container.unregisterComponent("MyKey");
       assertNull(container.getComponentAdapter("MyKey"));
-      assertNull(pcontainer.getComponentAdapter("MyKey"));  
+      assertNull(pcontainer.getComponentAdapter("MyKey"));
    }
-   
+
    public void testMultiThreading() throws Throwable
    {
       final RootContainer container = createRootContainer("test-exo-container.xml");
@@ -273,7 +273,7 @@ public class TestExoContainer extends AbstractTestContainer
             }
             assertEquals(currentMyClass.get(), container.getComponentInstance(MyMTClass.class));
          }
-      });      
+      });
       testMultiThreading(new Task()
       {
 
@@ -349,7 +349,7 @@ public class TestExoContainer extends AbstractTestContainer
             container.unregisterComponent("a");
          }
       });
-   
+
       testMultiThreading(new Task()
       {
 
@@ -368,8 +368,8 @@ public class TestExoContainer extends AbstractTestContainer
                   return MyClass.class;
                }
 
-               public Object getComponentInstance(PicoContainer paramPicoContainer)
-                  throws PicoInitializationException, PicoIntrospectionException
+               public Object getComponentInstance(PicoContainer paramPicoContainer) throws PicoInitializationException,
+                  PicoIntrospectionException
                {
                   return new MyClass();
                }
@@ -383,7 +383,7 @@ public class TestExoContainer extends AbstractTestContainer
                {
                }
 
-            };            
+            };
             assertNotNull(container.registerComponent(ca));
             assertNotNull(container.getComponentAdapter(key));
             assertFalse(container.getComponentAdapters().isEmpty());
@@ -394,7 +394,7 @@ public class TestExoContainer extends AbstractTestContainer
             assertFalse(container.getComponentInstancesOfType(MyClass.class).isEmpty());
             assertNotNull(container.unregisterComponent(key));
          }
-      });   
+      });
    }
 
    private void testMultiThreading(final Task task) throws Throwable
@@ -442,7 +442,7 @@ public class TestExoContainer extends AbstractTestContainer
    {
       public void execute();
    }
-   
+
    public static class MyMTClass
    {
       public MyMTClass() throws InterruptedException
@@ -455,38 +455,44 @@ public class TestExoContainer extends AbstractTestContainer
    public static class MyClass
    {
       public MyClassPlugin plugin_;
+
       public void add(MyClassPlugin plugin)
       {
          this.plugin_ = plugin;
       }
    }
-   
+
    public static class MyClassPlugin extends BaseComponentPlugin
    {
       public ConfigurationManager cmanager_;
+
       public MyClass myClass_;
+
       public MyClassPlugin(ConfigurationManager cmanager, MyClass myClass)
       {
          this.cmanager_ = cmanager;
          this.myClass_ = myClass;
       }
    }
-   
+
    public static class MyCounter
    {
       public final List<BaseContainerLifecyclePlugin> init = new ArrayList<BaseContainerLifecyclePlugin>();
+
       public final List<BaseContainerLifecyclePlugin> start = new ArrayList<BaseContainerLifecyclePlugin>();
+
       public final List<BaseContainerLifecyclePlugin> stop = new ArrayList<BaseContainerLifecyclePlugin>();
+
       public final List<BaseContainerLifecyclePlugin> destroy = new ArrayList<BaseContainerLifecyclePlugin>();
    }
-   
+
    public static class MyContainerLifecyclePlugin1 extends BaseContainerLifecyclePlugin
    {
-      
+
       public MyContainerLifecyclePlugin1()
       {
       }
-      
+
       @Override
       public void destroyContainer(ExoContainer container) throws Exception
       {
@@ -526,18 +532,18 @@ public class TestExoContainer extends AbstractTestContainer
             counter.stop.add(this);
          }
       }
-      
+
    }
-   
+
    public static class MyContainerLifecyclePlugin2 extends BaseContainerLifecyclePlugin
    {
       public final String param;
-      
+
       public MyContainerLifecyclePlugin2(InitParams params)
       {
          this.param = params != null ? params.getValueParam("param").getValue() : null;
       }
-      
+
       @Override
       public void destroyContainer(ExoContainer container) throws Exception
       {
@@ -576,17 +582,16 @@ public class TestExoContainer extends AbstractTestContainer
          {
             counter.stop.add(this);
          }
-      }   
+      }
    }
-   
-   
+
    public static class MyContainerLifecyclePlugin3 extends BaseContainerLifecyclePlugin
    {
-      
+
       public MyContainerLifecyclePlugin3()
       {
       }
-      
+
       @Override
       public void destroyContainer(ExoContainer container) throws Exception
       {
@@ -626,34 +631,39 @@ public class TestExoContainer extends AbstractTestContainer
             counter.stop.add(this);
          }
       }
-      
+
    }
-   
+
    public static class A
    {
       public B b;
+
       public A(B b)
       {
          this.b = b;
       }
    }
+
    public static class BPlugin extends BaseComponentPlugin
    {
       public A a;
+
       public BPlugin(A a)
       {
          this.a = a;
       }
    }
-   
+
    public static class B
    {
       public A a;
+
       public BPlugin plugin_;
+
       public void add(BPlugin plugin)
       {
          this.plugin_ = plugin;
-         this.a = plugin.a;         
+         this.a = plugin.a;
       }
    }
 
@@ -672,7 +682,7 @@ public class TestExoContainer extends AbstractTestContainer
       public Object getComponentInstance(PicoContainer arg0) throws PicoInitializationException,
          PicoIntrospectionException
       {
-         return "testKey";
+         throw new PicoInitializationException("Can't instantiate a component.");
       }
 
       public Class getComponentImplementation()
@@ -684,10 +694,11 @@ public class TestExoContainer extends AbstractTestContainer
       {
       }
    }
-   
+
    public static class C0 implements Startable
    {
       C1 c1;
+
       public C0(C1 c1)
       {
          this.c1 = c1;
@@ -706,15 +717,15 @@ public class TestExoContainer extends AbstractTestContainer
       public void stop()
       {
       }
-      
+
    }
-   
+
    public static class C1 implements Startable
    {
       public boolean started;
-      
+
       P p;
-      
+
       /**
        * @see org.picocontainer.Startable#start()
        */
@@ -735,26 +746,30 @@ public class TestExoContainer extends AbstractTestContainer
        * @see org.picocontainer.Startable#stop()
        */
       public void stop()
-      {         
+      {
       }
-      
+
       public void add(P p)
       {
          this.p = p;
       }
    }
+
    public static class P extends BaseComponentPlugin
    {
       public C0 c0;
+
       public C1 c1;
+
       public C2 c2;
+
       public P(C0 c0, C1 c1, C2 c2)
       {
          this.c0 = c0;
          this.c1 = c1;
          this.c2 = c2;
       }
-      
+
       public void init()
       {
          if (!c2.started)
@@ -763,11 +778,11 @@ public class TestExoContainer extends AbstractTestContainer
          }
       }
    }
-   
+
    public static class C2 implements Startable
    {
       public boolean started;
-      
+
       /**
        * @see org.picocontainer.Startable#start()
        */
@@ -780,10 +795,10 @@ public class TestExoContainer extends AbstractTestContainer
        * @see org.picocontainer.Startable#stop()
        */
       public void stop()
-      {         
+      {
       }
    }
-   
+
    public void testLifeCycle() throws Throwable
    {
       ConcurrentPicoContainer container = new ConcurrentPicoContainer();
@@ -843,19 +858,21 @@ public class TestExoContainer extends AbstractTestContainer
       assertFalse(container.canBeStopped());
       assertTrue(container.canBeDisposed());
       container.dispose();
-      assertTrue(c1.disposed && c2.disposed && c5.disposed);      
+      assertTrue(c1.disposed && c2.disposed && c5.disposed);
       assertFalse(container.canBeStarted());
       assertFalse(container.canBeStopped());
       assertFalse(container.canBeDisposed());
    }
-   
+
    public static class LC1 implements Startable, Disposable
    {
 
       public boolean started;
+
       public boolean stopped;
+
       public boolean disposed;
-      
+
       public void start()
       {
          throw new RuntimeException();
@@ -869,16 +886,18 @@ public class TestExoContainer extends AbstractTestContainer
       public void dispose()
       {
          disposed = true;
-      }      
+      }
    }
-   
+
    public static class LC2 implements Startable, Disposable
    {
 
       public boolean started;
+
       public boolean stopped;
+
       public boolean disposed;
-      
+
       public void start()
       {
          started = true;
@@ -892,16 +911,18 @@ public class TestExoContainer extends AbstractTestContainer
       public void dispose()
       {
          disposed = true;
-      }      
+      }
    }
-   
+
    public static class LC3 implements Startable, Disposable
    {
 
       public boolean started;
+
       public boolean stopped;
+
       public boolean disposed;
-      
+
       public void start()
       {
          started = true;
@@ -915,16 +936,18 @@ public class TestExoContainer extends AbstractTestContainer
       public void dispose()
       {
          throw new RuntimeException();
-      }      
+      }
    }
-   
+
    public static class LC4 implements Startable
    {
 
       public boolean started;
+
       public boolean stopped;
+
       public boolean disposed;
-      
+
       public void start()
       {
          started = true;
@@ -933,46 +956,51 @@ public class TestExoContainer extends AbstractTestContainer
       public void stop()
       {
          stopped = true;
-      }     
+      }
    }
-   
+
    public static class LC5 implements Disposable
    {
 
       public boolean started;
+
       public boolean stopped;
+
       public boolean disposed;
 
       public void dispose()
       {
          disposed = true;
-      }      
+      }
    }
-   
+
    public static class SOE1
    {
       public SOEPlugin plugin;
+
       public void addPlugin(SOEPlugin plugin)
       {
          this.plugin = plugin;
       }
    }
-   
+
    public static class SOEPlugin extends BaseComponentPlugin
    {
       public SOE2 soe2;
+
       public SOEPlugin(SOE2 soe2)
       {
          this.soe2 = soe2;
       }
-   }  
-   
+   }
+
    public static class SOE2
    {
       public SOE1 soe1;
+
       public SOE2()
       {
          this.soe1 = (SOE1)ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(SOE1.class);
       }
-   }   
+   }
 }
