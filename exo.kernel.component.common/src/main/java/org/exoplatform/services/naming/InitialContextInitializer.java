@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -233,50 +231,10 @@ public class InitialContextInitializer
    }
 
    /**
-    * Constructs references from params, binds in initial contexts and persists list of all binded
-    * references into file.
-    * 
-    * @param bindName
-    *          bind name
-    * @param className
-    *          class name
-    * @param factory
-    *          factory name
-    * @param factoryLocation
-    *          factory location
-    * @param refAddr
-    *          map of references's properties
-    * 
-    * @throws NamingException
-    *          if error occurs due to binding
-    * @throws XMLStreamException 
-    * @throws FileNotFoundException
+    * Returns InitialContextBinder.
     */
-   public void bind(String bindName, String className, String factory, String factoryLocation,
-      Map<String, String> refAddr) throws NamingException, FileNotFoundException, XMLStreamException
+   public InitialContextBinder getInitialContextBinder()
    {
-      if (LOG.isDebugEnabled())
-      {
-         StringBuilder refAddrString = new StringBuilder();
-         refAddrString.append('{');
-         Set<Map.Entry<String, String>> refs = refAddr.entrySet();
-         int i = 1;
-         for (Map.Entry<String, String> ent : refs)
-         {
-            refAddrString.append(ent.getKey());
-            refAddrString.append('=');
-            refAddrString.append(ent.getValue());
-            if (i < refs.size())
-            {
-               refAddrString.append(' ');
-            }
-            i++;
-         }
-         refAddrString.append('}');
-         LOG.debug("Bind: " + bindName + " class-name:" + className + " factory:" + factory + " factoryLocation:"
-            + factoryLocation + " refAddr:" + refAddrString);
-      }
-
-      binder.bind(bindName, className, factory, factoryLocation, refAddr);
+      return binder;
    }
 }

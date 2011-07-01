@@ -155,6 +155,16 @@ public class InitialContextBinder
       saveBindings();
    }
 
+   /**
+    * Returns reference associated with bindName.
+    * 
+    * @param bindName the name on which the reference was binded.
+    */
+   public Reference getReference(String bindName)
+   {
+      return bindings.get(bindName);
+   }
+
    private void bind(String bindName, Reference reference) throws NamingException
    {
       try
