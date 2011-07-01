@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.naming;
 
+import junit.framework.TestCase;
+
+import org.exoplatform.container.PortalContainer;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Enumeration;
@@ -31,10 +35,6 @@ import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
-
-import junit.framework.TestCase;
-
-import org.exoplatform.container.PortalContainer;
 
 /**
  * Created by The eXo Platform SAS .<br/> Prerequisites: default-context-factory
@@ -121,8 +121,8 @@ public class InitialContextTest extends TestCase
       refAddr.put("username", "sa");
       refAddr.put("password", "");
 
-      initializer.bind("testjdbcjcr1", "javax.sql.DataSource", "org.apache.commons.dbcp.BasicDataSourceFactory", null,
-         refAddr);
+      initializer.getInitialContextBinder().bind("testjdbcjcr1", "javax.sql.DataSource",
+         "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
 
       assertTrue(new File("target/store-path.xml").exists());
    }
