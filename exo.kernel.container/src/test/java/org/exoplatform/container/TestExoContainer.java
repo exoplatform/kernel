@@ -682,7 +682,9 @@ public class TestExoContainer extends AbstractTestContainer
       public Object getComponentInstance(PicoContainer arg0) throws PicoInitializationException,
          PicoIntrospectionException
       {
-         throw new PicoInitializationException("Can't instantiate a component.");
+         // Used to check a situation when RunTimeException occurs while retrieving an instance.
+         // This reproduces usecase from JCR-1565
+         throw new RuntimeException();
       }
 
       public Class getComponentImplementation()
