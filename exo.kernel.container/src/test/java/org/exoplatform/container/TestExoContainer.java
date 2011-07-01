@@ -491,28 +491,40 @@ public class TestExoContainer extends AbstractTestContainer
       public void destroyContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.destroy.add(this);
+         if (counter != null)
+         {
+            counter.destroy.add(this);
+         }
       }
 
       @Override
       public void initContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.init.add(this);
+         if (counter != null)
+         {
+            counter.init.add(this);
+         }
       }
 
       @Override
       public void startContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.start.add(this);
+         if (counter != null)
+         {
+            counter.start.add(this);
+         }
       }
 
       @Override
       public void stopContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.stop.add(this);
+         if (counter != null)
+         {
+            counter.stop.add(this);
+         }
       }
       
    }
@@ -530,28 +542,40 @@ public class TestExoContainer extends AbstractTestContainer
       public void destroyContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.destroy.add(this);
+         if (counter != null)
+         {
+            counter.destroy.add(this);
+         }
       }
 
       @Override
       public void initContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.init.add(this);
+         if (counter != null)
+         {
+            counter.init.add(this);
+         }
       }
 
       @Override
       public void startContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.start.add(this);
+         if (counter != null)
+         {
+            counter.start.add(this);
+         }
       }
 
       @Override
       public void stopContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.stop.add(this);
+         if (counter != null)
+         {
+            counter.stop.add(this);
+         }
       }   
    }
    
@@ -567,28 +591,40 @@ public class TestExoContainer extends AbstractTestContainer
       public void destroyContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.destroy.add(this);
+         if (counter != null)
+         {
+            counter.destroy.add(this);
+         }
       }
 
       @Override
       public void initContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.init.add(this);
+         if (counter != null)
+         {
+            counter.init.add(this);
+         }
       }
 
       @Override
       public void startContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.start.add(this);
+         if (counter != null)
+         {
+            counter.start.add(this);
+         }
       }
 
       @Override
       public void stopContainer(ExoContainer container) throws Exception
       {
          MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
-         if (counter != null) counter.stop.add(this);
+         if (counter != null)
+         {
+            counter.stop.add(this);
+         }
       }
       
    }
@@ -636,7 +672,7 @@ public class TestExoContainer extends AbstractTestContainer
       public Object getComponentInstance(PicoContainer arg0) throws PicoInitializationException,
          PicoIntrospectionException
       {
-         throw (PicoInitializationException)new Exception();
+         return "testKey";
       }
 
       public Class getComponentImplementation()
@@ -722,7 +758,9 @@ public class TestExoContainer extends AbstractTestContainer
       public void init()
       {
          if (!c2.started)
+         {
             throw new IllegalStateException("C2 should be started");
+         }
       }
    }
    
