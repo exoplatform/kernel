@@ -156,7 +156,7 @@ public class InitialContextBinder
    }
 
    /**
-    * Returns reference associated with bindName.
+    * Returns reference associated with defined name.
     * 
     * @param bindName the name on which the reference was binded.
     */
