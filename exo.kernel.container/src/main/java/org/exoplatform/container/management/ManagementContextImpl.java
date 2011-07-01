@@ -33,8 +33,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -237,6 +239,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
    }
 
+    /**
+     * 
+    * {@inheritDoc}
+    */
    public void unregister(Object o)
    {
       ManagementContextImpl context = registrations.remove(o);
@@ -244,6 +250,26 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       {
          for (Map.Entry<ManagementProvider, Object> entry : context.managedSet.entrySet()) {
             entry.getKey().unmanage(entry.getValue());
+         }
+      }
+   }
+   
+   /**
+    * Unmanages (unregisters) all early registered MBeans in ManagementProviders
+    */
+   public void unregisterAll()
+   {
+      Iterator<Entry<Object, ManagementContextImpl>> iterator = registrations.entrySet().iterator();
+      while (iterator.hasNext())
+      {
+         Entry<Object, ManagementContextImpl> contextEntry = iterator.next();
+         iterator.remove();
+         if (contextEntry.getValue() != null)
+         {
+            for (Map.Entry<ManagementProvider, Object> provider : contextEntry.getValue().managedSet.entrySet())
+            {
+               provider.getKey().unmanage(provider.getValue());
+            }
          }
       }
    }

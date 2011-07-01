@@ -52,8 +52,7 @@ import javax.management.ObjectName;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableContainer
-   extends CachingContainer
+public class ManageableContainer extends CachingContainer
 {
 
    /**
@@ -69,7 +68,7 @@ public class ManageableContainer
 
    /** . */
    private static final ThreadLocal<ManageableComponentAdapterFactory> hack =
-            new ThreadLocal<ManageableComponentAdapterFactory>();
+      new ThreadLocal<ManageableComponentAdapterFactory>();
 
    /** . */
    final ManagementContextImpl managementContext;
@@ -78,8 +77,9 @@ public class ManageableContainer
    private MBeanServer server;
 
    private volatile boolean objectNameSet;
+
    private ObjectName objectName;
-   
+
    /** . */
    private final Set<ManagementProvider> providers;
 
@@ -88,7 +88,7 @@ public class ManageableContainer
 
    public ManageableContainer()
    {
-      this((PicoContainer) null);
+      this((PicoContainer)null);
    }
 
    public ManageableContainer(PicoContainer parent)
@@ -113,12 +113,12 @@ public class ManageableContainer
       ManagementContextImpl parentCtx = null;
       if (parent instanceof ManageableContainer)
       {
-         ManageableContainer manageableParent = (ManageableContainer) parent;
+         ManageableContainer manageableParent = (ManageableContainer)parent;
          parentCtx = manageableParent.managementContext;
       }
 
       //
-      this.parent = parent instanceof ManageableContainer ? (ManageableContainer) parent : null;
+      this.parent = parent instanceof ManageableContainer ? (ManageableContainer)parent : null;
 
       //
       if (parentCtx != null)
@@ -156,7 +156,7 @@ public class ManageableContainer
    }
 
    private static ManageableComponentAdapterFactory getComponentAdapterFactory(
-            ComponentAdapterFactory componentAdapterFactory)
+      ComponentAdapterFactory componentAdapterFactory)
    {
       ManageableComponentAdapterFactory factory = new ManageableComponentAdapterFactory(componentAdapterFactory);
       hack.set(factory);
@@ -196,7 +196,7 @@ public class ManageableContainer
                   {
                      MBeanScopingData scopingData = list.get(i - 1);
                      props.putAll(scopingData);
-                  }               
+                  }
                   try
                   {
                      this.objectName = JMX.createObjectName("exo", props);
@@ -204,7 +204,7 @@ public class ManageableContainer
                   catch (Exception e)
                   {
                      LOG.error("Could not create the object name", e);
-                  }                  
+                  }
                }
                this.objectNameSet = true;
             }
@@ -212,9 +212,9 @@ public class ManageableContainer
       }
       return objectName;
    }
-   
+
    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-            throws PicoRegistrationException
+      throws PicoRegistrationException
    {
       ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
       if (managementContext != null)
@@ -224,12 +224,35 @@ public class ManageableContainer
          // Register if it is a management provider
          if (componentInstance instanceof ManagementProvider)
          {
-            ManagementProvider provider = (ManagementProvider) componentInstance;
+            ManagementProvider provider = (ManagementProvider)componentInstance;
             addProvider(provider);
          }
       }
       return adapter;
    }
+
+   @Override
+   public ComponentAdapter unregisterComponent(Object componentKey)
+   {
+      ComponentAdapter adapter = getComponentAdapter(componentKey);
+
+      if (managementContext != null && adapter != null)
+      {
+         managementContext.unregister(adapter.getComponentInstance(this));
+      }
+      return super.unregisterComponent(componentKey);
+   }
+
+   @Override
+   public void stop()
+   {
+      if (managementContext != null)
+      {
+         // un-manage all registered MBeans
+         managementContext.unregisterAll();
+      }
+      super.stop();
+   };
 
    /**
     * Returns the list of the providers which are relevant for this container.
