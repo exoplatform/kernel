@@ -107,7 +107,7 @@ public class InitialContextBinder
          Map<String, Reference> importedRefs = readBindings();
          for (Entry<String, Reference> entry : importedRefs.entrySet())
          {
-            bind(entry.getKey(), entry.getValue());
+            bindInternally(entry.getKey(), entry.getValue());
          }
       }
    }
@@ -150,7 +150,28 @@ public class InitialContextBinder
          reference.add(new StringRefAddr(entry.getKey(), entry.getValue()));
       }
 
-      bind(bindName, reference);
+      bindInternally(bindName, reference);
+
+      saveBindings();
+   }
+
+   /**
+    * Binds the reference in initial contexts and persists list of all binded
+    * references into file.
+    * 
+    * @param bindName
+    *          bind name
+    * @param reference
+    *          reference
+    * @throws NamingException
+    *          if error occurs due to binding
+    * @throws FileNotFoundException
+    * @throws XMLStreamException
+    */
+   public void bind(String bindName, Reference reference) throws NamingException, FileNotFoundException,
+      XMLStreamException
+   {
+      bindInternally(bindName, reference);
 
       saveBindings();
    }
@@ -165,7 +186,7 @@ public class InitialContextBinder
       return bindings.get(bindName);
    }
 
-   private void bind(String bindName, Reference reference) throws NamingException
+   private void bindInternally(String bindName, Reference reference) throws NamingException
    {
       try
       {
