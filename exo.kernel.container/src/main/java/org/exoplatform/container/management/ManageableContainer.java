@@ -244,7 +244,7 @@ public class ManageableContainer extends CachingContainer
             managementContext.unregister(componentInstance);
          }
       }
-      catch (PicoException e)
+      catch (Exception e)
       {
          // Ignore, may be caused by lazy initialization mechanism
       }
