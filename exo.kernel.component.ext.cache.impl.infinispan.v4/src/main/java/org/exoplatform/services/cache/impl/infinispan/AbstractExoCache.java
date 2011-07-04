@@ -31,8 +31,10 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryEvicted;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvictedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 
@@ -472,18 +474,21 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    @Listener
    public class CacheEventListener
    {
-// Infinispan triggers a CacheEntryEvictedEvent only at explicit eviction which is
-// not what we want here. So it will be considered as non supported      
-//      @CacheEntryEvicted
-//      public void cacheEntryEvicted(CacheEntryEvictedEvent evt)
-//      {
-//         if (evt.isPre())
-//         {
-//            final K key = (K)evt.getKey();
-//            final V value = cache.withFlags(Flag.SKIP_LOCKING).get(key);
-//            onExpire(key, value);
-//         }
-//      }
+      /**
+       * Warning Infinispan triggers a <code>CacheEntryEvictedEvent</code> only at explicit eviction
+       * that is done lazily which is not exactly what we expect, we still use it to be 
+       * able to use it with <code>avoidValueReplication</code> set to <code>true</code>.
+       */
+      @CacheEntryEvicted
+      public void cacheEntryEvicted(CacheEntryEvictedEvent evt)
+      {
+         if (evt.isPre())
+         {
+            final K key = (K)evt.getKey();
+            final V value = cache.withFlags(Flag.SKIP_LOCKING).get(key);
+            onExpire(key, value);
+         }
+      }
 
       @CacheEntryRemoved
       public void cacheEntryRemoved(CacheEntryRemovedEvent evt)

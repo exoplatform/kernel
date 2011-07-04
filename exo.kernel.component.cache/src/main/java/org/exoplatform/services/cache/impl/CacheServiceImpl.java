@@ -154,6 +154,7 @@ public class CacheServiceImpl implements CacheService
       return null;
    }
 
+   @SuppressWarnings({"rawtypes", "unchecked"})
    private ExoCache<? extends Serializable, ?> createCacheInstance(String region) throws Exception
    {
       ExoCacheConfig config = configs_.get(region);
@@ -198,7 +199,9 @@ public class CacheServiceImpl implements CacheService
       {
          managed.registerCache(simple);
       }
-      return simple;
+      // If the flag avoid value replication is enabled we wrap the eXo cache instance
+      // into an InvalidationExoCache to enable the invalidation
+      return safeConfig.avoidValueReplication() ? new InvalidationExoCache(simple) : simple;
    }
 
    public Collection<ExoCache<? extends Serializable, ?>> getAllCacheInstances()

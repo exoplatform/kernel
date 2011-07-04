@@ -68,6 +68,11 @@ public class ExoCacheConfig implements Cloneable
     */
    private boolean logEnabled;
 
+   /**
+    * Indicates whether or not the replication of the values should be avoided
+    */
+   public boolean avoidValueReplication;
+
    public String getName()
    {
       return name;
@@ -146,6 +151,22 @@ public class ExoCacheConfig implements Cloneable
    public void setLogEnabled(boolean enableLogging)
    {
       this.logEnabled = enableLogging;
+   }
+ 
+   /**
+    * @return the avoidValueReplication
+    */
+   public boolean avoidValueReplication()
+   {
+      return avoidValueReplication;
+   }
+
+   /**
+    * @param avoidValueReplication the avoidValueReplication to set
+    */
+   public void setAvoidValueReplication(boolean avoidValueReplication)
+   {
+      this.avoidValueReplication = avoidValueReplication;
    }
 
    /**

@@ -31,6 +31,7 @@ import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.ObjectCacheInfo;
+import org.exoplatform.services.cache.impl.InvalidationExoCache;
 import org.exoplatform.services.cache.impl.jboss.lru.LRUExoCacheCreator;
 import org.exoplatform.test.BasicTestCase;
 
@@ -41,8 +42,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -270,17 +271,17 @@ public class TestAbstractExoCache extends BasicTestCase
       config2.setLiveTime(1);
       config2.setImplementation("LRU");
       config2.setDistributed(true);
-      AbstractExoCache<Serializable, Object> cache1 =
-         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config);
-      MyCacheListener listener1 = new MyCacheListener();
+      AbstractExoCache<Serializable, String> cache1 =
+         (AbstractExoCache<Serializable, String>)getExoCacheFactoryInstance().createCache(config);
+      MyCacheListener<String> listener1 = new MyCacheListener<String>();
       cache1.addCacheListener(listener1);
-      AbstractExoCache<Serializable, Object> cache2 =
-         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config);
-      MyCacheListener listener2 = new MyCacheListener();
+      AbstractExoCache<Serializable, String> cache2 =
+         (AbstractExoCache<Serializable, String>)getExoCacheFactoryInstance().createCache(config);
+      MyCacheListener<String> listener2 = new MyCacheListener<String>();
       cache2.addCacheListener(listener2);
-      AbstractExoCache<Serializable, Object> cache3 =
-         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config2);
-      MyCacheListener listener3 = new MyCacheListener();
+      AbstractExoCache<Serializable, String> cache3 =
+         (AbstractExoCache<Serializable, String>)getExoCacheFactoryInstance().createCache(config2);
+      MyCacheListener<String> listener3 = new MyCacheListener<String>();
       cache3.addCacheListener(listener3);
       try
       {
@@ -358,7 +359,7 @@ public class TestAbstractExoCache extends BasicTestCase
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
          assertEquals(0, listener3.clearCache);
-         Map<Serializable, Object> values = new HashMap<Serializable, Object>();
+         Map<Serializable, String> values = new HashMap<Serializable, String>();
          values.put(new MyKey("a"), "a");
          values.put(new MyKey("b"), "b");
          cache1.putMap(values);
@@ -379,22 +380,22 @@ public class TestAbstractExoCache extends BasicTestCase
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
          assertEquals(0, listener3.clearCache);
-         values = new HashMap<Serializable, Object>()
+         values = new HashMap<Serializable, String>()
          {
             private static final long serialVersionUID = 1L;
 
-            public Set<Entry<Serializable, Object>> entrySet()
+            public Set<Entry<Serializable, String>> entrySet()
             {
-               Set<Entry<Serializable, Object>> set = new LinkedHashSet<Entry<Serializable, Object>>(super.entrySet());
-               set.add(new Entry<Serializable, Object>()
+               Set<Entry<Serializable, String>> set = new LinkedHashSet<Entry<Serializable, String>>(super.entrySet());
+               set.add(new Entry<Serializable, String>()
                {
 
-                  public Object setValue(Object paramV)
+                  public String setValue(String paramV)
                   {
                      return null;
                   }
 
-                  public Object getValue()
+                  public String getValue()
                   {
                      throw new RuntimeException("An exception");
                   }
@@ -453,6 +454,247 @@ public class TestAbstractExoCache extends BasicTestCase
          cache1.cache.stop();
          cache2.cache.stop();
          cache3.cache.stop();
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   public void testDistributedCacheWithNSValues() throws Exception
+   {
+      System.out
+         .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
+            + System.getProperty("java.net.preferIPv4Stack"));
+      ExoCacheConfig config = new ExoCacheConfig();
+      config.setName("MyCacheDistributedWithNSValues");
+      config.setMaxSize(5);
+      config.setLiveTime(1);
+      config.setImplementation("LRU");
+      config.setDistributed(true);
+      config.setAvoidValueReplication(true);
+      ExoCacheConfig config2 = new ExoCacheConfig();
+      config2.setName("MyCacheDistributedWithNSValues2");
+      config2.setMaxSize(5);
+      config2.setLiveTime(1);
+      config2.setImplementation("LRU");
+      config2.setDistributed(true);
+      config2.setAvoidValueReplication(true);
+      AbstractExoCache<Serializable, MyNonSerializableValue> acache1 =
+         (AbstractExoCache<Serializable, MyNonSerializableValue>)getExoCacheFactoryInstance().createCache(config);
+      MyCacheListener<MyNonSerializableValue> listener1 = new MyCacheListener<MyNonSerializableValue>();
+      ExoCache<Serializable, MyNonSerializableValue> cache1 = new InvalidationExoCache<Serializable, MyNonSerializableValue>(acache1);
+      cache1.addCacheListener(listener1);
+      AbstractExoCache<Serializable, MyNonSerializableValue> acache2 =
+         (AbstractExoCache<Serializable, MyNonSerializableValue>)getExoCacheFactoryInstance().createCache(config);
+      MyCacheListener<MyNonSerializableValue> listener2 = new MyCacheListener<MyNonSerializableValue>();
+      ExoCache<Serializable, MyNonSerializableValue> cache2 = new InvalidationExoCache<Serializable, MyNonSerializableValue>(acache2);
+      cache2.addCacheListener(listener2);
+      AbstractExoCache<Serializable, MyNonSerializableValue> acache3 =
+         (AbstractExoCache<Serializable, MyNonSerializableValue>)getExoCacheFactoryInstance().createCache(config2);
+      MyCacheListener<MyNonSerializableValue> listener3 = new MyCacheListener<MyNonSerializableValue>();
+      ExoCache<Serializable, MyNonSerializableValue> cache3 = new InvalidationExoCache<Serializable, MyNonSerializableValue>(acache3);
+      cache3.addCacheListener(listener3);
+      try
+      {
+         cache1.put(new MyKey("a"), new MyNonSerializableValue("b"));
+         assertEquals(1, cache1.getCacheSize());
+         assertNull(cache2.get(new MyKey("a")));
+         assertEquals(0, cache2.getCacheSize());
+         assertEquals(0, cache3.getCacheSize());
+         assertEquals(1, listener1.put);
+         assertEquals(1, listener2.put);
+         assertEquals(0, listener3.put);
+         assertEquals(0, listener1.get);
+         assertEquals(1, listener2.get);
+         assertEquals(0, listener3.get);
+         cache2.put(new MyKey("b"), new MyNonSerializableValue("c"));
+         assertEquals(1, cache1.getCacheSize());
+         assertEquals(1, cache2.getCacheSize());
+         assertNull(cache1.get(new MyKey("b")));
+         assertEquals(0, cache3.getCacheSize());
+         assertEquals(2, listener1.put);
+         assertEquals(2, listener2.put);
+         assertEquals(0, listener3.put);
+         assertEquals(1, listener1.get);
+         assertEquals(1, listener2.get);
+         assertEquals(0, listener3.get);
+         cache3.put(new MyKey("c"), new MyNonSerializableValue("d"));
+         assertEquals(1, cache1.getCacheSize());
+         assertEquals(1, cache2.getCacheSize());
+         assertEquals(1, cache3.getCacheSize());
+         assertEquals(new MyNonSerializableValue("d"), cache3.get(new MyKey("c")));
+         assertEquals(2, listener1.put);
+         assertEquals(2, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(1, listener1.get);
+         assertEquals(1, listener2.get);
+         assertEquals(1, listener3.get);
+         cache2.put(new MyKey("a"), new MyNonSerializableValue("a"));
+         assertEquals(0, cache1.getCacheSize());
+         assertEquals(2, cache2.getCacheSize());
+         assertNull(cache1.get(new MyKey("a")));
+         assertEquals(3, listener1.put);
+         assertEquals(3, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(2, listener1.get);
+         assertEquals(1, listener2.get);
+         assertEquals(1, listener3.get);
+         cache2.remove(new MyKey("a"));
+         assertEquals(0, cache1.getCacheSize());
+         assertEquals(1, cache2.getCacheSize());
+         assertEquals(3, listener1.put);
+         assertEquals(3, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(2, listener1.get);
+         assertEquals(1, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
+         assertEquals(0, listener3.remove);
+         cache1.put(new MyKey("c"), new MyNonSerializableValue("c"));
+         cache1.clearCache();
+         assertEquals(0, cache1.getCacheSize());
+         assertNull(cache1.get(new MyKey("b")));
+         assertEquals(new MyNonSerializableValue("c"), cache2.get(new MyKey("b")));
+         assertNull(cache2.get(new MyKey("c")));
+         assertEquals(1, cache2.getCacheSize());
+         assertEquals(4, listener1.put);
+         assertEquals(4, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(3, listener1.get);
+         assertEquals(3, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
+         assertEquals(0, listener3.remove);
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+         assertEquals(0, listener3.clearCache);
+         Map<Serializable, MyNonSerializableValue> values = new HashMap<Serializable, MyNonSerializableValue>();
+         values.put(new MyKey("a"), new MyNonSerializableValue("a"));
+         values.put(new MyKey("b"), new MyNonSerializableValue("b"));
+         cache1.putMap(values);
+         assertEquals(2, cache1.getCacheSize());
+         Thread.sleep(40);
+         assertNull(cache2.get(new MyKey("a")));
+         assertNull(cache2.get(new MyKey("b")));
+         assertEquals(0, cache2.getCacheSize());
+         assertEquals(6, listener1.put);
+         assertEquals(6, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
+         assertEquals(0, listener3.remove);
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+         assertEquals(0, listener3.clearCache);
+         values = new HashMap<Serializable, MyNonSerializableValue>()
+         {
+            private static final long serialVersionUID = 1L;
+
+            public Set<Entry<Serializable, MyNonSerializableValue>> entrySet()
+            {
+               Set<Entry<Serializable, MyNonSerializableValue>> set = new LinkedHashSet<Entry<Serializable, MyNonSerializableValue>>(super.entrySet());
+               set.add(new Entry<Serializable, MyNonSerializableValue>()
+               {
+
+                  public MyNonSerializableValue setValue(MyNonSerializableValue paramV)
+                  {
+                     return null;
+                  }
+
+                  public MyNonSerializableValue getValue()
+                  {
+                     throw new RuntimeException("An exception");
+                  }
+
+                  public Serializable getKey()
+                  {
+                     return "c";
+                  }
+               });
+               return set;
+            }
+         };
+         values.put(new MyKey("e"), new MyNonSerializableValue("e"));
+         values.put(new MyKey("d"), new MyNonSerializableValue("d"));
+         try
+         {
+            cache1.putMap(values);
+         }
+         catch (Exception e)
+         {
+            // ignore me
+         }
+         assertEquals(2, cache1.getCacheSize());
+         assertEquals(0, cache2.getCacheSize());
+         assertEquals(1, cache3.getCacheSize());
+         assertEquals(6, listener1.put);
+         assertEquals(6, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
+         assertEquals(0, listener3.remove);
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+         assertEquals(0, listener3.clearCache);
+         assertEquals(0, listener1.expire);
+         assertEquals(0, listener2.expire);
+         assertEquals(0, listener3.expire);
+         Thread.sleep(1600);
+         assertEquals(0, cache1.getCacheSize());
+         assertEquals(0, cache2.getCacheSize());
+         assertEquals(0, cache3.getCacheSize());
+         assertEquals(6, listener1.put);
+         assertEquals(6, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
+         assertEquals(0, listener3.remove);
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+         assertEquals(0, listener3.clearCache);
+         assertEquals(2, listener1.expire);
+         assertEquals(3, listener2.expire);
+         assertEquals(1, listener3.expire);
+         cache1.put(new MyKey("a"), new MyNonSerializableValue("b"));
+         assertNotNull(cache1.get(new MyKey("a")));
+         assertNull(cache2.get(new MyKey("a")));
+         cache2.put(new MyKey("a"), new MyNonSerializableValue("c"));
+         assertNotNull(cache2.get(new MyKey("a")));
+         assertNull(cache1.get(new MyKey("a")));
+         cache1.put(new MyKey("a"), new MyNonSerializableValue("c"));
+         assertEquals(new MyNonSerializableValue("c"), cache2.get(new MyKey("a")));
+         assertEquals(new MyNonSerializableValue("c"), cache1.get(new MyKey("a")));
+         assertEquals(9, listener1.put);
+         assertEquals(9, listener2.put);
+         assertEquals(1, listener3.put);
+         assertEquals(6, listener1.get);
+         assertEquals(8, listener2.get);
+         assertEquals(1, listener3.get);
+         assertEquals(1, listener1.remove);
+         assertEquals(1, listener2.remove);
+         assertEquals(0, listener3.remove);
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+         assertEquals(0, listener3.clearCache);
+         assertEquals(2, listener1.expire);
+         assertEquals(3, listener2.expire);
+         assertEquals(1, listener3.expire);
+         
+      }
+      finally
+      {
+         acache1.cache.stop();
+         acache2.cache.stop();
+         acache3.cache.stop();
       }
    }
 
@@ -645,7 +887,7 @@ public class TestAbstractExoCache extends BasicTestCase
       System.out.println("Total Time = " + (System.currentTimeMillis() - time));
    }
 
-   public static class MyCacheListener implements CacheListener<Serializable, Object>
+   public static class MyCacheListener<T> implements CacheListener<Serializable, T>
    {
 
       public int clearCache;
@@ -658,52 +900,27 @@ public class TestAbstractExoCache extends BasicTestCase
 
       public int remove;
 
-      public void onClearCache(ExoCache<Serializable, Object> cache) throws Exception
-      {
-         clearCache++;
-      }
-
-      public void onExpire(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         expire++;
-      }
-
-      public void onGet(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         get++;
-      }
-
-      public void onPut(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         put++;
-      }
-
-      public void onRemove(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         remove++;
-      }
-
       public void onClearCache(CacheListenerContext context) throws Exception
       {
          clearCache++;
       }
 
-      public void onExpire(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      public void onExpire(CacheListenerContext context, Serializable key, T obj) throws Exception
       {
          expire++;
       }
 
-      public void onGet(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      public void onGet(CacheListenerContext context, Serializable key, T obj) throws Exception
       {
          get++;
       }
 
-      public void onPut(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      public void onPut(CacheListenerContext context, Serializable key, T obj) throws Exception
       {
          put++;
       }
 
-      public void onRemove(CacheListenerContext context, Serializable key, Object obj) throws Exception
+      public void onRemove(CacheListenerContext context, Serializable key, T obj) throws Exception
       {
          remove++;
       }
@@ -724,6 +941,34 @@ public class TestAbstractExoCache extends BasicTestCase
       public boolean equals(Object paramObject)
       {
          return paramObject instanceof MyKey && ((MyKey)paramObject).value.endsWith(value);
+      }
+
+      @Override
+      public int hashCode()
+      {
+         return value.hashCode();
+      }
+
+      @Override
+      public String toString()
+      {
+         return value;
+      }
+   }
+   
+   public static class MyNonSerializableValue
+   {
+      public String value;
+
+      public MyNonSerializableValue(String value)
+      {
+         this.value = value;
+      }
+
+      @Override
+      public boolean equals(Object paramObject)
+      {
+         return paramObject instanceof MyNonSerializableValue && ((MyNonSerializableValue)paramObject).value.endsWith(value);
       }
 
       @Override
