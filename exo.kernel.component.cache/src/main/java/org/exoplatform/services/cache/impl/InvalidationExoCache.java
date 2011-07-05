@@ -56,7 +56,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @version $Id$
  *
  */
-public class InvalidationExoCache<K extends Serializable, V> implements ExoCache<K, V>, CacheListener<K, InvalidationExoCache.HashCode<V>>
+public class InvalidationExoCache<K extends Serializable, V> implements ExoCache<K, V>,
+   CacheListener<K, InvalidationExoCache.HashCode<V>>
 {
    /**
     * Logger.
@@ -333,7 +334,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    }
 
    /**
-    * @see org.exoplatform.services.cache.CacheListener#onExpire(org.exoplatform.services.cache.CacheListenerContext, java.io.Serializable, java.lang.Object)
+    * {@inheritDoc}
     */
    public void onExpire(CacheListenerContext context, K key, HashCode<V> obj) throws Exception
    {
@@ -357,7 +358,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    }
 
    /**
-    * @see org.exoplatform.services.cache.CacheListener#onRemove(org.exoplatform.services.cache.CacheListenerContext, java.io.Serializable, java.lang.Object)
+    * {@inheritDoc}
     */
    public void onRemove(CacheListenerContext context, K key, HashCode<V> obj) throws Exception
    {
@@ -381,7 +382,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    }
 
    /**
-    * @see org.exoplatform.services.cache.CacheListener#onPut(org.exoplatform.services.cache.CacheListenerContext, java.io.Serializable, java.lang.Object)
+    * {@inheritDoc}
     */
    public void onPut(CacheListenerContext context, K key, HashCode<V> obj) throws Exception
    {
@@ -424,7 +425,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    }
 
    /**
-    * @see org.exoplatform.services.cache.CacheListener#onGet(org.exoplatform.services.cache.CacheListenerContext, java.io.Serializable, java.lang.Object)
+    * {@inheritDoc}
     */
    public void onGet(CacheListenerContext context, K key, HashCode<V> obj) throws Exception
    {
