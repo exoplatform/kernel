@@ -177,6 +177,25 @@ public class InitialContextBinder
    }
 
    /**
+    * Unbind the Reference with defined name, remove from the bindings list and persists the rest of references
+    * into the file.
+    * 
+    * @param bindName
+    *          the Reference's bind name
+    * @throws NamingException
+    * @throws FileNotFoundException
+    * @throws XMLStreamException
+    */
+   public void unbind(String bindName) throws NamingException, FileNotFoundException,
+      XMLStreamException
+   {
+      initialContextInitializer.getInitialContext().unbind(bindName);
+      bindings.remove(bindName);
+
+      saveBindings();
+   }
+
+   /**
     * Returns reference associated with defined name.
     * 
     * @param bindName the name on which the reference was binded.
