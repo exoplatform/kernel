@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.cache.impl;
+package org.exoplatform.services.cache.invalidation;
 
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
@@ -86,7 +86,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
     */
    public InvalidationExoCache(ExoCache<K, V> delegate)
    {
-      this(delegate, 16);
+      this(delegate, delegate.getMaxSize() > 0 && delegate.getMaxSize() < 512 ? delegate.getMaxSize() : 512);
    }
    
    /**

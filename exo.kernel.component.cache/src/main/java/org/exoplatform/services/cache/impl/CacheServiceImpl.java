@@ -28,6 +28,7 @@ import org.exoplatform.services.cache.ExoCacheConfigPlugin;
 import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.SimpleExoCache;
+import org.exoplatform.services.cache.invalidation.InvalidationExoCache;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -199,9 +200,11 @@ public class CacheServiceImpl implements CacheService
       {
          managed.registerCache(simple);
       }
-      // If the flag avoid value replication is enabled we wrap the eXo cache instance
-      // into an InvalidationExoCache to enable the invalidation
-      return safeConfig.avoidValueReplication() ? new InvalidationExoCache(simple) : simple;
+      // If the flag avoid value replication is enabled and the cache is replicated
+      // or distributed we wrap the eXo cache instance into an InvalidationExoCache 
+      // to enable the invalidation
+      return safeConfig.avoidValueReplication() && (safeConfig.isRepicated() || safeConfig.isDistributed())
+         ? new InvalidationExoCache(simple) : simple;
    }
 
    public Collection<ExoCache<? extends Serializable, ?>> getAllCacheInstances()
