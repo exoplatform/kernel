@@ -31,8 +31,8 @@ import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.ObjectCacheInfo;
-import org.exoplatform.services.cache.impl.InvalidationExoCache;
 import org.exoplatform.services.cache.impl.jboss.lru.LRUExoCacheCreator;
+import org.exoplatform.services.cache.invalidation.InvalidationExoCache;
 import org.exoplatform.test.BasicTestCase;
 
 import java.io.Serializable;
