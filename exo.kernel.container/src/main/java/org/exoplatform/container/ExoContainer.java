@@ -29,12 +29,14 @@ import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 
 import java.lang.reflect.Constructor;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -425,5 +427,17 @@ public class ExoContainer extends ManageableContainer
    {
       ConfigurationManager cm = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
       return cm == null ? null : cm.getConfiguration();
+   }
+
+   /**
+    * Unregister all components from container to avoid keeping instances in memory.
+    */
+   protected void unregisterAllComponents()
+   {
+      Collection<ComponentAdapter> adapters = getComponentAdapters();
+      for (ComponentAdapter adapter : adapters)
+      {
+         unregisterComponent(adapter.getComponentKey());
+      }
    }
 }
