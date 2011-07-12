@@ -33,6 +33,8 @@ import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
 
@@ -90,6 +92,101 @@ public class InitialContextTest extends TestCase
       assertNotNull(ctx);
       ctx.bind("test", "test");
       assertEquals("test", ctx.lookup("test"));
+      try
+      {
+         ctx.bind("test", "test2");
+         fail("A NameAlreadyBoundException is expected here");
+      }
+      catch (NameAlreadyBoundException e)
+      {
+         // expected exception
+      }
+      assertEquals("test", ctx.lookup("test"));
+      ctx.rebind("test", "test2");
+      assertEquals("test2", ctx.lookup("test"));
+      
+      InitialContextInitializer initializer =
+         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
+
+      assertNotNull(initializer);
+      initializer.getInitialContext().bind("test", "test3");
+      assertEquals("test3", ctx.lookup("test"));
+      ctx.rebind("test", "test4");
+      assertEquals("test3", ctx.lookup("test"));
+      initializer.getInitialContext().rebind("test", "test5");
+      assertEquals("test5", ctx.lookup("test"));
+      initializer.getInitialContext().unbind("test");
+      try
+      {
+         initializer.getInitialContext().lookup("test");
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
+      }
+      assertEquals("test4", ctx.lookup("test"));
+      ctx.unbind("test");
+      try
+      {
+         ctx.lookup("test");
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
+      }
+      try
+      {
+         initializer.getInitialContext().unbind("test2");
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
+      }
+      initializer.getInitialContext().bind("foo", "foo");
+      assertEquals("foo", ctx.lookup("foo"));
+      initializer.getInitialContext().bind("foo2", "foo2");
+      assertEquals("foo2", ctx.lookup("foo2"));
+      try
+      {
+         initializer.getInitialContext().rename("foo", "foo2");
+         fail("A NameAlreadyBoundException is expected here");
+      }
+      catch (NameAlreadyBoundException e)
+      {
+         // expected exception
+      }
+      assertEquals("foo", ctx.lookup("foo"));
+      assertEquals("foo2", ctx.lookup("foo2"));
+      try
+      {
+         initializer.getInitialContext().rename("foo3", "foo4");
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
+      }
+      initializer.getInitialContext().rename("foo", "foo3");
+      assertEquals("foo", ctx.lookup("foo3"));
+      assertEquals("foo2", ctx.lookup("foo2"));
+      try
+      {
+         initializer.getInitialContext().lookup("foo");
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
+      }
+      
+      // check same instance
+      initializer.getInitialContext().bind("bla", "bla");
+      Object obj1 = initializer.getInitialContext().lookup("bla");
+      Object obj2 = initializer.getInitialContext().lookup("bla");
+      assertTrue(obj1 == obj2);
    }
 
    public void testCompositeNameUsing() throws Exception
@@ -101,6 +198,30 @@ public class InitialContextTest extends TestCase
       while (en.hasMoreElements())
       {
          System.out.println("---- " + en.nextElement());
+      }
+      InitialContext ctx = new InitialContext();
+      ctx.bind(name, "foo");
+      assertEquals("foo", ctx.lookup(name));
+      try
+      {
+         ctx.bind(name, "foo2");
+         fail("A NameAlreadyBoundException is expected here");
+      }
+      catch (NameAlreadyBoundException e)
+      {
+         // expected exception
+      }
+      assertEquals("foo", ctx.lookup(name));
+      assertEquals("foo", ctx.lookup("java:comp/env/jdbc/jcr"));
+      ctx.unbind(name);
+      try
+      {
+         ctx.lookup(name);
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
       }
    }
 

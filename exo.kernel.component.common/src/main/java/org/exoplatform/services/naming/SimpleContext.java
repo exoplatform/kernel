@@ -18,22 +18,29 @@
  */
 package org.exoplatform.services.naming;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.naming.Binding;
+import javax.naming.CompositeName;
 import javax.naming.Context;
+import javax.naming.InvalidNameException;
+import javax.naming.LinkRef;
 import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.OperationNotSupportedException;
 import javax.naming.Reference;
-import javax.naming.spi.ObjectFactory;
+import javax.naming.Referenceable;
+import javax.naming.spi.NamingManager;
 
 /**
  * Created by The eXo Platform SAS.
@@ -45,186 +52,383 @@ import javax.naming.spi.ObjectFactory;
 
 public class SimpleContext implements Context
 {
-   
+
    /**
     * The logger
     */
    private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.naming.SimpleContext");
 
-   private static Hashtable objects = new Hashtable();
+   private static final NameParser NAME_PARSER = new SimpleNameParser();
+   
+   private static volatile Map<String, Object> BINDINGS = new HashMap<String, Object>();
 
    public SimpleContext()
    {
    }
 
-   public Object lookup(Name name) throws NamingException
+   protected Map<String, Object> getBindings()
    {
-      throw new NamingException("Not supported");
+      return BINDINGS;
    }
 
+   protected void setBindings(Map<String, Object> bindings)
+   {
+      BINDINGS = bindings;
+   }
+
+   /**
+    * Converts a Name to a flat String.
+    */
+   protected String nameToString(Name name) throws NamingException
+   {
+      return name.toString();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Object lookup(Name name) throws NamingException
+   {
+      return lookup(nameToString(name));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public Object lookup(String name) throws NamingException
    {
-      Object obj = objects.get(name);
+      if (name.isEmpty())
+      {
+         throw new InvalidNameException("Cannot bind empty name");
+      }
+      Object obj = getBindings().get(name);
       if (obj instanceof Reference)
       {
-         final Reference ref = (Reference)obj;
-         String factoryCN = ref.getFactoryClassName();
-         try
+         synchronized (obj)
          {
-            final ObjectFactory factory = (ObjectFactory)Class.forName(factoryCN).newInstance();
-            obj = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+            obj = getBindings().get(name);
+            if (obj instanceof Reference)
             {
-               public Object run() throws Exception
+               try
                {
-                  return factory.getObjectInstance(ref, null, null, null);
+                  obj = NamingManager.getObjectInstance(obj, NAME_PARSER.parse(name), this, getInternalEnv());
+                  // Re-bind with the object with its new value to be able to return the same ins
+                  bind(name, obj, false);
                }
-            });
+               catch (Exception e)
+               {
+                  LOG.error(e.getLocalizedMessage(), e);
+                  NamingException ne = new NamingException("getObjectInstance failed");
+                  ne.setRootCause(e);
+                  throw ne;
+               }
+            }
          }
-         catch (Exception e)
-         {
-            LOG.error(e.getLocalizedMessage(), e);
-            throw new NamingException("Exception: " + e);
-         }
+      }
+      else if (obj == null)
+      {
+         throw new NameNotFoundException("No object has been binded with the name '" + name + "'");
       }
       return obj;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void bind(Name name, Object value) throws NamingException
    {
-      throw new NamingException("Not supported");
+      bind(nameToString(name), value);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void bind(String name, Object value) throws NamingException
    {
-      // System.out.println("Bind: "+name+" "+value+" "+objects);
-      objects.put(name, value);
+      bind(name, value, true);
    }
 
+   private void bind(String name, Object value, boolean checkIfExists) throws NamingException
+   {
+      if (name.isEmpty())
+      {
+         throw new InvalidNameException("Cannot bind empty name");
+      }
+      // Call getStateToBind for using any state factories
+      value = NamingManager.getStateToBind(value, NAME_PARSER.parse(name), this, getInternalEnv());
+
+      if (value instanceof Context)
+      {
+         throw new OperationNotSupportedException("Context not supported");
+      }
+      else if (value instanceof LinkRef)
+      {
+         throw new OperationNotSupportedException("LinkRef not supported");
+      }
+      else if (value instanceof Referenceable)
+      {
+         value = ((Referenceable)value).getReference();
+      }
+      synchronized (getMutex())
+      {
+         Map<String, Object> tmpObjects = new HashMap<String, Object>(getBindings());
+         if (checkIfExists && tmpObjects.containsKey(name))
+         {
+            throw new NameAlreadyBoundException("An object has already been binded with the name '" + name + "'");
+         }
+         tmpObjects.put(name, value);
+         setBindings(tmpObjects);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void rebind(Name name, Object value) throws NamingException
    {
-      throw new NamingException("Not supported");
+      rebind(nameToString(name), value);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void rebind(String name, Object value) throws NamingException
    {
-      objects.put(name, value);
+      bind(name, value, false);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void unbind(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      unbind(nameToString(name));
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void unbind(String name) throws NamingException
    {
-      objects.remove(name);
+      if (name.isEmpty())
+      {
+         throw new InvalidNameException("Cannot bind empty name");
+      }
+      synchronized (getMutex())
+      {
+         Map<String, Object> tmpObjects = new HashMap<String, Object>(getBindings());
+         if (tmpObjects.remove(name) == null)
+         {
+            throw new NameNotFoundException("No object has been binded with the name '" + name + "'");
+         }
+         setBindings(tmpObjects);
+      }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void rename(Name name1, Name name2) throws NamingException
    {
-      throw new NamingException("Not supported");
+      rename(nameToString(name1), nameToString(name2));
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void rename(String name1, String name2) throws NamingException
    {
-      Object val = objects.get(name1);
-      objects.remove(name1);
-      objects.put(name2, val);
+      if (name1.isEmpty() || name2.isEmpty())
+      {
+         throw new InvalidNameException("Cannot bind empty name");
+      }
+      Object value;
+      synchronized (getMutex())
+      {
+         Map<String, Object> tmpObjects = new HashMap<String, Object>(getBindings());
+         if (tmpObjects.containsKey(name2))
+         {
+            throw new NameAlreadyBoundException("An object has already been binded with the name '" + name2 + "'");
+         }
+         else if ((value = tmpObjects.remove(name1)) == null)
+         {
+            throw new NameNotFoundException("No object has been binded with the name '" + name1 + "'");
+         }
+         tmpObjects.put(name2, value);
+         setBindings(tmpObjects);
+      }
    }
 
-   public NamingEnumeration<NameClassPair> list(Name arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public NamingEnumeration<NameClassPair> list(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public NamingEnumeration<NameClassPair> list(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public NamingEnumeration<NameClassPair> list(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public NamingEnumeration<Binding> listBindings(Name arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public NamingEnumeration<Binding> listBindings(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public NamingEnumeration<Binding> listBindings(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public NamingEnumeration<Binding> listBindings(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public void destroySubcontext(Name arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public void destroySubcontext(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public void destroySubcontext(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public void destroySubcontext(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public Context createSubcontext(Name arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Context createSubcontext(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public Context createSubcontext(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Context createSubcontext(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public Object lookupLink(Name arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Object lookupLink(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public Object lookupLink(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Object lookupLink(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public NameParser getNameParser(Name arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public NameParser getNameParser(Name name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      return getNameParser(nameToString(name));
    }
 
-   public NameParser getNameParser(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public NameParser getNameParser(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      return NAME_PARSER;
    }
 
-   public Name composeName(Name arg0, Name arg1) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Name composeName(Name nam1, Name name2) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public String composeName(String arg0, String arg1) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public String composeName(String name1, String name2) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public Object addToEnvironment(String arg0, Object arg1) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Object addToEnvironment(String name1, Object name2) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
-   public Object removeFromEnvironment(String arg0) throws NamingException
+   /**
+    * {@inheritDoc}
+    */
+   public Object removeFromEnvironment(String name) throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @SuppressWarnings("rawtypes")
    public Hashtable<?, ?> getEnvironment() throws NamingException
    {
-      throw new NamingException("Not supported");
+      return new Hashtable(3, 0.75f);
    }
 
+   protected Hashtable<?, ?> getInternalEnv()
+   {
+      return null;
+   }
+   
+   protected Object getMutex()
+   {
+      return SimpleContext.class;
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
    public void close() throws NamingException
    {
-      objects.clear();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public String getNameInNamespace() throws NamingException
    {
-      throw new NamingException("Not supported");
+      throw new OperationNotSupportedException("Not supported");
    }
 
+   private static class SimpleNameParser implements NameParser
+   {
+      /**
+       * {@inheritDoc}
+       */
+      public Name parse(String name) throws NamingException
+      {
+         return new CompositeName(name);
+      }  
+   }
 }

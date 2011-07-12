@@ -134,7 +134,13 @@
          <value-param> 
             <name>bindings-store-path</name> 
             <value>target/store-path.xml</value> 
-         </value-param> 
+         </value-param>
+         <!-- This parameter is required in case your AS don't share the objects
+         by default and you need to be able to remove repositories dynamically -->
+         <value-param> 
+            <name>overload-context-factory</name> 
+            <value>true</value> 
+         </value-param>
          <properties-param>
             <name>default-properties</name>
             <description>Default initial context properties</description>

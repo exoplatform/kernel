@@ -354,7 +354,7 @@ public class InitialContextBinder
    /**
     * Class implements Map.Entry interface and used to push/pop entity in stack. 
     */
-   class RefEntity implements Map.Entry
+   class RefEntity implements Map.Entry<String, Reference>
    {
 
       /**
@@ -384,7 +384,6 @@ public class InitialContextBinder
       /**
        * {@inheritDoc}
        */
-      @Override
       public String getKey()
       {
          return key;
@@ -393,7 +392,6 @@ public class InitialContextBinder
       /**
        * {@inheritDoc}
        */
-      @Override
       public Reference getValue()
       {
          return value;
@@ -402,11 +400,10 @@ public class InitialContextBinder
       /**
        * {@inheritDoc}
        */
-      @Override
-      public Reference setValue(Object value)
+      public Reference setValue(Reference value)
       {
          Reference oldValue = this.value;
-         this.value = (Reference)value;
+         this.value = value;
 
          return oldValue;
       }
