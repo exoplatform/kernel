@@ -85,7 +85,7 @@ public class TestSecurityManager extends SecurityManager
                      || fileName.equals("Probe.java") || fileName.equals("ExportBase.java")
                      || fileName.equals("AbstractTestContainer.java") || fileName.equals("ContainerBuilder.java")
                      || fileName.equals("WorkspaceStorageCacheBaseCase.java")
-                     || fileName.equals("ExoRepositoryStub.java"))
+                     || fileName.equals("ExoRepositoryStub.java") || fileName.equals("CloseableDataSource.java"))
                   {
                      testCode = true;
                   }
@@ -114,11 +114,8 @@ public class TestSecurityManager extends SecurityManager
          }
 
          // Only for debug purpose
-         //         if (!se
-         //            .getMessage()
-         //            .equals(
-         //               "access denied (java.lang.RuntimePermission 
-         //                   accessClassInPackage.com.sun.xml.internal.bind.v2.runtime.reflect)"))
+         //         if (!se.getMessage().equals(
+         //            "access denied (java.lang.RuntimePermission.com.sun.xml.internal.bind.v2.runtime.reflect)"))
          //         {
          //            se.printStackTrace();
          //         }
