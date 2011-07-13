@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.naming;
 
+import org.exoplatform.services.jdbc.impl.CloseableDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -41,6 +42,7 @@ import javax.naming.OperationNotSupportedException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.spi.NamingManager;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -112,6 +114,12 @@ public class SimpleContext implements Context
                try
                {
                   obj = NamingManager.getObjectInstance(obj, NAME_PARSER.parse(name), this, getInternalEnv());
+
+                  if (obj instanceof DataSource)
+                  {
+                     obj = new CloseableDataSource((DataSource)obj);
+                  }
+
                   // Re-bind with the object with its new value to be able to return the same ins
                   bind(name, obj, false);
                }
