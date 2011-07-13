@@ -169,7 +169,7 @@ public class InitialContextInitializer
     * of app using different copy of Context, for example per web app
     * InitialContext in Tomcat
     */
-   @deprecated
+   @Deprecated
    public void recall()
    {
       for (BindReferencePlugin plugin : bindReferencesPlugins)
