@@ -118,16 +118,6 @@ public class InitialContextInitializer
 
       ValueParam bindingStorePathParam = params.getValueParam(BINDINGS_STORE_PATH);
 
-      // binder
-      if (bindingStorePathParam == null)
-      {
-         binder = new InitialContextBinder(this, DEFAULT_BINDING_STORE_PATH);
-      }
-      else
-      {
-         binder = new InitialContextBinder(this, bindingStorePathParam.getValue());
-      }
-      
       if (LOG.isDebugEnabled())
       {
          LOG.debug("The default initial context factory is " + DEFAULT_INITIAL_CONTEXT_FACTORY);         
@@ -139,6 +129,16 @@ public class InitialContextInitializer
          PrivilegedSystemHelper
             .setProperty(Context.INITIAL_CONTEXT_FACTORY, ExoContainerContextFactory.class.getName());
 
+      }
+
+      // binder
+      if (bindingStorePathParam == null)
+      {
+         binder = new InitialContextBinder(this, DEFAULT_BINDING_STORE_PATH);
+      }
+      else
+      {
+         binder = new InitialContextBinder(this, bindingStorePathParam.getValue());
       }
    }
 
