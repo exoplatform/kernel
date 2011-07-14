@@ -114,11 +114,14 @@ public class TestSecurityManager extends SecurityManager
          }
 
          // Only for debug purpose
-         //         if (!se.getMessage().equals(
-         //            "access denied (java.lang.RuntimePermission.com.sun.xml.internal.bind.v2.runtime.reflect)"))
+         //         if (!se
+         //            .getMessage()
+         //            .equals(
+         //               "access denied (java.lang.RuntimePermission accessClassInPackage.com.sun.xml.internal.bind.v2.runtime.reflect)"))
          //         {
          //            se.printStackTrace();
          //         }
+
          throw se;
       }
    }
