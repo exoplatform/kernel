@@ -53,6 +53,7 @@ class ProfileDOMFilter
       // All the kernel namespaces but KERNEL_1_0_URI
       Set<String> tmp = new LinkedHashSet<String>(Namespaces.KERNEL_NAMESPACES_SET);
       tmp.remove(Namespaces.KERNEL_1_0_URI);
+      tmp.remove(Namespaces.KERNEL_1_0_URI_OLD);
       kernelWithProfileURIs = Collections.unmodifiableSet(tmp);
    }
 

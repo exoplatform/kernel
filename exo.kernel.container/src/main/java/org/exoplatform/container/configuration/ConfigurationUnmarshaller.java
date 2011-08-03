@@ -103,9 +103,9 @@ public class ConfigurationUnmarshaller
                + "XML declaration similar to\n"
                + "<configuration\n"
                + "   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                     + "   xsi:schemaLocation=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd "
-                     + "http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\"\n"
-               + "   xmlns=\"http://www.exoplaform.org/xml/ns/kernel_1_1.xsd\">");
+                     + "   xsi:schemaLocation=\"http://www.exoplatform.org/xml/ns/kernel_1_1.xsd "
+                     + "http://www.exoplatform.org/xml/ns/kernel_1_1.xsd\"\n"
+               + "   xmlns=\"http://www.exoplatform.org/xml/ns/kernel_1_1.xsd\">");
          }
          else
          {

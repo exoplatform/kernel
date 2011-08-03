@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema
-     targetNamespace="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-     xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+     targetNamespace="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
      elementFormDefault="qualified"
      attributeFormDefault="unqualified"
      version="1.0">
 
     <xsd:element name="configuration" type="configurationType"/>
-
-    <xsd:complexType abstract="true" name="profilesdElementType">
-      <xsd:attribute name="profiles" type="xsd:string"/>
-    </xsd:complexType>
 
     <xsd:complexType name="baseObjectType">
         <xsd:choice>
@@ -26,6 +22,12 @@
             <xsd:element name="native-array" type="nativeArraytype"/>
             <xsd:element name="object" type="objectType"/>
         </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="valueType">
+        <xsd:complexContent>
+            <xsd:extension base="baseObjectType"/>
+        </xsd:complexContent>
     </xsd:complexType>
 
     <xsd:complexType name="entryType">
@@ -44,15 +46,7 @@
 
     <xsd:complexType name="collectionType">
         <xsd:sequence>
-            <xsd:element name="value" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:complexContent>
-                        <xsd:extension base="baseObjectType">
-                            <xsd:attribute name="profiles" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:complexContent>
-                </xsd:complexType>
-            </xsd:element>
+            <xsd:element name="value" type="valueType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
         <xsd:attribute name="item-type" type="xsd:string"/>
@@ -79,15 +73,7 @@
 
     <xsd:complexType name="objectType">
         <xsd:sequence>
-            <xsd:element name="field" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:complexContent>
-                        <xsd:extension base="fieldType">
-                            <xsd:attribute name="profiles" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:complexContent>
-              </xsd:complexType>
-            </xsd:element>
+            <xsd:element name="field" type="fieldType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="type" type="xsd:string"/>
     </xsd:complexType>
@@ -102,7 +88,6 @@
             <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
-        <xsd:attribute name="profiles" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="valueParamType">
@@ -160,10 +145,9 @@
             <xsd:element name="set-method" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="priority" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="priority" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
-        <xsd:attribute name="profiles" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="externalComponentPluginType">
@@ -175,10 +159,7 @@
 
     <xsd:complexType name="containerLifecyclePluginType">
         <xsd:sequence>
-            <xsd:element name="name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="priority" type="xsd:int" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
     </xsd:complexType>
@@ -214,7 +195,6 @@
             </xsd:element>
             <xsd:element name="init-params" type="initParamsType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
-        <xsd:attribute name="profiles" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="configurationType">
@@ -223,17 +203,9 @@
             <xsd:element name="component-lifecycle-plugin" type="componentLifecyclePluginType" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="component" type="componentType" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="external-component-plugins" type="externalComponentPluginType" minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="import" type="importType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="import" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="remove-configuration" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-    </xsd:complexType>
-
-    <xsd:complexType name="importType">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-              <xsd:attribute name="profiles" type="xsd:string"/>
-            </xsd:extension>
-        </xsd:simpleContent>
     </xsd:complexType>
 
 </xsd:schema>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema
-     targetNamespace="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-     xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+     targetNamespace="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
+     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
      elementFormDefault="qualified"
      attributeFormDefault="unqualified"

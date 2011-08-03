@@ -57,6 +57,6 @@ public class TestXSD_1_2 extends BasicTestCase
             fail("Was not expecting such exception " + e.getMessage());
          }
       }
-      assertEquals(19, count);
+      assertEquals(20, count);
    }
 }

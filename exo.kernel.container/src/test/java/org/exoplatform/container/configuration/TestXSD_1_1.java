@@ -18,7 +18,6 @@
  */
 package org.exoplatform.container.configuration;
 
-import org.exoplatform.container.configuration.ConfigurationUnmarshaller;
 import org.exoplatform.test.BasicTestCase;
 
 import java.io.File;
@@ -58,6 +57,6 @@ public class TestXSD_1_1 extends BasicTestCase
             fail("Was not expecting such exception " + e.getMessage());
          }
       }
-      assertEquals(18, count);
+      assertEquals(19, count);
    }
 }
