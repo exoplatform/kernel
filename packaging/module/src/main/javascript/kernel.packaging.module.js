@@ -12,6 +12,7 @@ function getModule(params) {
   module.commons = 
     new Project("org.exoplatform.kernel", "exo.kernel.commons", "jar", module.version).
     addDependency(new Project("commons-lang", "commons-lang", "jar", "2.6")).
+    addDependency(new Project("eu.medsea.mimeutil", "mime-util", "jar", "2.1.3")).
     addDependency(new Project("xpp3", "xpp3", "jar", "1.1.4c")).
     addDependency(new Project("dom4j", "dom4j", "jar", "1.6.1"));
     
