@@ -66,6 +66,7 @@ public class SimpleContext implements Context
 
    public SimpleContext()
    {
+      System.out.println("SimpleContext() : " + Thread.currentThread().getName());
    }
 
    protected Map<String, Object> getBindings()
@@ -76,6 +77,8 @@ public class SimpleContext implements Context
    protected void setBindings(Map<String, Object> bindings)
    {
       BINDINGS = bindings;
+      
+      System.out.println("setBindings(Map<String, Object> bindings) : " + Thread.currentThread().getName());
    }
 
    /**
@@ -99,6 +102,8 @@ public class SimpleContext implements Context
     */
    public Object lookup(String name) throws NamingException
    {
+      System.out.println("lookup(String name) : " + Thread.currentThread().getName());
+      
       if (name.isEmpty())
       {
          throw new InvalidNameException("Cannot bind empty name");
@@ -411,6 +416,7 @@ public class SimpleContext implements Context
    
    protected Object getMutex()
    {
+      System.out.println("getMutex() : " + Thread.currentThread().getName());
       return SimpleContext.class;
    }
    
