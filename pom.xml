@@ -55,7 +55,7 @@
       <module>exo.kernel.component.common</module>
       <module>exo.kernel.component.cache</module>
       <module>exo.kernel.component.ext.cache.impl.jboss.v3</module>
-      <module>exo.kernel.component.ext.cache.impl.infinispan.v4</module>
+      <module>exo.kernel.component.ext.cache.impl.infinispan.v5</module>
       <module>exo.kernel.component.command</module>
       <module>exo.kernel.mc-integration</module>
       <module>packaging/module</module>
@@ -212,7 +212,7 @@
          <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>4.2.1.FINAL</version>
+            <version>5.0.0.FINAL</version>
          </dependency>
          <dependency>
             <groupId>org.jibx</groupId>

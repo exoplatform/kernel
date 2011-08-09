@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -82,6 +83,41 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
     */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.RPCServiceImpl");
 
+   /**
+    * We use reflection for the Message.setObject method in order to remain backward compatible 
+    * because since JGroups 2.12 the signature has changed the expected parameter is no more a Serializable, 
+    * it is an Object
+    */
+   private static Method MESSAGE_SET_OBJECT_METHOD;
+   
+   static
+   {
+      try
+      {
+         MESSAGE_SET_OBJECT_METHOD = Message.class.getMethod("setObject", Serializable.class);
+      }
+      catch (SecurityException e)
+      {
+         throw e;
+      }
+      catch (NoSuchMethodException e)
+      {
+         // We assume that we use JGroups 2.12 or higher
+         try
+         {
+            MESSAGE_SET_OBJECT_METHOD = Message.class.getMethod("setObject", Object.class);
+         }
+         catch (SecurityException e1)
+         {
+            throw e1;
+         }
+         catch (Exception e1)
+         {
+            throw new RuntimeException("Could not find the right Message.setObject method", e);
+         }
+      }
+   }
+   
    /**
     * The name of the parameter for the location of the JGroups configuration.
     */
@@ -426,7 +462,14 @@ public class RPCServiceImpl implements RPCService, Startable, RequestHandler, Me
          throw new RPCException("Command " + commandId + " unknown, please register your command first");
       }
       final Message msg = new Message();
-      msg.setObject(new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args));
+      try
+      {
+         MESSAGE_SET_OBJECT_METHOD.invoke(msg, new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args));
+      }
+      catch (Exception e)
+      {
+         throw new RPCException("Could not call the method Message.setObject");
+      }
       RspList rsps = SecurityHelper.doPrivilegedAction(new PrivilegedAction<RspList>()
       {
          public RspList run()
