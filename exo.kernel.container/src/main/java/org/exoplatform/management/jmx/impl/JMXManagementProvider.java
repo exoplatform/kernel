@@ -200,7 +200,10 @@ public class JMXManagementProvider implements ManagementProvider
             {
                public Void run() throws Exception
                {
-                  server.unregisterMBean(name);
+                  if (server.isRegistered(name))
+                  {
+                     server.unregisterMBean(name);                     
+                  }
                   return null;
                }
             });
