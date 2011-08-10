@@ -19,6 +19,7 @@
 package org.exoplatform.commons.utils;
 
 import eu.medsea.mimeutil.MimeUtil;
+import eu.medsea.mimeutil.detector.MimeDetector;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -37,6 +38,8 @@ public class MimeTypeResolver
 {
    protected static Log log = ExoLogger.getLogger("org.exoplatform.commons.utils.MimeTypeResolver");
 
+   private static MimeDetector magicMimeDetector;
+
    private Map<String, List<String>> mimeTypes = new HashMap<String, List<String>>();
 
    private Map<String, List<String>> extentions = new HashMap<String, List<String>>();
@@ -51,7 +54,11 @@ public class MimeTypeResolver
          {
             public Void run() throws Exception
             {
-               MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+               if (magicMimeDetector == null)
+               {
+                  magicMimeDetector =
+                     MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+               }
                Scanner scanner = null;
                String mimeTypeProperties = System.getProperty("org.exoplatform.mimetypes");
                if (mimeTypeProperties != null)
