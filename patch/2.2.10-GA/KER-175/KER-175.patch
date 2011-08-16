@@ -1,6 +1,53 @@
+Index: patch/2.2.10-GA/KER-175/KER-175.patch
+===================================================================
+--- patch/2.2.10-GA/KER-175/KER-175.patch	(revision 4757)
++++ patch/2.2.10-GA/KER-175/KER-175.patch	(working copy)
+@@ -1,6 +1,6 @@
+ Index: exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java
+ ===================================================================
+---- exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(revision 4445)
++--- exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(revision 4757)
+ +++ exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(working copy)
+ @@ -18,6 +18,8 @@
+   */
+@@ -130,31 +130,19 @@
+  }
+ Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java
+ ===================================================================
+---- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(revision 4445)
++--- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(revision 4757)
+ +++ exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(working copy)
+-@@ -31,6 +31,19 @@
++@@ -31,6 +31,7 @@
+   */
+  public class TestPortalContainer extends AbstractTestContainer
+  {
+-+   
+-+   public void testHasScopingObjectName()
+-+   {
+-+      URL rootURL = getClass().getResource("empty-config.xml");
+-+      URL portalURL = getClass().getResource("empty-config.xml");
+-+      assertNotNull(rootURL);
+-+      assertNotNull(portalURL);
+-+      //
+-+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
+-+      assertNull(RootContainer.getInstance().getScopingObjectName());
+-+      assertNotNull(PortalContainer.getInstance().getScopingObjectName());
+-+   }
+ +
+     public void testInitValues()
+     {
+        createRootContainer("portal-container-config-with-settings.xml");
+ Index: exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java
+ ===================================================================
+---- exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(revision 4445)
++--- exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(revision 4757)
+ +++ exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(working copy)
+ @@ -25,8 +25,12 @@
+  import org.exoplatform.management.annotations.Managed;
 Index: exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java
 ===================================================================
---- exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(revision 4445)
+--- exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(revision 4757)
 +++ exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatform/services/cache/impl/jboss/ExoCacheFactoryImpl.java	(working copy)
 @@ -18,6 +18,8 @@
   */
@@ -128,14 +175,42 @@ Index: exo.kernel.component.ext.cache.impl.jboss.v3/src/main/java/org/exoplatfor
 +      }
 +   }
  }
-Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java
+Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainerScopingObjects.java
 ===================================================================
---- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(revision 4445)
-+++ exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(working copy)
-@@ -31,6 +31,19 @@
-  */
- public class TestPortalContainer extends AbstractTestContainer
- {
+--- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainerScopingObjects.java	(revision 0)
++++ exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainerScopingObjects.java	(revision 0)
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (C) 2003-2010 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see&lt;http://www.gnu.org/licenses/&gt;.
++ */
++package org.exoplatform.container;
++
++import org.exoplatform.container.jmx.AbstractTestContainer;
++import org.exoplatform.container.support.ContainerBuilder;
++
++import java.net.URL;
++
++/**
++ * Created by The eXo Platform SAS
++ * Author : Nicolas Filotto 
++ *          nicolas.filotto@exoplatform.com
++ * 18 fﾎvr. 2010  
++ */
++public class TestPortalContainerScopingObjects extends AbstractTestContainer
++{
 +   
 +   public void testHasScopingObjectName()
 +   {
@@ -148,13 +223,22 @@ Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalCo
 +      assertNull(RootContainer.getInstance().getScopingObjectName());
 +      assertNotNull(PortalContainer.getInstance().getScopingObjectName());
 +   }
++}
+Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java
+===================================================================
+--- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(revision 4757)
++++ exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(working copy)
+@@ -31,6 +31,7 @@
+  */
+ public class TestPortalContainer extends AbstractTestContainer
+ {
 +
     public void testInitValues()
     {
        createRootContainer("portal-container-config-with-settings.xml");
 Index: exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java
 ===================================================================
---- exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(revision 4445)
+--- exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(revision 4757)
 +++ exo.kernel.container/src/main/java/org/exoplatform/container/management/ManageableContainer.java	(working copy)
 @@ -25,8 +25,12 @@
  import org.exoplatform.management.annotations.Managed;
