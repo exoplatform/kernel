@@ -31,6 +31,7 @@ import java.net.URL;
  */
 public class TestPortalContainer extends AbstractTestContainer
 {
+
    public void testInitValues()
    {
       createRootContainer("portal-container-config-with-settings.xml");

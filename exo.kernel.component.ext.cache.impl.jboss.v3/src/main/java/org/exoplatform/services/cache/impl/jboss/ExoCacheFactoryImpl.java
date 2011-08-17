@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -32,15 +34,20 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.config.Configuration;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
-import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.jmx.JmxRegistrationManager;
+import org.picocontainer.Startable;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.management.ObjectName;
 
 /**
  * This class is the JBoss Cache implementation of the {@link org.exoplatform.services.cache.ExoCacheFactory}
@@ -49,7 +56,7 @@ import java.util.Map;
  *          exo@exoplatform.com
  * 17 juil. 2009  
  */
-public class ExoCacheFactoryImpl implements ExoCacheFactory
+public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
 {
 
    /**
@@ -89,6 +96,11 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     */
    private final Map<String, String> mappingCacheNameConfig = new HashMap<String, String>();
 
+   /**
+    * The list of all the JMX Managers registered
+    */
+   private final List<JmxRegistrationManager> jmxManagers = new CopyOnWriteArrayList<JmxRegistrationManager>();
+   
    /**
     * The default creator
     */
@@ -149,6 +161,13 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          cache.create();
          // Start the cache
          cache.start();
+         // Create JMX Manager for this cache instance
+         JmxRegistrationManager jmxManager = getJmxRegistrationManager(cache, region);
+         if (jmxManager != null)
+         {
+            jmxManager.registerAllMBeans();
+            jmxManagers.add(jmxManager);
+         }
       }
       catch (Exception e)
       {
@@ -156,7 +175,33 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       }
       return eXoCache;
    }
-
+   
+   /**
+    * Gives the {@link JmxRegistrationManager} instance corresponding to the given context
+    */
+   private static JmxRegistrationManager getJmxRegistrationManager(Cache<?, ?> parentCache,
+      String cacheName)
+   {
+      try
+      {
+         ExoContainer container = ExoContainerContext.getCurrentContainer();
+         ObjectName containerObjectName = container.getScopingObjectName();
+         final String objectNameBase = (containerObjectName != null ? containerObjectName.toString() + "," : "exo:")+ "cache-name=" + cacheName;
+         return new JmxRegistrationManager(container.getMBeanServer(), parentCache, objectNameBase)
+         {
+            public String getObjectName(String resourceName)
+            {
+               return objectNameBase + JMX_RESOURCE_KEY + resourceName;
+            }
+         };
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not create the JMX Manager", e);
+      }
+      return null;
+   }
+   
    /**
     * Add a list of creators to register
     * @param plugin the plugin that contains the creators
@@ -243,6 +288,24 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
       {
          config.setClusterName(clusterName + " " + region);
+      }
+   }
+
+   /**
+    * @see org.picocontainer.Startable#start()
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * @see org.picocontainer.Startable#stop()
+    */
+   public void stop()
+   {
+      for (JmxRegistrationManager jmxManager : jmxManagers)
+      {
+         jmxManager.unregisterAllMBeans();
       }
    }
 }

@@ -25,8 +25,12 @@ import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
+import org.exoplatform.management.jmx.impl.JMX;
 import org.exoplatform.management.jmx.impl.JMXManagementProvider;
+import org.exoplatform.management.jmx.impl.MBeanScopingData;
 import org.exoplatform.management.spi.ManagementProvider;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
@@ -37,9 +41,13 @@ import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -47,6 +55,11 @@ import javax.management.MBeanServer;
  */
 public class ManageableContainer extends CachingContainer
 {
+
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.management.ManageableContainer");
 
    private static MBeanServer findMBeanServer()
    {
@@ -63,6 +76,9 @@ public class ManageableContainer extends CachingContainer
    /** . */
    private MBeanServer server;
 
+   private volatile boolean objectNameSet;
+   private ObjectName objectName;
+   
    /** . */
    private final Set<ManagementProvider> providers;
 
@@ -163,6 +179,46 @@ public class ManageableContainer extends CachingContainer
       return super.registerComponent(componentAdapter);
    }
 
+   /**
+    * Gives the ObjectName of the container build from the scoping data
+    * @return
+    */
+   public ObjectName getScopingObjectName()
+   {
+      if (!objectNameSet)
+      {
+         synchronized (this)
+         {
+            if (!objectNameSet)
+            {
+               Map<String, String> props = new LinkedHashMap<String, String>();
+
+               // Merge scoping properties
+               List<MBeanScopingData> list = managementContext.getScopingData(MBeanScopingData.class);
+               if (list != null && !list.isEmpty())
+               {
+                  // Read in revert order because wee received list of parents in upward order
+                  for (int i = list.size(); i > 0; i--)
+                  {
+                     MBeanScopingData scopingData = list.get(i - 1);
+                     props.putAll(scopingData);
+                  }               
+                  try
+                  {
+                     this.objectName = JMX.createObjectName("exo", props);
+                  }
+                  catch (Exception e)
+                  {
+                     LOG.error("Could not create the object name", e);
+                  }                  
+               }
+               this.objectNameSet = true;
+            }
+         }
+      }
+      return objectName;
+   }
+   
    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
       throws PicoRegistrationException
    {
