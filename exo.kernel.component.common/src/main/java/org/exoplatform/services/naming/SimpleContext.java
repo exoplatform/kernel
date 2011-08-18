@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.naming;
 
-import org.exoplatform.services.jdbc.impl.CloseableDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -121,7 +120,7 @@ public class SimpleContext implements Context
                   }
 
                   // Re-bind with the object with its new value to be able to return the same ins
-                  bind(name, obj, false);
+                  bindRefValue(name, obj);
                }
                catch (Exception e)
                {
@@ -156,7 +155,7 @@ public class SimpleContext implements Context
       bind(name, value, true);
    }
 
-   private void bind(String name, Object value, boolean checkIfExists) throws NamingException
+   protected void bind(String name, Object value, boolean checkIfExists) throws NamingException
    {
       if (name.isEmpty())
       {
@@ -187,6 +186,13 @@ public class SimpleContext implements Context
          tmpObjects.put(name, value);
          setBindings(tmpObjects);
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void bindRefValue(String name, Object value) throws NamingException
+   {
    }
 
    /**

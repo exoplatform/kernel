@@ -111,6 +111,11 @@ public class ExoContainerContextFactory implements InitialContextFactory
          }
       }
 
+      protected void bindRefValue(String name, Object value) throws NamingException
+      {
+         bind(name, value, false);
+      }
+
       protected Map<String, Object> getBindings()
       {
          return bindingsRef.get();
