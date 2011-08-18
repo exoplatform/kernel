@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.naming;
 
+import org.exoplatform.services.jdbc.impl.CloseableDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
