@@ -378,7 +378,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
       if (!allowShareableCache)
       {
          // Rename the cluster name
-         if (clusterName != null)
+         if (clusterName != null && clusterName.length() > 0)
          {
             cfg.setClusterName(clusterName + "-" + region);
          }
