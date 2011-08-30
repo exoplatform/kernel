@@ -373,15 +373,10 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
       String clusterName = cfg.getClusterName();
       if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
       {
-         cfg.setClusterName(clusterName + "-" + ctx.getName());
+         cfg.setClusterName(clusterName + "-" + ctx.getName() + (!allowShareableCache ? "-" + region : ""));
       }
       if (!allowShareableCache)
       {
-         // Rename the cluster name
-         if (clusterName != null && clusterName.length() > 0)
-         {
-            cfg.setClusterName(clusterName + "-" + region);
-         }
          return cache;
       }
       ConfigurationKey key;
