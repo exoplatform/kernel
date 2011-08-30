@@ -30,12 +30,11 @@ import org.slf4j.spi.LocationAwareLogger;
  */
 public class LocationAwareSLF4JExoLog implements Log
 {
-
    /** . */
    private static final String FQCN = LocationAwareSLF4JExoLog.class.getName();
 
    /** . */
-   private final LocationAwareLogger logger;
+   private final DynamicLocationAwareLogger logger;
 
    /**
     * Create a new instance.
@@ -49,96 +48,204 @@ public class LocationAwareSLF4JExoLog implements Log
       {
          throw new NullPointerException();
       }
-      this.logger = logger;
+      this.logger = new DynamicLocationAwareLogger(logger);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isDebugEnabled()
    {
       return logger.isDebugEnabled();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isErrorEnabled()
    {
       return logger.isErrorEnabled();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isFatalEnabled()
    {
       return logger.isErrorEnabled();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isInfoEnabled()
    {
       return logger.isInfoEnabled();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isTraceEnabled()
    {
       return logger.isTraceEnabled();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isWarnEnabled()
    {
       return logger.isWarnEnabled();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void trace(Object o)
    {
       logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, String.valueOf(o), null);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void trace(Object o, Throwable throwable)
    {
       logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, String.valueOf(o), throwable);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void debug(Object o)
    {
       logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, String.valueOf(o), null);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void debug(Object o, Throwable throwable)
    {
       logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, String.valueOf(o), throwable);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void info(Object o)
    {
       logger.log(null, FQCN, LocationAwareLogger.INFO_INT, String.valueOf(o), null);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void info(Object o, Throwable throwable)
    {
       logger.log(null, FQCN, LocationAwareLogger.INFO_INT, String.valueOf(o), throwable);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void warn(Object o)
    {
       logger.log(null, FQCN, LocationAwareLogger.WARN_INT, String.valueOf(o), null);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void warn(Object o, Throwable throwable)
    {
       logger.log(null, FQCN, LocationAwareLogger.WARN_INT, String.valueOf(o), throwable);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void error(Object o)
    {
       logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void error(Object o, Throwable throwable)
    {
       logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), throwable);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void fatal(Object o)
    {
       logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), null);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void fatal(Object o, Throwable throwable)
    {
       logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, String.valueOf(o), throwable);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void trace(String format, Object... argsArray)
+   {
+      logger.log(null, FQCN, LocationAwareLogger.TRACE_INT, LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void debug(String format, Object... argsArray)
+   {
+      logger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void info(String format, Object... argsArray)
+   {
+      logger.log(null, FQCN, LocationAwareLogger.INFO_INT, LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void warn(String format, Object... argsArray)
+   {
+      logger.log(null, FQCN, LocationAwareLogger.WARN_INT, LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void error(String format, Object... argsArray)
+   {
+      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void fatal(String format, Object... argsArray)
+   {
+      logger.log(null, FQCN, LocationAwareLogger.ERROR_INT, LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
    }
 }

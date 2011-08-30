@@ -139,4 +139,40 @@ public class SimpleExoLog implements Log
    {
       this.delegate = new SimpleLog(name);
    }
+
+   public void trace(String format, Object... argsArray)
+   {
+      this.delegate.trace(LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   public void debug(String format, Object... argsArray)
+   {
+      this.delegate.debug(LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   public void info(String format, Object... argsArray)
+   {
+      this.delegate
+         .info(LogMessageFormatter.getMessage(format, argsArray), LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   public void warn(String format, Object... argsArray)
+   {
+      this.delegate
+         .warn(LogMessageFormatter.getMessage(format, argsArray), LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   public void error(String format, Object... argsArray)
+   {
+      this.delegate.error(LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
+
+   public void fatal(String format, Object... argsArray)
+   {
+      this.delegate.fatal(LogMessageFormatter.getMessage(format, argsArray),
+         LogMessageFormatter.getThrowable(argsArray));
+   }
 }

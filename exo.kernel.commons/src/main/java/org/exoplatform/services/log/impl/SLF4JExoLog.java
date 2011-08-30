@@ -187,4 +187,52 @@ public class SLF4JExoLog implements Log
    {
       logger.error(String.valueOf(o), throwable);
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void trace(String format, Object... argsArray)
+   {
+      logger.trace(format, argsArray);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void debug(String format, Object... argsArray)
+   {
+      logger.debug(format, argsArray);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void info(String format, Object... argsArray)
+   {
+      logger.info(format, argsArray);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void warn(String format, Object... argsArray)
+   {
+      logger.warn(format, argsArray);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void error(String format, Object... argsArray)
+   {
+      logger.error(format, argsArray);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void fatal(String format, Object... argsArray)
+   {
+      logger.error(format, argsArray);
+   }
 }

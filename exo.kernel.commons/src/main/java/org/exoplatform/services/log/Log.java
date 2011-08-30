@@ -227,4 +227,88 @@ public interface Log
     */
    void fatal(Object message, Throwable t);
 
+   /**
+    * <p>
+    * Log an error with <i>trace</i> log level.
+    * </p>
+    * 
+    * @param format <br> {@link String} format to represent log message.
+    * Sequence of '{}' is used to represent an anchor which will be replaced by
+    * string representation of objects in argArray
+    * @param argArray <br> array of arguments to add to log message
+    * including {@link Throwable}, {@link String} 
+    * or any other {@link Object} for which string representation will be used
+    */
+   void trace(String format, Object... argArray);
+
+   /**
+    * <p>
+    * Log an error with <i>debug</i> log level.
+    * </p>
+    * 
+    * @param format <br> {@link String} format to represent log message.
+    * Sequence of '{}' is used to represent an anchor which will be replaced by
+    * string representation of objects in argArray
+    * @param argArray <br> array of arguments to add to log message
+    * including {@link Throwable}, {@link String} 
+    * or any other {@link Object} for which string representation will be used
+    */
+   void debug(String format, Object... argArray);
+
+   /**
+    * <p>
+    * Log an error with <i>info</i> log level.
+    * </p>
+    * 
+    * @param format <br> {@link String} format to represent log message.
+    * Sequence of '{}' is used to represent an anchor which will be replaced by
+    * string representation of objects in argArray
+    * @param argArray <br> array of arguments to add to log message
+    * including {@link Throwable}, {@link String} 
+    * or any other {@link Object} for which string representation will be used
+    */
+   void info(String format, Object... argArray);
+
+   /**
+    * <p>
+    * Log a message with <i>warn</i> log level.
+    * </p>
+    * 
+    * @param format <br> {@link String} format to represent log message.
+    * Sequence of '{}' is used to represent an anchor which will be replaced by
+    * string representation of objects in argArray
+    * @param argArray <br> array of arguments to add to log message
+    * including {@link Throwable}, {@link String} 
+    * or any other {@link Object} for which string representation will be used
+    */
+   void warn(String format, Object... argArray);
+
+   /**
+    * <p>
+    * Log a message with <i>error</i> log level.
+    * </p>
+    * 
+    * @param format <br> {@link String} format to represent log message.
+    * Sequence of '{}' is used to represent an anchor which will be replaced by
+    * string representation of objects in argArray
+    * @param argArray <br> array of arguments to add to log message
+    * including {@link Throwable}, {@link String} 
+    * or any other {@link Object} for which string representation will be used
+    */
+   void error(String format, Object... argArray);
+
+   /**
+    * <p>
+    * Log a message with <i>fatal</i> log level.
+    * </p>
+    * 
+    * @param format <br> {@link String} format to represent log message.
+    * Sequence of '{}' is used to represent an anchor which will be replaced by
+    * string representation of objects in argArray
+    * @param argArray <br> array of arguments to add to log message
+    * including {@link Throwable}, {@link String} 
+    * or any other {@link Object} for which string representation will be used
+    */
+   void fatal(String format, Object... argArray);
+
 }
