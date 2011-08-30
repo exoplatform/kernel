@@ -95,6 +95,11 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
    private final boolean allowShareableCache;
 
    /**
+    * The current {@link ExoContainerContext}
+    */
+   private final ExoContainerContext ctx;
+   
+   /**
     * The mapping between the configuration types and the creators
     */
    private final Map<Class<? extends ExoCacheConfig>, ExoCacheCreator> mappingConfigTypeCreators =
@@ -126,14 +131,15 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
     */
    private final ExoCacheCreator defaultCreator = new FIFOExoCacheCreator();
 
-   public ExoCacheFactoryImpl(InitParams params, ConfigurationManager configManager)
+   public ExoCacheFactoryImpl(ExoContainerContext ctx, InitParams params, ConfigurationManager configManager)
    {
-      this(getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), configManager, getBooleanParam(params,
+      this(ctx, getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), configManager, getBooleanParam(params,
          ALLOW_SHAREABLE_CACHE, ALLOW_SHAREABLE_CACHE_DEFAULT));
    }
 
-   ExoCacheFactoryImpl(String cacheConfigTemplate, ConfigurationManager configManager, boolean allowShareableCache)
+   ExoCacheFactoryImpl(ExoContainerContext ctx, String cacheConfigTemplate, ConfigurationManager configManager, boolean allowShareableCache)
    {
+      this.ctx = ctx;
       this.configManager = configManager;
       this.cacheConfigTemplate = cacheConfigTemplate;
       this.allowShareableCache = allowShareableCache;
@@ -363,11 +369,16 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
          }
       }
       Configuration cfg = cache.getConfiguration();
+      // Rename the cluster name
+      String clusterName = cfg.getClusterName();
+      if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
+      {
+         cfg.setClusterName(clusterName + "-" + ctx.getName());
+      }
       if (!allowShareableCache)
       {
          // Rename the cluster name
-         String clusterName = cfg.getClusterName();
-         if (clusterName != null && (clusterName = clusterName.trim()).length() > 0)
+         if (clusterName != null)
          {
             cfg.setClusterName(clusterName + "-" + region);
          }
