@@ -187,7 +187,7 @@ public final class ISO8601ASF
          return null;
       }
 
-      TimeZone tz = TimeZone.getTimeZone(tzID);
+      TimeZone tz = Tools.getTimeZone(tzID);
       // verify id of returned time zone (getTimeZone defaults to "GMT")
       if (!tz.getID().equals(tzID))
       {
