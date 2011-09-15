@@ -21,6 +21,7 @@ package org.exoplatform.container.configuration;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
@@ -29,6 +30,7 @@ import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -153,61 +155,60 @@ public class ConfigurationUnmarshaller
       factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", KERNEL_NAMESPACES);
       factory.setNamespaceAware(true);
       factory.setValidating(true);
-
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Boolean>()
+      {
+         public Boolean run() throws Exception
+         {
+            try
+            {
+               DocumentBuilder builder = factory.newDocumentBuilder();
+               Reporter reporter = new Reporter(url);
+               builder.setErrorHandler(reporter);
+               builder.setEntityResolver(Namespaces.resolver);
+               String content = Deserializer.resolveVariables(readStream(url.openStream()));
+               InputSource is = new InputSource(new StringReader(content));
+               builder.parse(is);
+               return reporter.valid;
+            }
+            catch (ParserConfigurationException e)
+            {
+               log.error("Got a parser configuration exception when doing XSD validation");
+               return false;
+            }
+            catch (SAXException e)
+            {
+               log.error("Got a sax exception when doing XSD validation");
+               return false;
+            }
+         }
+      });
+   }
+   
+   private String readStream(InputStream inputStream) throws IOException
+   {
       try
       {
-         DocumentBuilder builder = null;
+         StringBuilder out = new StringBuilder();
+         byte[] b = new byte[4096];
+         for (int n; (n = inputStream.read(b)) != -1;)
+         {
+            out.append(new String(b, 0, n));
+         }
+         return out.toString();
+      }
+      finally
+      {
          try
          {
-            builder = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<DocumentBuilder>()
-            {
-               public DocumentBuilder run() throws Exception
-               {
-                  return factory.newDocumentBuilder();
-               }
-            });
+            inputStream.close();
          }
-         catch (PrivilegedActionException pae)
+         catch (Exception e)
          {
-            Throwable cause = pae.getCause();
-            if (cause instanceof ParserConfigurationException)
-            {
-               throw (ParserConfigurationException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
+            // ignore me
          }
-         
-         Reporter reporter = new Reporter(url);
-         builder.setErrorHandler(reporter);
-         builder.setEntityResolver(Namespaces.resolver);
-         builder.parse(SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<InputStream>()
-         {
-            public InputStream run() throws Exception
-            {
-               return url.openStream();
-            }
-         }));
-         return reporter.valid;
-      }
-      catch (ParserConfigurationException e)
-      {
-         log.error("Got a parser configuration exception when doing XSD validation");
-         return false;
-      }
-      catch (SAXException e)
-      {
-         log.error("Got a sax exception when doing XSD validation");
-         return false;
       }
    }
-
+   
    public Configuration unmarshall(final URL url) throws Exception
    {
       if (PropertyManager.isDevelopping())
