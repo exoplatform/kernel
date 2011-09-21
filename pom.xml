@@ -212,7 +212,7 @@
          <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>5.0.0.FINAL</version>
+            <version>5.0.1.FINAL</version>
          </dependency>
          <dependency>
             <groupId>org.jibx</groupId>
