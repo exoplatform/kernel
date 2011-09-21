@@ -158,9 +158,9 @@
             </exclusions>            
          </dependency>
          <dependency>
-            <groupId>org.quartz-scheduler</groupId>
+            <groupId>quartz</groupId>
             <artifactId>quartz</artifactId>
-            <version>1.8.4</version>
+            <version>1.5.2</version>
          </dependency>
          <dependency>
             <groupId>javax.mail</groupId>
