@@ -179,6 +179,7 @@ public class Tools
       {
          synchronized (TimeZone.class)
          {
+            tz = TIME_ZONES.get(ID);
             if (tz == null)
             {
                tz = TimeZone.getTimeZone(ID);
