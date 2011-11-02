@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -30,7 +31,11 @@ import java.util.Set;
  */
 public class Tools
 {
-
+   /**
+    * All the time zones already registered
+    */
+   private static volatile Map<String, TimeZone> TIME_ZONES = new HashMap<String, TimeZone>();
+   
    /**
     * Instantiates a {@link HashSet} object and fills it with the provided element array.
     *
@@ -154,5 +159,36 @@ public class Tools
       }
       String suffix = s.substring(s.length() - end.length());
       return suffix.equalsIgnoreCase(end); 
+   }
+   
+   /**
+    * This method is similar to {@link TimeZone#getTimeZone(String)} with less contention
+    */
+   public static TimeZone getTimeZone(String ID)
+   {
+      if (ID == null)
+      {
+         throw new NullPointerException("ID of the timezone cannot be null");
+      }
+      if (ID.length() == 0)
+      {
+         throw new IllegalArgumentException("ID of the timezone cannot be empty");
+      }
+      TimeZone tz = TIME_ZONES.get(ID);
+      if (tz == null)
+      {
+         synchronized (TimeZone.class)
+         {
+            tz = TIME_ZONES.get(ID);
+            if (tz == null)
+            {
+               tz = TimeZone.getTimeZone(ID);
+               Map<String, TimeZone> tzs = new HashMap<String, TimeZone>(TIME_ZONES);
+               tzs.put(ID, tz);
+               TIME_ZONES = tzs;
+            }
+         }
+      }
+      return tz;
    }
 }
