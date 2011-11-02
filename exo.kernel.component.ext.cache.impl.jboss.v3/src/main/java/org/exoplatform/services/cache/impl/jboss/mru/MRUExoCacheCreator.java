@@ -74,36 +74,7 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
       final MRUAlgorithmConfig mru = new MRUAlgorithmConfig(maxNodes);
       mru.setMinTimeToLive(minTimeToLive);
       Fqn<String> rooFqn = addEvictionRegion(config, cache, mru);
-      return new AbstractExoCache<Serializable, Object>(config, cache, rooFqn)
-      {
-
-         public void setMaxSize(int max)
-         {
-            mru.setMaxNodes(max);
-         }
-
-         public void setLiveTime(long period)
-         {
-            mru.setMinTimeToLive(period);
-         }
-
-         @ManagedName("MaxNodes")
-         @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
-               "0 denotes immediate expiry, -1 denotes no limit.")
-         public int getMaxSize()
-         {
-            return mru.getMaxNodes();
-         }
-
-         @ManagedName("MinTimeToLive")
-         @ManagedDescription("the minimum amount of time a node must be allowed to live after " +
-               "being accessed before it is allowed to be considered for eviction. " +
-               "0 denotes that this feature is disabled, which is the default value.")
-         public long getLiveTime()
-         {
-            return mru.getMinTimeToLive();
-         }
-      };
+      return new MRUExoCache(config, cache, rooFqn, mru);
    }
 
    /**
@@ -120,5 +91,48 @@ public class MRUExoCacheCreator extends AbstractExoCacheCreator
    public String getExpectedImplementation()
    {
       return EXPECTED_IMPL;
+   }
+
+   /**
+    * The MRU implementation of an ExoCache
+    */
+   public static class MRUExoCache extends AbstractExoCache<Serializable, Object>
+   {
+
+      private final MRUAlgorithmConfig mru;
+
+      public MRUExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache, Fqn<String> rooFqn,
+         MRUAlgorithmConfig mru)
+      {
+         super(config, cache, rooFqn);
+         this.mru = mru;
+      }
+
+      public void setMaxSize(int max)
+      {
+         mru.setMaxNodes(max);
+      }
+
+      public void setLiveTime(long period)
+      {
+         mru.setMinTimeToLive(period);
+      }
+
+      @ManagedName("MaxNodes")
+      @ManagedDescription("This is the maximum number of nodes allowed in this region. "
+         + "0 denotes immediate expiry, -1 denotes no limit.")
+      public int getMaxSize()
+      {
+         return mru.getMaxNodes();
+      }
+
+      @ManagedName("MinTimeToLive")
+      @ManagedDescription("the minimum amount of time a node must be allowed to live after "
+         + "being accessed before it is allowed to be considered for eviction. "
+         + "0 denotes that this feature is disabled, which is the default value.")
+      public long getLiveTime()
+      {
+         return mru.getMinTimeToLive();
+      }
    }
 }

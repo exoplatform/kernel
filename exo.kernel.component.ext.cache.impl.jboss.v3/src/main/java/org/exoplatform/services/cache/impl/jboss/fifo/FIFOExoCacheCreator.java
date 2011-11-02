@@ -27,6 +27,7 @@ import org.exoplatform.services.cache.impl.jboss.AbstractExoCache;
 import org.exoplatform.services.cache.impl.jboss.AbstractExoCacheCreator;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
+import org.jboss.cache.eviction.FIFOAlgorithm;
 import org.jboss.cache.eviction.FIFOAlgorithmConfig;
 
 import java.io.Serializable;
@@ -90,35 +91,49 @@ public class FIFOExoCacheCreator extends AbstractExoCacheCreator
       final FIFOAlgorithmConfig fifo = new FIFOAlgorithmConfig(maxNodes);
       fifo.setMinTimeToLive(minTimeToLive);
       Fqn<String> rooFqn = addEvictionRegion(config, cache, fifo);
-      return new AbstractExoCache<Serializable, Object>(config, cache, rooFqn)
+      return new FIFOExoCache(config, cache, rooFqn, fifo);
+   }
+   
+
+   /**
+    * The {@link FIFOAlgorithm} implementation of an ExoCache
+    */
+   public static class FIFOExoCache extends AbstractExoCache<Serializable, Object>
+   {
+      
+      private final FIFOAlgorithmConfig fifo;
+
+      public FIFOExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache, Fqn<String> rootFqn, FIFOAlgorithmConfig fifo)
       {
+         super(config, cache, rootFqn);
+         this.fifo = fifo;
+      }
 
-         public void setMaxSize(int max)
-         {
-            fifo.setMaxNodes(max);
-         }
+      public void setMaxSize(int max)
+      {
+         fifo.setMaxNodes(max);
+      }
 
-         public void setLiveTime(long period)
-         {
-            fifo.setMinTimeToLive(period);
-         }
+      public void setLiveTime(long period)
+      {
+         fifo.setMinTimeToLive(period);
+      }
 
-         @ManagedName("MaxNodes")
-         @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
-               "0 denotes immediate expiry, -1 denotes no limit.")
-         public int getMaxSize()
-         {
-            return fifo.getMaxNodes();
-         }
+      @ManagedName("MaxNodes")
+      @ManagedDescription("This is the maximum number of nodes allowed in this region. " +
+            "0 denotes immediate expiry, -1 denotes no limit.")
+      public int getMaxSize()
+      {
+         return fifo.getMaxNodes();
+      }
 
-         @ManagedName("MinTimeToLive")
-         @ManagedDescription("the minimum amount of time a node must be allowed to live after " +
-               "being accessed before it is allowed to be considered for eviction. 0 denotes that " +
-               "this feature is disabled, which is the default value.")
-         public long getLiveTime()
-         {
-            return fifo.getMinTimeToLive();
-         }
-      };
+      @ManagedName("MinTimeToLive")
+      @ManagedDescription("the minimum amount of time a node must be allowed to live after " +
+            "being accessed before it is allowed to be considered for eviction. 0 denotes that " +
+            "this feature is disabled, which is the default value.")
+      public long getLiveTime()
+      {
+         return fifo.getMinTimeToLive();
+      }
    }
 }
