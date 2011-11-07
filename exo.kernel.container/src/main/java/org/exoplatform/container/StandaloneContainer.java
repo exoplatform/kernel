@@ -329,6 +329,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    {
       super.stop();
       ExoContainerContext.setTopContainer(null);
+      container = null;
    }
 
    // -------------- Helpers ----------
