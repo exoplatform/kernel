@@ -69,7 +69,7 @@ public class DynamicLocationAwareLogger
       // using java reflection library 
       // also we're determining number of parameters of 'log' method to know
       // what slf4j library version we're dealing with
-      for (Method m : logger.getClass().getDeclaredMethods())
+      for (Method m : LocationAwareLogger.class.getDeclaredMethods())
       {
          if ("log".equals(m.getName()))
          {
