@@ -96,6 +96,10 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          {
             registerComponentInstance(ConfigurationManager.class, configurationManager);
             registerComponentImplementation(SessionManagerImpl.class);
+            // Workaround used to allow to use the PropertyConfigurator with the StandaloneContainer
+            // If the system property PropertyManager.PROPERTIES_URL has been set properly, it will load the properties
+            // from the file and load them as system properties
+            new PropertyConfigurator(configurationManager);
             return null;
          }
       });      
