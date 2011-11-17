@@ -1,0 +1,53 @@
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 5193)
++++ pom.xml	(working copy)
+@@ -40,6 +40,7 @@
+       <exo.product.specification>2.2</exo.product.specification>
+       <org.exoplatform.framework.junit.version>1.2.1-GA</org.exoplatform.framework.junit.version>
+       <forkMode>always</forkMode>
++      <version.assembly.plugin>2.2.1</version.assembly.plugin>
+    </properties>
+ 
+    <scm>
+@@ -211,5 +212,39 @@
+          <scope>test</scope>
+       </dependency>
+    </dependencies>
+-
++<profiles>
++   <profile>
++      <id>release</id>
++      <build>
++        <plugins>          
++          <plugin>
++            <artifactId>maven-assembly-plugin</artifactId>
++            <dependencies>
++              <dependency>
++                <groupId>org.apache.apache.resources</groupId>
++                <artifactId>apache-source-release-assembly-descriptor</artifactId>
++                <version>1.0.2</version>
++              </dependency>
++            </dependencies>
++            <executions>
++              <execution>
++                <id>source-release-assembly</id>
++                <phase>package</phase>
++                <goals>
++                  <goal>single</goal>
++                </goals>
++                <configuration>
++                  <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
++                  <descriptorRefs>
++                    <descriptorRef>source-release</descriptorRef>
++                  </descriptorRefs>
++                  <tarLongFileFormat>gnu</tarLongFileFormat>
++                </configuration>
++              </execution>
++            </executions>
++          </plugin>
++        </plugins>
++      </build>
++    </profile>
++  </profiles>
+ </project>
