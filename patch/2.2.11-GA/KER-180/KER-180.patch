@@ -1,0 +1,76 @@
+Index: exo.kernel.container/src/main/java/org/exoplatform/container/PropertyConfigurator.java
+===================================================================
+--- exo.kernel.container/src/main/java/org/exoplatform/container/PropertyConfigurator.java	(revision 5185)
++++ exo.kernel.container/src/main/java/org/exoplatform/container/PropertyConfigurator.java	(working copy)
+@@ -62,32 +62,38 @@
+    /** The logger. */
+    private final Log log = ExoLogger.getExoLogger(PropertyConfigurator.class);
+ 
++   public PropertyConfigurator(ConfigurationManager confManager)
++   {
++      this(null, confManager);
++   }
++
+    public PropertyConfigurator(InitParams params, ConfigurationManager confManager)
+    {
+-      PropertiesParam propertiesParam = params.getPropertiesParam("properties");
+-      if (propertiesParam != null)
++      String path = null;
++      if (params != null)
+       {
+-         log.debug("Going to initialize properties from init param");
+-         for (Iterator<Property> i = propertiesParam.getPropertyIterator();i.hasNext();)
++         PropertiesParam propertiesParam = params.getPropertiesParam("properties");
++         if (propertiesParam != null)
+          {
+-            Property property = i.next();
+-            String name = property.getName();
+-            String value = property.getValue();
+-            log.debug("Adding property from init param " + name + " = " + value);
+-            PropertyManager.setProperty(name, value);
++            log.debug("Going to initialize properties from init param");
++            for (Iterator<Property> i = propertiesParam.getPropertyIterator();i.hasNext();)
++            {
++               Property property = i.next();
++               String name = property.getName();
++               String value = property.getValue();
++               log.debug("Adding property from init param " + name + " = " + value);
++               PropertyManager.setProperty(name, value);
++            }
++         }         
++         ValueParam pathParam = params.getValueParam("properties.url");
++         if (pathParam != null)
++         {
++            log.debug("Using file path " + path + " found from configuration");
++            path = pathParam.getValue();
+          }
+       }
+ 
+       //
+-      String path = null;
+-      ValueParam pathParam = params.getValueParam("properties.url");
+-      if (pathParam != null)
+-      {
+-         log.debug("Using file path " + path + " found from configuration");
+-         path = pathParam.getValue();
+-      }
+-
+-      //
+       String systemPath = PropertyManager.getProperty(PropertyManager.PROPERTIES_URL);
+       if (systemPath != null)
+       {
+Index: exo.kernel.container/src/main/java/org/exoplatform/container/StandaloneContainer.java
+===================================================================
+--- exo.kernel.container/src/main/java/org/exoplatform/container/StandaloneContainer.java	(revision 5185)
++++ exo.kernel.container/src/main/java/org/exoplatform/container/StandaloneContainer.java	(working copy)
+@@ -82,6 +82,10 @@
+       configurationManager = new ConfigurationManagerImpl(configClassLoader, ExoContainer.getProfiles());
+       this.registerComponentInstance(ConfigurationManager.class, configurationManager);
+       registerComponentImplementation(SessionManagerImpl.class);
++      // Workaround used to allow to use the PropertyConfigurator with the StandaloneContainer
++      // If the system property PropertyManager.PROPERTIES_URL has been set properly, it will load the properties
++      // from the file and load them as system properties
++      new PropertyConfigurator(configurationManager);
+    }
+ 
+    /**
