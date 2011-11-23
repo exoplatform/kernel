@@ -62,29 +62,35 @@ public class PropertyConfigurator implements Startable
    /** The logger. */
    private final Log log = ExoLogger.getExoLogger(PropertyConfigurator.class);
 
+   public PropertyConfigurator(ConfigurationManager confManager)
+   {
+      this(null, confManager);
+   }
+
    public PropertyConfigurator(InitParams params, ConfigurationManager confManager)
    {
-      PropertiesParam propertiesParam = params.getPropertiesParam("properties");
-      if (propertiesParam != null)
-      {
-         log.debug("Going to initialize properties from init param");
-         for (Iterator<Property> i = propertiesParam.getPropertyIterator();i.hasNext();)
-         {
-            Property property = i.next();
-            String name = property.getName();
-            String value = property.getValue();
-            log.debug("Adding property from init param " + name + " = " + value);
-            PropertyManager.setProperty(name, value);
-         }
-      }
-
-      //
       String path = null;
-      ValueParam pathParam = params.getValueParam("properties.url");
-      if (pathParam != null)
+      if (params != null)
       {
-         log.debug("Using file path " + path + " found from configuration");
-         path = pathParam.getValue();
+         PropertiesParam propertiesParam = params.getPropertiesParam("properties");
+         if (propertiesParam != null)
+         {
+            log.debug("Going to initialize properties from init param");
+            for (Iterator<Property> i = propertiesParam.getPropertyIterator();i.hasNext();)
+            {
+               Property property = i.next();
+               String name = property.getName();
+               String value = property.getValue();
+               log.debug("Adding property from init param " + name + " = " + value);
+               PropertyManager.setProperty(name, value);
+            }
+         }         
+         ValueParam pathParam = params.getValueParam("properties.url");
+         if (pathParam != null)
+         {
+            log.debug("Using file path " + path + " found from configuration");
+            path = pathParam.getValue();
+         }
       }
 
       //
