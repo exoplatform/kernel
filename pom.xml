@@ -53,6 +53,7 @@
       <module>exo.kernel.commons</module>
       <module>exo.kernel.commons.test</module>
       <module>exo.kernel.component.common</module>
+      <module>exo.kernel.component.ext.rpc.impl.jgroups.v3</module>
       <module>exo.kernel.component.cache</module>
       <module>exo.kernel.component.ext.cache.impl.jboss.v3</module>
       <module>exo.kernel.component.ext.cache.impl.infinispan.v5</module>
@@ -86,7 +87,7 @@
          </dependency>
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.component.remote</artifactId>
+            <artifactId>exo.kernel.component.common</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>

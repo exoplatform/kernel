@@ -16,25 +16,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.rpc.impl;
+package org.exoplatform.services.rpc.jgv3;
 
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.rpc.impl.AbstractRPCService;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.View;
-import org.jgroups.blocks.GroupRequest;
+import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
 import org.jgroups.util.RspList;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Vector;
 
 /**
- * This class is the implementation of the {@link AbstractRPCService} for JGroups 2.
+ * This class is the implementation of the {@link AbstractRPCService} for JGroups 3.
  * 
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
@@ -55,16 +55,15 @@ public class RPCServiceImpl extends AbstractRPCService
     */
    protected Address getLocalAddress()
    {
-      return channel.getLocalAddress();
+      return channel.getAddress();
    }
    
    /**
     * {@inheritDoc}
     */
-   protected RspList castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout)
+   protected RspList<Object> castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout) throws Exception
    {
-      return dispatcher.castMessage(dests instanceof Vector ? (Vector<Address>)dests : new Vector<Address>(dests), msg,
-         synchronous ? GroupRequest.GET_ALL : GroupRequest.GET_NONE, timeout);
+      return dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout));
    }
    
    /**
@@ -72,9 +71,14 @@ public class RPCServiceImpl extends AbstractRPCService
     */
    protected Channel createChannel() throws Exception
    {
-      Channel channel = new JChannel(configurator);
-      channel.setOpt(Channel.AUTO_RECONNECT, true);
-      return channel;
+      return new JChannel(configurator);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void unblock()
+   {
    }
 
    /**
@@ -90,6 +94,6 @@ public class RPCServiceImpl extends AbstractRPCService
     */
    protected void setObject(Message m, Object o)
    {
-      m.setObject((Serializable)o);
+      m.setObject(o);
    }
 }
