@@ -37,6 +37,25 @@
         </object>
       </object-param>
       <object-param>
+        <name>cache-distributed</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field  name="name"><string>cache-distributed</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+          <field  name="distributed"><boolean>true</boolean></field>
+        </object>
+      </object-param>      
+      <object-param>
+        <name>cache-distributed2</name>
+        <description>The default cache configuration</description>
+        <object type="org.exoplatform.services.cache.ExoCacheConfig">
+          <field  name="name"><string>cache-distributed2</string></field>
+          <field  name="maxSize"><int>5</int></field>
+          <field  name="liveTime"><long>2</long></field>
+          <field  name="distributed"><boolean>true</boolean></field>
+        </object>
+      </object-param>       <object-param>
         <name>test-multi-threading</name>
         <description>The default cache configuration</description>
         <object type="org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig">
@@ -53,7 +72,7 @@
           <field  name="name"><string>cacheDistributed</string></field>
           <field  name="maxSize"><int>5</int></field>
           <field  name="liveTime"><long>2</long></field>
-          <field  name="distributed"><boolean>true</boolean></field>
+          <field  name="replicated"><boolean>true</boolean></field>
         </object>
       </object-param>                
       <object-param>
@@ -148,7 +167,6 @@
 <!--      </object-param>                                   -->
     </init-params>	
   </component>  
-  
   <component>
     <key>org.exoplatform.services.cache.ExoCacheFactory</key>
     <type>org.exoplatform.services.cache.impl.infinispan.ExoCacheFactoryImpl</type>
@@ -158,7 +176,7 @@
         <value>jar:/conf/portal/cache-configuration-template.xml</value>
       </value-param>
     </init-params>
-  </component>  
+  </component>
     
   <external-component-plugins>
     <target-component>org.exoplatform.services.cache.ExoCacheFactory</target-component>
@@ -203,6 +221,9 @@
 	                     </value>
 	                     <value>
 	                        <string>LRU</string>
+	                     </value>
+	                     <value>
+	                        <string>LRU_OLD</string>
 	                     </value>
 	                     <value>
 	                        <string>UNORDERED</string>

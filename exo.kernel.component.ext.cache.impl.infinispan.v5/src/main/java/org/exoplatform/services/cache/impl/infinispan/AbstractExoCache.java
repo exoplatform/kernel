@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.cache.impl.infinispan;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.cache.CacheInfo;
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
@@ -39,6 +40,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -219,13 +221,22 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void put(K key, V value) throws NullPointerException
+   public void put(final K key, final V value) throws NullPointerException
    {
       if (key == null)
       {
          throw new NullPointerException("No null cache key accepted");
-      }      
-      putOnly(key, value);
+      }
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+
+         @Override
+         public Void run()
+         {
+            putOnly(key, value);
+            return null;
+         }
+      });
       onPut(key, value);
    }
 
@@ -240,7 +251,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void putMap(Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
+   public void putMap(final Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
    {
       if (objs == null)
       {
@@ -253,39 +264,56 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
             throw new IllegalArgumentException("No null cache key accepted");
          }
       }      
-      cache.startBatch();
-      try
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
-         // Start transaction
-         for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
+
+         @Override
+         public Void run()
          {
-            putOnly(entry.getKey(), entry.getValue());
+            cache.startBatch();
+            try
+            {
+               // Start transaction
+               for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
+               {
+                  putOnly(entry.getKey(), entry.getValue());
+               }
+               cache.endBatch(true);
+               // End transaction
+               for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
+               {
+                  onPut(entry.getKey(), entry.getValue());
+               }
+            }
+            catch (Exception e)
+            {
+               cache.endBatch(false);
+               LOG.warn("An error occurs while executing the putMap method", e);
+            }
+            return null;
          }
-         cache.endBatch(true);
-         // End transaction
-         for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
-         {
-            onPut(entry.getKey(), entry.getValue());
-         }
-      }
-      catch (Exception e)
-      {
-         cache.endBatch(false);
-         LOG.warn("An error occurs while executing the putMap method", e);
-      }
+      });
    }
 
    /**
     * {@inheritDoc}
     */
    @SuppressWarnings("unchecked")
-   public V remove(Serializable name) throws NullPointerException
+   public V remove(final Serializable name) throws NullPointerException
    {
       if (name == null)
       {
          throw new NullPointerException("No null cache key accepted");
       }      
-      V result = cache.remove(name);
+      V result = SecurityHelper.doPrivilegedAction(new PrivilegedAction<V>()
+      {
+
+         @Override
+         public V run()
+         {
+            return cache.remove(name);
+         }
+      });
       onRemove((K)name, result);
       return result;
    }

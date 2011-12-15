@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.cache.impl.infinispan;
+package org.exoplatform.services.cache.impl.infinispan.distributed;
 
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -28,9 +28,11 @@ import org.exoplatform.services.cache.CachedObjectSelector;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
-import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.ObjectCacheInfo;
+import org.exoplatform.services.cache.impl.infinispan.ExoCacheFactoryImpl;
+import org.exoplatform.services.ispn.DistributedCacheManager;
 import org.exoplatform.test.BasicTestCase;
+import org.infinispan.distribution.DistributionManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,14 +51,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Id$
  *
  */
-public class TestAbstractExoCache extends BasicTestCase
+public class TestDistributedExoCache extends BasicTestCase
 {
 
    CacheService service;
 
-   AbstractExoCache<Serializable, Object> cache;
+   DistributedExoCache<Serializable, Object> cache;
 
-   public TestAbstractExoCache(String name)
+   DistributedExoCache<Serializable, Object> cache2;
+
+   public TestDistributedExoCache(String name)
    {
       super(name);
    }
@@ -64,7 +68,15 @@ public class TestAbstractExoCache extends BasicTestCase
    public void setUp() throws Exception
    {
       this.service = (CacheService)PortalContainer.getInstance().getComponentInstanceOfType(CacheService.class);
-      this.cache = (AbstractExoCache<Serializable, Object>)service.getCacheInstance("myCache");
+      this.cache = (DistributedExoCache<Serializable, Object>)service.getCacheInstance("cache-distributed");
+      this.cache2 = (DistributedExoCache<Serializable, Object>)service.getCacheInstance("cache-distributed2");
+      cache2.put(new MyKey("a"), "a");
+   }
+
+   protected void tearDown() throws Exception
+   {
+      cache.clearCache();
+      cache2.clearCache();
    }
 
    public void testPut() throws Exception
@@ -77,8 +89,6 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(3, cache.getCacheSize());
       cache.put(new MyKey("d"), "c");
       assertEquals(4, cache.getCacheSize());
-
-      cache.clearCache();
    }
 
    public void testClearCache() throws Exception
@@ -89,8 +99,6 @@ public class TestAbstractExoCache extends BasicTestCase
       assertTrue(cache.getCacheSize() > 0);
       cache.clearCache();
       assertTrue(cache.getCacheSize() == 0);
-
-      cache.clearCache();
    }
 
    public void testGet() throws Exception
@@ -102,8 +110,6 @@ public class TestAbstractExoCache extends BasicTestCase
       cache.remove(new MyKey("a"));
       assertEquals(null, cache.get(new MyKey("a")));
       assertEquals(null, cache.get(new MyKey("x")));
-
-      cache.clearCache();
    }
 
    public void testRemove() throws Exception
@@ -118,8 +124,6 @@ public class TestAbstractExoCache extends BasicTestCase
       assertEquals(1, cache.getCacheSize());
       assertEquals(null, cache.remove(new MyKey("x")));
       assertEquals(1, cache.getCacheSize());
-
-      cache.clearCache();
    }
 
    public void testPutMap() throws Exception
@@ -162,8 +166,6 @@ public class TestAbstractExoCache extends BasicTestCase
       values.put(new MyKey("d"), "d");
       cache.putMap(values);
       assertEquals(2, cache.getCacheSize());
-
-      cache.clearCache();
    }
 
    public void testGetCachedObjects() throws Exception
@@ -178,8 +180,6 @@ public class TestAbstractExoCache extends BasicTestCase
       assertTrue(values.contains("a"));
       assertTrue(values.contains("b"));
       assertTrue(values.contains("c"));
-
-      cache.clearCache();
    }
 
    public void testRemoveCachedObjects() throws Exception
@@ -195,8 +195,6 @@ public class TestAbstractExoCache extends BasicTestCase
       assertTrue(values.contains("b"));
       assertTrue(values.contains("c"));
       assertEquals(0, cache.getCacheSize());
-
-      cache.clearCache();
    }
 
    public void testSelect() throws Exception
@@ -223,8 +221,6 @@ public class TestAbstractExoCache extends BasicTestCase
       };
       cache.select(selector);
       assertEquals(3, count.intValue());
-
-      cache.clearCache();
    }
 
    public void testGetHitsNMisses() throws Exception
@@ -238,22 +234,11 @@ public class TestAbstractExoCache extends BasicTestCase
       cache.get(new MyKey("z"));
       assertEquals(1, cache.getCacheHit() - hits);
       assertEquals(2, cache.getCacheMiss() - misses);
-
-      cache.clearCache();
-   }
-
-   private ExoCacheFactory getExoCacheFactoryInstance() throws ExoCacheInitException
-   {
-      PortalContainer pc = PortalContainer.getInstance();
-      return new ExoCacheFactoryImpl((ExoContainerContext)pc.getComponentInstanceOfType(ExoContainerContext.class),
-         "jar:/conf/portal/cache-configuration-template.xml", (ConfigurationManager)pc
-            .getComponentInstanceOfType(ConfigurationManager.class));
    }
 
    public void testMultiThreading() throws Exception
    {
       long time = System.currentTimeMillis();
-      final ExoCache<Serializable, Object> cache = service.getCacheInstance("test-multi-threading");
       final int totalElement = 100;
       final int totalTimes = 20;
       int reader = 20;
@@ -437,8 +422,6 @@ public class TestAbstractExoCache extends BasicTestCase
          throw errors.get(0);
       }
       System.out.println("Total Time = " + (System.currentTimeMillis() - time));
-
-      cache.clearCache();
    }
 
    public static class MyCacheListener implements CacheListener<Serializable, Object>
@@ -453,31 +436,6 @@ public class TestAbstractExoCache extends BasicTestCase
       public int put;
 
       public int remove;
-
-      public void onClearCache(ExoCache<Serializable, Object> cache) throws Exception
-      {
-         clearCache++;
-      }
-
-      public void onExpire(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         expire++;
-      }
-
-      public void onGet(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         get++;
-      }
-
-      public void onPut(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         put++;
-      }
-
-      public void onRemove(ExoCache<Serializable, Object> cache, Serializable key, Object obj) throws Exception
-      {
-         remove++;
-      }
 
       public void onClearCache(CacheListenerContext context) throws Exception
       {
@@ -510,7 +468,7 @@ public class TestAbstractExoCache extends BasicTestCase
       private static final long serialVersionUID = 1L;
 
       public String value;
-
+      public MyKey(){}
       public MyKey(String value)
       {
          this.value = value;
@@ -533,14 +491,11 @@ public class TestAbstractExoCache extends BasicTestCase
       {
          return value;
       }
-   }   
-
-   @SuppressWarnings("unchecked")
+   }
+   
    public void testDistributedCache() throws Exception
    {
-      // If the cache is still alive this test fails due to a TimeoutException.
-      cache.cache.getCacheManager().stop();
-      
+      PortalContainer pc = PortalContainer.getInstance();
       System.out
          .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
             + System.getProperty("java.net.preferIPv4Stack"));
@@ -549,123 +504,145 @@ public class TestAbstractExoCache extends BasicTestCase
       config.setMaxSize(5);
       config.setLiveTime(1);
       config.setImplementation("LRU");
-      config.setReplicated(true);
-      ExoCacheConfig config2 = new ExoCacheConfig();
-      config2.setName("MyCacheDistributed2");
-      config2.setMaxSize(5);
-      config2.setLiveTime(1);
-      config2.setImplementation("LRU");
-      config2.setReplicated(true);
-      AbstractExoCache<Serializable, Object> cache1 =
-         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config);
+      config.setDistributed(true);
+      Map<String, String> params = new HashMap<String, String>();
+      params.put("infinispan-num-owners", "1");
+      ConfigurationManager cm = (ConfigurationManager)pc.getComponentInstanceOfType(ConfigurationManager.class);
+      DistributedCacheManager dcm2 =
+         new DistributedCacheManager("jar:/conf/portal/distributed-cache-configuration.xml", params, cm);
+
+      @SuppressWarnings("unchecked")
+      DistributedExoCache<Serializable, Object> cache1 =
+         (DistributedExoCache<Serializable, Object>)((ExoCacheFactory)pc
+            .getComponentInstanceOfType(ExoCacheFactory.class)).createCache(config);
+      DistributionManager dm = cache1.getCache().getDistributionManager();
       MyCacheListener listener1 = new MyCacheListener();
       cache1.addCacheListener(listener1);
-      AbstractExoCache<Serializable, Object> cache2 =
-         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config);
+      DistributedExoCache<Serializable, Object> cache2 =
+         (DistributedExoCache<Serializable, Object>)new ExoCacheFactoryImpl(
+            (ExoContainerContext)pc.getComponentInstanceOfType(ExoContainerContext.class),
+            "jar:/conf/portal/cache-configuration-template.xml", cm, dcm2).createCache(config);
       MyCacheListener listener2 = new MyCacheListener();
       cache2.addCacheListener(listener2);
-// Cache 3 creates a conflict with cache 1 and 2      
-//      AbstractExoCache<Serializable, Object> cache3 =
-//         (AbstractExoCache<Serializable, Object>)getExoCacheFactoryInstance().createCache(config2);
-//      MyCacheListener listener3 = new MyCacheListener();
-//      cache3.addCacheListener(listener3);
       try
       {
-         cache1.put(new MyKey("a"), "b");
+         MyKey key;
+         cache1.put(key = new MyKey("a"), "b");
          assertEquals(1, cache1.getCacheSize());
          assertEquals("b", cache2.get(new MyKey("a")));
          assertEquals(1, cache2.getCacheSize());
-//         assertEquals(0, cache3.getCacheSize());
-         assertEquals(1, listener1.put);
-         assertEquals(1, listener2.put);
-//         assertEquals(0, listener3.put);
+         
+//         int put1 = 1;
+//         int put2 = dm.getLocality(key).isLocal() ? 0 : 1;
+//
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(0, listener1.get);
          assertEquals(1, listener2.get);
-//         assertEquals(0, listener3.get);
-         cache2.put(new MyKey("b"), "c");
+         
+         MyKey key2;
+         cache2.put(key2 = new MyKey("b"), "c");
          assertEquals(2, cache1.getCacheSize());
          assertEquals(2, cache2.getCacheSize());
          assertEquals("c", cache1.get(new MyKey("b")));
-//         assertEquals(0, cache3.getCacheSize());
-         assertEquals(2, listener1.put);
-         assertEquals(2, listener2.put);
-//         assertEquals(0, listener3.put);
+         
+//         put1 += dm.getLocality(key2).isLocal() ? 1 : 0;
+//         put2++;
+//
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(1, listener1.get);
          assertEquals(1, listener2.get);
-//         assertEquals(0, listener3.get);
-//         cache3.put(new MyKey("c"), "d");
+
          assertEquals(2, cache1.getCacheSize());
          assertEquals(2, cache2.getCacheSize());
-//         assertEquals(1, cache3.getCacheSize());
-//         assertEquals("d", cache3.get(new MyKey("c")));
-         assertEquals(2, listener1.put);
-         assertEquals(2, listener2.put);
-//         assertEquals(1, listener3.put);
+
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(1, listener1.get);
          assertEquals(1, listener2.get);
-//         assertEquals(1, listener3.get);
-         cache2.put(new MyKey("a"), "a");
+
+         cache2.put(key = new MyKey("a"), "a");
          assertEquals(2, cache1.getCacheSize());
          assertEquals(2, cache2.getCacheSize());
          assertEquals("a", cache1.get(new MyKey("a")));
-         assertEquals(3, listener1.put);
-         assertEquals(3, listener2.put);
-//         assertEquals(1, listener3.put);
+         
+//         put1 += dm.getLocality(key).isLocal() ? 1 : 0;
+//         put2++;
+//
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(2, listener1.get);
          assertEquals(1, listener2.get);
-//         assertEquals(1, listener3.get);
-         cache2.remove(new MyKey("a"));
+
+         cache2.remove(key = new MyKey("a"));
          assertEquals(1, cache1.getCacheSize());
          assertEquals(1, cache2.getCacheSize());
-         assertEquals(3, listener1.put);
-         assertEquals(3, listener2.put);
-//         assertEquals(1, listener3.put);
+         
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(2, listener1.get);
          assertEquals(1, listener2.get);
-//         assertEquals(1, listener3.get);
-         assertEquals(1, listener1.remove);
-         assertEquals(1, listener2.remove);
-//         assertEquals(0, listener3.remove);
-         cache1.put(new MyKey("c"), "c");
+         
+//         int remove1 = dm.getLocality(key).isLocal() ? 1 : 0;
+//         int remove2 = 1;
+//         
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+         
+         cache1.put(key = new MyKey("c"), "c");
          cache1.clearCache();
          assertEquals(0, cache1.getCacheSize());
-         assertEquals(null, cache1.get(new MyKey("b")));
-         assertEquals("c", cache2.get(new MyKey("b")));
-         assertEquals("c", cache2.get(new MyKey("c")));
-         assertEquals(2, cache2.getCacheSize());
-         assertEquals(4, listener1.put);
-         assertEquals(4, listener2.put);
-//         assertEquals(1, listener3.put);
+         assertNull(cache1.get(new MyKey("b")));
+         assertNull(cache2.get(new MyKey("b")));
+         assertNull(cache2.get(new MyKey("c")));
+         assertEquals(0, cache2.getCacheSize());
+         
+//         put1++;
+//         put2 += dm.getLocality(key).isLocal() ? 0 : 1;
+
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(3, listener1.get);
          assertEquals(3, listener2.get);
-//         assertEquals(1, listener3.get);
-         assertEquals(1, listener1.remove);
-         assertEquals(1, listener2.remove);
-//         assertEquals(0, listener3.remove);
+
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
-//         assertEquals(0, listener3.clearCache);
+
          Map<Serializable, Object> values = new HashMap<Serializable, Object>();
-         values.put(new MyKey("a"), "a");
-         values.put(new MyKey("b"), "b");
+         values.put(key = new MyKey("a"), "a");
+         values.put(key2 = new MyKey("b"), "b");
          cache1.putMap(values);
          assertEquals(2, cache1.getCacheSize());
          Thread.sleep(40);
          assertEquals("a", cache2.get(new MyKey("a")));
          assertEquals("b", cache2.get(new MyKey("b")));
-         assertEquals(3, cache2.getCacheSize());
-         assertEquals(6, listener1.put);
-         assertEquals(6, listener2.put);
-//         assertEquals(1, listener3.put);
+         assertEquals(2, cache2.getCacheSize());
+
+//         put1 += 2;
+//         put2 += (dm.getLocality(key).isLocal() ? 0 : 1) + (dm.getLocality(key2).isLocal() ? 0 : 1);
+//         
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(3, listener1.get);
          assertEquals(5, listener2.get);
-//         assertEquals(1, listener3.get);
-         assertEquals(1, listener1.remove);
-         assertEquals(1, listener2.remove);
-//         assertEquals(0, listener3.remove);
+
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
-//         assertEquals(0, listener3.clearCache);
+
          values = new HashMap<Serializable, Object>()
          {
             private static final long serialVersionUID = 1L;
@@ -698,55 +675,27 @@ public class TestAbstractExoCache extends BasicTestCase
          values.put(new MyKey("d"), "d");
          cache1.putMap(values);
          assertEquals(2, cache1.getCacheSize());
-         assertEquals(3, cache2.getCacheSize());
-//         assertEquals(1, cache3.getCacheSize());
-         assertEquals(6, listener1.put);
-         assertEquals(6, listener2.put);
-//         assertEquals(1, listener3.put);
+         assertEquals(2, cache2.getCacheSize());
+
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
          assertEquals(3, listener1.get);
          assertEquals(5, listener2.get);
-//         assertEquals(1, listener3.get);
-         assertEquals(1, listener1.remove);
-         assertEquals(1, listener2.remove);
-//         assertEquals(0, listener3.remove);
+
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+
          assertEquals(1, listener1.clearCache);
          assertEquals(0, listener2.clearCache);
-//         assertEquals(0, listener3.clearCache);
+
          assertEquals(0, listener1.expire);
          assertEquals(0, listener2.expire);
-//         assertEquals(0, listener3.expire);
-         Thread.sleep(5600);
-         // The values are evicted lazily when we call it
-         cache1.get(new MyKey("a"));
-         cache1.get(new MyKey("b"));
-         cache2.get(new MyKey("a"));
-         cache2.get(new MyKey("b"));
-         cache2.get(new MyKey("c"));
-         assertEquals(0, cache1.getCacheSize());
-         assertEquals(0, cache2.getCacheSize());
-//         assertEquals(0, cache3.getCacheSize());
-         assertEquals(6, listener1.put);
-         assertEquals(6, listener2.put);
-//         assertEquals(1, listener3.put);
-         assertEquals(5, listener1.get);
-         assertEquals(8, listener2.get);
-//         assertEquals(1, listener3.get);
-         assertEquals(1, listener1.remove);
-         assertEquals(1, listener2.remove);
-//         assertEquals(0, listener3.remove);
-         assertEquals(1, listener1.clearCache);
-         assertEquals(0, listener2.clearCache);
-//         assertEquals(0, listener3.clearCache);
-// Expiration events are not triggered in infinispan         
-//         assertEquals(2, listener1.expire);
-//         assertEquals(3, listener2.expire);
-//         assertEquals(1, listener3.expire);
+
       }
       finally
       {
-         cache1.cache.getCacheManager().stop();
-         cache2.cache.getCacheManager().stop();
-//         cache3.cache.getCacheManager().stop();
+         dcm2.stop();
       }
-   }   
+   }
 }

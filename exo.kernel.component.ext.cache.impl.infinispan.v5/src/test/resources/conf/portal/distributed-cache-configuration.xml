@@ -45,21 +45,22 @@
          </properties>
       </replicationQueueScheduledExecutor>
       <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/>
-      <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="eXoCache-cluster" distributedSyncTimeout="20000">
+      <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="Infinispan-cluster" distributedSyncTimeout="20000">
       	<properties>
          <property name="configurationFile" value="udp.xml"/>
       	</properties>
       </transport>
       <shutdown hookBehavior="DEFAULT"/>
    </global>
-   <default>
-      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="10000" writeSkewCheck="false" concurrencyLevel="500"/>
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
+   <namedCache name="eXoCache">
+      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" />
+      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true"/>
       <jmxStatistics enabled="true"/>
-      <invocationBatching enabled="true"/>
-      <clustering mode="replication">
-         <stateRetrieval timeout="20000" fetchInMemoryState="false"/>
-         <sync replTimeout="20000"/>
+      <clustering mode="distribution">
+      	 <l1 enabled="false"/>
+         <hash numOwners="${infinispan-num-owners}" rehashRpcTimeout="120000" />
+         <sync/>
       </clustering>
-   </default>
+      <invocationBatching enabled="true"/> 
+   </namedCache>
 </infinispan>

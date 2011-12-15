@@ -152,11 +152,13 @@ public class GenericExoCacheCreator implements ExoCacheCreator
          cacheConfig.fluent().expiration().lifespan(period);
       }
 
+      @Managed
       public void setMaxIdle(long maxIdle)
       {
          cacheConfig.fluent().expiration().maxIdle(maxIdle);
       }
 
+      @Managed
       public void setWakeUpInterval(long wakeUpInterval)
       {
          cacheConfig.fluent().expiration().wakeUpInterval(wakeUpInterval);
