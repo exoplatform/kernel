@@ -37,7 +37,7 @@ public abstract class AbstractMapper<KIn, VIn, KOut, VOut> implements Mapper<KIn
    private static final long serialVersionUID = 7118530772747505976L;
 
    /**
-    * @see org.infinispan.distexec.mapreduce.Mapper#map(java.lang.Object, java.lang.Object, org.infinispan.distexec.mapreduce.Collector)
+    * {@inheritDoc}
     */
    @Override
    public void map(KIn key, VIn value, Collector<KOut, VOut> collector)
@@ -49,9 +49,8 @@ public abstract class AbstractMapper<KIn, VIn, KOut, VOut> implements Mapper<KIn
    }
 
    /**
-    * This method is in fact an internal mapping
-    * 
-    * @see org.infinispan.distexec.mapreduce.Mapper#map(java.lang.Object, java.lang.Object, org.infinispan.distexec.mapreduce.Collector)
+    * This method is in fact an internal mapping, it will be called by the map method in
+    * case the given key matches with the context
     */
    protected abstract void _map(KIn key, VIn value, Collector<KOut, VOut> collector);
 

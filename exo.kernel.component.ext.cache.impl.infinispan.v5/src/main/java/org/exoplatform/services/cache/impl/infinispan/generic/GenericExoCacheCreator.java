@@ -90,16 +90,16 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       if (config instanceof GenericExoCacheConfig)
       {
          final GenericExoCacheConfig gConfig = (GenericExoCacheConfig)config;
-         return create(config, cacheConfig, cacheGetter, gConfig.getStrategy(), gConfig.getMaxEntries(), gConfig
-            .getLifespan(), gConfig.getMaxIdle() == 0 ? defaultMaxIdle : gConfig.getMaxIdle(), gConfig
-            .getWakeUpInterval() == 0 ? defaultWakeUpInterval : gConfig.getWakeUpInterval());
+         return create(config, cacheConfig, cacheGetter, gConfig.getStrategy(), gConfig.getMaxEntries(),
+            gConfig.getLifespan(), gConfig.getMaxIdle() == 0 ? defaultMaxIdle : gConfig.getMaxIdle(),
+            gConfig.getWakeUpInterval() == 0 ? defaultWakeUpInterval : gConfig.getWakeUpInterval());
       }
       else
       {
          final long period = config.getLiveTime();
-         return create(config, cacheConfig, cacheGetter, config.getImplementation() == null ? defaultStrategy : config
-            .getImplementation(), config.getMaxSize(), period > 0 ? period * 1000 : -1, defaultMaxIdle,
-            defaultWakeUpInterval);
+         return create(config, cacheConfig, cacheGetter,
+            config.getImplementation() == null ? defaultStrategy : config.getImplementation(), config.getMaxSize(),
+            period > 0 ? period * 1000 : -1, defaultMaxIdle, defaultWakeUpInterval);
       }
    }
 
@@ -111,7 +111,9 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       Callable<Cache<Serializable, Object>> cacheGetter, String strategy, int maxEntries, long lifespan, long maxIdle,
       long wakeUpInterval) throws ExoCacheInitException
    {
-      EvictionStrategy es = strategy == null || strategy.length() == 0 ? null : EvictionStrategy.valueOf(strategy.toUpperCase(Locale.ENGLISH));
+      EvictionStrategy es =
+         strategy == null || strategy.length() == 0 ? null : EvictionStrategy.valueOf(strategy
+            .toUpperCase(Locale.ENGLISH));
       if (es == null)
       {
          es = EvictionStrategy.LRU;
@@ -172,8 +174,8 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       }
 
       @ManagedName("Lifespan")
-      @ManagedDescription("Maximum lifespan of a cache entry, after which the entry is expired cluster-wide." +
-            " -1 means the entries never expire.")
+      @ManagedDescription("Maximum lifespan of a cache entry, after which the entry is expired cluster-wide."
+         + " -1 means the entries never expire.")
       public long getLiveTime()
       {
          return cacheConfig.getExpirationLifespan();
@@ -181,8 +183,8 @@ public class GenericExoCacheCreator implements ExoCacheCreator
 
       @Managed
       @ManagedName("MaxIdle")
-      @ManagedDescription("Maximum idle time a cache entry will be maintained in the cache. " +
-            "If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
+      @ManagedDescription("Maximum idle time a cache entry will be maintained in the cache. "
+         + "If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
       public long getMaxIdle()
       {
          return cacheConfig.getExpirationMaxIdle();
@@ -190,8 +192,8 @@ public class GenericExoCacheCreator implements ExoCacheCreator
 
       @Managed
       @ManagedName("WakeUpInterval")
-      @ManagedDescription("Interval between subsequent eviction runs. If you wish to disable the periodic eviction " +
-            "process altogether, set wakeupInterval to -1.")
+      @ManagedDescription("Interval between subsequent eviction runs. If you wish to disable the periodic eviction "
+         + "process altogether, set wakeupInterval to -1.")
       public long getWakeUpInterval()
       {
          return cacheConfig.getExpirationWakeUpInterval();

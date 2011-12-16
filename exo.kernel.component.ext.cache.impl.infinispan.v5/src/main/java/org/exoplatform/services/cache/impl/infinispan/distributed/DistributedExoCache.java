@@ -82,7 +82,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
     */
    private static final Log LOG = ExoLogger
       .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedExoCache");
-   
+
    public static final String CACHE_NAME = "eXoCache";
 
    private final AtomicInteger hits = new AtomicInteger(0);
@@ -92,7 +92,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    private String label;
 
    private String name;
-   
+
    private final String fullName;
 
    private boolean distributed;
@@ -118,12 +118,12 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       setLogEnabled(config.isLogEnabled());
       setReplicated(config.isRepicated());
    }
-   
+
    AdvancedCache<CacheKey<K>, V> getCache()
    {
       return cache;
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -164,7 +164,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       }
       lListeners.add(new ListenerContext<K, V>(listener, this));
    }
-   
+
    @SuppressWarnings("rawtypes")
    private ConcurrentMap<String, List<ListenerContext>> getOrCreateListeners()
    {
@@ -187,7 +187,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       ConcurrentMap<String, List<ListenerContext>> listeners = ALL_LISTENERS.get(cache);
       return listeners == null ? null : listeners.get(fullName);
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -199,7 +199,8 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          @Override
          public Void run()
          {
-            MapReduceTask<CacheKey<K>, V, String, CacheKey<K>> task = new MapReduceTask<CacheKey<K>, V, String, CacheKey<K>>(cache);
+            MapReduceTask<CacheKey<K>, V, String, CacheKey<K>> task =
+               new MapReduceTask<CacheKey<K>, V, String, CacheKey<K>>(cache);
             task.mappedWith(new ClearCacheMapper<K, V>(fullName)).reducedWith(new ClearCacheReducer<String, V, K>());
             task.execute();
             return null;
@@ -270,7 +271,8 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          @Override
          public Map<String, Integer> run()
          {
-            MapReduceTask<CacheKey<K>, V, String, Integer> task = new MapReduceTask<CacheKey<K>, V, String, Integer>(cache);
+            MapReduceTask<CacheKey<K>, V, String, Integer> task =
+               new MapReduceTask<CacheKey<K>, V, String, Integer>(cache);
             task.mappedWith(new GetSizeMapper<K, V>(fullName)).reducedWith(new GetSizeReducer<String>());
             return task.execute();
          }
@@ -281,7 +283,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       {
          sum += i;
       }
-      return sum;      
+      return sum;
    }
 
    /**
@@ -295,8 +297,10 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          @Override
          public Map<String, List<V>> run()
          {
-            MapReduceTask<CacheKey<K>, V, String, List<V>> task = new MapReduceTask<CacheKey<K>, V, String, List<V>>(cache);
-            task.mappedWith(new GetCachedObjectsMapper<K, V>(fullName)).reducedWith(new GetCachedObjectsReducer<String, V>());
+            MapReduceTask<CacheKey<K>, V, String, List<V>> task =
+               new MapReduceTask<CacheKey<K>, V, String, List<V>>(cache);
+            task.mappedWith(new GetCachedObjectsMapper<K, V>(fullName)).reducedWith(
+               new GetCachedObjectsReducer<String, V>());
             return task.execute();
          }
 
@@ -467,7 +471,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       {
 
          @Override
-         public  Map<K, V> run()
+         public Map<K, V> run()
          {
             MapReduceTask<CacheKey<K>, V, K, V> task = new MapReduceTask<CacheKey<K>, V, K, V>(cache);
             task.mappedWith(new GetEntriesMapper<K, V>(fullName)).reducedWith(new GetEntriesReducer<K, V>());
@@ -475,7 +479,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          }
 
       });
-      
+
       for (K key : map.keySet())
       {
          if (key == null)
@@ -617,8 +621,8 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
                LOG.warn("Cannot execute the CacheListener properly", e);
          }
       }
-   }   
-   
+   }
+
    @SuppressWarnings({"rawtypes", "unchecked"})
    void onGet(CacheKey<K> key, V obj)
    {
@@ -814,14 +818,17 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       return cache.getConfiguration().getExpirationWakeUpInterval();
    }
-   
+
    public static class CacheKey<K> implements Externalizable
    {
       private K key;
-      
+
       private String fullName;
 
-      public CacheKey() {}
+      public CacheKey()
+      {
+      }
+
       public CacheKey(String fullName, K key)
       {
          this.fullName = fullName;
@@ -835,7 +842,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       {
          return key;
       }
-      
+
       /**
        * @return the fullName
        */
@@ -843,7 +850,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       {
          return fullName;
       }
-      
+
       /**
        * @see java.lang.Object#hashCode()
        */
@@ -895,7 +902,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       public String toString()
       {
          return "CacheKey [fullName=" + fullName + ", key=" + key + "]";
-      }      
+      }
 
       /**
        * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
@@ -918,28 +925,30 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          in.readFully(buf);
          fullName = new String(buf, "UTF-8");
          key = (K)in.readObject();
-      }      
+      }
    }
-   
-   private abstract static class AbstractExoCacheMapper<K, V, KOut, VOut> extends AbstractMapper<CacheKey<K>, V, KOut, VOut> implements Externalizable
+
+   private abstract static class AbstractExoCacheMapper<K, V, KOut, VOut> extends
+      AbstractMapper<CacheKey<K>, V, KOut, VOut> implements Externalizable
    {
       /**
        * The full name of the cache instance
        */
       private String fullName;
 
-      public AbstractExoCacheMapper() {}
-      
+      public AbstractExoCacheMapper()
+      {
+      }
+
       public AbstractExoCacheMapper(String fullName)
       {
          this.fullName = fullName;
       }
-      
+
       /**
        * The serial version UID
        */
       private static final long serialVersionUID = 7962676854308932222L;
-
 
       /**
        * @see org.exoplatform.services.ispn.AbstractMapper#isValid(java.lang.Object)
@@ -968,31 +977,32 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          byte[] buf = new byte[in.readInt()];
          in.readFully(buf);
          fullName = new String(buf, "UTF-8");
-      }      
+      }
    }
-   
+
    public static class GetSizeMapper<K, V> extends AbstractExoCacheMapper<K, V, String, Integer>
    {
 
-      public GetSizeMapper() {}
-      
+      public GetSizeMapper()
+      {
+      }
+
       public GetSizeMapper(String fullName)
       {
          super(fullName);
       }
-      
-      
+
       /**
-       * @see org.exoplatform.services.ispn.AbstractMapper#_map(java.lang.Object, java.lang.Object, org.infinispan.distexec.mapreduce.Collector)
+       * {@inheritDoc}
        */
       @Override
       protected void _map(CacheKey<K> key, V value, Collector<String, Integer> collector)
       {
          collector.emit("total", Integer.valueOf(1));
       }
-      
+
    }
-   
+
    public static class GetSizeReducer<K> implements Reducer<K, Integer>
    {
 
@@ -1014,31 +1024,32 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
             sum += i;
          }
          return sum;
-      }  
+      }
    }
-   
+
    public static class GetCachedObjectsMapper<K, V> extends AbstractExoCacheMapper<K, V, String, List<V>>
    {
 
-      public GetCachedObjectsMapper() {}
-      
+      public GetCachedObjectsMapper()
+      {
+      }
+
       public GetCachedObjectsMapper(String fullName)
       {
          super(fullName);
       }
-      
-      
+
       /**
-       * @see org.exoplatform.services.ispn.AbstractMapper#_map(java.lang.Object, java.lang.Object, org.infinispan.distexec.mapreduce.Collector)
+       * {@inheritDoc}
        */
       @Override
       protected void _map(CacheKey<K> key, V value, Collector<String, List<V>> collector)
       {
          collector.emit("values", Collections.singletonList(value));
       }
-      
-   }   
-   
+
+   }
+
    public static class GetCachedObjectsReducer<K, V> implements Reducer<K, List<V>>
    {
 
@@ -1060,31 +1071,32 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
             values.addAll(vals);
          }
          return values;
-      }  
+      }
    }
-   
+
    public static class ClearCacheMapper<K, V> extends AbstractExoCacheMapper<K, V, String, CacheKey<K>>
    {
 
-      public ClearCacheMapper() {}
-      
+      public ClearCacheMapper()
+      {
+      }
+
       public ClearCacheMapper(String fullName)
       {
          super(fullName);
       }
-      
-      
+
       /**
-       * @see org.exoplatform.services.ispn.AbstractMapper#_map(java.lang.Object, java.lang.Object, org.infinispan.distexec.mapreduce.Collector)
+       * {@inheritDoc}
        */
       @Override
       protected void _map(CacheKey<K> key, V value, Collector<String, CacheKey<K>> collector)
       {
          collector.emit("keys", key);
       }
-      
-   }   
-   
+
+   }
+
    public static class ClearCacheReducer<K, V, KIn> implements Reducer<K, CacheKey<KIn>>
    {
 
@@ -1110,7 +1122,8 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
             LOG.error("The top container could not be found");
             return null;
          }
-         DistributedCacheManager dcm = (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
+         DistributedCacheManager dcm =
+            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
          if (dcm == null)
          {
             LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
@@ -1134,32 +1147,33 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          }
          for (CacheKey<KIn> key : keys)
          {
-            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key); 
+            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
          }
          return null;
-      }  
+      }
    }
-   
+
    public static class GetEntriesMapper<K, V> extends AbstractExoCacheMapper<K, V, K, V>
    {
-      public GetEntriesMapper() {}
-      
+      public GetEntriesMapper()
+      {
+      }
+
       public GetEntriesMapper(String fullName)
       {
          super(fullName);
       }
-      
-      
+
       /**
-       * @see org.exoplatform.services.ispn.AbstractMapper#_map(java.lang.Object, java.lang.Object, org.infinispan.distexec.mapreduce.Collector)
+       * {@inheritDoc}
        */
       @Override
       protected void _map(CacheKey<K> key, V value, Collector<K, V> collector)
       {
          collector.emit(key.getKey(), value);
-      }      
+      }
    }
-   
+
    public static class GetEntriesReducer<K, V> implements Reducer<K, V>
    {
 
@@ -1175,6 +1189,6 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       public V reduce(K reducedKey, Iterator<V> iter)
       {
          return iter == null || !iter.hasNext() ? null : iter.next();
-      }  
+      }
    }
 }

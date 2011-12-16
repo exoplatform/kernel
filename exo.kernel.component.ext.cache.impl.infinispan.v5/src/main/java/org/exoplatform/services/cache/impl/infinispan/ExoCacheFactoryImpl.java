@@ -201,8 +201,9 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                }
                catch (Exception e)
                {
-                  throw new ExoCacheInitException("Cannot initialize the CacheManager corresponding to the configuration '"
-                     + cacheConfigTemplate + "'", e);
+                  throw new ExoCacheInitException(
+                     "Cannot initialize the CacheManager corresponding to the configuration '" + cacheConfigTemplate
+                        + "'", e);
                }
 
                GlobalConfiguration config = cacheManager.getGlobalConfiguration();
@@ -224,7 +225,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          {
             throw new ExoCacheInitException(e);
          }
-      }      
+      }
    }
 
    /**
@@ -293,35 +294,36 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          {
             try
             {
-               cacheManager = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<DefaultCacheManager>()
-               {
-                  public DefaultCacheManager run() throws Exception
+               cacheManager =
+                  SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<DefaultCacheManager>()
                   {
-                     // A custom configuration has been set
-                     if (LOG.isInfoEnabled())
-                        LOG.info("A custom configuration has been set for the cache '" + region + "'.");
-                     // Create the CacheManager by loading the configuration
-                     DefaultCacheManager customCacheManager =
-                        new DefaultCacheManager(configManager.getInputStream(customConfig), false);
-                     GlobalConfiguration gc = customCacheManager.getGlobalConfiguration();
-                     // Configure JGroups and JMX since it could affect the state of the Global Config
-                     configureCacheManager(gc);
-                     // Check if a CacheManager with the same GlobalConfiguration exists
-                     DefaultCacheManager currentCacheManager = mappingGlobalConfigCacheManager.get(gc);
-                     if (currentCacheManager == null)
+                     public DefaultCacheManager run() throws Exception
                      {
-                        // No cache manager has been defined so far for this Cache Configuration
-                        currentCacheManager = customCacheManager;
-                        // Use a different cache manager name to prevent naming conflict
-                        gc.fluent().globalJmxStatistics()
-                           .cacheManagerName(gc.getCacheManagerName() + "_" + region + "_" + ctx.getName());
-                        currentCacheManager.start();
-                        // We register this new cache manager
-                        mappingGlobalConfigCacheManager.put(gc, customCacheManager);
+                        // A custom configuration has been set
+                        if (LOG.isInfoEnabled())
+                           LOG.info("A custom configuration has been set for the cache '" + region + "'.");
+                        // Create the CacheManager by loading the configuration
+                        DefaultCacheManager customCacheManager =
+                           new DefaultCacheManager(configManager.getInputStream(customConfig), false);
+                        GlobalConfiguration gc = customCacheManager.getGlobalConfiguration();
+                        // Configure JGroups and JMX since it could affect the state of the Global Config
+                        configureCacheManager(gc);
+                        // Check if a CacheManager with the same GlobalConfiguration exists
+                        DefaultCacheManager currentCacheManager = mappingGlobalConfigCacheManager.get(gc);
+                        if (currentCacheManager == null)
+                        {
+                           // No cache manager has been defined so far for this Cache Configuration
+                           currentCacheManager = customCacheManager;
+                           // Use a different cache manager name to prevent naming conflict
+                           gc.fluent().globalJmxStatistics()
+                              .cacheManagerName(gc.getCacheManagerName() + "_" + region + "_" + ctx.getName());
+                           currentCacheManager.start();
+                           // We register this new cache manager
+                           mappingGlobalConfigCacheManager.put(gc, customCacheManager);
+                        }
+                        return currentCacheManager;
                      }
-                     return currentCacheManager;
-                  }
-               });
+                  });
             }
             catch (PrivilegedActionException e)
             {
@@ -334,7 +336,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                {
                   throw new Exception(e);
                }
-            }            
+            }
             conf = cacheManager.getDefaultConfiguration().clone();
          }
          else if (config.isDistributed())
@@ -372,16 +374,17 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             {
                try
                {
-                  return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Cache<Serializable, Object>>()
-                  {
-                     public Cache<Serializable, Object> run() throws Exception
+                  return SecurityHelper
+                     .doPrivilegedExceptionAction(new PrivilegedExceptionAction<Cache<Serializable, Object>>()
                      {
-                        // Define the configuration
-                        cacheManager.defineConfiguration(region, conf);
-                        // create and start the cache                 
-                        return cacheManager.getCache(region);
-                     }
-                  });
+                        public Cache<Serializable, Object> run() throws Exception
+                        {
+                           // Define the configuration
+                           cacheManager.defineConfiguration(region, conf);
+                           // create and start the cache                 
+                           return cacheManager.getCache(region);
+                        }
+                     });
                }
                catch (PrivilegedActionException e)
                {
@@ -394,7 +397,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   {
                      throw new Exception(e);
                   }
-               }               
+               }
             }
          });
       }
