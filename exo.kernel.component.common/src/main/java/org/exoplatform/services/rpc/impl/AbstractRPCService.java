@@ -411,7 +411,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          throw new RPCException("Command " + commandId + " unknown, please register your command first");
       }
       final Message msg = new Message();
-      setObject(msg, new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args));
+      setObject(msg, new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args)); //NOSONAR
       RspList rsps = SecurityHelper.doPrivilegedAction(new PrivilegedAction<RspList>()
       {
          public RspList run()

@@ -354,25 +354,37 @@ public class CompressData
             throw new Exception("nothing in the list");
          for (File f : list)
          {
-            String filePath = f.getAbsolutePath();
-            if (filePath.startsWith(path))
+            StringBuffer filePath = new StringBuffer(f.getAbsolutePath());
+
+            if (f.getAbsolutePath().startsWith(path))
             {
                if (containParent && file_.isDirectory())
-                  filePath = file_.getName() + File.separator + filePath.substring(path.length() + 1);
+               {
+                  filePath = new StringBuffer(file_.getName());
+                  filePath.append(File.separator);
+                  filePath.append(f.getAbsolutePath().substring(path.length() + 1));
+               }
                else if (file_.isDirectory())
-                  filePath = filePath.substring(path.length() + 1);
+               {
+                  filePath = new StringBuffer(f.getAbsolutePath().substring(path.length() + 1));
+               }
                else
-                  filePath = file_.getName();
+               {
+                  filePath = new StringBuffer(file_.getName());
+               }
             }
+
             if (f.isFile())
             {
                bufInput = PrivilegedFileHelper.fileInputStream(f);
             }
             else
-               filePath += "/";
-            addToArchive(jos, bufInput, filePath);
-         }
+            {
+               filePath.append("/");
+            }
 
+            addToArchive(jos, bufInput, filePath.toString());
+         }
       }
 
       private List<File> listFile(File dir)
@@ -440,23 +452,36 @@ public class CompressData
             throw new Exception("nothing in the list");
          for (File f : list)
          {
-            String filePath = f.getAbsolutePath();
-            if (filePath.startsWith(path))
+            StringBuffer filePath = new StringBuffer(f.getAbsolutePath());
+
+            if (f.getAbsolutePath().startsWith(path))
             {
                if (containParent && file_.isDirectory())
-                  filePath = file_.getName() + File.separator + filePath.substring(path.length() + 1);
+               {
+                  filePath = new StringBuffer(file_.getName());
+                  filePath.append(File.separator);
+                  filePath.append(f.getAbsolutePath().substring(path.length() + 1));
+               }
                else if (file_.isDirectory())
-                  filePath = filePath.substring(path.length() + 1);
+               {
+                  filePath = new StringBuffer(f.getAbsolutePath().substring(path.length() + 1));
+               }
                else
-                  filePath = file_.getName();
+               {
+                  filePath = new StringBuffer(file_.getName());
+               }
             }
+
             if (f.isFile())
             {
                bufInput = new FileInputStream(f);
             }
             else
-               filePath += "/";
-            addToArchive(zos, bufInput, filePath);
+            {
+               filePath.append("/");
+            }
+
+            addToArchive(zos, bufInput, filePath.toString());
          }
       }
 

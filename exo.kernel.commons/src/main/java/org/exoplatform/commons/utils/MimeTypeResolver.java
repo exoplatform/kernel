@@ -153,7 +153,7 @@ public class MimeTypeResolver
    {
       String mimeType = getMimeType(fileName);
 
-      if (mimeType == defaultMimeType)
+      if (mimeType.equals(defaultMimeType))
       {
          Collection<?> mimeTypes = MimeUtil.getMimeTypes(is);
          if (!mimeTypes.isEmpty())

@@ -263,7 +263,8 @@ public class ISO8601
     */
    public static Calendar parse(String dateString, String[] formats) throws ParseException
    {
-      String problems = "";
+      StringBuffer problems = new StringBuffer();
+
       int errOffset = 0;
       for (String format : formats)
       {
@@ -276,12 +277,24 @@ public class ISO8601
          {
             if (errOffset == 0)
                errOffset = e.getErrorOffset();
-            problems += format + " - " + e.getMessage() + ", error offset " + e.getErrorOffset() + " \n";
+
+            problems.append(format);
+            problems.append(" - ");
+            problems.append(e.getMessage());
+            problems.append(", error offset ");
+            problems.append(e.getErrorOffset());
+            problems.append(" \n");
+
          }
          catch (NumberFormatException e)
          {
             errOffset = 0;
-            problems += format + " - " + e.getMessage() + " \n";
+
+            problems.append(format);
+            problems.append(" - ");
+            problems.append(e.getMessage());
+            problems.append(" \n");
+
          }
       }
 

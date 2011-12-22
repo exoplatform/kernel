@@ -90,7 +90,8 @@ public class Namespaces
     */
    public static String[] getKernelNamespaces()
    {
-      return new String[]{KERNEL_1_0_URI, KERNEL_1_1_URI, KERNEL_1_2_URI, KERNEL_1_0_URI_OLD, KERNEL_1_1_URI_OLD, KERNEL_1_2_URI_OLD};
+      return new String[]{KERNEL_1_0_URI, KERNEL_1_1_URI, KERNEL_1_2_URI, KERNEL_1_0_URI_OLD, KERNEL_1_1_URI_OLD,
+         KERNEL_1_2_URI_OLD};
    }
    
    /**

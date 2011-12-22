@@ -137,7 +137,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
          ALLOW_SHAREABLE_CACHE, ALLOW_SHAREABLE_CACHE_DEFAULT));
    }
 
-   ExoCacheFactoryImpl(ExoContainerContext ctx, String cacheConfigTemplate, ConfigurationManager configManager, boolean allowShareableCache)
+   ExoCacheFactoryImpl(ExoContainerContext ctx, String cacheConfigTemplate, ConfigurationManager configManager,
+      boolean allowShareableCache)
    {
       this.ctx = ctx;
       this.configManager = configManager;

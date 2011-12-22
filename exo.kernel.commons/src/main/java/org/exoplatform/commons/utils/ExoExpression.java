@@ -244,26 +244,42 @@ public class ExoExpression
          return new ByteArrayInputStream(baos.toByteArray());
       for (File f : list)
       {
-         String filePath = f.getAbsolutePath();
-         if (filePath.startsWith(path))
+         StringBuffer filePath = new StringBuffer(f.getAbsolutePath());
+
+         if (f.getAbsolutePath().startsWith(path))
          {
             if (containParent && input.isDirectory())
-               filePath = input.getName() + File.separator + filePath.substring(path.length() + 1);
+            {
+               filePath = new StringBuffer(input.getName());
+               filePath.append(File.separator);
+               filePath.append(f.getAbsolutePath().substring(path.length() + 1));
+            }
             else if (input.isDirectory())
-               filePath = filePath.substring(path.length() + 1);
+            {
+               filePath = new StringBuffer(f.getAbsolutePath().substring(path.length() + 1));
+            }
             else
-               filePath = input.getName();
+            {
+               filePath = new StringBuffer(input.getName());
+            }
          }
+
          if (f.isFile())
          {
             FileInputStream fileInput = new FileInputStream(f);
             bufInput = new BufferedInputStream(fileInput, BUFFER);
          }
          else
-            filePath += "/";
-         addToArchive(zipOutput, bufInput, filePath);
+         {
+            filePath.append("/");
+         }
+
+         addToArchive(zipOutput, bufInput, filePath.toString());
+
          if (bufInput != null)
+         {
             bufInput.close();
+         }
       }
       zipOutput.close();
       ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());

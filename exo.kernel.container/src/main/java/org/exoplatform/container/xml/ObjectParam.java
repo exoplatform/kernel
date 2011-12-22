@@ -149,10 +149,15 @@ public class ObjectParam extends Parameter
       {
          String[] temp = value.split(" ");
          String className = temp[1];
+
          if (className.indexOf(".") < 0)
          {
-            className = package_ + "." + className;
-            Class clazz = Class.forName(className);
+            StringBuffer fullName = new StringBuffer();
+            fullName.append(package_);
+            fullName.append(".");
+            fullName.append(className);
+
+            Class clazz = Class.forName(fullName.toString());
             return clazz.newInstance();
          }
       }

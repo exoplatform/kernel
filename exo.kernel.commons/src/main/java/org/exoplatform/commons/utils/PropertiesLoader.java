@@ -20,7 +20,6 @@ package org.exoplatform.commons.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.commons.utils;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class ExoProperties extends LinkedHashMap<String, String>
       String[] temp = text.split("\n");
       for (int i = 0; i < temp.length; i++)
       {
-         temp[i] = temp[i].trim();
+         temp[i] = temp[i].trim(); //NOSONAR
          if (temp[i].length() > 0)
          {
             String[] value = temp[i].split("=");

@@ -81,12 +81,11 @@ public class SynchronizedQueue<I extends Item> implements Queue<I>
    {
       int cachedQueueSize = queueSize;
       int effectiveQueueSize = 0;
-      for (Item item = head.next; item != tail; item = item.next)
+      for (Item item = head.next; item != tail; item = item.next) //NOSONAR
       {
          effectiveQueueSize++;
       }
 
-      //
       if (effectiveQueueSize != cachedQueueSize)
       {
          throw new AssertionError("The cached queue size " + cachedQueueSize

@@ -169,7 +169,7 @@ public class CacheServiceImpl implements CacheService
       
       ExoCache simple = null;
       if (factory_ != DEFAULT_FACTORY && safeConfig.getClass().isAssignableFrom(ExoCacheConfig.class)
-         && safeConfig.getImplementation() != null)
+         && safeConfig.getImplementation() != null) //NOSONAR
       {
          // The implementation exists and the config is not a sub class of ExoCacheConfig
          // we assume that we expect to use the default cache factory
