@@ -63,7 +63,8 @@ public class RPCServiceImpl extends AbstractRPCService
     */
    protected RspList<Object> castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout) throws Exception
    {
-      return dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout));
+      return dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL
+         : ResponseMode.GET_NONE, timeout));
    }
    
    /**
