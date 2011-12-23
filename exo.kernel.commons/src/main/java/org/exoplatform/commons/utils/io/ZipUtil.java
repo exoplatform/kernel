@@ -72,23 +72,23 @@ public class ZipUtil
          return zipOutput;
       for (File f : list)
       {
-         StringBuffer filePath = new StringBuffer(f.getAbsolutePath());
+         StringBuilder filePath = new StringBuilder(f.getAbsolutePath());
 
          if (f.getAbsolutePath().startsWith(path))
          {
             if (containParent && input.isDirectory())
             {
-               filePath = new StringBuffer(input.getName());
+               filePath = new StringBuilder(input.getName());
                filePath.append(File.separator);
                filePath.append(f.getAbsolutePath().substring(path.length() + 1));
             }
             else if (input.isDirectory())
             {
-               filePath = new StringBuffer(f.getAbsolutePath().substring(path.length() + 1));
+               filePath = new StringBuilder(f.getAbsolutePath().substring(path.length() + 1));
             }
             else
             {
-               filePath = new StringBuffer(input.getName());
+               filePath = new StringBuilder(input.getName());
             }
          }
 

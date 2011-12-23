@@ -263,7 +263,7 @@ public class ISO8601
     */
    public static Calendar parse(String dateString, String[] formats) throws ParseException
    {
-      StringBuffer problems = new StringBuffer();
+      StringBuilder problems = new StringBuilder();
 
       int errOffset = 0;
       for (String format : formats)

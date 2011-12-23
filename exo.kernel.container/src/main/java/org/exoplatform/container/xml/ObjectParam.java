@@ -152,7 +152,7 @@ public class ObjectParam extends Parameter
 
          if (className.indexOf(".") < 0)
          {
-            StringBuffer fullName = new StringBuffer();
+            StringBuilder fullName = new StringBuilder();
             fullName.append(package_);
             fullName.append(".");
             fullName.append(className);

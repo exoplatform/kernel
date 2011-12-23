@@ -354,23 +354,23 @@ public class CompressData
             throw new Exception("nothing in the list");
          for (File f : list)
          {
-            StringBuffer filePath = new StringBuffer(f.getAbsolutePath());
+            StringBuilder filePath = new StringBuilder(f.getAbsolutePath());
 
             if (f.getAbsolutePath().startsWith(path))
             {
                if (containParent && file_.isDirectory())
                {
-                  filePath = new StringBuffer(file_.getName());
+                  filePath = new StringBuilder(file_.getName());
                   filePath.append(File.separator);
                   filePath.append(f.getAbsolutePath().substring(path.length() + 1));
                }
                else if (file_.isDirectory())
                {
-                  filePath = new StringBuffer(f.getAbsolutePath().substring(path.length() + 1));
+                  filePath = new StringBuilder(f.getAbsolutePath().substring(path.length() + 1));
                }
                else
                {
-                  filePath = new StringBuffer(file_.getName());
+                  filePath = new StringBuilder(file_.getName());
                }
             }
 
@@ -452,23 +452,23 @@ public class CompressData
             throw new Exception("nothing in the list");
          for (File f : list)
          {
-            StringBuffer filePath = new StringBuffer(f.getAbsolutePath());
+            StringBuilder filePath = new StringBuilder(f.getAbsolutePath());
 
             if (f.getAbsolutePath().startsWith(path))
             {
                if (containParent && file_.isDirectory())
                {
-                  filePath = new StringBuffer(file_.getName());
+                  filePath = new StringBuilder(file_.getName());
                   filePath.append(File.separator);
                   filePath.append(f.getAbsolutePath().substring(path.length() + 1));
                }
                else if (file_.isDirectory())
                {
-                  filePath = new StringBuffer(f.getAbsolutePath().substring(path.length() + 1));
+                  filePath = new StringBuilder(f.getAbsolutePath().substring(path.length() + 1));
                }
                else
                {
-                  filePath = new StringBuffer(file_.getName());
+                  filePath = new StringBuilder(file_.getName());
                }
             }
 
@@ -484,7 +484,6 @@ public class CompressData
             addToArchive(zos, bufInput, filePath.toString());
          }
       }
-
    }
 
    public static class InputStreamDataInstance extends DataInstance
