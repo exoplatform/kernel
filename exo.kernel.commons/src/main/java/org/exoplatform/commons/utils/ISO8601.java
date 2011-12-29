@@ -284,7 +284,6 @@ public class ISO8601
             problems.append(", error offset ");
             problems.append(e.getErrorOffset());
             problems.append(" \n");
-
          }
          catch (NumberFormatException e)
          {
@@ -294,10 +293,9 @@ public class ISO8601
             problems.append(" - ");
             problems.append(e.getMessage());
             problems.append(" \n");
-
          }
       }
 
-      throw new ParseException("Can not parse " + dateString + " as Date. " + problems, errOffset);
+      throw new ParseException("Can not parse " + dateString + " as Date. " + problems.toString(), errOffset);
    }
 }
