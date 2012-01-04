@@ -54,11 +54,12 @@
    </global>
    <default>
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="10000" writeSkewCheck="false" concurrencyLevel="500"/>
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
+      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
       <jmxStatistics enabled="true"/>
       <clustering mode="replication">
          <stateRetrieval timeout="20000" fetchInMemoryState="false"/>
          <sync replTimeout="20000"/>
       </clustering>
+      <invocationBatching enabled="true"/> 
    </default>
 </infinispan>

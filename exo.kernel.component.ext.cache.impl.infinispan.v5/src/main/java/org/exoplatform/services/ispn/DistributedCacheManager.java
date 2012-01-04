@@ -27,13 +27,17 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
+import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.picocontainer.Startable;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
+
+import javax.transaction.TransactionManager;
 
 /**
  * This class is used to allow to use infinispan in distribution mode with
@@ -77,7 +81,7 @@ public class DistributedCacheManager implements Startable
    public DistributedCacheManager(String configurationFile, Map<String, String> parameters,
       ConfigurationManager configManager)
    {
-      this.manager = init(configurationFile, parameters, configManager);
+      this.manager = init(configurationFile, parameters, configManager, null);
    }
 
    /**
@@ -85,13 +89,23 @@ public class DistributedCacheManager implements Startable
     */
    public DistributedCacheManager(InitParams params, ConfigurationManager configManager)
    {
+      this(params, configManager, null);
+   }
+
+   /**
+    * Default constructor
+    */
+   public DistributedCacheManager(InitParams params, ConfigurationManager configManager, TransactionService ts)
+   {
       ValueParam vp;
       final String result;
       if (params != null && (vp = params.getValueParam(CONFIG_FILE_PARAMETER_NAME)) != null
          && (result = vp.getValue()) != null && !result.isEmpty())
       {
          PropertiesParam pp = params.getPropertiesParam(PARAMS_PARAMETER_NAME);
-         this.manager = init(result, pp == null ? null : pp.getProperties(), configManager);
+         this.manager =
+            init(result, pp == null ? null : pp.getProperties(), configManager,
+               ts == null ? null : ts.getTransactionManager());
       }
       else
       {
@@ -104,10 +118,11 @@ public class DistributedCacheManager implements Startable
     * @param configurationFile the path of the configuration file
     * @param parameters the parameters to inject into the configuration file
     * @param configManager the configuration manager used to get the configuration file
+    * @param tm the transaction manager
     * @return the CacheManager initialized
     */
    private EmbeddedCacheManager init(final String configurationFile, final Map<String, String> parameters,
-      final ConfigurationManager configManager)
+      final ConfigurationManager configManager, final TransactionManager tm)
    {
       try
       {
@@ -138,7 +153,14 @@ public class DistributedCacheManager implements Startable
                manager.start();
                for (String cacheName : manager.getCacheNames())
                {
-                  manager.getCache(cacheName);
+                  Cache cache = manager.getCache(cacheName);
+                  if (tm != null)
+                  {
+                     // We inject the transaction manager
+                     ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
+                     cr.registerComponent(tm, TransactionManager.class);
+                     cr.rewire();
+                  }                  
                }
                return manager;
             }
