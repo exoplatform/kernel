@@ -18,6 +18,7 @@
  */
 package org.exoplatform.xml.object;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -172,7 +173,7 @@ public class XMLObject
 
    public Object toObject() throws Exception
    {
-      Class clazz = Class.forName(type);
+      Class<?> clazz = ClassLoading.forName(type, this);
       Map fields = getFields(clazz);
       Object instance = clazz.newInstance();
       Iterator i = fields_.values().iterator();

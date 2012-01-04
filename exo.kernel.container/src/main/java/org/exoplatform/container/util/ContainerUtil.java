@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.util;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PropertiesLoader;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
@@ -132,7 +133,7 @@ public class ContainerUtil
    {
       try
       {
-         Class clazz = Class.forName(plugin.getType());
+         Class<?> clazz = ClassLoading.forName(plugin.getType(), ContainerUtil.class);
          org.exoplatform.container.ContainerLifecyclePlugin cplugin =
             (org.exoplatform.container.ContainerLifecyclePlugin)container
                .createComponent(clazz, plugin.getInitParams());
@@ -146,17 +147,16 @@ public class ContainerUtil
       }
    }
 
-   static public void addComponentLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
+   public static void addComponentLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
    {
       Collection plugins = conf.getConfiguration().getComponentLifecyclePlugins();
       Iterator i = plugins.iterator();
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
       while (i.hasNext())
       {
          ComponentLifecyclePlugin plugin = (ComponentLifecyclePlugin)i.next();
          try
          {
-            Class classType = loader.loadClass(plugin.getType());
+            Class<?> classType = ClassLoading.loadClass(plugin.getType(), ContainerUtil.class);
             org.exoplatform.container.component.ComponentLifecyclePlugin instance =
                (org.exoplatform.container.component.ComponentLifecyclePlugin)classType.newInstance();
             container.addComponentLifecylePlugin(instance);
@@ -168,13 +168,12 @@ public class ContainerUtil
       }
    }
 
-   static public void addComponents(ExoContainer container, ConfigurationManager conf)
+   public static void addComponents(ExoContainer container, ConfigurationManager conf)
    {
       Collection components = conf.getComponents();
       if (components == null)
          return;
       Iterator i = components.iterator();
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
       while (i.hasNext())
       {
          Component component = (Component)i.next();
@@ -182,7 +181,7 @@ public class ContainerUtil
          String key = component.getKey();
          try
          {
-            Class classType = loader.loadClass(type);
+            Class<?> classType = ClassLoading.loadClass(type, ContainerUtil.class);
             if (key == null)
             {
                if (component.isMultiInstance())
@@ -199,7 +198,7 @@ public class ContainerUtil
             {
                try
                {
-                  Class keyType = loader.loadClass(key);
+                  Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
                   if (component.isMultiInstance())
                   {
                      container.registerComponent(new ConstructorInjectionComponentAdapter(keyType, classType));
@@ -310,5 +309,5 @@ public class ContainerUtil
          }
       }
       return props;
-   }
+   }   
 }

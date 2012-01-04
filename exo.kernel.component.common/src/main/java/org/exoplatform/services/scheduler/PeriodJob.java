@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.scheduler;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.ExoProperties;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
@@ -47,7 +48,7 @@ public class PeriodJob extends BaseComponentPlugin
       String jobName = props.getProperty("jobName");
       String jobGroup = props.getProperty("groupName");
       String jobClass = props.getProperty("job");
-      Class clazz = Class.forName(jobClass);
+      Class<?> clazz = ClassLoading.forName(jobClass, this);
       jinfo_ = new JobInfo(jobName, jobGroup, clazz);
 
       Date startTime = getDate(props.getProperty("startTime"));
