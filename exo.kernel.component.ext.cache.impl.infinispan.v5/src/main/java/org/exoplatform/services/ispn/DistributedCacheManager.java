@@ -170,7 +170,10 @@ public class DistributedCacheManager implements Startable
                };
                for (ConfigurationBuilder b : holder.getConfigurationBuilders())
                {
-                  b.transaction().transactionManagerLookup(tml);
+                  if (tm != null)
+                  {
+                     b.transaction().transactionManagerLookup(tml);                     
+                  }
                   //TODO remove it once ISPN-1689 will be fixed
                   b.clustering()
                      .hash()
