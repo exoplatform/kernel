@@ -27,7 +27,7 @@ import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.impl.infinispan.AbstractExoCache;
 import org.exoplatform.services.cache.impl.infinispan.ExoCacheCreator;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 
 import java.io.Serializable;
@@ -84,20 +84,20 @@ public class GenericExoCacheCreator implements ExoCacheCreator
    /**
     * {@inheritDoc}
     */
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Configuration cacheConfig,
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, ConfigurationBuilder confBuilder,
       Callable<Cache<Serializable, Object>> cacheGetter) throws ExoCacheInitException
    {
       if (config instanceof GenericExoCacheConfig)
       {
          final GenericExoCacheConfig gConfig = (GenericExoCacheConfig)config;
-         return create(config, cacheConfig, cacheGetter, gConfig.getStrategy(), gConfig.getMaxEntries(),
+         return create(config, confBuilder, cacheGetter, gConfig.getStrategy(), gConfig.getMaxEntries(),
             gConfig.getLifespan(), gConfig.getMaxIdle() == 0 ? defaultMaxIdle : gConfig.getMaxIdle(),
             gConfig.getWakeUpInterval() == 0 ? defaultWakeUpInterval : gConfig.getWakeUpInterval());
       }
       else
       {
          final long period = config.getLiveTime();
-         return create(config, cacheConfig, cacheGetter,
+         return create(config, confBuilder, cacheGetter,
             config.getImplementation() == null ? defaultStrategy : config.getImplementation(), config.getMaxSize(),
             period > 0 ? period * 1000 : -1, defaultMaxIdle, defaultWakeUpInterval);
       }
@@ -107,7 +107,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
     * Creates a new ExoCache instance with the relevant parameters
     * @throws ExoCacheInitException If any exception occurs while creating the cache
     */
-   private ExoCache<Serializable, Object> create(ExoCacheConfig config, Configuration cacheConfig,
+   private ExoCache<Serializable, Object> create(ExoCacheConfig config, ConfigurationBuilder confBuilder,
       Callable<Cache<Serializable, Object>> cacheGetter, String strategy, int maxEntries, long lifespan, long maxIdle,
       long wakeUpInterval) throws ExoCacheInitException
    {
@@ -118,11 +118,11 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       {
          es = EvictionStrategy.LRU;
       }
-      cacheConfig.fluent().eviction().strategy(EvictionStrategy.valueOf(strategy)).maxEntries(maxEntries).expiration()
+      confBuilder.eviction().strategy(EvictionStrategy.valueOf(strategy)).maxEntries(maxEntries).expiration()
          .lifespan(lifespan).maxIdle(maxIdle).wakeUpInterval(wakeUpInterval);
       try
       {
-         return new GenericExoCache(cacheConfig, config, cacheGetter.call());
+         return new GenericExoCache(config, cacheGetter.call());
       }
       catch (Exception e)
       {
@@ -136,41 +136,26 @@ public class GenericExoCacheCreator implements ExoCacheCreator
    public static class GenericExoCache extends AbstractExoCache<Serializable, Object>
    {
 
-      private final Configuration cacheConfig;
-
-      public GenericExoCache(Configuration cacheConfig, ExoCacheConfig config, Cache<Serializable, Object> cache)
+      public GenericExoCache(ExoCacheConfig config, Cache<Serializable, Object> cache)
       {
          super(config, cache);
-         this.cacheConfig = cacheConfig;
       }
 
       public void setMaxSize(int max)
       {
-         cacheConfig.fluent().eviction().maxEntries(max);
+         throw new UnsupportedOperationException("The configuration of the cache cannot not be modified");
       }
 
       public void setLiveTime(long period)
       {
-         cacheConfig.fluent().expiration().lifespan(period);
-      }
-
-      @Managed
-      public void setMaxIdle(long maxIdle)
-      {
-         cacheConfig.fluent().expiration().maxIdle(maxIdle);
-      }
-
-      @Managed
-      public void setWakeUpInterval(long wakeUpInterval)
-      {
-         cacheConfig.fluent().expiration().wakeUpInterval(wakeUpInterval);
+         throw new UnsupportedOperationException("The configuration of the cache cannot not be modified");
       }
 
       @ManagedName("MaxEntries")
       @ManagedDescription("Maximum number of entries in a cache instance. -1 means no limit.")
       public int getMaxSize()
       {
-         return cacheConfig.getEvictionMaxEntries();
+         return cache.getCacheConfiguration().eviction().maxEntries();
       }
 
       @ManagedName("Lifespan")
@@ -178,7 +163,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
          + " -1 means the entries never expire.")
       public long getLiveTime()
       {
-         return cacheConfig.getExpirationLifespan();
+         return cache.getCacheConfiguration().expiration().lifespan();
       }
 
       @Managed
@@ -187,7 +172,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
          + "If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
       public long getMaxIdle()
       {
-         return cacheConfig.getExpirationMaxIdle();
+         return cache.getCacheConfiguration().expiration().maxIdle();
       }
 
       @Managed
@@ -196,7 +181,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
          + "process altogether, set wakeupInterval to -1.")
       public long getWakeUpInterval()
       {
-         return cacheConfig.getExpirationWakeUpInterval();
+         return cache.getCacheConfiguration().expiration().wakeUpInterval();
       }
    }
 }

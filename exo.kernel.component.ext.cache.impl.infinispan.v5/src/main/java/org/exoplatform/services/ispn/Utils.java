@@ -23,7 +23,8 @@ import org.exoplatform.container.util.TemplateConfigurationHelper;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 
 import java.io.IOException;
@@ -41,22 +42,24 @@ public class Utils
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger
-      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.Utils");
-   
-   private Utils() {}
-   
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.Utils");
+
+   private Utils()
+   {
+   }
 
    /**
     * Load the JGroups configuration file thanks to the {@link ConfigurationManager}
     * @param config the global configuration from which the JGroups config will be extracted
+    * @param configBuilder the related configuration builder
     * @return <code>true</code> if the JGoups config could be loaded successfully, 
     * <code>false</code> if there were no JGroups config to load
     * @throws IllegalStateException if the JGroups config could not be loaded
     */
-   public static boolean loadJGroupsConfig(ConfigurationManager cfm, GlobalConfiguration config) throws ExoCacheInitException
+   public static boolean loadJGroupsConfig(ConfigurationManager cfm, GlobalConfiguration config,
+      GlobalConfigurationBuilder configBuilder) throws ExoCacheInitException
    {
-      Properties properties = config.getTransportProperties();
+      Properties properties = config.transport().properties();
       if (properties == null || !properties.containsKey(JGroupsTransport.CONFIGURATION_FILE))
       {
          return false;
@@ -67,9 +70,8 @@ public class Utils
       // inputStream still remains null, so file was not opened
       if (inputStream == null)
       {
-         throw new IllegalStateException("The jgroups configuration cannot be loaded from '" + filename
-            + "'");
-      }      
+         throw new IllegalStateException("The jgroups configuration cannot be loaded from '" + filename + "'");
+      }
       try
       {
          // Set the jgroups configuration as XML
@@ -77,14 +79,13 @@ public class Utils
       }
       catch (IOException e)
       {
-         throw new IllegalStateException("The jgroups configuration cannot be read from '" + filename
-            + "'");
+         throw new IllegalStateException("The jgroups configuration cannot be read from '" + filename + "'");
       }
       // Remove the property corresponding to the configuration file
       properties.remove(JGroupsTransport.CONFIGURATION_FILE);
+      configBuilder.transport().withProperties(properties);
       return true;
    }
-
 
    /**
     * Reads bytes from input stream and builds a string from them

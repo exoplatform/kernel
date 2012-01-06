@@ -29,9 +29,17 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
-import org.infinispan.factories.ComponentRegistry;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.Parser;
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.lookup.TransactionManagerLookup;
+import org.infinispan.util.Util;
 import org.picocontainer.Startable;
 
 import java.security.PrivilegedExceptionAction;
@@ -143,24 +151,35 @@ public class DistributedCacheManager implements Startable
          }
          return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
          {
-
-            @Override
             public EmbeddedCacheManager run() throws Exception
             {
+               Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+               // Load the configuration
+               ConfigurationBuilderHolder holder = parser.parse(helper.fillTemplate(configurationFile, parameters));
+               GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
+               Utils.loadJGroupsConfig(configManager, configBuilder.build(), configBuilder);
+               // Create the CacheManager from the new configuration
                EmbeddedCacheManager manager =
-                  new DefaultCacheManager(helper.fillTemplate(configurationFile, parameters), false);
-               Utils.loadJGroupsConfig(configManager, manager.getGlobalConfiguration());
-               manager.start();
-               for (String cacheName : manager.getCacheNames())
+                  new DefaultCacheManager(configBuilder.build(), holder.getDefaultConfigurationBuilder().build());
+               TransactionManagerLookup tml = new TransactionManagerLookup()
                {
-                  Cache cache = manager.getCache(cacheName);
-                  if (tm != null)
+                  public TransactionManager getTransactionManager() throws Exception
                   {
-                     // We inject the transaction manager
-                     ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
-                     cr.registerComponent(tm, TransactionManager.class);
-                     cr.rewire();
-                  }                  
+                     return tm;
+                  }
+               };
+               for (ConfigurationBuilder b : holder.getConfigurationBuilders())
+               {
+                  b.transaction().transactionManagerLookup(tml);
+                  //TODO remove it once ISPN-1689 will be fixed
+                  b.clustering()
+                     .hash()
+                     .consistentHash(
+                        Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
+                           .getContextClassLoader()));
+                  Configuration c = b.build();
+                  manager.defineConfiguration(c.name(), c);
+                  manager.getCache(c.name());
                }
                return manager;
             }

@@ -22,7 +22,7 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -41,11 +41,11 @@ public interface ExoCacheCreator
    /**
     * Creates an eXo cache according to the given configuration {@link org.exoplatform.services.cache.ExoCacheConfig}
     * @param config the configuration of the cache to apply
-    * @param cacheConfig the configuration of the infinispan cache
+    * @param confBuilder the configuration builder of the infinispan cache
     * @param cacheGetter a {@link Callable} instance from which we can get the cache
     * @exception ExoCacheInitException if an exception happens while initializing the cache
     */
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Configuration cacheConfig, 
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, ConfigurationBuilder confBuilder, 
             Callable<Cache<Serializable, Object>> cacheGetter) throws ExoCacheInitException;
 
    /**

@@ -794,7 +794,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    @ManagedDescription("Maximum number of entries in a cache instance. -1 means no limit.")
    public int getMaxSize()
    {
-      return cache.getConfiguration().getEvictionMaxEntries();
+      return cache.getCacheConfiguration().eviction().maxEntries();
    }
 
    @ManagedName("Lifespan")
@@ -802,7 +802,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       + " -1 means the entries never expire.")
    public long getLiveTime()
    {
-      return cache.getConfiguration().getExpirationLifespan();
+      return cache.getCacheConfiguration().expiration().lifespan();
    }
 
    @Managed
@@ -811,7 +811,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       + "If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
    public long getMaxIdle()
    {
-      return cache.getConfiguration().getExpirationMaxIdle();
+      return cache.getCacheConfiguration().expiration().maxIdle();
    }
 
    @Managed
@@ -820,7 +820,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       + "process altogether, set wakeupInterval to -1.")
    public long getWakeUpInterval()
    {
-      return cache.getConfiguration().getExpirationWakeUpInterval();
+      return cache.getCacheConfiguration().expiration().wakeUpInterval();
    }
 
    public static class CacheKey<K> implements Externalizable

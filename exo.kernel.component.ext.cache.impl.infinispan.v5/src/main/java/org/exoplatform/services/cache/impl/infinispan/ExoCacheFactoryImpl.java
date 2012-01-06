@@ -34,12 +34,19 @@ import org.exoplatform.services.ispn.Utils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.Parser;
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.util.Util;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -113,10 +120,10 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    private final Map<String, String> mappingCacheNameConfig = new HashMap<String, String>();
 
    /**
-    * The mapping between the global configuration and the cache managers
+    * The mapping between the cluster name and the cache managers
     */
-   private final Map<GlobalConfiguration, DefaultCacheManager> mappingGlobalConfigCacheManager =
-      new HashMap<GlobalConfiguration, DefaultCacheManager>();
+   private final Map<String, DefaultCacheManager> mappingGlobalConfigCacheManager =
+      new HashMap<String, DefaultCacheManager>();
 
    /**
     * The default creator
@@ -162,7 +169,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       // Initialize the main cache manager
       this.cacheManager = initCacheManager(cacheConfigTemplate);
       // Register the main cache manager
-      mappingGlobalConfigCacheManager.put(cacheManager.getGlobalConfiguration(), cacheManager);
+      mappingGlobalConfigCacheManager.put(cacheManager.getCacheManagerConfiguration().transport().clusterName(),
+         cacheManager);
    }
 
    /**
@@ -193,11 +201,25 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   throw new ExoCacheInitException("The configuration of the CacheManager cannot be found at '"
                      + cacheConfigTemplate + "'");
                }
-               DefaultCacheManager cacheManager = null;
+               GlobalConfigurationBuilder configBuilder;
+               Configuration config;
                try
                {
-                  // Create the CacheManager from the input stream
-                  cacheManager = new DefaultCacheManager(is, false);
+                  Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+                  // Loads the configuration from the input stream
+                  ConfigurationBuilderHolder holder = parser.parse(is);
+                  configBuilder = holder.getGlobalConfigurationBuilder();
+                  config = holder.getDefaultConfigurationBuilder().build();
+               }
+               catch (Exception e)
+               {
+                  throw new ExoCacheInitException("Cannot parse the configuration '" + cacheConfigTemplate + "'", e);
+               }
+               configureCacheManager(configBuilder);
+               try
+               {
+                  // Create the CacheManager from the new configuration
+                  return new DefaultCacheManager(configBuilder.build(), config);
                }
                catch (Exception e)
                {
@@ -205,12 +227,6 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                      "Cannot initialize the CacheManager corresponding to the configuration '" + cacheConfigTemplate
                         + "'", e);
                }
-
-               GlobalConfiguration config = cacheManager.getGlobalConfiguration();
-
-               configureCacheManager(config);
-               cacheManager.start();
-               return cacheManager;
             }
          });
       }
@@ -231,16 +247,18 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    /**
     * Configure the cache manager
     * 
-    * @param config
+    * @param configBuilder the configuration builder on which we applied all the required changes
     * @throws ExoCacheInitException
     */
-   private void configureCacheManager(GlobalConfiguration config) throws ExoCacheInitException
+   private void configureCacheManager(GlobalConfigurationBuilder configBuilder) throws ExoCacheInitException
    {
+      GlobalConfiguration config = configBuilder.build();
       // Configure JGroups
-      configureJGroups(config);
+      configureJGroups(config, configBuilder);
       // Configure the name of the cache manager
-      config.fluent().globalJmxStatistics().cacheManagerName(config.getCacheManagerName() + "_" + ctx.getName()).
-      // Configure the MBeanServerLookup
+      configBuilder.globalJmxStatistics().enable()
+         .cacheManagerName(config.globalJmxStatistics().cacheManagerName() + "_" + ctx.getName()).
+         // Configure the MBeanServerLookup
          mBeanServerLookup(MBEAN_SERVER_LOOKUP);
    }
 
@@ -249,27 +267,31 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * the cluster name by adding as suffix the name of the {@link ExoContainerContext}
     * 
     * @param config the global configuration from which the JGroups config will be extracted
+    * @param configBuilder the related configuration builder
     * @throws ExoCacheInitException if any exception occurs while configuring JGroups
     */
-   private void configureJGroups(GlobalConfiguration config) throws ExoCacheInitException
+   private void configureJGroups(GlobalConfiguration config, GlobalConfigurationBuilder configBuilder)
+      throws ExoCacheInitException
    {
-      if (loadJGroupsConfig(config))
+      if (loadJGroupsConfig(config, configBuilder))
       {
          // The JGroups Config could be loaded which means that the configuration is for a cluster
-         config.fluent().transport().clusterName(config.getClusterName() + "-" + ctx.getName());
+         configBuilder.transport().clusterName(config.transport().clusterName() + "-" + ctx.getName());
       }
    }
 
    /**
     * Load the JGroups configuration file thanks to the {@link ConfigurationManager}
     * @param config the global configuration from which the JGroups config will be extracted
+    * @param configBuilder the related configuration builder
     * @return <code>true</code> if the JGoups config could be loaded successfully, 
     * <code>false</code> if there were no JGroups config to load
     * @throws ExoCacheInitException if the JGroups config could not be loaded
     */
-   private boolean loadJGroupsConfig(GlobalConfiguration config) throws ExoCacheInitException
+   private boolean loadJGroupsConfig(GlobalConfiguration config, GlobalConfigurationBuilder configBuilder)
+      throws ExoCacheInitException
    {
-      return Utils.loadJGroupsConfig(configManager, config);
+      return Utils.loadJGroupsConfig(configManager, config, configBuilder);
    }
 
    /**
@@ -289,7 +311,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       final DefaultCacheManager cacheManager;
       try
       {
-         final Configuration conf;
+         final ConfigurationBuilder confBuilder = new ConfigurationBuilder();
          if (customConfig != null)
          {
             try
@@ -302,24 +324,34 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                         // A custom configuration has been set
                         if (LOG.isInfoEnabled())
                            LOG.info("A custom configuration has been set for the cache '" + region + "'.");
-                        // Create the CacheManager by loading the configuration
-                        DefaultCacheManager customCacheManager =
-                           new DefaultCacheManager(configManager.getInputStream(customConfig), false);
-                        GlobalConfiguration gc = customCacheManager.getGlobalConfiguration();
+                        Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+                        // Load the configuration
+                        ConfigurationBuilderHolder holder = parser.parse(configManager.getInputStream(customConfig));
+                        GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
                         // Configure JGroups and JMX since it could affect the state of the Global Config
-                        configureCacheManager(gc);
+                        configureCacheManager(configBuilder);
+                        GlobalConfiguration gc = configBuilder.build();
+
                         // Check if a CacheManager with the same GlobalConfiguration exists
-                        DefaultCacheManager currentCacheManager = mappingGlobalConfigCacheManager.get(gc);
+                        DefaultCacheManager currentCacheManager =
+                           mappingGlobalConfigCacheManager.get(gc.transport().clusterName());
                         if (currentCacheManager == null)
                         {
-                           // No cache manager has been defined so far for this Cache Configuration
-                           currentCacheManager = customCacheManager;
                            // Use a different cache manager name to prevent naming conflict
-                           gc.fluent().globalJmxStatistics()
-                              .cacheManagerName(gc.getCacheManagerName() + "_" + region + "_" + ctx.getName());
+                           configBuilder.globalJmxStatistics().cacheManagerName(
+                              gc.globalJmxStatistics().cacheManagerName() + "_" + region + "_" + ctx.getName());
+                           // No cache manager has been defined so far for this Cache Configuration
+                           currentCacheManager =
+                              new DefaultCacheManager(configBuilder.build(), holder.getDefaultConfigurationBuilder()
+                                 .build(), false);
+                           for (ConfigurationBuilder b : holder.getConfigurationBuilders())
+                           {
+                              Configuration c = b.build();
+                              currentCacheManager.defineConfiguration(c.name(), c);
+                           }
                            currentCacheManager.start();
                            // We register this new cache manager
-                           mappingGlobalConfigCacheManager.put(gc, customCacheManager);
+                           mappingGlobalConfigCacheManager.put(gc.transport().clusterName(), currentCacheManager);
                         }
                         return currentCacheManager;
                      }
@@ -337,7 +369,17 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   throw new Exception(e);
                }
             }
-            conf = cacheManager.getDefaultConfiguration().clone();
+            confBuilder.read(cacheManager.getDefaultCacheConfiguration());
+            //TODO remove it once ISPN-1687 will be fixed
+            confBuilder.storeAsBinary().enabled(false);
+            confBuilder.jmxStatistics().enable();
+            //TODO remove it once ISPN-1689 will be fixed
+            confBuilder
+               .clustering()
+               .hash()
+               .consistentHash(
+                  Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
+                     .getContextClassLoader()));
          }
          else if (config.isDistributed())
          {
@@ -356,20 +398,29 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             // No custom configuration has been found, a configuration template will be used 
             if (LOG.isInfoEnabled())
                LOG.info("The configuration template will be used for the the cache '" + region + "'.");
-            conf = cacheManager.getDefaultConfiguration().clone();
+            confBuilder.read(cacheManager.getDefaultCacheConfiguration());
+            //TODO remove it once ISPN-1687 will be fixed
+            confBuilder.storeAsBinary().enabled(false);
+            confBuilder.jmxStatistics().enable();
+            //TODO remove it once ISPN-1689 will be fixed
+            confBuilder
+               .clustering()
+               .hash()
+               .consistentHash(
+                  Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
+                     .getContextClassLoader()));
             if (!config.isRepicated())
             {
                // The cache is local
-               conf.fluent().clustering().mode(CacheMode.LOCAL);
+               confBuilder.clustering().cacheMode(CacheMode.LOCAL);
             }
          }
          // Reset the configuration to avoid conflicts
-         resetConfiguration(conf);
+         resetConfiguration(confBuilder);
          final ExoCacheCreator creator = getExoCacheCreator(config);
          // Create the cache
-         eXoCache = creator.create(config, conf, new Callable<Cache<Serializable, Object>>()
+         eXoCache = creator.create(config, confBuilder, new Callable<Cache<Serializable, Object>>()
          {
-            @Override
             public Cache<Serializable, Object> call() throws Exception
             {
                try
@@ -380,7 +431,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                         public Cache<Serializable, Object> run() throws Exception
                         {
                            // Define the configuration
-                           cacheManager.defineConfiguration(region, conf);
+                           cacheManager.defineConfiguration(region, confBuilder.build());
                            // create and start the cache                 
                            return cacheManager.getCache(region);
                         }
@@ -485,9 +536,9 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    /**
     * Clean the configuration template to prevent conflicts
     */
-   protected void resetConfiguration(Configuration config)
+   protected void resetConfiguration(ConfigurationBuilder confBuilder)
    {
-      config.fluent().invocationBatching().eviction().strategy(EvictionStrategy.NONE).maxEntries(-1).expiration()
+      confBuilder.invocationBatching().enable().eviction().strategy(EvictionStrategy.NONE).maxEntries(-1).expiration()
          .lifespan(-1L).maxIdle(-1L).wakeUpInterval(60000L);
    }
 }
