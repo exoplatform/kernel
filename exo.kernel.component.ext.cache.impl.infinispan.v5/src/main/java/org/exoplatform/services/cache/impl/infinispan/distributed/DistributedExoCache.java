@@ -366,6 +366,11 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       {
          throw new NullPointerException("No null cache key accepted");
       }
+      else if (value == null)
+      {
+         // ignore null values
+         return;
+      }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
 

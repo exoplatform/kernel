@@ -40,7 +40,7 @@
       <dependency>
          <groupId>org.jgroups</groupId>
          <artifactId>jgroups</artifactId>
-         <version>3.0.0.Final</version>
+         <version>3.0.2.Final</version>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>

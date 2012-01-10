@@ -372,7 +372,6 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             confBuilder.read(cacheManager.getDefaultCacheConfiguration());
             //TODO remove it once ISPN-1687 will be fixed
             confBuilder.storeAsBinary().enabled(false);
-            confBuilder.jmxStatistics().enable();
             //TODO remove it once ISPN-1689 will be fixed
             confBuilder
                .clustering()
@@ -401,7 +400,6 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             confBuilder.read(cacheManager.getDefaultCacheConfiguration());
             //TODO remove it once ISPN-1687 will be fixed
             confBuilder.storeAsBinary().enabled(false);
-            confBuilder.jmxStatistics().enable();
             //TODO remove it once ISPN-1689 will be fixed
             confBuilder
                .clustering()
