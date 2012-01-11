@@ -51,7 +51,7 @@ public class PrivilegedFileHelper
       {
          public InputStream run()
          {
-            return PrivilegedFileHelper.class.getClass().getResourceAsStream(resource);
+            return PrivilegedFileHelper.class.getResourceAsStream(resource);
          }
       };
 
