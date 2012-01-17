@@ -22,7 +22,9 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.security.AccessControlException;
 import java.security.AccessController;
+import java.security.Permission;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -315,6 +317,23 @@ public class SecurityHelper
       catch (Exception e)
       {
          throw new PrivilegedActionException(e);
+      }
+   }
+
+   /**
+    * Validate permissions.
+    * 
+    * @throws AccessControlException 
+    */
+   public static void validateSecurityPermissions(RuntimePermission... perms)
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         for (Permission permission : perms)
+         {
+            security.checkPermission(permission);
+         }
       }
    }
 }
