@@ -77,7 +77,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
     * Logger.
     */
    private static final Log LOG = ExoLogger
-      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedExoCache");
+      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedExoCache");//NOSONAR
 
    public static final String CACHE_NAME = "eXoCache";
 
@@ -136,7 +136,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (listener == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException("The listener cannot be null");
       }
       List<ListenerContext> lListeners = getListeners(fullName);
       if (lListeners == null)
@@ -364,7 +364,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (key == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       else if (value == null)
       {
@@ -400,7 +400,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (objs == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       for (Serializable name : objs.keySet())
       {
@@ -430,7 +430,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
                   onPut(entry.getKey(), entry.getValue());
                }
             }
-            catch (Exception e)
+            catch (Exception e)//NOSONAR
             {
                cache.endBatch(false);
                LOG.warn("An error occurs while executing the putMap method", e);
@@ -448,7 +448,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (name == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       @SuppressWarnings("rawtypes")
       CacheKey key = new CacheKey<Serializable>(fullName, name);
@@ -570,7 +570,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onExpire(key.getKey(), obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -592,7 +592,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onRemove(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -624,7 +624,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onPut(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -646,7 +646,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onGet(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -668,7 +668,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onClearCache();
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);

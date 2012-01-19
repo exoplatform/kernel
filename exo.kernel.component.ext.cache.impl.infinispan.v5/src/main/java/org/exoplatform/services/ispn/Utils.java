@@ -42,7 +42,7 @@ public class Utils
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.Utils");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.Utils");//NOSONAR
 
    private Utils()
    {
@@ -79,7 +79,7 @@ public class Utils
       }
       catch (IOException e)
       {
-         throw new IllegalStateException("The jgroups configuration cannot be read from '" + filename + "'");
+         throw new IllegalStateException("The jgroups configuration cannot be read from '" + filename + "'", e);
       }
       // Remove the property corresponding to the configuration file
       properties.remove(JGroupsTransport.CONFIGURATION_FILE);
@@ -111,7 +111,7 @@ public class Utils
          {
             inputStream.close();
          }
-         catch (Exception e)
+         catch (IOException e)
          {
             LOG.debug("Cannot close stream", e);
          }

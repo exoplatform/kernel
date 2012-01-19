@@ -75,7 +75,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * The logger
     */
    private static final Log LOG = ExoLogger
-      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.ExoCacheFactoryImpl");
+      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.ExoCacheFactoryImpl");//NOSONAR
 
    /**
     * The initial parameter key that defines the full path of the configuration template
@@ -164,7 +164,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       this.configManager = configManager;
       if (cacheConfigTemplate == null)
       {
-         throw new RuntimeException("The parameter '" + CACHE_CONFIG_TEMPLATE_KEY + "' must be set");
+         throw new IllegalArgumentException("The parameter '" + CACHE_CONFIG_TEMPLATE_KEY + "' must be set");
       }
       // Initialize the main cache manager
       this.cacheManager = initCacheManager(cacheConfigTemplate);
@@ -191,7 +191,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   // Read the configuration file of the cache
                   is = configManager.getInputStream(cacheConfigTemplate);
                }
-               catch (Exception e)
+               catch (Exception e)//NOSONAR
                {
                   throw new ExoCacheInitException("The configuration of the CacheManager cannot be loaded from '"
                      + cacheConfigTemplate + "'", e);
@@ -211,7 +211,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   configBuilder = holder.getGlobalConfigurationBuilder();
                   config = holder.getDefaultConfigurationBuilder().build();
                }
-               catch (Exception e)
+               catch (RuntimeException e) //NOSONAR
                {
                   throw new ExoCacheInitException("Cannot parse the configuration '" + cacheConfigTemplate + "'", e);
                }
@@ -221,7 +221,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   // Create the CacheManager from the new configuration
                   return new DefaultCacheManager(configBuilder.build(), config);
                }
-               catch (Exception e)
+               catch (RuntimeException e) //NOSONAR
                {
                   throw new ExoCacheInitException(
                      "Cannot initialize the CacheManager corresponding to the configuration '" + cacheConfigTemplate
@@ -235,7 +235,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          Throwable cause = e.getCause();
          if (cause instanceof ExoCacheInitException)
          {
-            throw (ExoCacheInitException)cause;
+            throw (ExoCacheInitException)cause;//NOSONAR
          }
          else
          {
@@ -362,7 +362,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                Throwable cause = e.getCause();
                if (cause instanceof Exception)
                {
-                  throw (Exception)cause;
+                  throw (Exception)cause;//NOSONAR
                }
                else
                {
@@ -385,7 +385,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             // We expect a distributed cache
             if (distributedCacheManager == null)
             {
-               throw new NullPointerException("The DistributedCacheManager has not been defined in the configuration,"
+               throw new IllegalStateException("The DistributedCacheManager has not been defined in the configuration,"
                   + " please configure it at root container level if you want to use a distributed cache.");
             }
             return new DistributedExoCache(ctx, config,
@@ -440,7 +440,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                   Throwable cause = e.getCause();
                   if (cause instanceof Exception)
                   {
-                     throw (Exception)cause;
+                     throw (Exception)cause;//NOSONAR
                   }
                   else
                   {
@@ -470,7 +470,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          Set<String> implementations = creator.getExpectedImplementations();
          if (implementations == null)
          {
-            throw new NullPointerException("The set of implementations cannot be null");
+            throw new IllegalArgumentException("The set of implementations cannot be null");
          }
          for (String imp : implementations)
          {

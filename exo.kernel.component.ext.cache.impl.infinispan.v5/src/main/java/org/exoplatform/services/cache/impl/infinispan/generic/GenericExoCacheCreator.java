@@ -124,7 +124,7 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       {
          return new GenericExoCache(config, cacheGetter.call());
       }
-      catch (Exception e)
+      catch (Exception e)//NOSONAR
       {
          throw new ExoCacheInitException("Cannot create the cache '" + config.getName() + "'", e);
       }

@@ -65,7 +65,7 @@ public class DistributedCacheManager implements Startable
     * The logger
     */
    private static final Log LOG = ExoLogger
-      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedCacheManager");
+      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedCacheManager");//NOSONAR
 
    /**
     * The parameter name corresponding to the infinispan configuration
@@ -188,9 +188,9 @@ public class DistributedCacheManager implements Startable
             }
          });
       }
-      catch (Exception e)
+      catch (Exception e)//NOSONAR
       {
-         throw new RuntimeException("Could not initialize the cache manager corresponding to the configuration file "
+         throw new IllegalStateException("Could not initialize the cache manager corresponding to the configuration file "
             + configurationFile, e);
       }
    }
@@ -204,7 +204,7 @@ public class DistributedCacheManager implements Startable
       Cache<K, V> cache = manager.getCache(cacheName, false);
       if (cache == null)
       {
-         throw new NullPointerException("The expected cache named '" + cacheName
+         throw new IllegalArgumentException("The expected cache named '" + cacheName
             + "' has not been defined in the configuration of infinispan as named cache.");
       }
       return cache;
