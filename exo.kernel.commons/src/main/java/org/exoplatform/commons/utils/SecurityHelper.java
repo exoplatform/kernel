@@ -325,15 +325,12 @@ public class SecurityHelper
     * 
     * @throws AccessControlException 
     */
-   public static void validateSecurityPermissions(RuntimePermission... perms)
+   public static void validateSecurityPermission(Permission permission)
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         for (Permission permission : perms)
-         {
-            security.checkPermission(permission);
-         }
+         security.checkPermission(permission);
       }
    }
 }
