@@ -64,7 +64,7 @@ public class DistributedCacheManager implements Startable
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger
+   private static final Log LOG = ExoLogger //NOSONAR
       .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedCacheManager");//NOSONAR
 
    /**

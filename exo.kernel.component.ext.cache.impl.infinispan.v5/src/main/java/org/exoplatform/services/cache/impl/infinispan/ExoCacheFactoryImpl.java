@@ -74,7 +74,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger
+   private static final Log LOG = ExoLogger //NOSONAR
       .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.ExoCacheFactoryImpl");//NOSONAR
 
    /**
@@ -450,7 +450,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             }
          });
       }
-      catch (Exception e)
+      catch (Exception e) //NOSONAR
       {
          throw new ExoCacheInitException("The cache '" + region + "' could not be initialized", e);
       }

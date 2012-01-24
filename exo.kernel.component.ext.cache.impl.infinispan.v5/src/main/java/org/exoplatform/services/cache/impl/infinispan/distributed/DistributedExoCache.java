@@ -76,7 +76,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    /**
     * Logger.
     */
-   private static final Log LOG = ExoLogger
+   private static final Log LOG = ExoLogger//NOSONAR
       .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedExoCache");//NOSONAR
 
    public static final String CACHE_NAME = "eXoCache";
