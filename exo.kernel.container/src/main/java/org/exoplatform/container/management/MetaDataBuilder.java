@@ -91,7 +91,7 @@ public class MetaDataBuilder
    {
       if (clazz == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
 
       //

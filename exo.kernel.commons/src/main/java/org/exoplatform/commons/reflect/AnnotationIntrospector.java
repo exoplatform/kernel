@@ -43,18 +43,18 @@ public class AnnotationIntrospector
     * @param classAnnotation the annotation to lookup
     * @param <A> the annotation class
     * @return the annotation
-    * @throws NullPointerException if any argument is null
+    * @throws IllegalArgumentException if any argument is null
     */
    public static <A extends Annotation> A resolveClassAnnotations(Class<?> clazz, Class<A> classAnnotation)
-      throws NullPointerException
+      throws IllegalArgumentException
    {
       if (clazz == null)
       {
-         throw new NullPointerException("No null class");
+         throw new IllegalArgumentException("No null class");
       }
       if (classAnnotation == null)
       {
-         throw new NullPointerException("No null annotation");
+         throw new IllegalArgumentException("No null annotation");
       }
 
       //
@@ -92,11 +92,11 @@ public class AnnotationIntrospector
    {
       if (clazz == null)
       {
-         throw new NullPointerException("No null class");
+         throw new IllegalArgumentException("No null class");
       }
       if (methodAnnotation == null)
       {
-         throw new NullPointerException("No null annotation");
+         throw new IllegalArgumentException("No null annotation");
       }
 
       //

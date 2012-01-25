@@ -53,7 +53,7 @@ import java.util.Map;
 public class ContainerUtil
 {
    /** The logger. */
-   private static final Log log = ExoLogger.getExoLogger(ContainerUtil.class);
+   private static final Log LOG = ExoLogger.getExoLogger(ContainerUtil.class);
 
    static public Constructor<?>[] getSortedConstructors(Class<?> clazz) throws NoClassDefFoundError
    {
@@ -143,7 +143,7 @@ public class ContainerUtil
       }
       catch (Exception ex)
       {
-         log.error("Failed to instanciate plugin " + plugin.getType() + ": " + ex.getMessage(), ex);
+         LOG.error("Failed to instanciate plugin " + plugin.getType() + ": " + ex.getMessage(), ex);
       }
    }
 
@@ -163,7 +163,7 @@ public class ContainerUtil
          }
          catch (Exception ex)
          {
-            log.error("Failed to instanciate plugin " + plugin.getType() + ": " + ex.getMessage(), ex);
+            LOG.error("Failed to instanciate plugin " + plugin.getType() + ": " + ex.getMessage(), ex);
          }
       }
    }
@@ -187,7 +187,7 @@ public class ContainerUtil
                if (component.isMultiInstance())
                {
                   container.registerComponent(new ConstructorInjectionComponentAdapter(classType, classType));
-                  log.debug("===>>> Thread local component " + classType.getName() + " registered.");
+                  LOG.debug("===>>> Thread local component " + classType.getName() + " registered.");
                }
                else
                {
@@ -202,7 +202,7 @@ public class ContainerUtil
                   if (component.isMultiInstance())
                   {
                      container.registerComponent(new ConstructorInjectionComponentAdapter(keyType, classType));
-                     log.debug("===>>> Thread local component " + classType.getName() + " registered.");
+                     LOG.debug("===>>> Thread local component " + classType.getName() + " registered.");
                   }
                   else
                   {
@@ -217,7 +217,7 @@ public class ContainerUtil
          }
          catch (ClassNotFoundException ex)
          {
-            log.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", ex);
+            LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", ex);
          }
       }
    }
@@ -258,19 +258,19 @@ public class ContainerUtil
             String fileName = url.getFile();
             if (Tools.endsWithIgnoreCase(path, ".properties"))
             {
-               if (log.isDebugEnabled())
-                  log.debug("Attempt to load property file " + path);
+               if (LOG.isDebugEnabled())
+                  LOG.debug("Attempt to load property file " + path);
                props = PropertiesLoader.load(in);
             }
             else if (Tools.endsWithIgnoreCase(fileName, ".xml"))
             {
-               if (log.isDebugEnabled())
-                  log.debug("Attempt to load property file " + path + " with XML format");
+               if (LOG.isDebugEnabled())
+                  LOG.debug("Attempt to load property file " + path + " with XML format");
                props = PropertiesLoader.loadFromXML(in);
             }
-            else if (log.isDebugEnabled())
+            else if (LOG.isDebugEnabled())
             {
-               log.debug("Will not load property file" + path + " because its format is not recognized");
+               LOG.debug("Will not load property file" + path + " because its format is not recognized");
             }
             if (props != null && resolveVariables)
             {
@@ -288,12 +288,12 @@ public class ContainerUtil
          }
          else
          {
-            log.error("Could not load property file " + path);
+            LOG.error("Could not load property file " + path);
          }
       }
       catch (Exception e)
       {
-         log.error("Cannot load property file " + path, e);
+         LOG.error("Cannot load property file " + path, e);
       }
       finally
       {
@@ -305,6 +305,10 @@ public class ContainerUtil
             }
             catch (IOException ignore)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + ignore.getMessage());
+               }
             }
          }
       }

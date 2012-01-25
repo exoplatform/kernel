@@ -111,7 +111,9 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    public ConcurrentPicoContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
    {
       if (componentAdapterFactory == null)
-         throw new NullPointerException("componentAdapterFactory");
+      {
+         throw new IllegalArgumentException("componentAdapterFactory");
+      }
       this.componentAdapterFactory = componentAdapterFactory;
       this.parent = parent == null ? null : new ImmutablePicoContainer(parent);
    }

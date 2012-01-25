@@ -21,6 +21,8 @@ package org.exoplatform.services.cache.concurrent;
 import org.exoplatform.services.cache.CacheInfo;
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -28,6 +30,8 @@ import org.exoplatform.services.cache.CacheListenerContext;
  */
 public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.cache.ListenerContext");
 
    /** . */
    private final ConcurrentFIFOExoCache cache;
@@ -74,6 +78,10 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
       catch (Exception ignore)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ignore.getMessage());
+         }
       }
    }
 
@@ -85,6 +93,10 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
       catch (Exception ignore)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ignore.getMessage());
+         }
       }
    }
 
@@ -96,6 +108,10 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
       catch (Exception ignore)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ignore.getMessage());
+         }
       }
    }
 
@@ -107,6 +123,10 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
       catch (Exception ignore)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ignore.getMessage());
+         }
       }
    }
 
@@ -118,6 +138,10 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
       catch (Exception ignore)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ignore.getMessage());
+         }
       }
    }
 }

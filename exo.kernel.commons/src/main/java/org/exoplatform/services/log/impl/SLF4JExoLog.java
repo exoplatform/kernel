@@ -37,12 +37,14 @@ public class SLF4JExoLog implements Log
     * Create a new instance.
     *
     * @param logger Logger
-    * @throws NullPointerException if the logger is null
+    * @throws IllegalArgumentException if the logger is null
     */
-   public SLF4JExoLog(Logger logger) throws NullPointerException
+   public SLF4JExoLog(Logger logger) throws IllegalArgumentException
    {
       if (logger == null)
-         throw new NullPointerException();
+      {
+         throw new IllegalArgumentException();
+      }
 
       this.logger = logger;
    }

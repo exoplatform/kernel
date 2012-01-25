@@ -57,7 +57,7 @@ public class TestConcurrentCache extends BasicTestCase
          cache.put(null, new Object());
          fail();
       }
-      catch (NullPointerException ignore)
+      catch (IllegalArgumentException ignore)
       {
          assertEquals(1, cache.getCacheSize());
          assertEquals("a", cache.get("a"));
@@ -67,7 +67,7 @@ public class TestConcurrentCache extends BasicTestCase
          cache.remove(null);
          fail();
       }
-      catch (NullPointerException ignore)
+      catch (IllegalArgumentException ignore)
       {
          assertEquals(1, cache.getCacheSize());
          assertEquals("a", cache.get("a"));
@@ -77,7 +77,7 @@ public class TestConcurrentCache extends BasicTestCase
          cache.putMap(null);
          fail();
       }
-      catch (NullPointerException ignore)
+      catch (IllegalArgumentException ignore)
       {
          assertEquals(1, cache.getCacheSize());
          assertEquals("a", cache.get("a"));

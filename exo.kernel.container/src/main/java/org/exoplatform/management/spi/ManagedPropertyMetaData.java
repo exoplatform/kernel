@@ -48,12 +48,11 @@ public class ManagedPropertyMetaData extends ManagedMetaData
    private final ManagedParameterMetaData setterParameter;
 
    public ManagedPropertyMetaData(String name, Method getter, String getterDescription, Method setter,
-      String setterDescription, ManagedParameterMetaData setterParameter) throws NullPointerException,
-      IllegalArgumentException
+      String setterDescription, ManagedParameterMetaData setterParameter) throws IllegalArgumentException
    {
       if (name == null)
       {
-         throw new NullPointerException("No null name accepted");
+         throw new IllegalArgumentException("No null name accepted");
       }
       if (setter != null)
       {

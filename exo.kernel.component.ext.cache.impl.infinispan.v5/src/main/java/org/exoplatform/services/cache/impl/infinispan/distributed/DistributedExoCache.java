@@ -132,7 +132,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (listener == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       List<ListenerContext> lListeners = getListeners(fullName);
       if (lListeners == null)
@@ -356,11 +356,11 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    /**
     * {@inheritDoc}
     */
-   public void put(final K key, final V value) throws NullPointerException
+   public void put(final K key, final V value) throws IllegalArgumentException
    {
       if (key == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
@@ -387,11 +387,11 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    /**
     * {@inheritDoc}
     */
-   public void putMap(final Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
+   public void putMap(final Map<? extends K, ? extends V> objs) throws IllegalArgumentException
    {
       if (objs == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       for (Serializable name : objs.keySet())
       {
@@ -435,11 +435,11 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
     * {@inheritDoc}
     */
    @SuppressWarnings("unchecked")
-   public V remove(Serializable name) throws NullPointerException
+   public V remove(Serializable name) throws IllegalArgumentException
    {
       if (name == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       @SuppressWarnings("rawtypes")
       CacheKey key = new CacheKey<Serializable>(fullName, name);

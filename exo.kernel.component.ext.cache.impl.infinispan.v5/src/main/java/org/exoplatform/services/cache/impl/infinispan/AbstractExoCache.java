@@ -101,7 +101,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    {
       if (listener == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       listeners.add(new ListenerContext<K, V>(listener, this));
    }
@@ -221,11 +221,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void put(final K key, final V value) throws NullPointerException
+   public void put(final K key, final V value) throws IllegalArgumentException
    {
       if (key == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
@@ -251,11 +251,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void putMap(final Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
+   public void putMap(final Map<? extends K, ? extends V> objs) throws IllegalArgumentException
    {
       if (objs == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       for (Serializable name : objs.keySet())
       {
@@ -303,7 +303,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    {
       if (name == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }      
       V result = SecurityHelper.doPrivilegedAction(new PrivilegedAction<V>()
       {

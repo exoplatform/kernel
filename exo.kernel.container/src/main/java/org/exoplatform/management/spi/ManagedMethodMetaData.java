@@ -49,17 +49,17 @@ public class ManagedMethodMetaData extends ManagedMetaData
     *
     * @param method the method
     * @param impactType the access mode
-    * @throws NullPointerException if the method is null or the impact is null
+    * @throws IllegalArgumentException if the method is null or the impact is null
     */
-   public ManagedMethodMetaData(Method method, ImpactType impactType) throws NullPointerException
+   public ManagedMethodMetaData(Method method, ImpactType impactType) throws IllegalArgumentException
    {
       if (method == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       if (impactType == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
 
       //

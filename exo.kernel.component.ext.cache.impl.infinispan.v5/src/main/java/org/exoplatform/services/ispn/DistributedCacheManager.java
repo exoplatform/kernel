@@ -160,7 +160,7 @@ public class DistributedCacheManager implements Startable
       Cache<K, V> cache = manager.getCache(cacheName, false);
       if (cache == null)
       {
-         throw new NullPointerException("The expected cache named '" + cacheName
+         throw new IllegalArgumentException("The expected cache named '" + cacheName
             + "' has not been defined in the configuration of infinispan as named cache.");
       }
       return cache;

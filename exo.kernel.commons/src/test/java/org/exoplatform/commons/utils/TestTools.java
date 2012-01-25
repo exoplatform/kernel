@@ -66,14 +66,14 @@ public class TestTools extends TestCase
       assertTrue(strings.contains("b"));
    }
 
-   public void testSetThrowsNPE()
+   public void testSetThrowsIllegalArgumentException()
    {
       try
       {
          Tools.set((String[])null);
          fail();
       }
-      catch (NullPointerException expected)
+      catch (IllegalArgumentException expected)
       {
       }
    }
@@ -89,14 +89,14 @@ public class TestTools extends TestCase
       assertEquals(Tools.set("a", "b"),Tools.parseCommaList("a,b"));
    }
 
-   public void testParseCommandListThrowsNPE()
+   public void testParseCommandListThrowsIllegalArgumentException()
    {
       try
       {
          Tools.parseCommaList(null);
          fail();
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }
@@ -110,14 +110,14 @@ public class TestTools extends TestCase
       assertTrue(Tools.endsWithIgnoreCase("A", "a"));
    }
 
-   public void testEndsWithIgnoreCaseThrowsNPE()
+   public void testEndsWithIgnoreCaseThrowsIllegalArgumentException()
    {
       try
       {
          Tools.endsWithIgnoreCase(null, "a");
          fail();
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
       try
@@ -125,7 +125,7 @@ public class TestTools extends TestCase
          Tools.endsWithIgnoreCase("a", null);
          fail();
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
       try
@@ -133,7 +133,7 @@ public class TestTools extends TestCase
          Tools.endsWithIgnoreCase(null, null);
          fail();
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }
@@ -151,14 +151,14 @@ public class TestTools extends TestCase
       assertEquals("b", props.getProperty("a"));
    }
 
-   public void testAsMapThrowsNPE()
+   public void testAsMapThrowsIllegalArgumentException()
    {
       try
       {
          Tools.asMap(null);
          fail();
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }
@@ -176,14 +176,14 @@ public class TestTools extends TestCase
       assertEquals(Collections.singletonMap("a", "b"), map);
    }
 
-   public void testAsPropertiesThrowsNPE()
+   public void testAsPropertiesThrowsIllegalArgumentException()
    {
       try
       {
          Tools.asProperties(null);
          fail();
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }

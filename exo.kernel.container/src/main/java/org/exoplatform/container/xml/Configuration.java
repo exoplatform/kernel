@@ -47,7 +47,7 @@ public class Configuration implements Cloneable
 
    public static final String KERNEL_CONFIGURATION_1_0_URI = "http://www.exoplaform.org/xml/ns/kernel_1_0.xsd";
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.Configuration");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.Configuration");
 
    private Map<String, ContainerLifecyclePlugin> containerLifecyclePlugin_ =
       new HashMap<String, ContainerLifecyclePlugin>();
@@ -264,7 +264,7 @@ public class Configuration implements Cloneable
             }
             catch (CloneNotSupportedException e)
             {
-               log.warn("Could not clone the configuration", e);
+               LOG.warn("Could not clone the configuration", e);
                break;
             }
          }
@@ -291,7 +291,7 @@ public class Configuration implements Cloneable
       }
       catch (Exception e)
       {
-         log.warn("Couldn't dump the runtime configuration in XML Format", e);
+         LOG.warn("Couldn't dump the runtime configuration in XML Format", e);
       }
    }
 
@@ -308,7 +308,7 @@ public class Configuration implements Cloneable
       }
       catch (Exception e)
       {
-         log.warn("Cannot convert the configuration to XML format", e);
+         LOG.warn("Cannot convert the configuration to XML format", e);
          return null;
       }
       finally
@@ -319,6 +319,10 @@ public class Configuration implements Cloneable
          }
          catch (IOException ignore)
          {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + ignore.getMessage());
+            }
          }            
       }
       return sw.toString();

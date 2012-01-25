@@ -344,7 +344,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             // We expect a distributed cache
             if (distributedCacheManager == null)
             {
-               throw new NullPointerException("The DistributedCacheManager has not been defined in the configuration,"
+               throw new IllegalArgumentException(
+                  "The DistributedCacheManager has not been defined in the configuration,"
                   + " please configure it at root container level if you want to use a distributed cache.");
             }
             return new DistributedExoCache(ctx, config,
@@ -421,7 +422,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          Set<String> implementations = creator.getExpectedImplementations();
          if (implementations == null)
          {
-            throw new NullPointerException("The set of implementations cannot be null");
+            throw new IllegalArgumentException("The set of implementations cannot be null");
          }
          for (String imp : implementations)
          {
