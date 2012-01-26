@@ -109,7 +109,7 @@ public class CacheServiceImpl implements CacheService
    {
       if (region == null)
       {
-         throw new NullPointerException("region cannot be null");
+         throw new IllegalArgumentException("region cannot be null");
       }
       if (region.length() == 0)
       {
@@ -187,7 +187,10 @@ public class CacheServiceImpl implements CacheService
          }
          catch (ClassNotFoundException e)
          {
-            // The implementation could not be found
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       if (simple == null)
@@ -220,7 +223,10 @@ public class CacheServiceImpl implements CacheService
          }
          catch (Exception e)
          {
-            // ignore me
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
          if (cache != null)
          {

@@ -75,7 +75,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    {
       if (container == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       
       //
@@ -102,11 +102,11 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    {
       if (parent == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       if (container == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
 
       //
@@ -133,7 +133,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    {
       if (parent == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       if ((resource != null && typeMD == null) && (resource == null && typeMD != null))
       {

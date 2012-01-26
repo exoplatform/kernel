@@ -168,11 +168,11 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    /**
     * @see org.exoplatform.services.cache.ExoCache#putMap(java.util.Map)
     */
-   public void putMap(Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
+   public void putMap(Map<? extends K, ? extends V> objs) throws IllegalArgumentException
    {
       if (objs == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       Map<K, HashCode<V>> map = new LinkedHashMap<K, HashCode<V>>();
       for (Entry<? extends K, ? extends V> entry : objs.entrySet())
@@ -308,11 +308,11 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    /**
     * @see org.exoplatform.services.cache.ExoCache#addCacheListener(org.exoplatform.services.cache.CacheListener)
     */
-   public void addCacheListener(CacheListener<? super K, ? super V> listener) throws NullPointerException
+   public void addCacheListener(CacheListener<? super K, ? super V> listener) throws IllegalArgumentException
    {
       if (listener == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       listeners.add(listener);
    }

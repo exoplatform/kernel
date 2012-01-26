@@ -70,7 +70,7 @@ import javax.xml.transform.stream.StreamResult;
 public class ConfigurationUnmarshaller
 {
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationUnmarshaller");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ConfigurationUnmarshaller");
 
    /**
     * A private copy of the list of kernel namespaces
@@ -92,14 +92,14 @@ public class ConfigurationUnmarshaller
 
       public void warning(SAXParseException exception) throws SAXException
       {
-         log.warn(exception.getMessage(), exception);
+         LOG.warn(exception.getMessage(), exception);
       }
 
       public void error(SAXParseException exception) throws SAXException
       {
          if (exception.getMessage().equals("cvc-elt.1: Cannot find the declaration of element 'configuration'."))
          {
-            log.info("The document "
+            LOG.info("The document "
                + url
                + " does not contain a schema declaration, it should have an "
                + "XML declaration similar to\n"
@@ -111,7 +111,7 @@ public class ConfigurationUnmarshaller
          }
          else
          {
-            log.error("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
+            LOG.error("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
                + ") :" + exception.getMessage());
          }
          valid = false;
@@ -119,7 +119,7 @@ public class ConfigurationUnmarshaller
 
       public void fatalError(SAXParseException exception) throws SAXException
       {
-         log.fatal("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
+         LOG.fatal("In document " + url + "  at (" + exception.getLineNumber() + "," + exception.getColumnNumber()
             + ") :" + exception.getMessage());
          valid = false;
       }
@@ -172,12 +172,12 @@ public class ConfigurationUnmarshaller
             }
             catch (ParserConfigurationException e)
             {
-               log.error("Got a parser configuration exception when doing XSD validation");
+               LOG.error("Got a parser configuration exception when doing XSD validation");
                return false;
             }
             catch (SAXException e)
             {
-               log.error("Got a sax exception when doing XSD validation");
+               LOG.error("Got a sax exception when doing XSD validation");
                return false;
             }
          }
@@ -204,7 +204,10 @@ public class ConfigurationUnmarshaller
          }
          catch (Exception e)
          {
-            // ignore me
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
    }
@@ -216,7 +219,7 @@ public class ConfigurationUnmarshaller
          boolean valid = isValid(url);
          if (!valid)
          {
-            log.info("The configuration file " + url + " was not found valid according to its XSD");
+            LOG.info("The configuration file " + url + " was not found valid according to its XSD");
          }
       }
 
@@ -239,7 +242,7 @@ public class ConfigurationUnmarshaller
          if (cause instanceof FactoryConfigurationError)
          {
             // do nothing and let try to instantiate later
-            log.debug("Was not able to find document builder factory class in Java > 5, will use default", cause);
+            LOG.debug("Was not able to find document builder factory class in Java > 5, will use default", cause);
          }
          else
          {
@@ -249,7 +252,10 @@ public class ConfigurationUnmarshaller
       }
       catch (NoSuchMethodException e)
       {
-         // Java < 6
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       //
@@ -295,8 +301,8 @@ public class ConfigurationUnmarshaller
                String document = buffer.toString();
 
                // Debug
-               if (log.isTraceEnabled())
-                  log.trace("About to parse configuration file " + document);
+               if (LOG.isTraceEnabled())
+                  LOG.trace("About to parse configuration file " + document);
 
                //
                IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);

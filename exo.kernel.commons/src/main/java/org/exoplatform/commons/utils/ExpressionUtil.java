@@ -18,6 +18,9 @@
  */
 package org.exoplatform.commons.utils;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ResourceBundle;
 
 /**
@@ -29,6 +32,9 @@ import java.util.ResourceBundle;
  */
 public class ExpressionUtil
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.commons.ExpressionUtil");
+
    static public String getExpressionValue(ResourceBundle res, String key)
    {
       if (res == null)
@@ -43,6 +49,10 @@ public class ExpressionUtil
       }
       catch (java.util.MissingResourceException ex)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ex.getMessage());
+         }
       }
       return value;
    }
@@ -66,6 +76,10 @@ public class ExpressionUtil
       }
       catch (java.util.MissingResourceException ex)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ex.getMessage());
+         }
       }
       return key;
    }

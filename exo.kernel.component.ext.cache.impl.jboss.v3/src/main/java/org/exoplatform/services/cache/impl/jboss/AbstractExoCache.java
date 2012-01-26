@@ -107,7 +107,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    {
       if (listener == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       listeners.add(new ListenerContext<K, V>(listener, this));
    }
@@ -234,11 +234,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void put(K key, V value) throws NullPointerException
+   public void put(K key, V value) throws IllegalArgumentException
    {
       if (key == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }      
       putOnly(key, value);
       onPut(key, value);
@@ -255,11 +255,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   public void putMap(Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
+   public void putMap(Map<? extends K, ? extends V> objs) throws IllegalArgumentException
    {
       if (objs == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       for (Serializable name : objs.keySet())
       {
@@ -299,11 +299,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     * {@inheritDoc}
     */
    @SuppressWarnings("unchecked")
-   public V remove(Serializable name) throws NullPointerException
+   public V remove(Serializable name) throws IllegalArgumentException
    {
       if (name == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }      
       final Fqn<Serializable> fqn = getFqn(name);
       // We use the methods peek and getDirect to avoid going through the interceptor chain

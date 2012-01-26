@@ -180,7 +180,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
    {
       if (name == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       if (liveTimeMillis != 0)
       {
@@ -193,7 +193,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
    {
       if (objs == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       long expirationTime = liveTimeMillis > 0 ? System.currentTimeMillis() + liveTimeMillis : Long.MAX_VALUE;
       for (Serializable name : objs.keySet())
@@ -213,7 +213,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
    {
       if (name == null)
       {
-         throw new NullPointerException("No null cache key accepted");
+         throw new IllegalArgumentException("No null cache key accepted");
       }
       return state.remove(name);
    }
@@ -281,7 +281,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
    {
       if (listener == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       listeners.add(new ListenerContext<K, V>(listener, this));
    }

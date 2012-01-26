@@ -100,7 +100,7 @@ public class ObjectParam extends Parameter
             }
          }
       }
-      catch (Throwable ex)
+      catch (Exception ex)
       {
          // if(prop != null) {
          // S ystem.out.println("Exception when try setting the prop.name " +

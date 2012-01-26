@@ -33,50 +33,50 @@ import java.net.URL;
 public class TestIOUtil extends TestCase
 {
 
-   public void testGetFileContentAsStringThrowsNPE() throws IOException
+   public void testGetFileContentAsStringThrowsIllegalArgumentException() throws IOException
    {
       try
       {
          IOUtil.getFileContentAsString((File)null);
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
       try
       {
          IOUtil.getFileContentAsString((String)null);
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
       try
       {
          IOUtil.getFileContentAsString((File)null, "UTF-8");
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
       try
       {
          IOUtil.getFileContentAsString((String)null, "UTF-8");
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }
 
-   public void testStreamContentAsStringThrowsNPE() throws IOException
+   public void testStreamContentAsStringThrowsIllegalArgumentException() throws IOException
    {
       try
       {
          IOUtil.getStreamContentAsString(null);
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }
@@ -87,14 +87,14 @@ public class TestIOUtil extends TestCase
       assertEquals("a\u1000", s);
    }
 
-   public void testStreamContentAsBytesThrowsNPE() throws IOException
+   public void testStreamContentAsBytesThrowsIllegalArgumentException() throws IOException
    {
       try
       {
          IOUtil.getStreamContentAsBytes(null);
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
       }
    }
@@ -121,14 +121,14 @@ public class TestIOUtil extends TestCase
       }
    }
 
-   public void testGetResourceAsStringThrowsNPE() throws IOException
+   public void testGetResourceAsStringThrowsIllegalArgumentException() throws IOException
    {
       try
       {
          IOUtil.getResourceAsString(null);
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
          //
       }
@@ -149,9 +149,9 @@ public class TestIOUtil extends TestCase
       {
          Thread.currentThread().setContextClassLoader(newCL);
          IOUtil.getResourceAsString("whatever");
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
          //
       }
@@ -308,14 +308,14 @@ public class TestIOUtil extends TestCase
       }
    }
 
-   public void testGetStreamContentAsBytesThrowsNPE() throws IOException
+   public void testGetStreamContentAsBytesThrowsIllegalArgumentException() throws IOException
    {
       try
       {
          IOUtil.getStreamContentAsBytes(null);
-         fail("Was expecting an NPE");
+         fail("Was expecting an IllegalArgumentException");
       }
-      catch (NullPointerException expected)
+      catch (IllegalArgumentException expected)
       {
       }
    }

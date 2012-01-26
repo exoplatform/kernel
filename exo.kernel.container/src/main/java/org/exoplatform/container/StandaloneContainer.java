@@ -424,7 +424,10 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       }
       catch (Exception ex)
       {
-         // ignore me
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ex.getMessage());
+         }
       }
    }
 

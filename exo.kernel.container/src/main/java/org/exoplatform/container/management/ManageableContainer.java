@@ -246,7 +246,10 @@ public class ManageableContainer extends CachingContainer
       }
       catch (Exception e)
       {
-         // Ignore, may be caused by lazy initialization mechanism
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return super.unregisterComponent(componentKey);
    }

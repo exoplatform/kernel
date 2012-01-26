@@ -43,11 +43,11 @@ public class ManagedTypeMetaData extends ManagedMetaData
    /** . */
    private final Map<MethodKey, ManagedMethodMetaData> methods;
 
-   public ManagedTypeMetaData(Class type) throws NullPointerException
+   public ManagedTypeMetaData(Class type) throws IllegalArgumentException
    {
       if (type == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
 
       //

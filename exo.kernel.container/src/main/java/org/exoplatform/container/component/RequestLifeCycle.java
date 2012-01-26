@@ -96,7 +96,7 @@ public class RequestLifeCycle
    {
       if (container == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       RequestLifeCycleStack lf = current.get();
       if (lf == null)
@@ -118,7 +118,7 @@ public class RequestLifeCycle
    {
       if (lifeCycle == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       RequestLifeCycleStack lf = current.get();
       if (lf == null)

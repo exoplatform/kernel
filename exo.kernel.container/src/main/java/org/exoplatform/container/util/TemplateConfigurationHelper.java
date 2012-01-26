@@ -20,6 +20,8 @@ package org.exoplatform.container.util;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,6 +44,9 @@ import java.util.regex.Pattern;
  */
 public class TemplateConfigurationHelper
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.TemplateConfigurationHelper");
+
    // list with include-patterns
    private List<Pattern> includes = new ArrayList<Pattern>();
 
@@ -147,7 +152,10 @@ public class TemplateConfigurationHelper
       }
       catch (Exception e)
       {
-         // will try to use another resolve mechanism 
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       // try to get resource by class loader
@@ -172,7 +180,10 @@ public class TemplateConfigurationHelper
          }
          catch (IOException e)
          {
-            // Still can't resolve
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return inputStream;

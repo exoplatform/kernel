@@ -35,20 +35,20 @@ public class Tools
     * All the time zones already registered
     */
    private static volatile Map<String, TimeZone> TIME_ZONES = new HashMap<String, TimeZone>();
-   
+
    /**
     * Instantiates a {@link HashSet} object and fills it with the provided element array.
     *
     * @param elements the list of elements to add
     * @param <E> the element type
     * @return the set of elements
-    * @throws NullPointerException if the element array is null
+    * @throws IllegalArgumentException if the element array is null
     */
-   public static <E> Set<E> set(E... elements) throws NullPointerException
+   public static <E> Set<E> set(E... elements) throws IllegalArgumentException
    {
       if (elements == null)
       {
-         throw new NullPointerException("No null element array accepted");
+         throw new IllegalArgumentException("No null element array accepted");
       }
       HashSet<E> set = new HashSet<E>();
       if (elements.length > 0)
@@ -69,13 +69,13 @@ public class Tools
     *
     * @param s the list to parse
     * @return the set of string found in the list
-    * @throws NullPointerException if the string argument is null
+    * @throws IllegalArgumentException if the string argument is null
     */
-   public static Set<String> parseCommaList(String s) throws NullPointerException
+   public static Set<String> parseCommaList(String s) throws IllegalArgumentException
    {
       if (s == null)
       {
-         throw new NullPointerException("No null string list accepted");
+         throw new IllegalArgumentException("No null string list accepted");
       }
       Set<String> set = new HashSet<String>();
       for (String v : s.split(","))
@@ -94,13 +94,13 @@ public class Tools
     *
     * @param map the map to copy
     * @return the properties copy
-    * @throws NullPointerException if the map argument is null
+    * @throws IllegalArgumentException if the map argument is null
     */
-   public static Properties asProperties(Map<String, String> map) throws NullPointerException
+   public static Properties asProperties(Map<String, String> map) throws IllegalArgumentException
    {
       if (map == null)
       {
-         throw new NullPointerException("No null map accepted");
+         throw new IllegalArgumentException("No null map accepted");
       }
       Properties props = new Properties();
       for (Map.Entry<String, String> entry : map.entrySet())
@@ -116,13 +116,13 @@ public class Tools
     *
     * @param props the properties object to copy
     * @return the properties copy as a map
-    * @throws NullPointerException if the props argument is null
+    * @throws IllegalArgumentException if the props argument is null
     */
-   public static Map<String, String> asMap(Properties props) throws NullPointerException
+   public static Map<String, String> asMap(Properties props) throws IllegalArgumentException
    {
       if (props == null)
       {
-         throw new NullPointerException("No null properties accepted");
+         throw new IllegalArgumentException("No null properties accepted");
       }
       Map<String, String> map = new HashMap<String, String>();
       for (Object key : props.keySet())
@@ -141,17 +141,17 @@ public class Tools
     * @param s the string to test
     * @param end the string suffix
     * @return true if the string s ends with the end string ignoring the case
-    * @throws NullPointerException if any string is null
+    * @throws IllegalArgumentException if any string is null
     */
-   public static boolean endsWithIgnoreCase(String s, String end) throws NullPointerException
+   public static boolean endsWithIgnoreCase(String s, String end) throws IllegalArgumentException
    {
       if (s == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       if (end == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       if (s.length() < end.length())
       {
@@ -168,7 +168,7 @@ public class Tools
    {
       if (ID == null)
       {
-         throw new NullPointerException("ID of the timezone cannot be null");
+         throw new IllegalArgumentException("ID of the timezone cannot be null");
       }
       if (ID.length() == 0)
       {

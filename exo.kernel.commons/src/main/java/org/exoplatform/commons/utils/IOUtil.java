@@ -18,6 +18,9 @@
  */
 package org.exoplatform.commons.utils;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -37,6 +40,8 @@ import java.net.URL;
 public class IOUtil
 {
 
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.commons.IOUtil");
+
    /** The buffer size for reading input streams. */
    private static final int DEFAULT_BUFFER_SIZE = 256;
 
@@ -46,9 +51,9 @@ public class IOUtil
     * @param file the file
     * @return the content
     * @throws IOException any io exception
-    * @throws NullPointerException if any argument is null
+    * @throws IllegalArgumentException if any argument is null
     */
-   static public String getFileContentAsString(File file) throws IOException, NullPointerException
+   static public String getFileContentAsString(File file) throws IOException, IllegalArgumentException
    {
       return getFileContentAsString(file, "UTF-8");
    }
@@ -60,13 +65,13 @@ public class IOUtil
     * @param charset the charset
     * @return the content
     * @throws IOException any io exception
-    * @throws NullPointerException if any argument is null
+    * @throws IllegalArgumentException if any argument is null
     */
-   static public String getFileContentAsString(File file, String charset) throws IOException, NullPointerException
+   static public String getFileContentAsString(File file, String charset) throws IOException, IllegalArgumentException
    {
       if (file == null)
       {
-         throw new NullPointerException("No null file accepted");
+         throw new IllegalArgumentException("No null file accepted");
       }
       FileInputStream is = new FileInputStream(file);
       return new String(getStreamContentAsBytes(is), charset);
@@ -79,14 +84,14 @@ public class IOUtil
     * @param charset the charset
     * @return the content
     * @throws IOException any io exception
-    * @throws NullPointerException if any argument is null
+    * @throws IllegalArgumentException if any argument is null
     */
    static public String getFileContentAsString(String fileName, String charset) throws IOException,
-      NullPointerException
+      IllegalArgumentException
    {
       if (fileName == null)
       {
-         throw new NullPointerException("No null file name accepted");
+         throw new IllegalArgumentException("No null file name accepted");
       }
       return getFileContentAsString(new File(fileName), charset);
    }
@@ -97,9 +102,9 @@ public class IOUtil
     * @param fileName the file name
     * @return the content
     * @throws IOException any io exception
-    * @throws NullPointerException if any argument is null
+    * @throws IllegalArgumentException if any argument is null
     */
-   static public String getFileContentAsString(String fileName) throws IOException, NullPointerException
+   static public String getFileContentAsString(String fileName) throws IOException, IllegalArgumentException
    {
       return getFileContentAsString(fileName, "UTF-8");
    }
@@ -110,9 +115,9 @@ public class IOUtil
     * @param is the stream
     * @return the content
     * @throws IOException any io exception
-    * @throws NullPointerException if the specified stream is null
+    * @throws IllegalArgumentException if the specified stream is null
     */
-   static public String getStreamContentAsString(InputStream is) throws IOException, NullPointerException
+   static public String getStreamContentAsString(InputStream is) throws IOException, IllegalArgumentException
    {
       byte buf[] = getStreamContentAsBytes(is);
       return new String(buf, "UTF-8");
@@ -124,13 +129,13 @@ public class IOUtil
     * @param fileName the file name
     * @return the content
     * @throws IOException any io exception
-    * @throws NullPointerException if the specified file name is null
+    * @throws IllegalArgumentException if the specified file name is null
     */
-   static public byte[] getFileContentAsBytes(String fileName) throws IOException, NullPointerException
+   static public byte[] getFileContentAsBytes(String fileName) throws IOException, IllegalArgumentException
    {
       if (fileName == null)
       {
-         throw new NullPointerException("No null file name accepted");
+         throw new IllegalArgumentException("No null file name accepted");
       }
       FileInputStream is = new FileInputStream(fileName);
       return getStreamContentAsBytes(is);
@@ -144,13 +149,13 @@ public class IOUtil
     * @param is the input stream
     * @return the data read from the input stream its end
     * @throws IOException if any IOException occurs during a read
-    * @throws NullPointerException if the provided input stream is null
+    * @throws IllegalArgumentException if the provided input stream is null
     */
-   static public byte[] getStreamContentAsBytes(InputStream is) throws IOException, NullPointerException
+   static public byte[] getStreamContentAsBytes(InputStream is) throws IOException, IllegalArgumentException
    {
       if (is == null)
       {
-         throw new NullPointerException("No null input stream accepted");
+         throw new IllegalArgumentException("No null input stream accepted");
       }
       try
       {
@@ -173,9 +178,17 @@ public class IOUtil
             }
             catch (IOException ignore)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + ignore.getMessage());
+               }
             }
             catch (RuntimeException ignore)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + ignore.getMessage());
+               }
             }
          }
       }
@@ -189,7 +202,7 @@ public class IOUtil
     *
     * @param resource the resource name
     * @return the resource content
-    * @throws NullPointerException if the specified argument is null or the loaded resource does not exist
+    * @throws IllegalArgumentException if the specified argument is null or the loaded resource does not exist
     * @throws IOException thrown by accessing the resource
     */
    static public String getResourceAsString(String resource) throws IOException
@@ -205,20 +218,21 @@ public class IOUtil
     *
     * @param resource the resource name
     * @return the resource content
-    * @throws NullPointerException if the specified argument is null or the loaded resource does not exist
+    * @throws IllegalArgumentException if the specified argument is null or the loaded resource does not exist
     * @throws IOException thrown by accessing the resource
     */
    static public byte[] getResourceAsBytes(String resource) throws IOException
    {
       if (resource == null)
       {
-         throw new NullPointerException("Cannot provide null resource values");
+         throw new IllegalArgumentException("Cannot provide null resource values");
       }
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
       URL url = cl.getResource(resource);
       if (url == null)
       {
-         throw new NullPointerException("The resource " + resource + " was not found in the thread context classloader");
+         throw new IllegalArgumentException("The resource " + resource
+            + " was not found in the thread context classloader");
       }
       InputStream is = url.openStream();
       return getStreamContentAsBytes(is);

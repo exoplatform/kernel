@@ -25,6 +25,8 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.cache.ExoCache;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -35,6 +37,8 @@ import org.exoplatform.services.cache.ExoCache;
 @ManagedDescription("Cache manager")
 public class CacheServiceManaged implements ManagementAware
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.cache.CacheServiceManaged");
 
    /** . */
    private ManagementContext context;
@@ -62,6 +66,10 @@ public class CacheServiceManaged implements ManagementAware
          }
          catch (Exception wtf)
          {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + wtf.getMessage());
+            }
          }
       }
    }

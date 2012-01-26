@@ -75,13 +75,13 @@ public abstract class ExoLogger
     * to replace the current static instance.
     * 
     * @param factory ExoLogFactory, the new factory
-    * @throws NullPointerException when the factory is null
+    * @throws IllegalArgumentException when the factory is null
     */
-   public static void setFactory(ExoLogFactory factory) throws NullPointerException
+   public static void setFactory(ExoLogFactory factory) throws IllegalArgumentException
    {
       if (factory == null)
       {
-         throw new NullPointerException("Cannot set a null logger factory");
+         throw new IllegalArgumentException("Cannot set a null logger factory");
       }
       loggerFactory = factory;
    }
@@ -113,13 +113,13 @@ public abstract class ExoLogger
     * 
     * @param name the logger name
     * @return the logger
-    * @throws NullPointerException if the name is null
+    * @throws IllegalArgumentException if the name is null
     */
-   public static Log getExoLogger(String name) throws NullPointerException
+   public static Log getExoLogger(String name) throws IllegalArgumentException
    {
       if (name == null)
       {
-         throw new NullPointerException("No null name accepted");
+         throw new IllegalArgumentException("No null name accepted");
       }
       try
       {
@@ -139,13 +139,13 @@ public abstract class ExoLogger
     * 
     * @param name the logger name
     * @return the logger
-    * @throws NullPointerException if the name is null
+    * @throws IllegalArgumentException if the name is null
     */
-   public static Log getExoLogger(Class name) throws NullPointerException
+   public static Log getExoLogger(Class name) throws IllegalArgumentException
    {
       if (name == null)
       {
-         throw new NullPointerException("No null name accepted");
+         throw new IllegalArgumentException("No null name accepted");
       }
       try
       {

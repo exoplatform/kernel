@@ -40,13 +40,13 @@ public class LocationAwareSLF4JExoLog implements Log
     * Create a new instance.
     *
     * @param logger the logger
-    * @throws NullPointerException if the logger is null
+    * @throws IllegalArgumentException if the logger is null
     */
    public LocationAwareSLF4JExoLog(LocationAwareLogger logger)
    {
       if (logger == null)
       {
-         throw new NullPointerException();
+         throw new IllegalArgumentException();
       }
       this.logger = new DynamicLocationAwareLogger(logger);
    }

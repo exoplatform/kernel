@@ -27,6 +27,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
@@ -42,7 +43,7 @@ public class J2EEServerInfo
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.J2EEServerInfo");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.J2EEServerInfo");
    
    /**
     * The name of the JVM parameter that allows us to change the location of the
@@ -101,9 +102,19 @@ public class J2EEServerInfo
             {
                exoConfDir_ = new File(new File(new URI(jbossConfigUrl)), confDirName).getAbsolutePath();
             }
-            catch (Throwable e)
+            catch (SecurityException e)
             {
-               // don't care about it
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
+            }
+            catch (URISyntaxException e)
+            {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
 
@@ -124,7 +135,7 @@ public class J2EEServerInfo
          }
          catch (Exception ignore)
          {
-            log.error(ignore.getLocalizedMessage(), ignore);
+            LOG.error(ignore.getLocalizedMessage(), ignore);
          }
       }
       else if (jettyHome != null)
@@ -182,7 +193,7 @@ public class J2EEServerInfo
       String exoConfHome = PrivilegedSystemHelper.getProperty(EXO_CONF_PARAM);
       if (exoConfHome != null && exoConfHome.length() > 0)
       {
-         log.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
+         LOG.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
             + "'");
          exoConfDir_ = exoConfHome;
       }

@@ -136,7 +136,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException("The listener cannot be null");
+         throw new IllegalArgumentException();
       }
       List<ListenerContext> lListeners = getListeners(fullName);
       if (lListeners == null)
@@ -360,7 +360,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    /**
     * {@inheritDoc}
     */
-   public void put(final K key, final V value) throws NullPointerException
+   public void put(final K key, final V value) throws IllegalArgumentException
    {
       if (key == null)
       {
@@ -396,7 +396,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    /**
     * {@inheritDoc}
     */
-   public void putMap(final Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException
+   public void putMap(final Map<? extends K, ? extends V> objs) throws IllegalArgumentException
    {
       if (objs == null)
       {
@@ -444,7 +444,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
     * {@inheritDoc}
     */
    @SuppressWarnings("unchecked")
-   public V remove(Serializable name) throws NullPointerException
+   public V remove(Serializable name) throws IllegalArgumentException
    {
       if (name == null)
       {
