@@ -75,7 +75,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    {
       if (container == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The container cannot be null");
       }
       
       //
@@ -102,11 +102,11 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    {
       if (parent == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The parent cannot be null");
       }
       if (container == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The container cannot be null");
       }
 
       //
@@ -133,7 +133,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    {
       if (parent == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The parent cannot be null");
       }
       if ((resource != null && typeMD == null) && (resource == null && typeMD != null))
       {

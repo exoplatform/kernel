@@ -312,7 +312,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The listener cannot be null");
       }
       listeners.add(listener);
    }

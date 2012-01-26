@@ -132,7 +132,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The listener cannot be null");
       }
       List<ListenerContext> lListeners = getListeners(fullName);
       if (lListeners == null)

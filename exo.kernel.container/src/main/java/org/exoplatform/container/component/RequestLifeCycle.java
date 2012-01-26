@@ -96,7 +96,7 @@ public class RequestLifeCycle
    {
       if (container == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The container cannot be null");
       }
       RequestLifeCycleStack lf = current.get();
       if (lf == null)
@@ -118,7 +118,7 @@ public class RequestLifeCycle
    {
       if (lifeCycle == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The lifeCycle cannot be null");
       }
       RequestLifeCycleStack lf = current.get();
       if (lf == null)

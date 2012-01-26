@@ -52,7 +52,7 @@ public abstract class AbstractExoLogFactory implements ExoLogFactory
    {
       if (name == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The logger name cannot be null");
       }
       Log exoLogger = loggers.get(name);
       if (exoLogger == null)
@@ -74,7 +74,7 @@ public abstract class AbstractExoLogFactory implements ExoLogFactory
    {
       if (clazz == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The logger class cannot be null");
       }
       return getExoLogger(clazz.getName());
    }
