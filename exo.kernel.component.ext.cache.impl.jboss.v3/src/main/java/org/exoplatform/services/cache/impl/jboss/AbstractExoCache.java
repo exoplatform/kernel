@@ -107,7 +107,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The listener cannot be null");
       }
       listeners.add(new ListenerContext<K, V>(listener, this));
    }

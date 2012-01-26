@@ -55,7 +55,7 @@ public class TestConcurrentCache extends BasicTestCase
       try
       {
          cache.put(null, new Object());
-         fail();
+         fail("Was expecting an IllegalArgumentException");
       }
       catch (IllegalArgumentException ignore)
       {
@@ -65,7 +65,7 @@ public class TestConcurrentCache extends BasicTestCase
       try
       {
          cache.remove(null);
-         fail();
+         fail("Was expecting an IllegalArgumentException");
       }
       catch (IllegalArgumentException ignore)
       {
@@ -75,7 +75,7 @@ public class TestConcurrentCache extends BasicTestCase
       try
       {
          cache.putMap(null);
-         fail();
+         fail("Was expecting an IllegalArgumentException");
       }
       catch (IllegalArgumentException ignore)
       {
@@ -88,7 +88,7 @@ public class TestConcurrentCache extends BasicTestCase
          tmp.put("a", "a");
          tmp.put(null, "a");
          cache.putMap(tmp);
-         fail();
+         fail("Was expecting an IllegalArgumentException");
       }
       catch (IllegalArgumentException ignore)
       {

@@ -116,6 +116,13 @@ public class J2EEServerInfo
                   LOG.trace("An exception occurred: " + e.getMessage());
                }
             }
+            catch (IllegalArgumentException e)
+            {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
+            }
          }
 
          //

@@ -43,7 +43,7 @@ public class SLF4JExoLog implements Log
    {
       if (logger == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The logger cannot be null");
       }
 
       this.logger = logger;

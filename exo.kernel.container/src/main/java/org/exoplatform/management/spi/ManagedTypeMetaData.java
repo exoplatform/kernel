@@ -47,7 +47,7 @@ public class ManagedTypeMetaData extends ManagedMetaData
    {
       if (type == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The type cannot be null");
       }
 
       //

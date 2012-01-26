@@ -46,7 +46,7 @@ public class LocationAwareSLF4JExoLog implements Log
    {
       if (logger == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The logger cannot be null");
       }
       this.logger = new DynamicLocationAwareLogger(logger);
    }

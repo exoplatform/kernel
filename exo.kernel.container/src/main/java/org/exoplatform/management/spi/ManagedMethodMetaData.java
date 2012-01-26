@@ -55,11 +55,11 @@ public class ManagedMethodMetaData extends ManagedMetaData
    {
       if (method == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The method cannot be null");
       }
       if (impactType == null)
       {
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("The impactType cannot be null");
       }
 
       //
@@ -87,7 +87,7 @@ public class ManagedMethodMetaData extends ManagedMetaData
    {
       if (parameter == null)
       {
-         throw new NullPointerException("No null parameter accepted");
+         throw new IllegalArgumentException("No null parameter accepted");
       }
       parameters.put(parameter.getIndex(), parameter);
    }
