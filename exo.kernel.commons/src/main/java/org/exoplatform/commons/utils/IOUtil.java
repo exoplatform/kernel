@@ -202,7 +202,7 @@ public class IOUtil
     *
     * @param resource the resource name
     * @return the resource content
-    * @throws NullPointerException if the specified argument is null or the loaded resource does not exist
+    * @throws IllegalArgumentException if the specified argument is null or the loaded resource does not exist
     * @throws IOException thrown by accessing the resource
     */
    static public String getResourceAsString(String resource) throws IOException
