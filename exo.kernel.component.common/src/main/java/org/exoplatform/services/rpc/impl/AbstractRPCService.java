@@ -844,14 +844,19 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     */
    private static String getValueParam(InitParams params, String parameterKey)
    {
-      try
+      if (params != null)
       {
-         return params.getValueParam(parameterKey).getValue().trim();
+         ValueParam parameterKeyValue = params.getValueParam(parameterKey);
+         if (parameterKeyValue != null)
+         {
+            String parameterKeyValueString = parameterKeyValue.getValue();
+            if (parameterKeyValueString != null)
+            {
+               return parameterKeyValueString.trim();
+            }
+         }
       }
-      catch (NullPointerException e)
-      {
-         return null;
-      }
+      return null;
    }
 
    /**
