@@ -58,7 +58,7 @@
       <jmxStatistics enabled="true"/>
       <invocationBatching enabled="true"/>
       <clustering mode="replication">
-         <stateRetrieval timeout="20000" fetchInMemoryState="false"/>
+         <stateTransfer timeout="20000" fetchInMemoryState="false"/>
          <sync replTimeout="20000"/>
       </clustering>
    </default>
