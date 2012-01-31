@@ -1,0 +1,110 @@
+Index: exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java
+===================================================================
+--- exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(revision 5542)
++++ exo.kernel.container/src/test/java/org/exoplatform/container/TestPortalContainer.java	(working copy)
+@@ -161,6 +161,36 @@
+       assertNull(PortalContainer.getCurrentSetting("boolean"));     
+    }
+    
++   public void testGetConfigurationXML()
++   {
++      URL rootURL = getClass().getResource("test-exo-container.xml");
++      URL portalURL = getClass().getResource("/conf/test-configuration.xml");
++      assertNotNull(rootURL);
++      assertNotNull(portalURL);
++      //
++      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
++      
++      String configXML = RootContainer.getInstance().getConfigurationXML();
++      assertNotNull(configXML);
++      int size = configXML.length();
++      int hash = configXML.hashCode();
++      configXML = RootContainer.getInstance().getConfigurationXML();
++      assertNotNull(configXML);
++      assertTrue(size > 0);
++      assertEquals(size, configXML.length());
++      assertEquals(hash, configXML.hashCode());
++      
++      configXML = PortalContainer.getInstance().getConfigurationXML();
++      assertNotNull(configXML);
++      assertTrue(size > 0);
++      size = configXML.length();
++      hash = configXML.hashCode();
++      configXML = PortalContainer.getInstance().getConfigurationXML();
++      assertNotNull(configXML);
++      assertEquals(size, configXML.length());
++      assertEquals(hash, configXML.hashCode());
++   }
++   
+    public static class MyComponent
+    {
+       private final InitParams params;
+Index: exo.kernel.container/src/main/java/org/exoplatform/container/xml/Configuration.java
+===================================================================
+--- exo.kernel.container/src/main/java/org/exoplatform/container/xml/Configuration.java	(revision 5542)
++++ exo.kernel.container/src/main/java/org/exoplatform/container/xml/Configuration.java	(working copy)
+@@ -257,16 +257,8 @@
+          }
+          else if (result == null)
+          {
+-            try
+-            {
+-               // Initialize with the clone of the first non null configuration 
+-               result = (Configuration)conf.clone();
+-            }
+-            catch (CloneNotSupportedException e)
+-            {
+-               log.warn("Could not clone the configuration", e);
+-               break;
+-            }
++            // Initialize with the clone of the first non null configuration 
++            result = (Configuration)conf.clone();
+          }
+          else
+          {
+@@ -276,8 +268,44 @@
+       }
+       return result;
+    }
+-
++   
+    /**
++    * {@inheritDoc}
++    */
++   @SuppressWarnings("unchecked")
++   @Override
++   protected Object clone()
++   {
++      try
++      {
++         Configuration conf = (Configuration)super.clone();
++         conf.component_ = (Map<String, Component>)((HashMap<String, Component>)component_).clone();
++         conf.componentLifecyclePlugin_ =
++            (Map<String, ComponentLifecyclePlugin>)((HashMap<String, ComponentLifecyclePlugin>)componentLifecyclePlugin_)
++               .clone();
++         conf.containerLifecyclePlugin_ =
++            (Map<String, ContainerLifecyclePlugin>)((HashMap<String, ContainerLifecyclePlugin>)containerLifecyclePlugin_)
++               .clone();
++         conf.externalComponentPlugins_ =
++            (Map<String, ExternalComponentPlugins>)((HashMap<String, ExternalComponentPlugins>)externalComponentPlugins_)
++               .clone();
++         if (imports_ != null)
++         {
++            conf.imports_ = (ArrayList<String>)imports_.clone();
++         }
++         if (removeConfiguration_ != null)
++         {
++            conf.removeConfiguration_ = (ArrayList<String>)removeConfiguration_.clone();
++         }
++         return conf;
++      }
++      catch (CloneNotSupportedException e)
++      {
++         throw new AssertionError("Could not clone the configuration");
++      }
++   }
++   
++   /**
+     * Dumps the configuration in XML format into the given {@link Writer}
+     */
+    public void toXML(Writer w)
