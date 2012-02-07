@@ -65,6 +65,7 @@
       <dependency>
          <groupId>org.ow2.jotm</groupId>
          <artifactId>jotm-core</artifactId>
+         <scope>provided</scope>
          <exclusions>
             <exclusion>
                <groupId>javax.resource</groupId>
