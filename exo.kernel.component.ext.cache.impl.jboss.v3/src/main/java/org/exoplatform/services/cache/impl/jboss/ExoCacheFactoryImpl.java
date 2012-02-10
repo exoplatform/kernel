@@ -242,7 +242,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
             }
          };
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
       {
          LOG.error("Could not create the JMX Manager", e);
       }

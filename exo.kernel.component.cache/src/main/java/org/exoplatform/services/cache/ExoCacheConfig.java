@@ -175,13 +175,6 @@ public class ExoCacheConfig implements Cloneable
    @Override
    public ExoCacheConfig clone() throws CloneNotSupportedException
    {
-      try
-      {
-         return (ExoCacheConfig)super.clone();
-      }
-      catch (Exception e)
-      {
-         throw new AssertionError();
-      }
+      return (ExoCacheConfig)super.clone();
    }
 }

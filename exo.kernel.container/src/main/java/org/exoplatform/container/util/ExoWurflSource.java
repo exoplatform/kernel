@@ -21,6 +21,7 @@ package org.exoplatform.container.util;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 //import net.sourceforge.wurfl.wurflapi.WurflSource;
@@ -41,7 +42,7 @@ public class ExoWurflSource /* implements WurflSource */
       {
          return wurflUrl.openStream();
       }
-      catch (Exception e)
+      catch (IOException e)
       {
          LOG.error(e.getLocalizedMessage(), e);
          return null;

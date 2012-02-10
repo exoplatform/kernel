@@ -26,6 +26,7 @@ import org.exoplatform.services.log.Log;
 import org.jboss.beans.metadata.plugins.AbstractBeanMetaData;
 import org.jboss.beans.metadata.spi.BeanMetaData;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
+import org.jboss.xb.binding.JBossXBException;
 import org.jboss.xb.binding.Unmarshaller;
 import org.jboss.xb.binding.UnmarshallerFactory;
 import org.jboss.xb.binding.resolver.MutableSchemaResolver;
@@ -233,7 +234,7 @@ public class MCIntConfig
       {
          deployment = (KernelDeployment) unmarshaller.unmarshal(url.toString(), resolver);
       }
-      catch (Exception e)
+      catch (JBossXBException e)
       {
          throw new RuntimeException("Failed to parse xml " + url, e);
       }
