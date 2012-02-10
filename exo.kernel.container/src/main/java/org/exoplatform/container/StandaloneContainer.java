@@ -36,6 +36,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivilegedAction;
@@ -354,7 +355,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       {
          SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            public Void run() throws Exception
+            public Void run() throws IOException
             {
                url.openStream().close();
                return null;
@@ -362,7 +363,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          });
          return true;
       }
-      catch (Exception e)
+      catch (IOException e)
       {
          return false;
       }

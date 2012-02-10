@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.net.NetService;
 
 import java.net.Socket;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 /**
@@ -47,7 +48,7 @@ public class NetServiceImpl implements NetService
          });
          endTime = System.currentTimeMillis();
       }
-      catch (Exception e)
+      catch (PrivilegedActionException e)
       {
          // e.printStackTrace() ;
          return -1;

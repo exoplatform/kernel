@@ -27,6 +27,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -145,7 +146,7 @@ public class ManagedDataSource implements DataSource
       {
          return tm != null && tm.getStatus() != Status.STATUS_NO_TRANSACTION;
       }
-      catch (Exception e)
+      catch (SystemException e)
       {
          LOG.warn("We cannot know if a global tx is active", e);
       }

@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 /**
@@ -201,7 +202,7 @@ public class ManageableContainer extends CachingContainer
                   {
                      this.objectName = JMX.createObjectName("exo", props);
                   }
-                  catch (Exception e)
+                  catch (MalformedObjectNameException e)
                   {
                      LOG.error("Could not create the object name", e);
                   }

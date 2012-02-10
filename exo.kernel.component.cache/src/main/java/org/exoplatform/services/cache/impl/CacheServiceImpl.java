@@ -221,7 +221,21 @@ public class CacheServiceImpl implements CacheService
          {
             cache = task.get();
          }
-         catch (Exception e)
+         catch (CancellationException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (InterruptedException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (ExecutionException e)
          {
             if (LOG.isTraceEnabled())
             {
@@ -288,7 +302,27 @@ public class CacheServiceImpl implements CacheService
                final Class clazz = cl.loadClass(config.getImplementation());
                return (ExoCache)clazz.newInstance();
             }
-            catch (Exception e)
+            catch (ExceptionInInitializerError e)
+            {
+               throw new ExoCacheInitException("Cannot create instance of ExoCache of type "
+                  + config.getImplementation(), e);
+            }
+            catch (SecurityException e)
+            {
+               throw new ExoCacheInitException("Cannot create instance of ExoCache of type "
+                  + config.getImplementation(), e);
+            }
+            catch (ClassNotFoundException e)
+            {
+               throw new ExoCacheInitException("Cannot create instance of ExoCache of type "
+                  + config.getImplementation(), e);
+            }
+            catch (InstantiationException e)
+            {
+               throw new ExoCacheInitException("Cannot create instance of ExoCache of type "
+                  + config.getImplementation(), e);
+            }
+            catch (IllegalAccessException e)
             {
                throw new ExoCacheInitException("Cannot create instance of ExoCache of type "
                   + config.getImplementation(), e);

@@ -106,7 +106,7 @@ public class QuartzSheduler implements Startable
       {
          scheduler_.shutdown();
       }
-      catch (Exception ex)
+      catch (SchedulerException ex)
       {
          log.warn("Could not shutdown the scheduler", ex);
       }

@@ -32,11 +32,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.RuntimeOperationsException;
+import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import javax.management.modelmbean.ModelMBeanInfo;
 
 /**
@@ -73,10 +76,40 @@ public class JMXManagementProvider implements ManagementProvider
          ModelMBeanInfo info = infoBuilder.build();
          mbean = new ExoModelMBean(context, context.getResource(), info);
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
       {
-         LOG.warn("Could not create the ExoModelMBean for the class " + 
-                  (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())), e);
+         LOG.warn(
+            "Could not create the ExoModelMBean for the class "
+               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
+            e);
+      }
+      catch (RuntimeOperationsException e)
+      {
+         LOG.warn(
+            "Could not create the ExoModelMBean for the class "
+               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
+            e);
+      }
+      catch (InstanceNotFoundException e)
+      {
+         LOG.warn(
+            "Could not create the ExoModelMBean for the class "
+               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
+            e);
+      }
+      catch (MBeanException e)
+      {
+         LOG.warn(
+            "Could not create the ExoModelMBean for the class "
+               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
+            e);
+      }
+      catch (InvalidTargetObjectTypeException e)
+      {
+         LOG.warn(
+            "Could not create the ExoModelMBean for the class "
+               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
+            e);
       }
 
       //
@@ -166,7 +199,7 @@ public class JMXManagementProvider implements ManagementProvider
                   }
                });
             }
-            catch (Exception e)
+            catch (PrivilegedActionException e)
             {
                throw new RuntimeException("Failed to unregister MBean '" + name + " due to " + e.getMessage(), e);
             }
@@ -182,7 +215,7 @@ public class JMXManagementProvider implements ManagementProvider
                }
             });
          }
-         catch (Exception e)
+         catch (PrivilegedActionException e)
          {
             throw new RuntimeException("Failed to register MBean '" + name + " due to " + e.getMessage(), e);
          }
