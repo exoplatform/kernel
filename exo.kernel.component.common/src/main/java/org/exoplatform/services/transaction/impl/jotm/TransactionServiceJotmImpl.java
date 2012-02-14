@@ -46,7 +46,7 @@ import javax.transaction.UserTransaction;
 public class TransactionServiceJotmImpl extends AbstractTransactionService
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.kernel.component.common.TransactionServiceJotmImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.TransactionServiceJotmImpl");
 
    private final int defaultTimeout;
    
@@ -112,7 +112,7 @@ public class TransactionServiceJotmImpl extends AbstractTransactionService
       }
       else
       {
-         log.info("Use externally initialized JOTM: " + current);
+         LOG.info("Use externally initialized JOTM: " + current);
       }
       return current;
    }

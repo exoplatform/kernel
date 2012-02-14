@@ -112,7 +112,7 @@ public class RootContainer extends ExoContainer
       profiles.addAll(ExoContainer.getProfiles());
 
       // Lof the active profiles
-      log.info("Active profiles " + profiles);
+      LOG.info("Active profiles " + profiles);
 
       //
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
@@ -240,7 +240,7 @@ public class RootContainer extends ExoContainer
          {
             if (PropertyManager.isDevelopping())
             {
-               log.info("We assume that the ServletContext '" + context.getServletContextName()
+               LOG.info("We assume that the ServletContext '" + context.getServletContextName()
                   + "' is not a portal since no portal container definition with the same name has been"
                   + " registered to the component PortalContainerConfig. The related portal container"
                   + " will be declared as disabled.");
@@ -301,7 +301,7 @@ public class RootContainer extends ExoContainer
          if (config.isPortalContainerName(portalContainerName))
          {
             // Unregister name of portal container that doesn't exist
-            log.warn("The portal container '" + portalContainerName + "' doesn't not exist or"
+            LOG.warn("The portal container '" + portalContainerName + "' doesn't not exist or"
                + " it has not yet been registered, please check your PortalContainerDefinitions and "
                + "the loading order.");
             config.unregisterPortalContainerName(portalContainerName);            
@@ -323,7 +323,7 @@ public class RootContainer extends ExoContainer
       final String portalContainerName = context.getServletContextName();
       try
       {
-         log.info("Trying to create the portal container '" + portalContainerName + "'");
+         LOG.info("Trying to create the portal container '" + portalContainerName + "'");
          PortalContainer pcontainer = new PortalContainer(this, context);
          PortalContainer.setInstance(pcontainer);
          executeInitTasks(pcontainer, PortalContainerPreInitTask.TYPE);
@@ -339,7 +339,7 @@ public class RootContainer extends ExoContainer
          }
          catch (Exception ex)
          {
-            log.error("Cannot add configuration conf/portal/configuration.xml. ServletContext: " + context, ex);
+            LOG.error("Cannot add configuration conf/portal/configuration.xml. ServletContext: " + context, ex);
          }
 
          // Add configuration that depends on the environment
@@ -359,7 +359,7 @@ public class RootContainer extends ExoContainer
          }
          catch (Exception ex)
          {
-            log.error("Cannot add configuration " + uri + ". ServletContext: " + context, ex);
+            LOG.error("Cannot add configuration " + uri + ". ServletContext: " + context, ex);
          }
 
          // add configs from web apps
@@ -373,7 +373,7 @@ public class RootContainer extends ExoContainer
             }
             catch (Exception ex)
             {
-               log.error("Cannot add configuration war:/conf/configuration.xml. ServletContext: " + ctx, ex);
+               LOG.error("Cannot add configuration war:/conf/configuration.xml. ServletContext: " + ctx, ex);
             }
          }
 
@@ -390,7 +390,7 @@ public class RootContainer extends ExoContainer
          }
          catch (Exception ex)
          {
-            log.error("Cannot add configuration " + overrideConfig + ". ServletContext: " + context, ex);
+            LOG.error("Cannot add configuration " + overrideConfig + ". ServletContext: " + context, ex);
          }
 
          cService.processRemoveConfiguration();
@@ -404,11 +404,11 @@ public class RootContainer extends ExoContainer
          //
          executeInitTasks(pcontainer, PortalContainerPostInitTask.TYPE);
          executeInitTasks(pcontainer, PortalContainerPostCreateTask.TYPE);
-         log.info("The portal container '" + portalContainerName + "' has been created successfully");
+         LOG.info("The portal container '" + portalContainerName + "' has been created successfully");
       }
       catch (Exception ex)
       {
-         log.error("Cannot create the portal container '" + portalContainerName + "' . ServletContext: " + context, ex);
+         LOG.error("Cannot create the portal container '" + portalContainerName + "' . ServletContext: " + context, ex);
       }
       finally
       {
@@ -423,7 +423,7 @@ public class RootContainer extends ExoContainer
          }
          catch (Exception e)
          {
-            log.warn("An error occured while cleaning the ThreadLocal", e);
+            LOG.warn("An error occured while cleaning the ThreadLocal", e);
          }
       }
    }
@@ -480,7 +480,7 @@ public class RootContainer extends ExoContainer
       }
       catch (Exception e)
       {
-         log.error("Could not build root container", e);
+         LOG.error("Could not build root container", e);
          // The logger is not necessary configured so we have to use the standard
          // output stream
          LOG.error(e.getLocalizedMessage(), e);
@@ -513,13 +513,13 @@ public class RootContainer extends ExoContainer
                   booting = true;
                   try
                   {
-                     log.info("Building root container");
+                     LOG.info("Building root container");
                      long time = -System.currentTimeMillis();
                      result = buildRootContainer();
                      if (result != null)
                      {
                         time += System.currentTimeMillis();
-                        log.info("Root container is built (build time " + time + "ms)");
+                        LOG.info("Root container is built (build time " + time + "ms)");
                         singleton_ = result;
                         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
                         {
@@ -529,11 +529,11 @@ public class RootContainer extends ExoContainer
                               return null;
                            }
                         }); 
-                        log.info("Root container booted");
+                        LOG.info("Root container booted");
                      }
                      else
                      {
-                        log.error("Failed to boot root container");
+                        LOG.error("Failed to boot root container");
                      }
                   }
                   finally
@@ -563,7 +563,7 @@ public class RootContainer extends ExoContainer
       Configuration config = getConfiguration();
       if (config == null)
       {
-         log.warn("The configuration of the RootContainer could not be found");
+         LOG.warn("The configuration of the RootContainer could not be found");
          return null;
       }
       return config.toXML();
@@ -599,8 +599,8 @@ public class RootContainer extends ExoContainer
       final PortalContainer container = getPortalContainer(portalContainer);
       if (!task.alreadyExists(container))
       {
-         if (log.isDebugEnabled())
-            log.debug("The portal container '" + portalContainer
+         if (LOG.isDebugEnabled())
+            LOG.debug("The portal container '" + portalContainer
                + "' has not yet been initialized, thus the task can be added");
          ConcurrentMap<String, Queue<PortalContainerInitTaskContext>> queues = initTasks.get(portalContainer);
          if (queues == null)
@@ -639,8 +639,8 @@ public class RootContainer extends ExoContainer
       }
       else
       {
-         if (log.isDebugEnabled())
-            log.debug("The portal container '" + portalContainer
+         if (LOG.isDebugEnabled())
+            LOG.debug("The portal container '" + portalContainer
                + "' has already been initialized, thus we call onAlreadyExists");
          PortalContainer oldPortalContainer = PortalContainer.getInstanceIfPresent();
          try
@@ -673,8 +673,8 @@ public class RootContainer extends ExoContainer
       {
          return;
       }
-      if (log.isDebugEnabled())
-         log.debug("Start launching the " + type + " tasks of the portal container '" + portalContainer + "'");
+      if (LOG.isDebugEnabled())
+         LOG.debug("Start launching the " + type + " tasks of the portal container '" + portalContainer + "'");
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
       PortalContainerInitTaskContext context;
@@ -702,8 +702,8 @@ public class RootContainer extends ExoContainer
       {
          initTasks.remove(portalContainerName);
       }
-      if (log.isDebugEnabled())
-         log.debug("End launching the " + type + " tasks of the portal container '" + portalContainer + "'");
+      if (LOG.isDebugEnabled())
+         LOG.debug("End launching the " + type + " tasks of the portal container '" + portalContainer + "'");
    }
 
    static class ShutdownThread extends Thread

@@ -64,7 +64,7 @@ public class PortalContainerConfig implements Startable
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.PortalContainerConfig");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.PortalContainerConfig");
 
    /**
     * The name of the setting corresponding to the portal container name
@@ -237,7 +237,7 @@ public class PortalContainerConfig implements Startable
          else
          {
             // The nested object is not of the right type, thus it will be ignored
-            log.warn("The object parameter 'default.portal.definition' should be of type "
+            LOG.warn("The object parameter 'default.portal.definition' should be of type "
                + PortalContainerDefinition.class);
          }
       }
@@ -384,7 +384,7 @@ public class PortalContainerConfig implements Startable
       {
          if (PropertyManager.isDevelopping())
          {
-            log.info("The portal container '" + name + "' will be disabled");
+            LOG.info("The portal container '" + name + "' will be disabled");
          }
          final Set<String> lPortalContainerNames = new HashSet<String>(portalContainerNamesDisabled.size() + 1);
          lPortalContainerNames.add(name);
@@ -561,14 +561,14 @@ public class PortalContainerConfig implements Startable
             // the webapp is ignored since it has not been registered in any portal container dependency list
             if (PropertyManager.isDevelopping())
             {
-               log.warn("The context '" + contextName + "' has not been added as " +
+               LOG.warn("The context '" + contextName + "' has not been added as " +
                      "dependency of any portal containers");
             }
             return null;
          }
          if (PropertyManager.isDevelopping())
          {
-            log.debug("The context '" + contextName + "' has not been added as " +
+            LOG.debug("The context '" + contextName + "' has not been added as " +
                "dependency of any portal containers");
          }
          // by default we will return the default portal container
@@ -702,7 +702,7 @@ public class PortalContainerConfig implements Startable
                String name = def.getName();
                if (name == null || (name = name.trim()).length() == 0)
                {
-                  log.warn("A PortalContainerDefinition cannot have an empty name");
+                  LOG.warn("A PortalContainerDefinition cannot have an empty name");
                   continue;
                }
                else
@@ -997,14 +997,14 @@ public class PortalContainerConfig implements Startable
                url = file.toURI().toURL();
                if (ConfigurationManager.LOG_DEBUG)
                {
-                  log.info("The external settings could be found in the directory ${exo-conf}/portal, "
+                  LOG.info("The external settings could be found in the directory ${exo-conf}/portal, "
                      + "it will be used as external settings of the "
                      + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
                }
             }
             else if (ConfigurationManager.LOG_DEBUG)
             {
-               log.info("No external settings could be found in the directory ${exo-conf}/portal for the "
+               LOG.info("No external settings could be found in the directory ${exo-conf}/portal for the "
                   + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
             }
          }
@@ -1014,7 +1014,7 @@ public class PortalContainerConfig implements Startable
             url = cm.getURL(path);
             if (ConfigurationManager.LOG_DEBUG)
             {
-               log.info("Trying to retrieve the external settings from the url '" + url
+               LOG.info("Trying to retrieve the external settings from the url '" + url
                   + "', it will be used as external settings of the "
                   + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
             }
@@ -1024,7 +1024,7 @@ public class PortalContainerConfig implements Startable
       }
       catch (Exception e)
       {
-         log.error("Cannot load property file " + path, e);
+         LOG.error("Cannot load property file " + path, e);
       }
       return null;
    }
@@ -1092,9 +1092,9 @@ public class PortalContainerConfig implements Startable
                }
                catch (Exception e)
                {
-                  if (log.isDebugEnabled())
+                  if (LOG.isDebugEnabled())
                   {
-                     log.debug(
+                     LOG.debug(
                         "The static method valueOf(String) cannot be found for the class " + oldValue.getClass(), e);
                   }
                }
@@ -1113,7 +1113,7 @@ public class PortalContainerConfig implements Startable
                   }
                   catch (Exception e)
                   {
-                     log.error("Cannot convert the value '" + propertyValue + "' to an Object of type "
+                     LOG.error("Cannot convert the value '" + propertyValue + "' to an Object of type "
                         + oldValue.getClass(), e);
                      // we ignore invalid value
                      continue;
@@ -1202,7 +1202,7 @@ public class PortalContainerConfig implements Startable
          {
             if (PropertyManager.isDevelopping())
             {
-               log.warn("No portal container definition has been registered, the old behavior is" +
+               LOG.warn("No portal container definition has been registered, the old behavior is" +
                   " then expected so you cannot disable any portal container. The list of" +
                   " portal containers to disable will be ignored");               
             }
@@ -1235,7 +1235,7 @@ public class PortalContainerConfig implements Startable
                }
                catch (Exception e)
                {
-                  log.warn("Cannot apply the change " + change, e);
+                  LOG.warn("Cannot apply the change " + change, e);
                }
             }
          }

@@ -53,7 +53,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
 
    private volatile Object instance_;
 
-   private Log log = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
    public MX4JComponentAdapter(Object key, Class<?> implementation)
    {
@@ -103,7 +103,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             }
             exocontainer.addComponentToCtx(getComponentKey(), instance);
             if (debug)
-               log.debug("==> create  component : " + instance_);
+               LOG.debug("==> create  component : " + instance_);
             if (component != null && component.getComponentPlugins() != null)
             {
                addComponentPlugin(debug, instance, component.getComponentPlugins(), exocontainer);
@@ -160,7 +160,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             final Method m = getSetMethod(clazz, plugin.getSetMethod(), pluginClass);
             if (m == null)
             {
-               log.error("Cannot find the method '" + plugin.getSetMethod() + "' that has only one parameter of type '"
+               LOG.error("Cannot find the method '" + plugin.getSetMethod() + "' that has only one parameter of type '"
                   + pluginClass.getName() + "' in the class '" + clazz.getName() + "'.");
                continue;
             }
@@ -176,14 +176,15 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             });
 
             if (debug)
-               log.debug("==> add component plugin: " + cplugin);
+               LOG.debug("==> add component plugin: " + cplugin);
 
             cplugin.setName(plugin.getName());
             cplugin.setDescription(plugin.getDescription());
          }
          catch (Exception ex)
          {
-            log.error("Failed to instanciate plugin " + plugin.getName() + " for component " + component + ": "
+            LOG.error(
+               "Failed to instanciate plugin " + plugin.getName() + " for component " + component + ": "
                + ex.getMessage(), ex);
          }
       }

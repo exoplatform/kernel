@@ -46,7 +46,7 @@ public class ListenerService
     */
    private final Map<String, List<Listener>> listeners_;
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
 
    /**
     * Construct a listener service.
@@ -151,9 +151,9 @@ public class ListenerService
          return;
       for (Listener<S, D> listener : list)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("broadcasting event " + name + " on " + listener.getName());
+            LOG.debug("broadcasting event " + name + " on " + listener.getName());
          }
 
          try
@@ -163,8 +163,8 @@ public class ListenerService
          catch (Exception e)
          {
             // log exception and keep broadcast events
-            log.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
-            log.info("Exception occures but keep broadcast events.");
+            LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
+            LOG.info("Exception occures but keep broadcast events.");
          }
       }
    }
@@ -197,8 +197,8 @@ public class ListenerService
          catch (Exception e)
          {
             // log exception and keep broadcast events
-            log.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
-            log.info("Exception occures but keep broadcast events.");
+            LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
+            LOG.info("Exception occures but keep broadcast events.");
          }
       }
    }
@@ -275,7 +275,7 @@ public class ListenerService
          {
             // Do not throw exception. Event is asynchronous so just report error.
             // Must say that exception will be ignored even in synchronous events.
-            log.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
+            LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e.getCause());
          }
       }
    }

@@ -57,7 +57,7 @@ public class InjectingBean implements org.picocontainer.Startable
    /**
     * Logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int-demo.InjectingBean");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.mc-int-demo.InjectingBean");
 
    /**
     * Field to be injected through setter method by mc kernel.
@@ -113,7 +113,7 @@ public class InjectingBean implements org.picocontainer.Startable
     */
    public InjectingBean()
    {
-      log.info("Injecting bean instantiated");
+      LOG.info("Injecting bean instantiated");
    }
 
    /**
@@ -133,7 +133,7 @@ public class InjectingBean implements org.picocontainer.Startable
    public void setBean(InjectedBean bean)
    {
       this.bean = bean;
-      log.info("Received InjectedBean: " + bean);
+      LOG.info("Received InjectedBean: " + bean);
    }
 
    /**
@@ -153,7 +153,7 @@ public class InjectingBean implements org.picocontainer.Startable
    public void setConfigurator(KernelConfigurator configurator)
    {
       this.configurator = configurator;
-      log.info("InjectingBean Received KernelConfigurator: " + configurator);
+      LOG.info("InjectingBean Received KernelConfigurator: " + configurator);
    }
 
    /**
@@ -205,7 +205,7 @@ public class InjectingBean implements org.picocontainer.Startable
    )
    public void setBindings(Map<Class<?>, Object> bindings)
    {
-      log.info("Received a map with bindings: " + bindings);
+      LOG.info("Received a map with bindings: " + bindings);
       this.bindingsMap = bindings;
    }
 
@@ -225,7 +225,7 @@ public class InjectingBean implements org.picocontainer.Startable
    @Inject(bean = "InjectedBean", property = "someString")
    public void setSomeStringProperty(String value)
    {
-      log.info("Received SomeStringProperty value: " + value);
+      LOG.info("Received SomeStringProperty value: " + value);
       this.stringValue = value;
    }
 
@@ -234,7 +234,7 @@ public class InjectingBean implements org.picocontainer.Startable
     */
    public void start()
    {
-      log.warn("start() called (injectedBean is set to: " + injectedBean + ", transactionManager is setTo: " + tm + ")");
+      LOG.warn("start() called (injectedBean is set to: " + injectedBean + ", transactionManager is setTo: " + tm + ")");
       this.startCount++;
    }
 
@@ -243,7 +243,7 @@ public class InjectingBean implements org.picocontainer.Startable
     */
    public void stop()
    {
-      log.info("stop() called");
+      LOG.info("stop() called");
    }
 
    /**

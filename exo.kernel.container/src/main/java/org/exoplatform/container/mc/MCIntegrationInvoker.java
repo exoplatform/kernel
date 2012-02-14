@@ -25,8 +25,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.ComponentAdapter;
 
-import javax.servlet.ServletContext;
 import java.lang.reflect.Method;
+
+import javax.servlet.ServletContext;
 
 /**
  * This class performs a loosely coupled integration to mc-integration logic.
@@ -43,7 +44,7 @@ public class MCIntegrationInvoker
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger("exo.kernel.container.MCIntegrationInvoker");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MCIntegrationInvoker");
 
    /**
     * Reference to actual implementation of mc-integration - the one with hard dependencies on JBoss MC Kernel.
@@ -127,7 +128,7 @@ public class MCIntegrationInvoker
          catch (ClassNotFoundException ignored)
          {
             permFailure = true;
-            log.debug("MC integration not available in this environment (missing class: "
+            LOG.debug("MC integration not available in this environment (missing class: "
                   + ignored.getMessage() + ")");
 
             return null;

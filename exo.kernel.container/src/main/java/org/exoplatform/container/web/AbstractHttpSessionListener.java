@@ -40,7 +40,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.AbstractHttpSessionListener");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.AbstractHttpSessionListener");
 
    /**
     * @see javax.servlet.http.HttpSessionListener#sessionCreated(javax.servlet.http.HttpSessionEvent)
@@ -82,7 +82,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
             {
                if (PropertyManager.isDevelopping())
                {
-                  log.info("The portal environment could not be set for the webapp '" + ctxName
+                  LOG.info("The portal environment could not be set for the webapp '" + ctxName
                      + "' because this servlet context has not been defined as a "
                      + "dependency of any portal container or it is a disabled portal"
                      + " container, the sessionCreated event will be ignored");                 
@@ -152,7 +152,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
             {
                if (PropertyManager.isDevelopping())
                {
-                  log.info("The portal environment could not be set for the webapp '" + ctxName
+                  LOG.info("The portal environment could not be set for the webapp '" + ctxName
                      + "' because this servlet context has not been defined as a "
                      + "dependency of any portal container or it is a disabled portal"
                      + " container, the sessionDestroyed event will be ignored");

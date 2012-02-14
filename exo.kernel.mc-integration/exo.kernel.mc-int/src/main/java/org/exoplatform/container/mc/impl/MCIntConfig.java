@@ -78,7 +78,7 @@ public class MCIntConfig
    /**
     * Logger.
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int.MCIntConfig");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.mc-int.MCIntConfig");
 
    /**
     * Configuration for <em>beans</em> specified with <em>name</em>.
@@ -126,7 +126,7 @@ public class MCIntConfig
             }
             if (data != null)
             {
-               log.warn("Overriding existing mc-int-beans configuration for bean: " + data.data
+               LOG.warn("Overriding existing mc-int-beans configuration for bean: " + data.data
                      + " from " + data.deployment.getName() + " with one from " + deployment.getName());
             }
             addConf(new DeploymentData(deployment, mdata));
@@ -221,10 +221,10 @@ public class MCIntConfig
     */
    private KernelDeployment parseConfigURL(UnmarshallerFactory factory, MutableSchemaResolver resolver, URL url)
    {
-      final boolean trace = log.isTraceEnabled();
+      final boolean trace = LOG.isTraceEnabled();
       if (trace)
       {
-         log.trace("Parsing " + url);
+         LOG.trace("Parsing " + url);
       }
       long start = System.currentTimeMillis();
 
@@ -248,7 +248,7 @@ public class MCIntConfig
       if (trace)
       {
          long now = System.currentTimeMillis();
-         log.trace("Parsing " + url + " took " + (now - start) + " milliseconds");
+         LOG.trace("Parsing " + url + " took " + (now - start) + " milliseconds");
       }
 
       return deployment;

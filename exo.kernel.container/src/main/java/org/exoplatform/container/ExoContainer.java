@@ -121,7 +121,7 @@ public class ExoContainer extends ManageableContainer
       return Collections.unmodifiableSet(profiles);      
    }
    
-   static Log log = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
 
    private Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =
       new HashMap<String, ComponentLifecyclePlugin>();
@@ -217,7 +217,7 @@ public class ExoContainer extends ManageableContainer
          }
          catch (Exception e)
          {
-            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+            LOG.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
          }
       }
    }
@@ -300,7 +300,7 @@ public class ExoContainer extends ManageableContainer
          }
          catch (Exception e)
          {
-            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+            LOG.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
          }
       }
    }
@@ -323,7 +323,7 @@ public class ExoContainer extends ManageableContainer
          }
          catch (Exception e)
          {
-            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+            LOG.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
          }
       }
    }
@@ -346,7 +346,7 @@ public class ExoContainer extends ManageableContainer
          }
          catch (Exception e)
          {
-            log.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
+            LOG.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
          }
       }
    }
@@ -378,8 +378,8 @@ public class ExoContainer extends ManageableContainer
 
    public <T> T createComponent(Class<T> clazz, InitParams params) throws Exception
    {
-      if (log.isDebugEnabled())
-         log.debug(clazz.getName() + " " + ((params != null) ? params : "") + " added to " + getContext().getName());
+      if (LOG.isDebugEnabled())
+         LOG.debug(clazz.getName() + " " + ((params != null) ? params : "") + " added to " + getContext().getName());
       Constructor<?>[] constructors = new Constructor<?>[0];
       try
       {

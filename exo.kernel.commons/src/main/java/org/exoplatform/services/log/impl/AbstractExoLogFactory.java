@@ -35,7 +35,7 @@ public abstract class AbstractExoLogFactory implements ExoLogFactory
 {
 
    /** . */
-   private final ConcurrentMap<String, Log> loggers = new ConcurrentHashMap<String, Log>();
+   private static final ConcurrentMap<String, Log> LOGGERS = new ConcurrentHashMap<String, Log>();
 
    /**
     * Obtain a specified logger.
@@ -54,11 +54,11 @@ public abstract class AbstractExoLogFactory implements ExoLogFactory
       {
          throw new IllegalArgumentException("The logger name cannot be null");
       }
-      Log exoLogger = loggers.get(name);
+      Log exoLogger = LOGGERS.get(name);
       if (exoLogger == null)
       {
          exoLogger = getLogger(name);
-         Log phantom = loggers.putIfAbsent(name, exoLogger);
+         Log phantom = LOGGERS.putIfAbsent(name, exoLogger);
          if (phantom != null)
          {
             exoLogger = phantom;

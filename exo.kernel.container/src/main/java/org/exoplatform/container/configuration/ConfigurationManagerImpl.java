@@ -51,7 +51,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 {
    final static public String WAR_CONF_LOCATION = "/WEB-INF";
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationManagerImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ConfigurationManagerImpl");
 
    protected Configuration configurations_;
 
@@ -137,7 +137,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
    private void addConfiguration(ServletContext context, URL url) throws Exception
    {
       if (LOG_DEBUG)
-         log.info("Add configuration " + url);
+         LOG.info("Add configuration " + url);
       if (url == null)
          return;
       try
@@ -174,7 +174,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       }
       catch (Exception ex)
       {
-         log.error("Cannot process the configuration " + currentURL.get(), ex);
+         LOG.error("Cannot process the configuration " + currentURL.get(), ex);
       }
       finally
       {
@@ -219,7 +219,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
             if (urlObject != null)
             {
                if (LOG_DEBUG)
-                  log.info(prefix + "import " + urlObject);
+                  LOG.info(prefix + "import " + urlObject);
                // Set the URL of imported file
                currentURL.set(urlObject);
                conf = unmarshaller.unmarshall(urlObject);
@@ -228,7 +228,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
             }
             else
             {
-               log.warn("Couldn't process the URL for " + uri + " configuration file ignored ");
+               LOG.warn("Couldn't process the URL for " + uri + " configuration file ignored ");
             }
          }
       }

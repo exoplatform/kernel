@@ -62,7 +62,7 @@ import java.util.Set;
 public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 {
    
-   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.JobSchedulerServiceImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.JobSchedulerServiceImpl");
    
    static final String STANDALONE_CONTAINER_NAME = "$Standalone";
    private final Scheduler scheduler_;
@@ -409,7 +409,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       catch (SchedulerException e)
       {
-         log.error("Could not suspend the scheduler", e);
+         LOG.error("Could not suspend the scheduler", e);
       }
       return false;
    }
@@ -425,7 +425,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       catch (SchedulerException e)
       {
-         log.error("Could not resume the scheduler", e);
+         LOG.error("Could not resume the scheduler", e);
       }
       return false;
    }
@@ -441,7 +441,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       catch (Exception e)
       {
-         log.warn("Could not remove the GlobalJobListener " + JobEnvironmentConfigListener.NAME, e);
+         LOG.warn("Could not remove the GlobalJobListener " + JobEnvironmentConfigListener.NAME, e);
       }
    }
 
@@ -463,7 +463,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       catch (Exception ex)
       {
-         log.warn("Could not interrupt all the current jobs properly", ex);
+         LOG.warn("Could not interrupt all the current jobs properly", ex);
       }
    }
 
