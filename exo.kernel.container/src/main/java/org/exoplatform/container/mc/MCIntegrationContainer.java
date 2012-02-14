@@ -38,7 +38,7 @@ public class MCIntegrationContainer extends ConcurrentPicoContainer
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger("exo.kernel.container.MCIntegrationContainer");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MCIntegrationContainer");
 
    /**
     * Constructor that exposes super constructor.
@@ -99,7 +99,8 @@ public class MCIntegrationContainer extends ConcurrentPicoContainer
          }
          catch(Exception ignored)
          {
-            log.debug("MC integration failed - maybe not supported in this environment (component: "
+            LOG.debug(
+               "MC integration failed - maybe not supported in this environment (component: "
                   + componentAdapter.getComponentKey() + ")", ignored);
          }
       }
@@ -122,7 +123,8 @@ public class MCIntegrationContainer extends ConcurrentPicoContainer
       }
       catch (Exception ignored)
       {
-         log.warn("MC integration failed - maybe not supported in this environment (component: "
+         LOG.warn(
+            "MC integration failed - maybe not supported in this environment (component: "
                + componentAdapter.getComponentKey() + ")", ignored);
       }
       return false;

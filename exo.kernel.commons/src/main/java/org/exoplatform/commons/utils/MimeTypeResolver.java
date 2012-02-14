@@ -36,7 +36,7 @@ import java.util.Scanner;
 
 public class MimeTypeResolver
 {
-   protected static Log log = ExoLogger.getLogger("org.exoplatform.commons.utils.MimeTypeResolver");
+   protected static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.utils.MimeTypeResolver");
 
    static {
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()

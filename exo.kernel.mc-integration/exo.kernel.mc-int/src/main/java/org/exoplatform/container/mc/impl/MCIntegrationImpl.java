@@ -32,9 +32,10 @@ import org.jboss.mc.common.ThreadLocalUtils;
 import org.jboss.mc.servlet.vdf.api.VDFThreadLocalUtils;
 import org.picocontainer.ComponentAdapter;
 
-import javax.servlet.ServletContext;
 import java.lang.annotation.Annotation;
 import java.util.Set;
+
+import javax.servlet.ServletContext;
 
 /**
  * Implementation of MCIntegration that contains hard dependencies on JBoss Microcontainer.
@@ -49,7 +50,7 @@ public class MCIntegrationImpl implements MCIntegration
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger("exo.kernel.mc-int.MCIntegrationImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.mc-int.MCIntegrationImpl");
 
    /**
     * A singleton MCIntegration implementation
@@ -103,7 +104,7 @@ public class MCIntegrationImpl implements MCIntegration
          }
          else
          {
-            log.warn("GateIn - MC integration not available");
+            LOG.warn("GateIn - MC integration not available");
             return null;
          }
       }

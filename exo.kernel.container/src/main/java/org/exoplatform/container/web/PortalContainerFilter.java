@@ -44,7 +44,7 @@ public class PortalContainerFilter extends AbstractFilter
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.PortalContainerFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.PortalContainerFilter");
 
    /**
     * @see javax.servlet.Filter#destroy()
@@ -81,7 +81,7 @@ public class PortalContainerFilter extends AbstractFilter
    {
       if (PropertyManager.isDevelopping())
       {
-         log.info("The portal container corresponding to the webapp '" + servletContextName
+         LOG.info("The portal container corresponding to the webapp '" + servletContextName
             + "' is disabled, thus the request is cancelled: target URI was "
             + ((HttpServletRequest)request).getRequestURI());
       }

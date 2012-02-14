@@ -317,13 +317,13 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       Configuration conf = getConfiguration();
       if (conf == null)
       {
-         log.warn("The configuration of the PortalContainer could not be found");
+         LOG.warn("The configuration of the PortalContainer could not be found");
          return null;
       }
       Configuration result = Configuration.merge(((ExoContainer)parent).getConfiguration(), conf);
       if (result == null)
       {
-         log.warn("The configurations could not be merged");
+         LOG.warn("The configurations could not be merged");
          return null;         
       }
       return result.toXML();
@@ -494,7 +494,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       {
          if (PropertyManager.isDevelopping())
          {
-            log.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
+            LOG.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
                + " has a dependency of any PortalContainerDefinitions.");            
          }
          return null;

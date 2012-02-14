@@ -320,7 +320,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       Configuration config = getConfiguration();
       if (config == null)
       {
-         log.warn("The configuration of the StandaloneContainer could not be found");
+         LOG.warn("The configuration of the StandaloneContainer could not be found");
          return null;
       }
       return config.toXML();

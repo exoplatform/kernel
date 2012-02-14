@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
  */
 public class InjectedBean
 {
-   private static final Log log = ExoLogger.getLogger("exo.kernel.mc-int-demo.InjectedBean");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.mc-int-demo.InjectedBean");
 
    public static final String SOME_PROPERTY_VALUE = "[This is some property value]";
 
@@ -39,7 +39,7 @@ public class InjectedBean
 
    public InjectedBean()
    {
-      log.info("InjectedBean instantiated :: " + this);
+      LOG.info("InjectedBean instantiated :: " + this);
    }
 
    public String getSomeString()
@@ -49,7 +49,7 @@ public class InjectedBean
 
    public void start()
    {
-      log.info("Method start() called on InjectedBean");
+      LOG.info("Method start() called on InjectedBean");
    }
 
    public String getAnotherProperty()

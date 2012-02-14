@@ -34,46 +34,46 @@ import java.io.Serializable;
 public class LoggingCacheListener implements CacheListener
 {
 
-   Log log = ExoLogger.getLogger("exo.kernel.component.cache.LoggingCacheListener");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.cache.LoggingCacheListener");
 
    public void onClearCache(CacheListenerContext context) throws Exception
    {
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("Cleared region " + context.getCacheInfo().getName());
+         LOG.debug("Cleared region " + context.getCacheInfo().getName());
       }
    }
 
    public void onExpire(CacheListenerContext context, Serializable key, Object obj) throws Exception
    {
-      if (log.isTraceEnabled())
+      if (LOG.isTraceEnabled())
       {
-         log.trace("Expired entry " + key + " on region " + context.getCacheInfo().getName());
+         LOG.trace("Expired entry " + key + " on region " + context.getCacheInfo().getName());
       }
    }
 
    public void onGet(CacheListenerContext context, Serializable key, Object obj) throws Exception
    {
-      if (log.isTraceEnabled())
+      if (LOG.isTraceEnabled())
       {
-         log.trace("Get entry " + key + " on region " + context.getCacheInfo().getName());
+         LOG.trace("Get entry " + key + " on region " + context.getCacheInfo().getName());
       }
    }
 
    public void onPut(CacheListenerContext context, Serializable key, Object obj) throws Exception
    {
-      if (log.isTraceEnabled())
+      if (LOG.isTraceEnabled())
       {
-         log.trace("Put entry " + key + " region " + context.getCacheInfo().getName());
+         LOG.trace("Put entry " + key + " region " + context.getCacheInfo().getName());
       }
-      if (log.isWarnEnabled())
+      if (LOG.isWarnEnabled())
       {
          int maxSize = context.getCacheInfo().getMaxSize();
          int size = context.getCacheInfo().getSize();
          double treshold = maxSize * 0.95;
          if (size >= treshold)
          {
-            log.warn("region " + context.getCacheInfo().getName() + " is 95% full, consider extending maxSize");
+            LOG.warn("region " + context.getCacheInfo().getName() + " is 95% full, consider extending maxSize");
          }
       }
 
@@ -81,9 +81,9 @@ public class LoggingCacheListener implements CacheListener
 
    public void onRemove(CacheListenerContext context, Serializable key, Object obj) throws Exception
    {
-      if (log.isTraceEnabled())
+      if (LOG.isTraceEnabled())
       {
-         log.trace("Removed entry " + key + " region " + context.getCacheInfo().getName());
+         LOG.trace("Removed entry " + key + " region " + context.getCacheInfo().getName());
       }
    }
 }

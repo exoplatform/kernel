@@ -41,7 +41,7 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
 {
 
    /** . */
-   private static final Log log = ExoLogger.getExoLogger(NoKernelNamespaceSAXFilter.class);
+   private static final Log LOG = ExoLogger.getExoLogger(NoKernelNamespaceSAXFilter.class);
 
    /** . */
    private static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
@@ -78,14 +78,14 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
       if (Namespaces.isKernelNamespace(uri) || XSI_URI.equals(uri))
       {
          blackListedPrefixes.add(prefix);
-         if (log.isTraceEnabled())
-            log.trace("Black listing prefix " + prefix + " with uri " + uri);
+         if (LOG.isTraceEnabled())
+            LOG.trace("Black listing prefix " + prefix + " with uri " + uri);
       }
       else
       {
          contentHandler.startPrefixMapping(prefix, uri);
-         if (log.isTraceEnabled())
-            log.trace("Start prefix mapping " + prefix + " with uri " + uri);
+         if (LOG.isTraceEnabled())
+            LOG.trace("Start prefix mapping " + prefix + " with uri " + uri);
       }
    }
 
@@ -93,14 +93,14 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
    {
       if (!blackListedPrefixes.remove(prefix))
       {
-         if (log.isTraceEnabled())
-            log.trace("Ending prefix mapping " + prefix);
+         if (LOG.isTraceEnabled())
+            LOG.trace("Ending prefix mapping " + prefix);
          contentHandler.endPrefixMapping(prefix);
       }
       else
       {
-         if (log.isTraceEnabled())
-            log.trace("Removed prefix mapping " + prefix + " from black list ");
+         if (LOG.isTraceEnabled())
+            LOG.trace("Removed prefix mapping " + prefix + " from black list ");
       }
    }
 
@@ -113,14 +113,14 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
          if ((attQName.equals("xmlns")) && blackListedPrefixes.contains(""))
          {
             // Skip
-            if (log.isTraceEnabled())
-               log.trace("Skipping black listed xmlns attribute");
+            if (LOG.isTraceEnabled())
+               LOG.trace("Skipping black listed xmlns attribute");
          }
          else if (attQName.startsWith("xmlns:") && blackListedPrefixes.contains(attQName.substring(6)))
          {
             // Skip
-            if (log.isTraceEnabled())
-               log.trace("Skipping black listed " + attQName + " attribute");
+            if (LOG.isTraceEnabled())
+               LOG.trace("Skipping black listed " + attQName + " attribute");
          }
          else
          {
@@ -133,14 +133,14 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
             if (XSI_URI.equals(attURI))
             {
                // Skip
-               if (log.isTraceEnabled())
-                  log.trace("Skipping XSI " + attQName + " attribute");
+               if (LOG.isTraceEnabled())
+                  LOG.trace("Skipping XSI " + attQName + " attribute");
                continue;
             }
             else if (Namespaces.isKernelNamespace(attURI))
             {
-               if (log.isTraceEnabled())
-                  log.trace("Requalifying prefixed attribute " + attQName + " attribute to " + localName);
+               if (LOG.isTraceEnabled())
+                  LOG.trace("Requalifying prefixed attribute " + attQName + " attribute to " + localName);
                attURI = null;
                attQName = localName;
             }
@@ -153,8 +153,8 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
       //
       if (Namespaces.isKernelNamespace(uri))
       {
-         if (log.isTraceEnabled())
-            log.trace("Requalifying active profile " + qName + " start element to " + localName);
+         if (LOG.isTraceEnabled())
+            LOG.trace("Requalifying active profile " + qName + " start element to " + localName);
          qName = localName;
          uri = null;
       }
@@ -167,15 +167,15 @@ class NoKernelNamespaceSAXFilter extends DefaultHandler
    {
       if (Namespaces.isKernelNamespace(uri))
       {
-         if (log.isTraceEnabled())
-            log.trace("Requalifying " + qName + " end element");
+         if (LOG.isTraceEnabled())
+            LOG.trace("Requalifying " + qName + " end element");
          qName = localName;
          uri = null;
       }
 
       //
-      if (log.isTraceEnabled())
-         log.trace("Propagatting " + qName + " end element");
+      if (LOG.isTraceEnabled())
+         LOG.trace("Propagatting " + qName + " end element");
       contentHandler.endElement(uri, localName, qName);
    }
 

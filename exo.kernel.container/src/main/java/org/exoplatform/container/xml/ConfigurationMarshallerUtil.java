@@ -38,7 +38,7 @@ public class ConfigurationMarshallerUtil
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ConfigurationMarshallerUtil");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ConfigurationMarshallerUtil");
    
    /**
     * This method adds the given {@link URL} as comment to XML content. 
@@ -51,7 +51,7 @@ public class ConfigurationMarshallerUtil
       }
       catch (IOException e)
       {
-         log.warn("Could not add the source into the XML document", e);
+         LOG.warn("Could not add the source into the XML document", e);
       }
    }
 

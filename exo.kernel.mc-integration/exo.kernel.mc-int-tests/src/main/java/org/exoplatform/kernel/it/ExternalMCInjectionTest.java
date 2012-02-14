@@ -31,15 +31,16 @@ import org.jboss.dependency.spi.Controller;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.transaction.TransactionManager;
 import java.util.Map;
+
+import javax.transaction.TransactionManager;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
  */
 public class ExternalMCInjectionTest
 {
-   protected Log log = ExoLogger.getLogger("exo.kernel.mc-int-tests.ExternalMCInjectionTest");
+   protected static final Log LOG = ExoLogger.getLogger("exo.kernel.mc-int-tests.ExternalMCInjectionTest");
 
    protected String beanName;
    protected ExternallyControlledInjectingBean bean;
@@ -53,13 +54,13 @@ public class ExternalMCInjectionTest
 
    protected void init()
    {
-      log.info("init() method called");
+      LOG.info("init() method called");
       RootContainer rootContainer = RootContainer.getInstance();
       bean = (ExternallyControlledInjectingBean) rootContainer.getComponentInstance(beanName);
-      log.info("Retrieved " + beanName + ": " + bean);
+      LOG.info("Retrieved " + beanName + ": " + bean);
       Assert.assertNotNull(beanName + " not installed", bean);
       inJboss = Environment.getInstance().getPlatform() == Environment.JBOSS_PLATFORM;
-      log.info("Running inside JBoss? " + inJboss);
+      LOG.info("Running inside JBoss? " + inJboss);
    }
 
    @Test
@@ -89,13 +90,13 @@ public class ExternalMCInjectionTest
          try
          {
             int status = tm.getStatus();
-            log.info("Status before tx: " + tm.getStatus());
+            LOG.info("Status before tx: " + tm.getStatus());
             tm.begin();
             Assert.assertFalse("TX status didn't change: ", status == tm.getStatus());
-            log.info("Status in tx: " + tm.getStatus());
+            LOG.info("Status in tx: " + tm.getStatus());
             tm.commit();
             Assert.assertTrue("TX status didn't return to original: ", status == tm.getStatus());
-            log.info("Status after tx: " + tm.getStatus());
+            LOG.info("Status after tx: " + tm.getStatus());
          }
          catch (Exception ex)
          {
@@ -106,7 +107,7 @@ public class ExternalMCInjectionTest
       {
          Assert.assertNull("Injection should not have worked", tm);
       }
-      log.info("testTransactionManager passed");
+      LOG.info("testTransactionManager passed");
    }
 
    protected void testNameLookupMethodInjection()
@@ -120,7 +121,7 @@ public class ExternalMCInjectionTest
       {
          Assert.assertFalse("Method injection by name lookup should not have worked", found);
       }
-      log.info("testNameLookupMethodInjection passed");
+      LOG.info("testNameLookupMethodInjection passed");
    }
 
    protected void testMapInjection()
@@ -137,7 +138,7 @@ public class ExternalMCInjectionTest
       {
          Assert.assertFalse("Map injection should not have worked", found);
       }
-      log.info("testMapInjection passed");
+      LOG.info("testMapInjection passed");
    }
 
    protected void testPropertyValueMethodInjection()
@@ -153,7 +154,7 @@ public class ExternalMCInjectionTest
       {
          Assert.assertFalse("Property value method injection should not have worked", found);
       }
-      log.info("testPropertyValueMethodInjection passed");
+      LOG.info("testPropertyValueMethodInjection passed");
    }
 
    protected void testNestedPropertyInjection()
@@ -169,7 +170,7 @@ public class ExternalMCInjectionTest
       {
          Assert.assertFalse("Nested property value method injection should not have worked", found);
       }
-      log.info("testNestedPropertyInjection passed");
+      LOG.info("testNestedPropertyInjection passed");
    }
 
    protected void testInstallMethod()
@@ -183,12 +184,12 @@ public class ExternalMCInjectionTest
       {
          Assert.assertFalse("Install method should not have worked", installOk);
       }
-      log.info("testInstallMethod passed");
+      LOG.info("testInstallMethod passed");
    }
 
    protected void testStarted()
    {
       Assert.assertEquals("start() method not called exactly once", 1, bean.getStartCount());
-      log.info("testStarted passed");
+      LOG.info("testStarted passed");
    }
 }

@@ -60,7 +60,7 @@ public class PropertyConfigurator implements Startable
 {
 
    /** The logger. */
-   private final Log log = ExoLogger.getExoLogger(PropertyConfigurator.class);
+   private static final Log LOG = ExoLogger.getExoLogger(PropertyConfigurator.class);
 
    public PropertyConfigurator(ConfigurationManager confManager)
    {
@@ -75,20 +75,20 @@ public class PropertyConfigurator implements Startable
          PropertiesParam propertiesParam = params.getPropertiesParam("properties");
          if (propertiesParam != null)
          {
-            log.debug("Going to initialize properties from init param");
+            LOG.debug("Going to initialize properties from init param");
             for (Iterator<Property> i = propertiesParam.getPropertyIterator();i.hasNext();)
             {
                Property property = i.next();
                String name = property.getName();
                String value = property.getValue();
-               log.debug("Adding property from init param " + name + " = " + value);
+               LOG.debug("Adding property from init param " + name + " = " + value);
                PropertyManager.setProperty(name, value);
             }
          }         
          ValueParam pathParam = params.getValueParam("properties.url");
          if (pathParam != null)
          {
-            log.debug("Using file path " + path + " found from configuration");
+            LOG.debug("Using file path " + path + " found from configuration");
             path = pathParam.getValue();
          }
       }
@@ -97,14 +97,14 @@ public class PropertyConfigurator implements Startable
       String systemPath = PropertyManager.getProperty(PropertyManager.PROPERTIES_URL);
       if (systemPath != null)
       {
-         log.debug("Using file path " + path + " found from system properties");
+         LOG.debug("Using file path " + path + " found from system properties");
          path = systemPath;
       }
 
       //
       if (path != null)
       {
-         log.debug("Found property file path " + path);
+         LOG.debug("Found property file path " + path);
          try
          {
             URL url = confManager.getURL(path);
@@ -121,7 +121,7 @@ public class PropertyConfigurator implements Startable
          }
          catch (Exception e)
          {
-            log.error("Cannot load property file " + path, e);
+            LOG.error("Cannot load property file " + path, e);
          }
       }
    }

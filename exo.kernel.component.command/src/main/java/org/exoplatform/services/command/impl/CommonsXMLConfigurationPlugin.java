@@ -46,7 +46,7 @@ public class CommonsXMLConfigurationPlugin extends BaseComponentPlugin
 
    // protected Catalog defaultCatalog;
    
-   private static Log log = ExoLogger.getLogger("exo.kernel.component.cache.CommonsXMLConfigurationPlugin");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.cache.CommonsXMLConfigurationPlugin");
 
    public CommonsXMLConfigurationPlugin(InitParams params, ConfigurationManager configurationManager) throws Exception
    {
@@ -70,7 +70,7 @@ public class CommonsXMLConfigurationPlugin extends BaseComponentPlugin
             res = configurationManager.getResource(path);
          if (res == null)
             throw new Exception("Resource not found " + path);
-         log.info("Catalog configuration found at " + res);
+         LOG.info("Catalog configuration found at " + res);
          
          final URL fRes = res;
          SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()

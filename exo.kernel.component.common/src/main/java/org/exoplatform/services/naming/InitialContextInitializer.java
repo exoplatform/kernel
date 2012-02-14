@@ -69,7 +69,7 @@ public class InitialContextInitializer
    public static final String DEFAULT_BINDING_STORE_PATH = PrivilegedSystemHelper.getProperty("java.io.tmpdir")
       + File.separator + "bind-references.xml";
 
-   private static Log LOG = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.InitialContextInitializer");
 
    private List<BindReferencePlugin> bindReferencesPlugins;
 

@@ -46,7 +46,7 @@ public abstract class AbstractHttpServlet extends HttpServlet
    /**
     * The logger
     */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.AbstractHttpServlet");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.AbstractHttpServlet");
 
    /**
     * Serial Version ID.
@@ -194,7 +194,7 @@ public abstract class AbstractHttpServlet extends HttpServlet
    {
       if (PropertyManager.isDevelopping())
       {
-         log.info("The portal environment could not be set for the webapp '"
+         LOG.info("The portal environment could not be set for the webapp '"
             + config.getServletContext().getServletContextName()
             + "' because this servlet context has not been defined as a "
             + "dependency of any portal container or it is a disabled portal"

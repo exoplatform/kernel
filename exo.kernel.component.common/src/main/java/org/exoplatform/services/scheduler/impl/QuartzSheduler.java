@@ -41,7 +41,7 @@ import java.security.PrivilegedExceptionAction;
  */
 public class QuartzSheduler implements Startable
 {
-   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.QuartzSheduler");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.QuartzSheduler");
    
    private final Scheduler scheduler_;
 
@@ -108,7 +108,7 @@ public class QuartzSheduler implements Startable
       }
       catch (SchedulerException ex)
       {
-         log.warn("Could not shutdown the scheduler", ex);
+         LOG.warn("Could not shutdown the scheduler", ex);
       }
    }
 }

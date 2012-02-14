@@ -47,7 +47,7 @@ public abstract class FutureCache<K, V, C>
    private final ConcurrentMap<K, FutureTask<V>> futureEntries;
 
    /** . */
-   private static final Log log = ExoLogger.getLogger("exo.kernel.component.cache.FutureCache");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.cache.FutureCache");
 
 
    public FutureCache(Loader<K, V, C> loader)
@@ -126,11 +126,11 @@ public abstract class FutureCache<K, V, C>
          }
          catch (ExecutionException e)
          {
-            log.error("Computing of resource " + key + " threw an exception", e.getCause());
+            LOG.error("Computing of resource " + key + " threw an exception", e.getCause());
          }
          catch (Exception e)
          {
-            log.error("Retrieval of resource " + key + " threw an exception", e);
+            LOG.error("Retrieval of resource " + key + " threw an exception", e);
          }
          finally
          {

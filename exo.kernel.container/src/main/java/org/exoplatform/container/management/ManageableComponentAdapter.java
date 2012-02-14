@@ -35,7 +35,7 @@ public class ManageableComponentAdapter implements ComponentAdapter
 {
 
    /** . */
-   private Log log = ExoLogger.getLogger("exo.kernel.container.ManageableComponentAdapter");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ManageableComponentAdapter");
 
    /** . */
    private ComponentAdapter delegate;
@@ -76,7 +76,7 @@ public class ManageableComponentAdapter implements ComponentAdapter
          if (container.managementContext != null)
          {
             // Registry the instance against the management context
-            log.debug("==> add " + instance + " to a mbean server");
+            LOG.debug("==> add " + instance + " to a mbean server");
             container.managementContext.register(instance);
 
             // Register if it is a management provider

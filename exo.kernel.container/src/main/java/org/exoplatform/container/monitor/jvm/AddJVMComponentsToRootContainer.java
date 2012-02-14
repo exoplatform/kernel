@@ -34,7 +34,7 @@ import java.lang.management.ManagementFactory;
 public class AddJVMComponentsToRootContainer extends BaseContainerLifecyclePlugin
 {
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.AddJVMComponentsToRootContainer");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.AddJVMComponentsToRootContainer");
 
    public void initContainer(ExoContainer container)
    {
@@ -57,9 +57,9 @@ public class AddJVMComponentsToRootContainer extends BaseContainerLifecyclePlugi
    {
       if (mxComponent != null)
       {
-         log.debug("Attempt to register mx component " + mxComponent);
+         LOG.debug("Attempt to register mx component " + mxComponent);
          container.registerComponentInstance(mxComponent);
-         log.debug("Mx component " + mxComponent + " registered");
+         LOG.debug("Mx component " + mxComponent + " registered");
       }
    }
 
@@ -67,9 +67,9 @@ public class AddJVMComponentsToRootContainer extends BaseContainerLifecyclePlugi
    {
       if (mxComponent != null)
       {
-         log.debug("Attempt to register mx component " + mxComponent + " with key " + mxKey);
+         LOG.debug("Attempt to register mx component " + mxComponent + " with key " + mxKey);
          container.registerComponentInstance(mxKey, mxComponent);
-         log.debug("Mx component " + mxComponent + " registered");
+         LOG.debug("Mx component " + mxComponent + " registered");
       }
    }
 

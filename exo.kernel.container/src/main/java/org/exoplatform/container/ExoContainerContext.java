@@ -45,7 +45,7 @@ public final class ExoContainerContext implements java.io.Serializable
 
    private String name;
 
-   private static final Log log = ExoLogger.getLogger("exo.kernel.container.ExoContainerContext");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ExoContainerContext");
 
    public ExoContainerContext(ExoContainer container)
    {
@@ -143,7 +143,7 @@ public final class ExoContainerContext implements java.io.Serializable
       
       if (topContainer != null && cont != null)
          throw new IllegalStateException("Two top level containers created, but must be only one.");
-      log.info("Set the top container in its context");
+      LOG.info("Set the top container in its context");
       topContainer = cont;
    }
 
