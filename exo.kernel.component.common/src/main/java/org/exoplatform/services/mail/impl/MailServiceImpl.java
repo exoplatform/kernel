@@ -20,6 +20,7 @@ package org.exoplatform.services.mail.impl;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.mail.Attachment;
 import org.exoplatform.services.mail.MailService;
@@ -30,6 +31,12 @@ import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadFactory;
 
 import javax.activation.DataHandler;
 import javax.mail.Part;
@@ -43,15 +50,38 @@ import javax.mail.internet.MimeUtility;
 import javax.mail.util.ByteArrayDataSource;
 
 /**
+ * Basically this is {@link MailService} implementation build on top of javax.mail package.
+ * You may define the behaviour of the service via {@link InitParams}, which can
+ * be set in configuration file of the {@link ExoContainer}.
+ * <p>
+ * Note: To be able to send mails you must provide active SMTP server and
+ * mention it in service configuration. 
+ * <p>
  * Created by The eXo Platform SAS Author : Phung Hai Nam phunghainam@gmail.com
  * Dec 23, 2005
  */
 public class MailServiceImpl implements MailService
 {
+   /**
+    * String mapping of configuration parameter to define maximal number
+    * of threads for asynchronous mail message sending
+    */
+   static final String MAX_THREAD_NUMBER = "mail.max.thread.number";
 
    private Session mailSession_;
 
    private Properties props_;
+
+   /**
+    * Provides thread pool routines for asynchronous mail message sending
+    */
+   private ExecutorService executorService;
+
+   /**
+    * Track current threads number used for asynchronouys mail send
+    * to set explicit thread names.
+    */
+   private static volatile int mailServiceThreadCounter = 0;
 
    public MailServiceImpl(InitParams params) throws Exception
    {
@@ -80,18 +110,38 @@ public class MailServiceImpl implements MailService
             }
          });
       }
+      int threadNumber =
+         props_.getProperty(MAX_THREAD_NUMBER) != null ? Integer.valueOf(props_.getProperty(MAX_THREAD_NUMBER))
+            : Runtime.getRuntime().availableProcessors();
+
+      executorService = Executors.newFixedThreadPool(threadNumber, new ThreadFactory()
+      {
+         public Thread newThread(Runnable arg0)
+         {
+            return new Thread(arg0, "MailServiceThread-" + mailServiceThreadCounter++);
+         }
+      });
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public Session getMailSession()
    {
       return mailSession_;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public String getOutgoingMailServer()
    {
       return props_.getProperty("mail.smtp.host");
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void sendMessage(String from, String to, String subject, String body) throws Exception
    {
       Message message = new Message();
@@ -102,6 +152,9 @@ public class MailServiceImpl implements MailService
       sendMessage(message);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void sendMessage(Message message) throws Exception
    {
       MimeMessage mimeMessage = new MimeMessage(getMailSession());
@@ -190,12 +243,76 @@ public class MailServiceImpl implements MailService
       sendMessage(mimeMessage);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void sendMessage(MimeMessage message) throws Exception
    {
       Transport.send(message);
    }
 
-   private String[] getArrs(String toArray)
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Future<Boolean> sendMessageAsynch(final String from, final String to, final String subject,
+      final String body)
+   {
+      FutureTask<Boolean> ft = new FutureTask<Boolean>(new Callable<Boolean>()
+      {
+         @Override
+         public Boolean call() throws Exception
+         {
+            sendMessage(from, to, subject, body);
+            return true;
+         }
+      });
+
+      executorService.execute(ft);
+      return ft;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Future<Boolean> sendMessageAsynch(final Message message)
+   {
+      FutureTask<Boolean> ft = new FutureTask<Boolean>(new Callable<Boolean>()
+      {
+         @Override
+         public Boolean call() throws Exception
+         {
+            sendMessage(message);
+            return true;
+         }
+      });
+
+      executorService.execute(ft);
+      return ft;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Future<Boolean> sendMessageAsynch(final MimeMessage message)
+   {
+      FutureTask<Boolean> ft = new FutureTask<Boolean>(new Callable<Boolean>()
+      {
+         @Override
+         public Boolean call() throws Exception
+         {
+            sendMessage(message);
+            return true;
+         }
+      });
+
+      executorService.execute(ft);
+      return ft;
+   }
+
+   protected String[] getArrs(String toArray)
    {
       if (toArray != null && !toArray.equals(""))
       {
@@ -203,4 +320,5 @@ public class MailServiceImpl implements MailService
       }
       return null;
    }
+
 }
