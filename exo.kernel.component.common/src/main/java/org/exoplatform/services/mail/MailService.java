@@ -87,7 +87,7 @@ public interface MailService
     * @param body - {@link String} contents of mail message
     * @return {@link Future} object to watch the result of asynchronous calculation
     */
-   public Future<Boolean> sendMessageAsynch(String from, String to, String subject, String body);
+   public Future<Boolean> sendMessageInFuture(String from, String to, String subject, String body);
 
    /**
     * Asynchronous variant of {@link MailService#sendMessage(Message)}. 
@@ -99,7 +99,7 @@ public interface MailService
     * @param message - {@link Message} provides mail message related data (e.g. subject, content etc.)
     * @return {@link Future} object to watch the result of asynchronous calculation
     */
-   public Future<Boolean> sendMessageAsynch(Message message);
+   public Future<Boolean> sendMessageInFuture(Message message);
 
    /**
     * Asynchronous variant of {@link MailService#sendMessage(MimeMessage)}. 
@@ -111,5 +111,5 @@ public interface MailService
     * @param message - {@link MimeMessage} provides mail message related data (e.g. subject, content etc.)
     * @return {@link Future} object to watch the result of asynchronous calculation
     */
-   public Future<Boolean> sendMessageAsynch(MimeMessage message);
+   public Future<Boolean> sendMessageInFuture(MimeMessage message);
 }

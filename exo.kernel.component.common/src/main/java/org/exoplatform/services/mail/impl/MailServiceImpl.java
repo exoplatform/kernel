@@ -21,6 +21,7 @@ package org.exoplatform.services.mail.impl;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.mail.Attachment;
 import org.exoplatform.services.mail.MailService;
@@ -35,7 +36,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 
 import javax.activation.DataHandler;
@@ -83,7 +83,7 @@ public class MailServiceImpl implements MailService
     */
    private static volatile int mailServiceThreadCounter = 0;
 
-   public MailServiceImpl(InitParams params) throws Exception
+   public MailServiceImpl(InitParams params, final ExoContainerContext ctx) throws Exception
    {
       props_ = new Properties(PrivilegedSystemHelper.getProperties());
       props_.putAll(params.getPropertiesParam("config").getProperties());
@@ -118,7 +118,7 @@ public class MailServiceImpl implements MailService
       {
          public Thread newThread(Runnable arg0)
          {
-            return new Thread(arg0, "MailServiceThread-" + mailServiceThreadCounter++);
+            return new Thread(arg0, ctx.getName() + "-MailServiceThread-" + mailServiceThreadCounter++);
          }
       });
    }
@@ -255,10 +255,10 @@ public class MailServiceImpl implements MailService
     * {@inheritDoc}
     */
    @Override
-   public Future<Boolean> sendMessageAsynch(final String from, final String to, final String subject,
+   public Future<Boolean> sendMessageInFuture(final String from, final String to, final String subject,
       final String body)
    {
-      FutureTask<Boolean> ft = new FutureTask<Boolean>(new Callable<Boolean>()
+      return executorService.submit(new Callable<Boolean>()
       {
          @Override
          public Boolean call() throws Exception
@@ -267,18 +267,15 @@ public class MailServiceImpl implements MailService
             return true;
          }
       });
-
-      executorService.execute(ft);
-      return ft;
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   public Future<Boolean> sendMessageAsynch(final Message message)
+   public Future<Boolean> sendMessageInFuture(final Message message)
    {
-      FutureTask<Boolean> ft = new FutureTask<Boolean>(new Callable<Boolean>()
+      return executorService.submit(new Callable<Boolean>()
       {
          @Override
          public Boolean call() throws Exception
@@ -287,18 +284,15 @@ public class MailServiceImpl implements MailService
             return true;
          }
       });
-
-      executorService.execute(ft);
-      return ft;
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   public Future<Boolean> sendMessageAsynch(final MimeMessage message)
+   public Future<Boolean> sendMessageInFuture(final MimeMessage message)
    {
-      FutureTask<Boolean> ft = new FutureTask<Boolean>(new Callable<Boolean>()
+      return executorService.submit(new Callable<Boolean>()
       {
          @Override
          public Boolean call() throws Exception
@@ -307,9 +301,6 @@ public class MailServiceImpl implements MailService
             return true;
          }
       });
-
-      executorService.execute(ft);
-      return ft;
    }
 
    protected String[] getArrs(String toArray)

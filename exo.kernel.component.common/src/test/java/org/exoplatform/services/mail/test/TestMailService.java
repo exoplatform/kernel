@@ -209,7 +209,7 @@ public class TestMailService extends BasicTestCase
       }
 
       Future<Boolean> future =
-         service.sendMessageAsynch("!@#$%^&*()", generateRandomEmailSender(), MAIL_SUBJECT, MAIL_CONTENTS);
+         service.sendMessageInFuture("!@#$%^&*()", generateRandomEmailSender(), MAIL_SUBJECT, MAIL_CONTENTS);
 
       try
       {
@@ -246,7 +246,7 @@ public class TestMailService extends BasicTestCase
       {
          assertFalse(isEmailMessageSent(MAIL_SUBJECT + i));
          futures[i] =
-            service.sendMessageAsynch(generateRandomEmailSender(), generateRandomEmailRecipient(), MAIL_SUBJECT + i,
+            service.sendMessageInFuture(generateRandomEmailSender(), generateRandomEmailRecipient(), MAIL_SUBJECT + i,
                MAIL_CONTENTS + i);
       }
 
@@ -287,7 +287,7 @@ public class TestMailService extends BasicTestCase
       message.setContent(MAIL_CONTENTS, TEXT_PLAIN);
       message.setFlags(flags, true);
 
-      Future<Boolean> future = service.sendMessageAsynch(message);
+      Future<Boolean> future = service.sendMessageInFuture(message);
 
       try
       {
@@ -334,7 +334,7 @@ public class TestMailService extends BasicTestCase
          message.setContent(MAIL_CONTENTS + i, TEXT_PLAIN);
          message.setFlags(flags, true);
 
-         futures[i] = service.sendMessageAsynch(message);
+         futures[i] = service.sendMessageInFuture(message);
       }
 
       for (int i = 0; i < THREAD_NUMBER; i++)
@@ -373,7 +373,7 @@ public class TestMailService extends BasicTestCase
       message.setMimeType(TEXT_HTML);
       message.addAttachment(attachment);
 
-      Future<Boolean> future = service.sendMessageAsynch(message);
+      Future<Boolean> future = service.sendMessageInFuture(message);
 
       try
       {
@@ -426,7 +426,7 @@ public class TestMailService extends BasicTestCase
          message.setMimeType(TEXT_HTML);
          message.addAttachment(attachment);
 
-         futures[i] = service.sendMessageAsynch(message);
+         futures[i] = service.sendMessageInFuture(message);
          assertFalse(futures[i].isDone());
       }
 
