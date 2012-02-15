@@ -81,7 +81,7 @@ public class MailServiceImpl implements MailService
     * Track current threads number used for asynchronouys mail send
     * to set explicit thread names.
     */
-   private static volatile int mailServiceThreadCounter = 0;
+   private volatile int mailServiceThreadCounter = 0;
 
    public MailServiceImpl(InitParams params, final ExoContainerContext ctx) throws Exception
    {
