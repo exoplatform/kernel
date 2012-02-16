@@ -42,7 +42,7 @@ import javax.transaction.TransactionManager;
  */
 public class ManagedDataSource implements DataSource
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ManagedDataSource");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.ManagedDataSource");
    
    /**
     * The transaction manager

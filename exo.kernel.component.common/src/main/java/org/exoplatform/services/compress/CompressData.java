@@ -48,7 +48,7 @@ public class CompressData
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.compress.CompressData");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.CompressData");
 
    private String base_;
 

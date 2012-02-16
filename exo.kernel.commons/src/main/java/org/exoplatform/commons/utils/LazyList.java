@@ -54,7 +54,7 @@ public class LazyList<E> extends AbstractList<E> implements RandomAccess
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.utils.LazyList");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.commons.LazyList");
    
    /** The batch size. */
    private final int batchSize;

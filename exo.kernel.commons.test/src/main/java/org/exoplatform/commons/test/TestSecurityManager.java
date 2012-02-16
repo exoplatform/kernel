@@ -138,8 +138,9 @@ public class TestSecurityManager extends SecurityManager
       }
       catch (Exception e)
       {
-         // ignore me
+         return null;
       }
+
       if (is != null)
       {
          try
@@ -167,10 +168,11 @@ public class TestSecurityManager extends SecurityManager
             }
             catch (IOException e)
             {
-               // ignore me
+               e.printStackTrace(); //NOSONAR
             }
-         }         
+         }
       }
+
       return null;
    }
 }

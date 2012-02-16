@@ -35,7 +35,7 @@ public class MemoryInfo
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.monitor.jvm.MemoryInfo");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MemoryInfo");
    
    private MemoryMXBean mxbean_;
 

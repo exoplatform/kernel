@@ -26,7 +26,6 @@ package org.exoplatform.container.client.http;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -52,7 +51,7 @@ public class ClientTypeMap
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.client.http.ClientTypeMap");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ClientTypeMap");
 
    private ArrayList<HttpClientType> clientList_;
 
