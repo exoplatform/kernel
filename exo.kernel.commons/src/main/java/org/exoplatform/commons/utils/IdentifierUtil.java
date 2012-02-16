@@ -37,7 +37,7 @@ public class IdentifierUtil
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.utils.IdentifierUtil");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.commons.IdentifierUtil");
 
    private static String hexServerIP_ = null;
 

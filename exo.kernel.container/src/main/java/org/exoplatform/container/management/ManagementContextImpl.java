@@ -48,7 +48,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.management.ManagementContextImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ManagementContextImpl");
 
    /** . */
    private final Map<Class<?>, Object> scopingDataList;

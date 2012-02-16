@@ -66,7 +66,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.StandaloneContainer");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.StandaloneContainer");
    
    private static final long serialVersionUID = 12L;
 

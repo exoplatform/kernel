@@ -22,7 +22,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.Permission;
 import java.security.PrivilegedAction;
@@ -322,8 +321,6 @@ public class SecurityHelper
 
    /**
     * Validate permissions.
-    * 
-    * @throws AccessControlException 
     */
    public static void validateSecurityPermission(Permission permission)
    {

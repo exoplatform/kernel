@@ -58,7 +58,7 @@ public class SimpleContext implements Context
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.naming.SimpleContext");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.SimpleContext");
 
    private static final NameParser NAME_PARSER = new SimpleNameParser();
    

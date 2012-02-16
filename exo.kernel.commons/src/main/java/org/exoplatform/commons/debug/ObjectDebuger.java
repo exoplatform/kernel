@@ -39,7 +39,7 @@ public class ObjectDebuger
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.commons.debug.ObjectDebuger");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.commons.ObjectDebuger");
 
    static public void printObject(Object o) throws Exception
    {

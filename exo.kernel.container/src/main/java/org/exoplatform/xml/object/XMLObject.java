@@ -51,7 +51,7 @@ public class XMLObject
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.xml.object.XMLObject");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.XMLObject");
    
    public static String CURRENT_VERSION = "1.0";
 

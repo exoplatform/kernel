@@ -59,7 +59,7 @@ public class ManageableContainer extends CachingContainer
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.container.management.ManageableContainer");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ManageableContainer");
 
    private static MBeanServer findMBeanServer()
    {

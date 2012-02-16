@@ -32,7 +32,7 @@ public class ExoServiceException extends Exception
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.exception.ExoServiceException");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.ExoServiceException");
    
    protected Object[] params_;
 

@@ -36,7 +36,7 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.IDGeneratorServiceImpl");
    
    private static String hexServerIP_ = null;
 
