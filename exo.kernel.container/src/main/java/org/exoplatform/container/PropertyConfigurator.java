@@ -88,8 +88,11 @@ public class PropertyConfigurator implements Startable
          ValueParam pathParam = params.getValueParam("properties.url");
          if (pathParam != null)
          {
-            LOG.debug("Using file path " + path + " found from configuration");
             path = pathParam.getValue();
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("Using file path " + path + " found from configuration");
+            }
          }
       }
 
@@ -97,8 +100,11 @@ public class PropertyConfigurator implements Startable
       String systemPath = PropertyManager.getProperty(PropertyManager.PROPERTIES_URL);
       if (systemPath != null)
       {
-         LOG.debug("Using file path " + path + " found from system properties");
          path = systemPath;
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Using file path " + path + " found from system properties");
+         }
       }
 
       //
