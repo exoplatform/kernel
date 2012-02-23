@@ -16,8 +16,12 @@
 
    <dependencies>
       <dependency>
-            <groupId>org.jboss.microcontainer</groupId>
-            <artifactId>jboss-kernel</artifactId>
+         <groupId>org.jboss.microcontainer</groupId>
+         <artifactId>jboss-kernel</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.microcontainer</groupId>
+         <artifactId>jboss-dependency</artifactId>
       </dependency>
    </dependencies>
 </project>

@@ -61,6 +61,10 @@
          <groupId>org.jgroups</groupId>
          <artifactId>jgroups</artifactId>
       </dependency>             
+      <dependency>
+         <groupId>picocontainer</groupId>
+         <artifactId>picocontainer</artifactId>
+      </dependency>
    </dependencies>
    <build>
       <plugins>
@@ -99,7 +103,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -114,7 +118,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>                     
                   </configuration>
                   <goals>
                      <goal>run</goal>

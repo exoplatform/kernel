@@ -127,11 +127,6 @@ public class TestMailService extends BasicTestCase
 
    public void testSendMimeMessage() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       MimeMessage message = new MimeMessage(service.getMailSession());
       message.setFrom(new InternetAddress(generateRandomEmailSender()));
       message.setRecipients(javax.mail.Message.RecipientType.TO, generateRandomEmailRecipient());
@@ -152,11 +147,6 @@ public class TestMailService extends BasicTestCase
 
    public void testSendMessage() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       Message message = new Message();
       message.setFrom(generateRandomEmailSender());
       message.setTo(generateRandomEmailRecipient());
@@ -181,11 +171,6 @@ public class TestMailService extends BasicTestCase
 
    public void testSendSimplMessage() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       cleanEmailMessages();
       assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
       assertFalse(isEmailMessageSent(MAIL_SUBJECT));
@@ -203,11 +188,6 @@ public class TestMailService extends BasicTestCase
     */
    public void testSendSimpleMessageAsynchExceptionCause() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       Future<Boolean> future =
          service.sendMessageInFuture("!@#$%^&*()", generateRandomEmailSender(), MAIL_SUBJECT, MAIL_CONTENTS);
 
@@ -231,11 +211,6 @@ public class TestMailService extends BasicTestCase
     */
    public void testSendSimpleMessageAsynch() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       @SuppressWarnings("unchecked")
       Future<Boolean>[] futures = new Future[THREAD_NUMBER];
 
@@ -268,11 +243,6 @@ public class TestMailService extends BasicTestCase
     */
    public void testSendMimeMessageAsynchExceptionCause() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       Flags flags = new Flags();
       flags.add(Flags.Flag.RECENT);
 
@@ -308,11 +278,6 @@ public class TestMailService extends BasicTestCase
     */
    public void testSendMimeMessageAsynch() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       @SuppressWarnings("unchecked")
       Future<Boolean>[] futures = new Future[THREAD_NUMBER];
       MimeMessage message;
@@ -354,11 +319,6 @@ public class TestMailService extends BasicTestCase
     */
    public void testSendMessageAsynchExceptionCause() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       Attachment attachment = new Attachment();
       attachment.setInputStream(new ByteArrayInputStream(ATTACHMENT.getBytes()));
       attachment.setMimeType(TEXT_PLAIN);
@@ -394,11 +354,6 @@ public class TestMailService extends BasicTestCase
     */
    public void testSendMessageInFuture() throws Exception
    {
-      if (!pingMailServer())
-      {
-         fail();
-      }
-
       Message message;
 
       Attachment attachment = new Attachment();
@@ -438,17 +393,6 @@ public class TestMailService extends BasicTestCase
       //we assume that one thread sends one email
       assertEquals("SMTP server should have" + THREAD_NUMBER + " message (asynchronously sent)", THREAD_NUMBER,
          mailServer.getReceivedEmailSize());
-   }
-
-   private boolean pingMailServer() throws Exception
-   {
-      String mailServerName = service.getOutgoingMailServer();
-      if (netService.ping(mailServerName, SMTP_PORT) < 0)
-      {
-         System.out.println("======>MailServer:" + mailServerName + " and on port:" + SMTP_PORT + " is not connected");
-         return false;
-      }
-      return true;
    }
 
    /**
