@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.log;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValueParam;
@@ -167,7 +168,7 @@ public class LogConfigurationInitializer implements Startable
       Properties props;
       if (configurer != null && properties != null)
       {
-         LogConfigurator conf = (LogConfigurator)Class.forName(configurer).newInstance();
+         LogConfigurator conf = (LogConfigurator)Tools.forName(configurer, this).newInstance();
          props = new Properties();
          props.putAll(properties);
          conf.configure(props);

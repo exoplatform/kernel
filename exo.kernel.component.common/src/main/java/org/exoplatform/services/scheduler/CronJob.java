@@ -19,6 +19,7 @@
 package org.exoplatform.services.scheduler;
 
 import org.exoplatform.commons.utils.ExoProperties;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.quartz.JobDataMap;
@@ -42,7 +43,7 @@ public class CronJob extends BaseComponentPlugin
       String jobName = props.getProperty("jobName");
       String jobGroup = props.getProperty("groupName");
       String jobClass = props.getProperty("job");
-      Class clazz = Class.forName(jobClass);
+      Class<?> clazz = Tools.forName(jobClass, this);
       jinfo_ = new JobInfo(jobName, jobGroup, clazz);
 
       expression_ = props.getProperty("expression");

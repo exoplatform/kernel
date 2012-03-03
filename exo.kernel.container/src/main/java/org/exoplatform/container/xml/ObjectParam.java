@@ -19,6 +19,7 @@
 package org.exoplatform.container.xml;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -83,7 +84,7 @@ public class ObjectParam extends Parameter
       Property prop = null;
       try
       {
-         Class clazz = Class.forName(type);
+         Class<?> clazz = Tools.forName(type, this);
          object_ = clazz.newInstance();
          for (int i = 0; i < properties_.size(); i++)
          {
@@ -157,7 +158,7 @@ public class ObjectParam extends Parameter
             fullName.append(".");
             fullName.append(className);
 
-            Class clazz = Class.forName(fullName.toString());
+            Class clazz = Tools.forName(fullName.toString(), this);
             return clazz.newInstance();
          }
       }

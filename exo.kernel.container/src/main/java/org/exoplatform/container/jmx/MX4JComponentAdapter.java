@@ -19,6 +19,7 @@
 package org.exoplatform.container.jmx;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
@@ -54,7 +55,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
 
    private Log log = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
-   public MX4JComponentAdapter(Object key, Class implementation)
+   public MX4JComponentAdapter(Object key, Class<?> implementation)
    {
       super(key, implementation);
    }
@@ -83,7 +84,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             if (key instanceof String)
                componentKey = (String)key;
             else
-               componentKey = ((Class)key).getName();
+               componentKey = ((Class<?>)key).getName();
             manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
             component = manager.getComponent(componentKey);
             if (component != null)
@@ -150,11 +151,11 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
 
          try
          {
-            Class pluginClass = Class.forName(plugin.getType());
+            Class<?> pluginClass = Tools.forName(plugin.getType(), this);
             ComponentPlugin cplugin = (ComponentPlugin)container.createComponent(pluginClass, plugin.getInitParams());
             cplugin.setName(plugin.getName());
             cplugin.setDescription(plugin.getDescription());
-            Class clazz = component.getClass();
+            Class<?> clazz = component.getClass();
 
             final Method m = getSetMethod(clazz, plugin.getSetMethod(), pluginClass);
             if (m == null)
@@ -195,7 +196,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
     * @param pluginClass the {@link Class} of the plugin
     * @return the "set method" corresponding to the given context
     */
-   private Method getSetMethod(Class clazz, String name, Class pluginClass)
+   private Method getSetMethod(Class<?> clazz, String name, Class<?> pluginClass)
    {
       Method[] methods = clazz.getMethods();
       Method bestCandidate = null;
@@ -204,7 +205,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       {
          if (name.equals(m.getName()))
          {
-            Class[] types = m.getParameterTypes();
+            Class<?>[] types = m.getParameterTypes();
             if (types != null && types.length == 1 && ComponentPlugin.class.isAssignableFrom(types[0]))
             {
                int currentDepth = getClosestMatchDepth(pluginClass, types[0]);
@@ -230,7 +231,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
     * @param type the class from which the plugin must be assignable
     * @return The total amount of times we had to up the hierarchy of the plugin
     */
-   private static int getClosestMatchDepth(Class pluginClass, Class type)
+   private static int getClosestMatchDepth(Class<?> pluginClass, Class<?> type)
    {
       return getClosestMatchDepth(pluginClass, type, 0);
    }
@@ -243,7 +244,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
     * @param depth the current amount of times that we had to up the hierarchy of the plugin
     * @return The total amount of times we had to up the hierarchy of the plugin
     */
-   private static int getClosestMatchDepth(Class pluginClass, Class type, int depth)
+   private static int getClosestMatchDepth(Class<?> pluginClass, Class<?> type, int depth)
    {
       if (pluginClass == null || pluginClass.isAssignableFrom(type))
       {

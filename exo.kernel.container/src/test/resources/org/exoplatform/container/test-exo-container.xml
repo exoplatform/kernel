@@ -87,4 +87,18 @@
 	<component profiles="testStartOrder">
 		<type>org.exoplatform.container.TestExoContainer$C2</type>
 	</component>
+   <component profiles="testStackOverflowError">
+      <key>org.exoplatform.container.TestExoContainer$MyService</key>
+      <type>org.exoplatform.container.TestExoContainer$MyServiceImpl</type>
+   </component>
+
+   <external-component-plugins profiles="testStackOverflowError">
+      <target-component>org.exoplatform.container.TestExoContainer$MyService</target-component>
+      <component-plugin>
+         <name>test.plugin</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.container.TestExoContainer$MyPlugin</type>
+         <description>User - Ticket Authenticator</description>
+      </component-plugin>
+   </external-component-plugins>   
 </configuration>

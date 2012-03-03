@@ -18,6 +18,7 @@ package org.exoplatform.container;
 
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.BaseComponentPlugin;
+import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.support.ContainerBuilder;
@@ -185,6 +186,19 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(container.getComponentInstanceOfType(SOE1.class), soe2.soe1);
    }
 
+   public void testStackOverFlow4()
+   {
+      final RootContainer container = createRootContainer("test-exo-container.xml", "testStackOverflowError");
+      MyService ms = (MyService)container.getComponentInstanceOfType(MyService.class);
+      assertNotNull(ms);
+      assertTrue(ms instanceof MyServiceImpl);
+      MyServiceImpl msi = (MyServiceImpl)ms;
+      assertNotNull(msi.componentPlugin);
+      assertTrue(msi.componentPlugin instanceof MyPlugin);
+      MyPlugin mp = (MyPlugin) msi.componentPlugin;
+      assertTrue(mp.svc == ms);
+   }
+   
    public void testCyclicRef()
    {
       final RootContainer container = createRootContainer("test-exo-container.xml", "testCyclicRef");
@@ -1003,6 +1017,46 @@ public class TestExoContainer extends AbstractTestContainer
       public SOE2()
       {
          this.soe1 = (SOE1)ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(SOE1.class);
+      }
+   }
+   
+   public static class MyPlugin extends BaseComponentPlugin
+   {
+      MySpecialService svc;
+      
+      public MyPlugin(MySpecialService svc)
+      {
+         this.svc = svc;
+      }
+   }
+   
+   public static interface MyService
+   {
+      public void addPlugin(ComponentPlugin componentPlugin);
+   }
+   
+   public static interface MySpecialService extends MyService
+   {
+   }
+   
+   public static class MyServiceImpl implements MySpecialService, Startable
+   {
+      ComponentPlugin componentPlugin;
+      public MyServiceImpl()
+      {
+      }
+
+      public void addPlugin(ComponentPlugin componentPlugin)
+      {
+         this.componentPlugin = componentPlugin;
+      }
+
+      public void stop()
+      {
+      }
+
+      public void start()
+      {
       }
    }
 }
