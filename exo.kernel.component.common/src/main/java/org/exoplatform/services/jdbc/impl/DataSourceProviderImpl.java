@@ -22,6 +22,8 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jdbc.DataSourceProvider;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.util.HashSet;
@@ -45,6 +47,11 @@ import javax.transaction.TransactionManager;
  */
 public class DataSourceProviderImpl implements DataSourceProvider
 {
+
+   /**
+    * Logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.DataSourceProviderImpl");
 
    /**
     * The name of the parameter to know if the tx has to be checked or not.
@@ -137,9 +144,24 @@ public class DataSourceProviderImpl implements DataSourceProvider
     */
    public DataSource getDataSource(String dataSourceName) throws NamingException
    {
-      DataSource ds = (DataSource)new InitialContext().lookup(dataSourceName);
-      // wrap the data source object if it is managed
-      return isManaged(dataSourceName) ? new ManagedDataSource(ds, tm, checkIfTxActive) : ds;
+      InitialContext ctx = new InitialContext();
+      try
+      {
+         DataSource ds = (DataSource)ctx.lookup(dataSourceName);
+         // wrap the data source object if it is managed
+         return isManaged(dataSourceName) ? new ManagedDataSource(ds, tm, checkIfTxActive) : ds;
+      }
+      finally
+      {
+         try
+         {
+            ctx.close();
+         }
+         catch (NamingException e)
+         {
+            LOG.warn("Failed to close naming context.", e);
+         }
+      }
    }
    
    /**
