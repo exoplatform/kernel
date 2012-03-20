@@ -53,8 +53,8 @@
       <shutdown hookBehavior="DEFAULT"/>
    </global>
    <default>
-      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="10000" writeSkewCheck="false" concurrencyLevel="500"/>
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
+      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="10000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true"/>
+      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
       <jmxStatistics enabled="true"/>
       <invocationBatching enabled="true"/>
       <clustering mode="replication">

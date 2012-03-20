@@ -32,7 +32,7 @@
         <description>The default cache configuration</description>
         <object type="org.exoplatform.services.cache.ExoCacheConfig">
           <field  name="name"><string>default</string></field>
-          <field  name="maxSize"><int>5</int></field>
+          <field  name="maxSize"><int>10</int></field>
           <field  name="liveTime"><long>2</long></field>
         </object>
       </object-param>
@@ -221,9 +221,6 @@
 	                     </value>
 	                     <value>
 	                        <string>LRU</string>
-	                     </value>
-	                     <value>
-	                        <string>LRU_OLD</string>
 	                     </value>
 	                     <value>
 	                        <string>UNORDERED</string>

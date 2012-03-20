@@ -62,7 +62,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * Logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.AbstractExoCache");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.AbstractExoCache"); //NOSONAR
 
    private final AtomicInteger hits = new AtomicInteger(0);
 
@@ -227,6 +227,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       {
          throw new IllegalArgumentException("No null cache key accepted");
       }
+      else if (value == null)
+      {
+         // ignore null values
+         return;
+      }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
 
@@ -285,7 +290,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
                   onPut(entry.getKey(), entry.getValue());
                }
             }
-            catch (Exception e)
+            catch (Exception e) //NOSONAR
             {
                cache.endBatch(false);
                LOG.warn("An error occurs while executing the putMap method", e);
@@ -416,7 +421,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             context.onExpire(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -436,7 +441,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             context.onRemove(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -455,7 +460,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             context.onPut(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -473,7 +478,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             context.onGet(key, obj);
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -491,7 +496,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             context.onClearCache();
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);

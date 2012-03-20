@@ -27,13 +27,25 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.Parser;
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.lookup.TransactionManagerLookup;
+import org.infinispan.util.Util;
 import org.picocontainer.Startable;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
+
+import javax.transaction.TransactionManager;
 
 /**
  * This class is used to allow to use infinispan in distribution mode with
@@ -52,8 +64,8 @@ public class DistributedCacheManager implements Startable
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger
-      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedCacheManager");
+   private static final Log LOG = ExoLogger //NOSONAR
+      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedCacheManager");//NOSONAR
 
    /**
     * The parameter name corresponding to the infinispan configuration
@@ -77,7 +89,7 @@ public class DistributedCacheManager implements Startable
    public DistributedCacheManager(String configurationFile, Map<String, String> parameters,
       ConfigurationManager configManager)
    {
-      this.manager = init(configurationFile, parameters, configManager);
+      this.manager = init(configurationFile, parameters, configManager, null);
    }
 
    /**
@@ -85,13 +97,23 @@ public class DistributedCacheManager implements Startable
     */
    public DistributedCacheManager(InitParams params, ConfigurationManager configManager)
    {
+      this(params, configManager, null);
+   }
+
+   /**
+    * Default constructor
+    */
+   public DistributedCacheManager(InitParams params, ConfigurationManager configManager, TransactionService ts)
+   {
       ValueParam vp;
       final String result;
       if (params != null && (vp = params.getValueParam(CONFIG_FILE_PARAMETER_NAME)) != null
          && (result = vp.getValue()) != null && !result.isEmpty())
       {
          PropertiesParam pp = params.getPropertiesParam(PARAMS_PARAMETER_NAME);
-         this.manager = init(result, pp == null ? null : pp.getProperties(), configManager);
+         this.manager =
+            init(result, pp == null ? null : pp.getProperties(), configManager,
+               ts == null ? null : ts.getTransactionManager());
       }
       else
       {
@@ -104,10 +126,11 @@ public class DistributedCacheManager implements Startable
     * @param configurationFile the path of the configuration file
     * @param parameters the parameters to inject into the configuration file
     * @param configManager the configuration manager used to get the configuration file
+    * @param tm the transaction manager
     * @return the CacheManager initialized
     */
    private EmbeddedCacheManager init(final String configurationFile, final Map<String, String> parameters,
-      final ConfigurationManager configManager)
+      final ConfigurationManager configManager, final TransactionManager tm)
    {
       try
       {
@@ -128,25 +151,46 @@ public class DistributedCacheManager implements Startable
          }
          return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
          {
-
-            @Override
             public EmbeddedCacheManager run() throws Exception
             {
+               Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+               // Load the configuration
+               ConfigurationBuilderHolder holder = parser.parse(helper.fillTemplate(configurationFile, parameters));
+               GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
+               Utils.loadJGroupsConfig(configManager, configBuilder.build(), configBuilder);
+               // Create the CacheManager from the new configuration
                EmbeddedCacheManager manager =
-                  new DefaultCacheManager(helper.fillTemplate(configurationFile, parameters), false);
-               Utils.loadJGroupsConfig(configManager, manager.getGlobalConfiguration());
-               manager.start();
-               for (String cacheName : manager.getCacheNames())
+                  new DefaultCacheManager(configBuilder.build(), holder.getDefaultConfigurationBuilder().build());
+               TransactionManagerLookup tml = new TransactionManagerLookup()
                {
-                  manager.getCache(cacheName);
+                  public TransactionManager getTransactionManager() throws Exception
+                  {
+                     return tm;
+                  }
+               };
+               for (ConfigurationBuilder b : holder.getConfigurationBuilders())
+               {
+                  if (tm != null)
+                  {
+                     b.transaction().transactionManagerLookup(tml);                     
+                  }
+                  //TODO remove it once ISPN-1689 will be fixed
+                  b.clustering()
+                     .hash()
+                     .consistentHash(
+                        Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
+                           .getContextClassLoader()));
+                  Configuration c = b.build();
+                  manager.defineConfiguration(c.name(), c);
+                  manager.getCache(c.name());
                }
                return manager;
             }
          });
       }
-      catch (Exception e)
+      catch (Exception e)//NOSONAR
       {
-         throw new RuntimeException("Could not initialize the cache manager corresponding to the configuration file "
+         throw new IllegalStateException("Could not initialize the cache manager corresponding to the configuration file "
             + configurationFile, e);
       }
    }

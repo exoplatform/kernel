@@ -24,7 +24,7 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -42,10 +42,10 @@ public class TestExoCacheCreator implements ExoCacheCreator
 {
 
    /**
-    * @see org.exoplatform.services.cache.impl.infinispan.ExoCacheCreator#create(org.exoplatform.services.cache.ExoCacheConfig, org.infinispan.config.Configuration, java.util.concurrent.Callable)
+    * {@inheritDoc}
     */
    @Override
-   public ExoCache<Serializable, Object> create(ExoCacheConfig config, Configuration cacheConfig,
+   public ExoCache<Serializable, Object> create(ExoCacheConfig config, ConfigurationBuilder confBuilder,
       Callable<Cache<Serializable, Object>> cacheGetter) throws ExoCacheInitException
    {
       return new TestExoCache();
@@ -61,55 +61,46 @@ public class TestExoCacheCreator implements ExoCacheCreator
       return Collections.singleton("TEST");
    }
 
+   @SuppressWarnings({"rawtypes", "unchecked"})
    public static class TestExoCache implements ExoCache<Serializable, Object>
    {
 
       public void addCacheListener(CacheListener listener)
       {
-         // TODO Auto-generated method stub
-
       }
-
 
       public int getCacheHit()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       public int getCacheMiss()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       public int getCacheSize()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       public List getCachedObjects()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public String getLabel()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public long getLiveTime()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       public int getMaxSize()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
@@ -120,104 +111,86 @@ public class TestExoCacheCreator implements ExoCacheCreator
 
       public boolean isDistributed()
       {
-         // TODO Auto-generated method stub
          return false;
       }
 
       public boolean isLogEnabled()
       {
-         // TODO Auto-generated method stub
          return false;
       }
 
       public boolean isReplicated()
       {
-         // TODO Auto-generated method stub
          return false;
       }
 
-
       public void select(CachedObjectSelector selector) throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setDistributed(boolean b)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setLabel(String s)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setLiveTime(long period)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setLogEnabled(boolean b)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setMaxSize(int max)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setName(String name)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setReplicated(boolean b)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void clearCache()
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public Object get(Serializable key)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public void put(Serializable key, Object value) throws NullPointerException
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void putMap(Map objs) throws NullPointerException, IllegalArgumentException
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public Object remove(Serializable key) throws NullPointerException
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public List removeCachedObjects()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
