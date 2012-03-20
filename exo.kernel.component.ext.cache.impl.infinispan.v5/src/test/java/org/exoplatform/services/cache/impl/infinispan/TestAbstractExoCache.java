@@ -519,7 +519,7 @@ public class TestAbstractExoCache extends BasicTestCase
       @Override
       public boolean equals(Object paramObject)
       {
-         return paramObject instanceof MyKey && ((MyKey)paramObject).value.equals(value);
+         return paramObject instanceof MyKey && ((MyKey)paramObject).value.endsWith(value);
       }
 
       @Override
@@ -546,13 +546,13 @@ public class TestAbstractExoCache extends BasicTestCase
             + System.getProperty("java.net.preferIPv4Stack"));
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
-      config.setMaxSize(8);
+      config.setMaxSize(5);
       config.setLiveTime(1);
       config.setImplementation("LRU");
       config.setReplicated(true);
       ExoCacheConfig config2 = new ExoCacheConfig();
       config2.setName("MyCacheDistributed2");
-      config2.setMaxSize(8);
+      config2.setMaxSize(5);
       config2.setLiveTime(1);
       config2.setImplementation("LRU");
       config2.setReplicated(true);

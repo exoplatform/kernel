@@ -48,6 +48,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.util.concurrent.locks.LockManager;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -57,9 +58,12 @@ import java.io.Serializable;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -76,8 +80,8 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    /**
     * Logger.
     */
-   private static final Log LOG = ExoLogger//NOSONAR
-      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedExoCache");//NOSONAR
+   private static final Log LOG = ExoLogger
+      .getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.DistributedExoCache");
 
    public static final String CACHE_NAME = "eXoCache";
 
@@ -118,14 +122,6 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    AdvancedCache<CacheKey<K>, V> getCache()
    {
       return cache;
-   }
-   
-   /**
-    * @return the fullName
-    */
-   String getFullName()
-   {
-      return fullName;
    }
 
    /**
@@ -203,9 +199,9 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          @Override
          public Void run()
          {
-            MapReduceTask<CacheKey<K>, V, Void, Void> task =
-               new MapReduceTask<CacheKey<K>, V, Void, Void>(cache);
-            task.mappedWith(new ClearCacheMapper<K, V>(fullName)).reducedWith(new ClearCacheReducer());
+            MapReduceTask<CacheKey<K>, V, String, CacheKey<K>> task =
+               new MapReduceTask<CacheKey<K>, V, String, CacheKey<K>>(cache);
+            task.mappedWith(new ClearCacheMapper<K, V>(fullName)).reducedWith(new ClearCacheReducer<String, V, K>());
             task.execute();
             return null;
          }
@@ -366,11 +362,6 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       {
          throw new IllegalArgumentException("No null cache key accepted");
       }
-      else if (value == null)
-      {
-         // ignore null values
-         return;
-      }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
 
@@ -430,7 +421,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
                   onPut(entry.getKey(), entry.getValue());
                }
             }
-            catch (Exception e)//NOSONAR
+            catch (Exception e)
             {
                cache.endBatch(false);
                LOG.warn("An error occurs while executing the putMap method", e);
@@ -570,7 +561,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onExpire(key.getKey(), obj);
          }
-         catch (Exception e)//NOSONAR
+         catch (Exception e)
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -592,7 +583,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onRemove(key, obj);
          }
-         catch (Exception e)//NOSONAR
+         catch (Exception e)
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -624,7 +615,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onPut(key, obj);
          }
-         catch (Exception e)//NOSONAR
+         catch (Exception e)
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -646,7 +637,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onGet(key, obj);
          }
-         catch (Exception e)//NOSONAR
+         catch (Exception e)
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -668,7 +659,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          {
             context.onClearCache();
          }
-         catch (Exception e)//NOSONAR
+         catch (Exception e)
          {
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
@@ -799,7 +790,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    @ManagedDescription("Maximum number of entries in a cache instance. -1 means no limit.")
    public int getMaxSize()
    {
-      return cache.getCacheConfiguration().eviction().maxEntries();
+      return cache.getConfiguration().getEvictionMaxEntries();
    }
 
    @ManagedName("Lifespan")
@@ -807,7 +798,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       + " -1 means the entries never expire.")
    public long getLiveTime()
    {
-      return cache.getCacheConfiguration().expiration().lifespan();
+      return cache.getConfiguration().getExpirationLifespan();
    }
 
    @Managed
@@ -816,7 +807,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       + "If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.")
    public long getMaxIdle()
    {
-      return cache.getCacheConfiguration().expiration().maxIdle();
+      return cache.getConfiguration().getExpirationMaxIdle();
    }
 
    @Managed
@@ -825,7 +816,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       + "process altogether, set wakeupInterval to -1.")
    public long getWakeUpInterval()
    {
-      return cache.getCacheConfiguration().expiration().wakeUpInterval();
+      return cache.getConfiguration().getExpirationWakeUpInterval();
    }
 
    public static class CacheKey<K> implements Externalizable
@@ -1083,7 +1074,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       }
    }
 
-   public static class ClearCacheMapper<K, V> extends AbstractExoCacheMapper<K, V, Void, Void>
+   public static class ClearCacheMapper<K, V> extends AbstractExoCacheMapper<K, V, String, CacheKey<K>>
    {
 
       public ClearCacheMapper()
@@ -1099,27 +1090,14 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
        * {@inheritDoc}
        */
       @Override
-      protected void _map(CacheKey<K> key, V value, Collector<Void, Void> collector)
+      protected void _map(CacheKey<K> key, V value, Collector<String, CacheKey<K>> collector)
       {
-         ExoContainer container = ExoContainerContext.getTopContainer();
-         if (container == null)
-         {
-            LOG.error("The top container could not be found");
-            return;
-         }
-         DistributedCacheManager dcm =
-            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
-         if (dcm == null)
-         {
-            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
-            return;
-         }
-         Cache<CacheKey<K>, V> cache = dcm.getCache(CACHE_NAME);
-         cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
+         collector.emit("keys", key);
       }
+
    }
 
-   public static class ClearCacheReducer implements Reducer<Void, Void>
+   public static class ClearCacheReducer<K, V, KIn> implements Reducer<K, CacheKey<KIn>>
    {
 
       /**
@@ -1131,8 +1109,46 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
        * @see org.infinispan.distexec.mapreduce.Reducer#reduce(java.lang.Object, java.util.Iterator)
        */
       @Override
-      public Void reduce(Void reducedKey, Iterator<Void> iter)
+      public CacheKey<KIn> reduce(K reducedKey, Iterator<CacheKey<KIn>> iter)
       {
+         CacheKey<KIn> firstKey;
+         if (iter == null || !iter.hasNext() || (firstKey = iter.next()) == null)
+         {
+            return null;
+         }
+         ExoContainer container = ExoContainerContext.getTopContainer();
+         if (container == null)
+         {
+            LOG.error("The top container could not be found");
+            return null;
+         }
+         DistributedCacheManager dcm =
+            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
+         if (dcm == null)
+         {
+            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
+            return null;
+         }
+         Cache<CacheKey<K>, V> cache = dcm.getCache(CACHE_NAME);
+         final LockManager lm = cache.getAdvancedCache().getLockManager();
+         // Sort the keys to prevent deadlocks
+         Set<CacheKey<KIn>> keys = new TreeSet<CacheKey<KIn>>(new Comparator<CacheKey<KIn>>()
+         {
+            public int compare(CacheKey<KIn> o1, CacheKey<KIn> o2)
+            {
+               int result = lm.getLockId(o1) - lm.getLockId(o2);
+               return result == 0 ? System.identityHashCode(o1) - System.identityHashCode(o2) : result;
+            }
+         });
+         keys.add(firstKey);
+         while (iter.hasNext())
+         {
+            keys.add(iter.next());
+         }
+         for (CacheKey<KIn> key : keys)
+         {
+            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
+         }
          return null;
       }
    }

@@ -6,7 +6,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>mc-integration-parent</artifactId>
-      <version>2.3.8-GA-SNAPSHOT</version>
+      <version>2.4.0-Beta01-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.mc-int</artifactId>
@@ -36,10 +36,6 @@
          <artifactId>jboss-kernel</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jboss.microcontainer</groupId>
-         <artifactId>jboss-aop-mc-int</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.jboss.mc-int</groupId>
          <artifactId>jboss-mc-int-common</artifactId>
       </dependency>
@@ -48,12 +44,20 @@
          <artifactId>jboss-mc-int-servlet</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jboss.cl</groupId>
-         <artifactId>jboss-classloader</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.mc-kernel-extras</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss</groupId>
+         <artifactId>jbossxb</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.microcontainer</groupId>
+         <artifactId>jboss-dependency</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss</groupId>
+         <artifactId>jboss-reflect</artifactId>
       </dependency>
    </dependencies>
 </project>

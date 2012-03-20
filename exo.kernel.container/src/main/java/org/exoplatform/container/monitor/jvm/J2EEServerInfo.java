@@ -18,7 +18,6 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -29,7 +28,6 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 
 import javax.management.MBeanServer;
 
@@ -71,142 +69,160 @@ public class J2EEServerInfo
 
    public J2EEServerInfo()
    {
-
-      String jonasHome = PrivilegedSystemHelper.getProperty("jonas.base");
-      String jbossHome = PrivilegedSystemHelper.getProperty("jboss.home.dir");
-      String jettyHome = PrivilegedSystemHelper.getProperty("jetty.home");
-      String websphereHome = PrivilegedSystemHelper.getProperty("was.install.root");
-      String weblogicHome = PrivilegedSystemHelper.getProperty("wls.home");
-      String glassfishHome = PrivilegedSystemHelper.getProperty("com.sun.aas.instanceRoot");
-      String catalinaHome = PrivilegedSystemHelper.getProperty("catalina.home");
-      String testHome = PrivilegedSystemHelper.getProperty("maven.exoplatform.dir");
-
-      // The name of the configuration directory
-      final String confDirName = PrivilegedSystemHelper.getProperty(EXO_CONF_DIR_NAME_PARAM, "exo-conf");
-      if (jonasHome != null)
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
-         serverName_ = "jonas";
-         serverHome_ = jonasHome;
-      }
-      else if (jbossHome != null)
-      {
-         serverName_ = "jboss";
-         serverHome_ = jbossHome;
-
-         // try find and use jboss.server.config.url
-         // based on http://www.jboss.org/community/docs/DOC-10730
-         String jbossConfigUrl = PrivilegedSystemHelper.getProperty("jboss.server.config.url");
-         if (jbossConfigUrl != null)
+         public Void run()
          {
-            try
+
+            String jonasHome = System.getProperty("jonas.base");
+            String jbossHome = System.getProperty("jboss.home.dir");
+            String jettyHome = System.getProperty("jetty.home");
+            String websphereHome = System.getProperty("was.install.root");
+            String weblogicHome = System.getProperty("wls.home");
+            String glassfishHome = System.getProperty("com.sun.aas.instanceRoot");
+            String catalinaHome = System.getProperty("catalina.home");
+            String testHome = System.getProperty("maven.exoplatform.dir");
+
+            // The name of the configuration directory
+            final String confDirName = System.getProperty(EXO_CONF_DIR_NAME_PARAM, "exo-conf");
+            if (jonasHome != null)
             {
-               exoConfDir_ = new File(new File(new URI(jbossConfigUrl)), confDirName).getAbsolutePath();
+               serverName_ = "jonas";
+               serverHome_ = jonasHome;
             }
-            catch (SecurityException e)
+            else if (jbossHome != null)
             {
-               if (LOG.isTraceEnabled())
+               serverName_ = "jboss";
+               serverHome_ = jbossHome;
+
+               // try find and use jboss.server.config.url
+               // based on http://www.jboss.org/community/docs/DOC-10730
+               String jbossConfigUrl = System.getProperty("jboss.server.config.url");
+               if (jbossConfigUrl != null)
                {
-                  LOG.trace("An exception occurred: " + e.getMessage());
+                  try
+                  {
+                     exoConfDir_ = new File(new File(new URI(jbossConfigUrl)), confDirName).getAbsolutePath();
+                  }
+                  catch (SecurityException e)
+                  {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e.getMessage());
+                     }
+                  }
+                  catch (URISyntaxException e)
+                  {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e.getMessage());
+                     }
+                  }
+                  catch (IllegalArgumentException e)
+                  {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e.getMessage());
+                     }
+                  }
+               }
+               else
+               {
+                  // New variable that exists only since JBoss AS 7
+                  String jbossConfigDir = System.getProperty("jboss.server.config.dir");
+                  if (jbossConfigDir != null)
+                  {
+                     try
+                     {
+                        exoConfDir_ = new File(jbossConfigDir, confDirName).getAbsolutePath();
+                     }
+                     catch (SecurityException e)
+                     {
+                        if (LOG.isTraceEnabled())
+                        {
+                           LOG.trace("An exception occurred: " + e.getMessage());
+                        }
+                     }
+                  }
+               }
+               try
+               {
+                  Class<?> clazz = Thread.currentThread().getContextClassLoader()
+                           .loadClass("org.jboss.mx.util.MBeanServerLocator");
+                  Method m = clazz.getMethod("locateJBoss");
+                  mbeanServer = (MBeanServer)m.invoke(null);
+               }
+               catch (ClassNotFoundException ignore)
+               {
+                  // We assume that JBoss AS 7 or higher is currently used
+                  // since this class has been removed starting from this version
+                  // of JBoss AS
+                  LOG.debug(ignore.getLocalizedMessage(), ignore);
+               }
+               catch (Exception ignore)
+               {
+                  LOG.error(ignore.getLocalizedMessage(), ignore);
                }
             }
-            catch (URISyntaxException e)
+            else if (jettyHome != null)
             {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
+               serverName_ = "jetty";
+               serverHome_ = jettyHome;
             }
-            catch (IllegalArgumentException e)
+            else if (websphereHome != null)
             {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
+               serverName_ = "websphere";
+               serverHome_ = websphereHome;
             }
+            else if (weblogicHome != null)
+            {
+               serverName_ = "weblogic";
+               serverHome_ = weblogicHome;
+            }
+            else if (glassfishHome != null)
+            {
+               serverName_ = "glassfish";
+               serverHome_ = glassfishHome;
+            }
+            else if (catalinaHome != null)
+            {
+               // Catalina has to be processed at the end as other servers may embed it
+               serverName_ = "tomcat";
+               serverHome_ = catalinaHome;
+            }
+            else if (testHome != null)
+            {
+               serverName_ = "test";
+               serverHome_ = testHome;
+            }
+            else
+            {
+               // throw new UnsupportedOperationException("unknown server platform") ;
+               serverName_ = "standalone";
+               serverHome_ = System.getProperty("user.dir");
+            }
+            if (exoConfDir_ == null)
+            {
+               exoConfDir_ = serverHome_ + "/" + confDirName;
+            }
+            if (mbeanServer == null)
+            {
+               mbeanServer = ManagementFactory.getPlatformMBeanServer();
+            }
+
+            String exoConfHome = System.getProperty(EXO_CONF_PARAM);
+            if (exoConfHome != null && exoConfHome.length() > 0)
+            {
+               LOG.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
+                  + "'");
+               exoConfDir_ = exoConfHome;
+            }
+
+            serverHome_ = serverHome_.replace('\\', '/');
+            exoConfDir_ = exoConfDir_.replace('\\', '/');
+            return null;
          }
-
-         //
-         try
-         {
-            Class clazz = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Class>()
-            {
-               public Class run() throws Exception
-               {
-                  return Thread.currentThread().getContextClassLoader()
-                     .loadClass("org.jboss.mx.util.MBeanServerLocator");
-               }
-            });
-
-            Method m = clazz.getMethod("locateJBoss");
-            mbeanServer = (MBeanServer)m.invoke(null);
-         }
-         catch (Exception ignore)
-         {
-            LOG.error(ignore.getLocalizedMessage(), ignore);
-         }
-      }
-      else if (jettyHome != null)
-      {
-         serverName_ = "jetty";
-         serverHome_ = jettyHome;
-      }
-      else if (websphereHome != null)
-      {
-         serverName_ = "websphere";
-         serverHome_ = websphereHome;
-      }
-      else if (weblogicHome != null)
-      {
-         serverName_ = "weblogic";
-         serverHome_ = weblogicHome;
-      }
-      else if (glassfishHome != null)
-      {
-         serverName_ = "glassfish";
-         serverHome_ = glassfishHome;
-      }
-      else if (catalinaHome != null)
-      {
-         // Catalina has to be processed at the end as other servers may embed it
-         serverName_ = "tomcat";
-         serverHome_ = catalinaHome;
-      }
-      else if (testHome != null)
-      {
-         serverName_ = "test";
-         serverHome_ = testHome;
-      }
-      else
-      {
-         // throw new UnsupportedOperationException("unknown server platform") ;
-         serverName_ = "standalone";
-         serverHome_ = PrivilegedSystemHelper.getProperty("user.dir");
-      }
-      if (exoConfDir_ == null)
-      {
-         exoConfDir_ = serverHome_ + "/" + confDirName;
-      }
-      if (mbeanServer == null)
-      {
-         mbeanServer = SecurityHelper.doPrivilegedAction(new PrivilegedAction<MBeanServer>()
-         {
-            public MBeanServer run()
-            {
-               return ManagementFactory.getPlatformMBeanServer();
-            }
-         });
-      }
-
-      String exoConfHome = PrivilegedSystemHelper.getProperty(EXO_CONF_PARAM);
-      if (exoConfHome != null && exoConfHome.length() > 0)
-      {
-         LOG.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
-            + "'");
-         exoConfDir_ = exoConfHome;
-      }
-
-      serverHome_ = serverHome_.replace('\\', '/');
-      exoConfDir_ = exoConfDir_.replace('\\', '/');
+      });
    }
 
    /**

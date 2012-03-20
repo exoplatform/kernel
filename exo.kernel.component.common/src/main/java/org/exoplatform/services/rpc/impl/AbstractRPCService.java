@@ -482,8 +482,10 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          if (!body.accept(getLocalAddress()))
          {
             if (LOG.isTraceEnabled())
+            {
                LOG.trace("Command : " + commandId + " needs to be executed on the coordinator " +
                      "only and the local node is not the coordinator, the command will be ignored");
+            }
             return null;
          }
          RemoteCommand command = getCommand(commandId);
@@ -493,13 +495,17 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          }
          Object execResult = command.execute(body.getArgs());
          if (LOG.isTraceEnabled())
+         {
             LOG.trace("Command : " + commandId + " executed, result is: " + execResult);
+         }
          return execResult;
       }
       catch (Throwable x)
       {
          if (LOG.isTraceEnabled())
+         {
             LOG.trace("Problems invoking command.", x);
+         }
          return new RPCException("Cannot execute the command " + (commandId == null ? "" : commandId), x);
       }
    }

@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>2.3.8-GA-SNAPSHOT</version>
+      <version>2.4.0-Beta01-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.component.common</artifactId>
@@ -65,7 +65,6 @@
       <dependency>
          <groupId>org.ow2.jotm</groupId>
          <artifactId>jotm-core</artifactId>
-         <scope>provided</scope>
          <exclusions>
             <exclusion>
                <groupId>javax.resource</groupId>
@@ -95,10 +94,6 @@
          <artifactId>mail</artifactId>
       </dependency>
       <dependency>
-         <groupId>javax.transaction</groupId>
-         <artifactId>jta</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.jgroups</groupId>
          <artifactId>jgroups</artifactId>
       </dependency>
@@ -106,6 +101,15 @@
          <groupId>com.atomikos</groupId>
          <artifactId>transactions-jta</artifactId>
          <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>dumbster</groupId>
+         <artifactId>dumbster</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.spec.ee</groupId>
+         <artifactId>ow2-jta-1.1-spec</artifactId>
       </dependency>
    </dependencies>
    <build>
@@ -141,7 +145,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -156,7 +160,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>                     
                   </configuration>
                   <goals>
                      <goal>run</goal>

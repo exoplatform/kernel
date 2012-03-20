@@ -25,12 +25,12 @@
    <parent>
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
-      <version>9</version>
+      <version>1.15.0-SNAPSHOT</version>
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.3.8-GA-SNAPSHOT</version>
+   <version>2.4.0-Beta01-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
@@ -43,9 +43,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/trunk</developerConnection>
-      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/trunk</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/branches/2.4.x</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/branches/2.4.x</developerConnection>
+      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/branches/2.4.x</url>
    </scm>
 
    <modules>
@@ -133,12 +133,6 @@
             <scope>test</scope>
          </dependency>
          <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>test</scope>
-         </dependency>
-         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <version>1.0.b2</version>
@@ -151,10 +145,6 @@
                <exclusion>
                   <groupId>org.slf4j</groupId>
                   <artifactId>slf4j-log4j12</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>log4j</groupId>
-                  <artifactId>log4j</artifactId>
                </exclusion>
             </exclusions>            
          </dependency>
@@ -213,7 +203,7 @@
          <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>5.1.2.FINAL</version>
+            <version>5.1.0.CR1</version>
          </dependency>
          <dependency>
             <groupId>org.jibx</groupId>
@@ -236,9 +226,30 @@
             <version>2.1.9</version>
          </dependency>
          <dependency>
+            <groupId>org.ow2.spec.ee</groupId>
+            <artifactId>ow2-jta-1.1-spec</artifactId>
+            <version>1.0-M1</version>
+         </dependency>
+         <dependency>
             <groupId>com.atomikos</groupId>
             <artifactId>transactions-jta</artifactId>
             <version>3.7.0</version>
+         </dependency>
+         <dependency>
+            <groupId>dumbster</groupId>
+            <artifactId>dumbster</artifactId>
+            <version>1.6</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jbossxb</artifactId>
+            <version>2.0.2.GA</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-reflect</artifactId>
+            <version>2.0.2.GA</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

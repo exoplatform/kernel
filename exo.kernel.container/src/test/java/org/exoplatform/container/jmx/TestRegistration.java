@@ -18,17 +18,12 @@
  */
 package org.exoplatform.container.jmx;
 
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.jmx.support.ExoContainerFinder;
 import org.exoplatform.container.jmx.support.ManagedWithObjectNameTemplate;
 
 import java.util.Set;
 
 import javax.management.MBeanServer;
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 /**
@@ -48,33 +43,9 @@ public class TestRegistration extends AbstractTestContainer
 
       MBeanServer server = root.getMBeanServer();
 
-      Set<ObjectInstance> set = server.queryMBeans(ObjectName.getInstance("exo:object=\"Foo\""), null);
+      Set set = server.queryMBeans(ObjectName.getInstance("exo:object=\"Foo\""), null);
       assertEquals(1, set.size());
 
-      ObjectInstance oi = set.iterator().next();
-      ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
-      
-      ExoContainer currentContainer = new ExoContainer();
-      ExoContainerContext.setCurrentContainer(currentContainer);
-      try
-      {
-         ExoContainerFinder proxyObject =
-            MBeanServerInvocationHandler.newProxyInstance(server, oi.getObjectName(),
-               ExoContainerFinder.class, false);
-         assertTrue("We expect to get the current exo container", oldContainer == proxyObject.getCurrentExoContainer());
-         assertTrue("We expect to get the previous exo container", ExoContainerContext.getCurrentContainerIfPresent() == currentContainer);
-         ExoContainerContext.setCurrentContainer(oldContainer);
-         assertTrue("We expect to get the current exo container", oldContainer == proxyObject.getCurrentExoContainer());
-         assertTrue("We expect to get the previous exo container", ExoContainerContext.getCurrentContainerIfPresent() == oldContainer);
-         ExoContainerContext.setCurrentContainer(null);
-         assertTrue("We expect to get the current exo container", oldContainer == proxyObject.getCurrentExoContainer());
-         assertTrue("We expect to get the previous exo container", ExoContainerContext.getCurrentContainerIfPresent() == oldContainer);
-      }
-      finally
-      {
-         ExoContainerContext.setCurrentContainer(oldContainer);
-      }
-      
       // Manual
 
       root.registerComponentInstance("Bar", new ManagedWithObjectNameTemplate("Bar"));

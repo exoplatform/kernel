@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.cache.impl;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.management.annotations.ManagedBy;
@@ -47,6 +48,7 @@ import java.util.concurrent.FutureTask;
  * Created by The eXo Platform SAS. Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Sat, Sep 13, 2003 @ Time: 1:12:22 PM
  */
+@SuppressWarnings("deprecation")
 @ManagedBy(CacheServiceManaged.class)
 public class CacheServiceImpl implements CacheService
 {
@@ -175,9 +177,8 @@ public class CacheServiceImpl implements CacheService
          // we assume that we expect to use the default cache factory
          try
          {
-            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
             // We check if the given implementation is a known class
-            Class implClass = cl.loadClass(safeConfig.getImplementation());            
+            Class<?> implClass = ClassLoading.loadClass(safeConfig.getImplementation(), this); 
             // Implementation is an existing class
             if (ExoCache.class.isAssignableFrom(implClass))
             {
@@ -259,6 +260,7 @@ public class CacheServiceImpl implements CacheService
       /**
        * {@inheritDoc}
        */
+      @SuppressWarnings({"rawtypes", "unchecked"})
       public ExoCache createCache(ExoCacheConfig config) throws ExoCacheInitException
       {
          final ExoCache simple = createCacheInstance(config);
@@ -266,11 +268,6 @@ public class CacheServiceImpl implements CacheService
          simple.setLabel(config.getLabel());
          simple.setMaxSize(config.getMaxSize());
          simple.setLiveTime(config.getLiveTime());
-         //       simple.setReplicated(config.isRepicated());
-         //       simple.setDistributed(config.isDistributed());
-         //       if (simple.isDistributed()) {
-         //         simple.addCacheListener(distrbutedListener_);
-         //       }
          simple.setLogEnabled(config.isLogEnabled());
          if (simple.isLogEnabled())
          {
@@ -285,7 +282,7 @@ public class CacheServiceImpl implements CacheService
        * @return a new instance of ExoCache
        * @throws ExoCacheInitException if any exception happens while initializing the cache
        */
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings("rawtypes")
       private ExoCache createCacheInstance(ExoCacheConfig config) throws ExoCacheInitException
       {
          if (config.getImplementation() == null)
@@ -296,10 +293,9 @@ public class CacheServiceImpl implements CacheService
          else
          {
             // An implementation has been defined
-            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
             try
             {
-               final Class clazz = cl.loadClass(config.getImplementation());
+               final Class<?> clazz = ClassLoading.loadClass(config.getImplementation(), this);
                return (ExoCache)clazz.newInstance();
             }
             catch (ExceptionInInitializerError e)

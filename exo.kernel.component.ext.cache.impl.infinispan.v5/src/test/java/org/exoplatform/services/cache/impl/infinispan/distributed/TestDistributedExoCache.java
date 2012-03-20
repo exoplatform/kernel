@@ -32,9 +32,6 @@ import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.services.cache.impl.infinispan.ExoCacheFactoryImpl;
 import org.exoplatform.services.ispn.DistributedCacheManager;
 import org.exoplatform.test.BasicTestCase;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyAffinityServiceFactory;
-import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.distribution.DistributionManager;
 
 import java.io.Serializable;
@@ -45,10 +42,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -472,29 +467,17 @@ public class TestDistributedExoCache extends BasicTestCase
    {
       private static final long serialVersionUID = 1L;
 
-      public Object value;
-
-      public String displayValue;
-
-      public MyKey()
+      public String value;
+      public MyKey(){}
+      public MyKey(String value)
       {
-      }
-
-      public MyKey(Object value)
-      {
-         this.value = value;
-      }
-
-      public MyKey(String displayValue, Object value)
-      {
-         this.displayValue = displayValue;
          this.value = value;
       }
 
       @Override
       public boolean equals(Object paramObject)
       {
-         return paramObject instanceof MyKey && ((MyKey)paramObject).value.equals(value);
+         return paramObject instanceof MyKey && ((MyKey)paramObject).value.endsWith(value);
       }
 
       @Override
@@ -506,30 +489,10 @@ public class TestDistributedExoCache extends BasicTestCase
       @Override
       public String toString()
       {
-         return displayValue == null ? value.toString() : displayValue;
+         return value;
       }
    }
-
-   public static class MyKeyGenerator implements KeyGenerator<DistributedExoCache.CacheKey<Serializable>>
-   {
-
-      public static final Random rnd = new Random();
-
-      private String fullName;
-
-      public MyKeyGenerator(String fullName)
-      {
-         this.fullName = fullName;
-      }
-
-      @Override
-      public DistributedExoCache.CacheKey<Serializable> getKey()
-      {
-         return new DistributedExoCache.CacheKey<Serializable>(fullName, new MyKey(rnd.nextLong()));
-      }
-   }
-
-   @SuppressWarnings({"rawtypes", "unchecked"})
+   
    public void testDistributedCache() throws Exception
    {
       PortalContainer pc = PortalContainer.getInstance();
@@ -548,312 +511,191 @@ public class TestDistributedExoCache extends BasicTestCase
       DistributedCacheManager dcm2 =
          new DistributedCacheManager("jar:/conf/portal/distributed-cache-configuration.xml", params, cm);
 
+      @SuppressWarnings("unchecked")
       DistributedExoCache<Serializable, Object> cache1 =
          (DistributedExoCache<Serializable, Object>)((ExoCacheFactory)pc
             .getComponentInstanceOfType(ExoCacheFactory.class)).createCache(config);
       DistributionManager dm = cache1.getCache().getDistributionManager();
+      MyCacheListener listener1 = new MyCacheListener();
+      cache1.addCacheListener(listener1);
       DistributedExoCache<Serializable, Object> cache2 =
          (DistributedExoCache<Serializable, Object>)new ExoCacheFactoryImpl(
             (ExoContainerContext)pc.getComponentInstanceOfType(ExoContainerContext.class),
             "jar:/conf/portal/cache-configuration-template.xml", cm, dcm2).createCache(config);
-      KeyAffinityService kas1 =
-         KeyAffinityServiceFactory.newLocalKeyAffinityService(cache1.getCache(),
-            new MyKeyGenerator(cache1.getFullName()), Executors.newSingleThreadExecutor(), 100);
-      KeyAffinityService kas2 =
-         KeyAffinityServiceFactory.newLocalKeyAffinityService(cache2.getCache(),
-            new MyKeyGenerator(cache1.getFullName()), Executors.newSingleThreadExecutor(), 100);
-
+      MyCacheListener listener2 = new MyCacheListener();
+      cache2.addCacheListener(listener2);
       try
       {
-         Object a, b, c;
-         for (int i = 0; i < 2; i++)
+         MyKey key;
+         cache1.put(key = new MyKey("a"), "b");
+         assertEquals(1, cache1.getCacheSize());
+         assertEquals("b", cache2.get(new MyKey("a")));
+         assertEquals(1, cache2.getCacheSize());
+         
+//         int put1 = 1;
+//         int put2 = dm.getLocality(key).isLocal() ? 0 : 1;
+//
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(0, listener1.get);
+         assertEquals(1, listener2.get);
+         
+         MyKey key2;
+         cache2.put(key2 = new MyKey("b"), "c");
+         assertEquals(2, cache1.getCacheSize());
+         assertEquals(2, cache2.getCacheSize());
+         assertEquals("c", cache1.get(new MyKey("b")));
+         
+//         put1 += dm.getLocality(key2).isLocal() ? 1 : 0;
+//         put2++;
+//
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(1, listener1.get);
+         assertEquals(1, listener2.get);
+
+         assertEquals(2, cache1.getCacheSize());
+         assertEquals(2, cache2.getCacheSize());
+
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(1, listener1.get);
+         assertEquals(1, listener2.get);
+
+         cache2.put(key = new MyKey("a"), "a");
+         assertEquals(2, cache1.getCacheSize());
+         assertEquals(2, cache2.getCacheSize());
+         assertEquals("a", cache1.get(new MyKey("a")));
+         
+//         put1 += dm.getLocality(key).isLocal() ? 1 : 0;
+//         put2++;
+//
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(2, listener1.get);
+         assertEquals(1, listener2.get);
+
+         cache2.remove(key = new MyKey("a"));
+         assertEquals(1, cache1.getCacheSize());
+         assertEquals(1, cache2.getCacheSize());
+         
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(2, listener1.get);
+         assertEquals(1, listener2.get);
+         
+//         int remove1 = dm.getLocality(key).isLocal() ? 1 : 0;
+//         int remove2 = 1;
+//         
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+         
+         cache1.put(key = new MyKey("c"), "c");
+         cache1.clearCache();
+         assertEquals(0, cache1.getCacheSize());
+         assertNull(cache1.get(new MyKey("b")));
+         assertNull(cache2.get(new MyKey("b")));
+         assertNull(cache2.get(new MyKey("c")));
+         assertEquals(0, cache2.getCacheSize());
+         
+//         put1++;
+//         put2 += dm.getLocality(key).isLocal() ? 0 : 1;
+
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(3, listener1.get);
+         assertEquals(3, listener2.get);
+
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+
+         Map<Serializable, Object> values = new HashMap<Serializable, Object>();
+         values.put(key = new MyKey("a"), "a");
+         values.put(key2 = new MyKey("b"), "b");
+         cache1.putMap(values);
+         assertEquals(2, cache1.getCacheSize());
+         Thread.sleep(40);
+         assertEquals("a", cache2.get(new MyKey("a")));
+         assertEquals("b", cache2.get(new MyKey("b")));
+         assertEquals(2, cache2.getCacheSize());
+
+//         put1 += 2;
+//         put2 += (dm.getLocality(key).isLocal() ? 0 : 1) + (dm.getLocality(key2).isLocal() ? 0 : 1);
+//         
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
+
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+
+         values = new HashMap<Serializable, Object>()
          {
-            if (i == 0)
+            private static final long serialVersionUID = 1L;
+
+            public Set<Entry<Serializable, Object>> entrySet()
             {
-               a =
-                  new MyKey("a", ((DistributedExoCache.CacheKey<MyKey>)kas1.getKeyForAddress(cache1.getCache()
-                     .getRpcManager().getAddress())).getKey().value);
-            }
-            else
-            {
-               a =
-                  new MyKey("a", ((DistributedExoCache.CacheKey<MyKey>)kas2.getKeyForAddress(cache2.getCache()
-                     .getRpcManager().getAddress())).getKey().value);
-            }
-            for (int j = 0; j < 2; j++)
-            {
-               if (j == 0)
+               Set<Entry<Serializable, Object>> set = new LinkedHashSet<Entry<Serializable, Object>>(super.entrySet());
+               set.add(new Entry<Serializable, Object>()
                {
-                  b =
-                     new MyKey("b", ((DistributedExoCache.CacheKey<MyKey>)kas1.getKeyForAddress(cache1.getCache()
-                        .getRpcManager().getAddress())).getKey().value);
-               }
-               else
-               {
-                  b =
-                     new MyKey("b", ((DistributedExoCache.CacheKey<MyKey>)kas2.getKeyForAddress(cache2.getCache()
-                        .getRpcManager().getAddress())).getKey().value);
-               }
-               for (int k = 0; k < 2; k++)
-               {
-                  if (k == 0)
+
+                  public Object setValue(Object paramV)
                   {
-                     c =
-                        new MyKey("c", ((DistributedExoCache.CacheKey<MyKey>)kas1.getKeyForAddress(cache1.getCache()
-                           .getRpcManager().getAddress())).getKey().value);
+                     return null;
                   }
-                  else
+
+                  public Object getValue()
                   {
-                     c =
-                        new MyKey("c", ((DistributedExoCache.CacheKey<MyKey>)kas2.getKeyForAddress(cache2.getCache()
-                           .getRpcManager().getAddress())).getKey().value);
+                     throw new RuntimeException("An exception");
                   }
-                  checkUseCase(cache1, cache2, dm, a, b, c);
-               }
+
+                  public Serializable getKey()
+                  {
+                     return "c";
+                  }
+               });
+               return set;
             }
-         }
+         };
+         values.put(new MyKey("e"), "e");
+         values.put(new MyKey("d"), "d");
+         cache1.putMap(values);
+         assertEquals(2, cache1.getCacheSize());
+         assertEquals(2, cache2.getCacheSize());
+
+//         assertEquals(put1, listener1.put);
+//         assertEquals(put2, listener2.put);
+
+         assertEquals(3, listener1.get);
+         assertEquals(5, listener2.get);
+
+//         assertEquals(remove1, listener1.remove);
+//         assertEquals(remove2, listener2.remove);
+
+         assertEquals(1, listener1.clearCache);
+         assertEquals(0, listener2.clearCache);
+
+         assertEquals(0, listener1.expire);
+         assertEquals(0, listener2.expire);
+
       }
       finally
       {
          dcm2.stop();
       }
-   }
-
-   @SuppressWarnings({"unchecked", "rawtypes"})
-   private void checkUseCase(DistributedExoCache<Serializable, Object> cache1,
-      DistributedExoCache<Serializable, Object> cache2, DistributionManager dm, Object a, Object b, Object c)
-      throws InterruptedException
-   {
-      MyCacheListener listener1 = new MyCacheListener();
-      cache1.addCacheListener(listener1);
-      MyCacheListener listener2 = new MyCacheListener();
-      cache2.addCacheListener(listener2);
-      boolean isALocal = dm.getLocality(new DistributedExoCache.CacheKey(cache1.getFullName(), new MyKey(a))).isLocal();
-      boolean isBLocal = dm.getLocality(new DistributedExoCache.CacheKey(cache1.getFullName(), new MyKey(b))).isLocal();
-      boolean isCLocal = dm.getLocality(new DistributedExoCache.CacheKey(cache1.getFullName(), new MyKey(c))).isLocal();
-      System.out.println("#####################################");
-      System.out.println("'a' is local = " + isALocal);
-      System.out.println("'b' is local = " + isBLocal);
-      System.out.println("'c' is local = " + isCLocal);
-      MyKey key = new MyKey(a);
-      cache1.put(key, "b");
-      assertEquals(1, cache1.getCacheSize());
-      assertEquals("b", cache2.get(new MyKey(a)));
-      assertEquals(1, cache2.getCacheSize());
-
-      int put1 = 1;
-      int put2 = isALocal ? 0 : 1;
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(0, listener1.get);
-      assertEquals(1, listener2.get);
-
-      MyKey key2 = new MyKey(b);
-      cache2.put(key2, "c");
-      assertEquals(2, cache1.getCacheSize());
-      assertEquals(2, cache2.getCacheSize());
-      assertEquals("c", cache1.get(new MyKey(b)));
-
-      put1 += isBLocal ? 1 : 0;
-      put2++;
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(1, listener1.get);
-      assertEquals(1, listener2.get);
-
-      assertEquals(2, cache1.getCacheSize());
-      assertEquals(2, cache2.getCacheSize());
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(1, listener1.get);
-      assertEquals(1, listener2.get);
-
-      key = new MyKey(a);
-      cache2.put(key, "a");
-      assertEquals(2, cache1.getCacheSize());
-      assertEquals(2, cache2.getCacheSize());
-      assertEquals("a", cache1.get(new MyKey(a)));
-
-      put1 += isALocal ? 1 : 0;
-      put2++;
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(2, listener1.get);
-      assertEquals(1, listener2.get);
-
-      key = new MyKey(a);
-      cache2.remove(key);
-      assertEquals(1, cache1.getCacheSize());
-      assertEquals(1, cache2.getCacheSize());
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(2, listener1.get);
-      assertEquals(1, listener2.get);
-
-      int remove1 = isALocal ? 1 : 0;
-      int remove2 = 1;
-
-      assertEquals(remove1, listener1.remove);
-      assertEquals(remove2, listener2.remove);
-
-      key = new MyKey(c);
-      cache1.put(key, "c");
-      assertEquals(2, cache1.getCacheSize());
-      assertEquals(2, cache2.getCacheSize());
-      assertEquals("c", cache2.get(new MyKey(c)));
-
-      put1++;
-      put2 += isCLocal ? 0 : 1;
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(2, listener1.get);
-      assertEquals(2, listener2.get);
-
-      assertEquals(remove1, listener1.remove);
-      assertEquals(remove2, listener2.remove);
-
-      assertEquals(0, listener1.clearCache);
-      assertEquals(0, listener2.clearCache);
-
-      cache1.clearCache();
-      assertEquals(0, cache1.getCacheSize());
-      assertNull(cache1.get(new MyKey(b)));
-      assertNull(cache1.get(new MyKey(c)));
-      assertNull(cache2.get(new MyKey(b)));
-      assertNull(cache2.get(new MyKey(c)));
-      assertEquals(0, cache2.getCacheSize());
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(4, listener1.get);
-      assertEquals(4, listener2.get);
-      
-      // Since the clear cache map/reduce can only find cache1, 
-      // the remove calls will be applied to cache1 so cache2
-      // will be notified on its entries, this is due to the
-      // hack used to apply modifications within a map/reduce
-      remove2 += (isBLocal ? 0 : 1) + (isCLocal ? 0 : 1);
-      
-      assertEquals(remove1, listener1.remove);
-      assertEquals(remove2, listener2.remove);
-
-      assertEquals(1, listener1.clearCache);
-      assertEquals(0, listener2.clearCache);
-
-      Map<Serializable, Object> values = new HashMap<Serializable, Object>();
-      key = new MyKey(a);
-      key2 = new MyKey(b);
-      values.put(key, "a");
-      values.put(key2, "b");
-      cache1.putMap(values);
-      assertEquals(2, cache1.getCacheSize());
-      Thread.sleep(40);
-      assertEquals("a", cache1.get(new MyKey(a)));
-      assertEquals("b", cache1.get(new MyKey(b)));
-      assertEquals("a", cache2.get(new MyKey(a)));
-      assertEquals("b", cache2.get(new MyKey(b)));
-      assertEquals(2, cache2.getCacheSize());
-
-      put1 += 2;
-      put2 += (isALocal ? 0 : 1) + (isBLocal ? 0 : 1);
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(6, listener1.get);
-      assertEquals(6, listener2.get);
-
-      assertEquals(remove1, listener1.remove);
-      assertEquals(remove2, listener2.remove);
-
-      assertEquals(1, listener1.clearCache);
-      assertEquals(0, listener2.clearCache);
-
-      values = new HashMap<Serializable, Object>()
-      {
-         private static final long serialVersionUID = 1L;
-
-         public Set<Entry<Serializable, Object>> entrySet()
-         {
-            Set<Entry<Serializable, Object>> set = new LinkedHashSet<Entry<Serializable, Object>>(super.entrySet());
-            set.add(new Entry<Serializable, Object>()
-            {
-
-               public Object setValue(Object paramV)
-               {
-                  return null;
-               }
-
-               public Object getValue()
-               {
-                  throw new RuntimeException("An exception");
-               }
-
-               public Serializable getKey()
-               {
-                  return "c";
-               }
-            });
-            return set;
-         }
-      };
-      values.put(new MyKey("e"), "e");
-      values.put(new MyKey("d"), "d");
-      cache1.putMap(values);
-      assertEquals(2, cache1.getCacheSize());
-      assertEquals(2, cache2.getCacheSize());
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(6, listener1.get);
-      assertEquals(6, listener2.get);
-
-      assertEquals(remove1, listener1.remove);
-      assertEquals(remove2, listener2.remove);
-
-      assertEquals(1, listener1.clearCache);
-      assertEquals(0, listener2.clearCache);
-
-      assertEquals(0, listener1.expire);
-      assertEquals(0, listener2.expire);
-
-      cache2.clearCache();
-      assertEquals(0, cache1.getCacheSize());
-      assertEquals(0, cache2.getCacheSize());
-
-      assertEquals(put1, listener1.put);
-      assertEquals(put2, listener2.put);
-
-      assertEquals(6, listener1.get);
-      assertEquals(6, listener2.get);
-
-      // Since the clear cache map/reduce can only find cache1, 
-      // the remove calls will be applied to cache1 so cache2
-      // will be notified on its entries, this is due to the
-      // hack used to apply modifications within a map/reduce
-      remove2 += (isALocal ? 0 : 1) + (isBLocal ? 0 : 1);
-
-      assertEquals(remove1, listener1.remove);
-      assertEquals(remove2, listener2.remove);
-
-      assertEquals(1, listener1.clearCache);
-      assertEquals(1, listener2.clearCache);
-
-      assertEquals(0, listener1.expire);
-      assertEquals(0, listener2.expire);
    }
 }

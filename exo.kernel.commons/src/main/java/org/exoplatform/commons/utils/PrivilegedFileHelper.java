@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -40,6 +41,22 @@ import java.util.zip.ZipOutputStream;
  */
 public class PrivilegedFileHelper
 {
+
+   /**
+    * getResourceAsStream in privileged mode.
+    */
+   public static InputStream getResourceAsStream(final String resource) throws FileNotFoundException
+   {
+      PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
+      {
+         public InputStream run()
+         {
+            return PrivilegedFileHelper.class.getResourceAsStream(resource);
+         }
+      };
+
+      return SecurityHelper.doPrivilegedAction(action);
+   }
 
    /**
     * Create FileOutputStream in privileged mode.

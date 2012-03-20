@@ -327,7 +327,7 @@ public class SecurityHelper
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(permission);
+            security.checkPermission(permission);
       }
    }
 }

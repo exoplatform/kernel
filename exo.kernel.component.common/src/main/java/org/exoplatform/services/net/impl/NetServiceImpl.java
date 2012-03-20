@@ -47,6 +47,7 @@ public class NetServiceImpl implements NetService
             }
          });
          endTime = System.currentTimeMillis();
+         socket.close();
       }
       catch (PrivilegedActionException e)
       {

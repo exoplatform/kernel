@@ -16,7 +16,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>2.3.8-GA-SNAPSHOT</version>
+      <version>2.4.0-Beta01-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.commons</artifactId>
@@ -45,10 +45,6 @@
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>log4j</groupId>
-         <artifactId>log4j</artifactId>
       </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
@@ -81,7 +77,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -96,7 +92,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>

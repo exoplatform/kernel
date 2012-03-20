@@ -12,6 +12,8 @@ grant codeBase "@TEST_CLASSES@-"{
 
 grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "manageContainer";
+   permission java.net.SocketPermission "127.0.0.1:2526", "connect, resolve"; 
+   permission java.net.SocketPermission "127.0.0.1:2525", "connect, resolve"; 
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{

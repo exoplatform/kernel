@@ -257,8 +257,16 @@ public class Configuration implements Cloneable
          }
          else if (result == null)
          {
-            // Initialize with the clone of the first non null configuration 
-            result = (Configuration)conf.clone();
+            try
+            {
+               // Initialize with the clone of the first non null configuration 
+               result = (Configuration)conf.clone();
+            }
+            catch (CloneNotSupportedException e)
+            {
+               LOG.warn("Could not clone the configuration", e);
+               break;
+            }
          }
          else
          {
@@ -267,42 +275,6 @@ public class Configuration implements Cloneable
          }
       }
       return result;
-   }
-   
-   /**
-    * {@inheritDoc}
-    */
-   @SuppressWarnings("unchecked")
-   @Override
-   protected Object clone()
-   {
-      try
-      {
-         Configuration conf = (Configuration)super.clone();
-         conf.component_ = (Map<String, Component>)((HashMap<String, Component>)component_).clone();
-         conf.componentLifecyclePlugin_ =
-            (Map<String, ComponentLifecyclePlugin>)((HashMap<String, ComponentLifecyclePlugin>)componentLifecyclePlugin_)
-               .clone();
-         conf.containerLifecyclePlugin_ =
-            (Map<String, ContainerLifecyclePlugin>)((HashMap<String, ContainerLifecyclePlugin>)containerLifecyclePlugin_)
-               .clone();
-         conf.externalComponentPlugins_ =
-            (Map<String, ExternalComponentPlugins>)((HashMap<String, ExternalComponentPlugins>)externalComponentPlugins_)
-               .clone();
-         if (imports_ != null)
-         {
-            conf.imports_ = (ArrayList<String>)imports_.clone();
-         }
-         if (removeConfiguration_ != null)
-         {
-            conf.removeConfiguration_ = (ArrayList<String>)removeConfiguration_.clone();
-         }
-         return conf;
-      }
-      catch (CloneNotSupportedException e)
-      {
-         throw new AssertionError("Could not clone the configuration");
-      }
    }
 
    /**

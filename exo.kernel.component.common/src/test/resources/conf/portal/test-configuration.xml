@@ -57,13 +57,16 @@
       <init-params>
          <properties-param>
             <name>config</name>
-            <property name="mail.smtp.host" value="PC01" />
-            <property name="mail.smtp.port" value="25" />
+            <property name="mail.smtp.host" value="localhost" />
+            <property name="mail.smtp.port" value="2525" />
             <property name="mail.transport.protocol" value="smtp" />
 
             <property name="mail.smtp.auth" value="false" />
             <property name="mail.smtp.auth.username" value="exo" />
             <property name="mail.smtp.auth.password" value="exo" />
+
+            <property name="mail.max.thread.number" value="4" />
+
          </properties-param>
       </init-params>
    </component>

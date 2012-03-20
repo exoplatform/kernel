@@ -18,8 +18,6 @@
  */
 package org.exoplatform.container.configuration;
 
-import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.support.ContainerBuilder;
 import org.exoplatform.test.BasicTestCase;
 
 import java.io.File;
@@ -59,26 +57,6 @@ public class TestXSD_1_1 extends BasicTestCase
             fail("Was not expecting such exception " + e.getMessage());
          }
       }
-      assertEquals(20, count);
-      try
-      {
-         File f = new File(baseDir,"invalid-configuration.xml.bad");
-         URL url = f.toURI().toURL();
-         assertFalse("XML configuration file " + url + " is valid", unmarshaller.isValid(url));
-      }
-      catch (MalformedURLException e)
-      {
-         // Expected
-      }
-   }
-   
-   public void testInitParams() throws Exception
-   {
-      String baseDirPath = System.getProperty("basedir");
-      File file = new File(baseDirPath + "/src/test/resources/xsd_1_1/test-validation.xml");
-      URL url = file.toURI().toURL();
-      assertNotNull(url);
-      RootContainer container = new ContainerBuilder().withRoot(url).build();
-      container.getComponentInstanceOfType(TestValidation.class);
+      assertEquals(19, count);
    }
 }

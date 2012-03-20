@@ -18,6 +18,8 @@
  */
 package org.exoplatform.xml.object;
 
+import org.exoplatform.commons.utils.ClassLoading;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,7 +75,7 @@ public class XMLMap
 
    public Map getMap() throws Exception
    {
-      Class clazz = Class.forName(type_);
+      Class<?> clazz = ClassLoading.forName(type_, this);
       Map map = (Map)clazz.newInstance();
       for (int i = 0; i < listmap.size(); i++)
       {

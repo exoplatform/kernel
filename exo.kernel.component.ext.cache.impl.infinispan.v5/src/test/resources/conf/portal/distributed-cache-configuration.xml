@@ -54,9 +54,10 @@
    </global>
    <namedCache name="eXoCache">
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" />
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/>
+      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true"/>
       <jmxStatistics enabled="true"/>
       <clustering mode="distribution">
+      	 <l1 enabled="false"/>
          <hash numOwners="${infinispan-num-owners}" rehashRpcTimeout="120000" />
          <sync/>
       </clustering>

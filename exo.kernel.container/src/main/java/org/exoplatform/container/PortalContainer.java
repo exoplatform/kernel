@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container;
 
+import static org.exoplatform.container.ExoContainer.LOG;
+
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;

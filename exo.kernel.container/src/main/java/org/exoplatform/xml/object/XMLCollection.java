@@ -18,6 +18,7 @@
  */
 package org.exoplatform.xml.object;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
@@ -70,7 +71,7 @@ public class XMLCollection
 
    public Collection getCollection() throws Exception
    {
-      Class clazz = Class.forName(type_);
+      Class<?> clazz = ClassLoading.forName(type_, this);
       Collection collection = (Collection)clazz.newInstance();
       for (int i = 0; i < list_.size(); i++)
       {

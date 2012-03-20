@@ -413,7 +413,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       Map<Object, Object> map = depResolutionCtx.get();
       if (map != null)
       {
-         Object result = map.get(componentAdapter.getComponentKey());
+         Object result = map.get(componentType);
          if (result != null)
          {
             return result;
