@@ -34,7 +34,7 @@ import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.management.jmx.annotations.NamingContext;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import org.exoplatform.services.log.ExoLogger;
@@ -61,7 +61,7 @@ import javax.servlet.ServletContext;
  * tuan08@users.sourceforge.net Date: Jul 21, 2004 Time: 12:15:28 AM
  */
 @Managed
-@NamingContext(@Property(key = "container", value = "root"))
+@NameTemplate(@Property(key = "container", value = "root"))
 @RESTEndpoint(path = "rcontainer")
 public class RootContainer extends ExoContainer
 {
