@@ -43,27 +43,6 @@
     <key>org.exoplatform.services.naming.InitialContextInitializer</key>
     <type>org.exoplatform.services.naming.InitialContextInitializer</type>
     <init-params>
-      <object-param>
-        <name>object</name>
-        <object type="object"></object>
-      </object-param>
-      <object-param profiles="a">
-        <name>object</name>
-        <object type="object"></object>
-      </object-param>
-      <object-param profiles="a,b">
-        <name>object</name>
-        <object type="object"></object>
-      </object-param>
-      <properties-param>
-        <name>properties</name>
-      </properties-param>
-      <properties-param profiles="a">
-        <name>properties</name>
-      </properties-param>
-      <properties-param profiles="a,b">
-        <name>properties</name>
-      </properties-param>
       <value-param>
         <name>value</name>
         <value>value</value>
@@ -85,6 +64,27 @@
       <values-param profiles="a,b">
         <name>values</name>
       </values-param>
+      <properties-param>
+        <name>properties</name>
+      </properties-param>
+      <properties-param profiles="a">
+        <name>properties</name>
+      </properties-param>
+      <properties-param profiles="a,b">
+        <name>properties</name>
+      </properties-param>
+      <object-param>
+        <name>object</name>
+        <object type="object"></object>
+      </object-param>
+      <object-param profiles="a">
+        <name>object</name>
+        <object type="object"></object>
+      </object-param>
+      <object-param profiles="a,b">
+        <name>object</name>
+        <object type="object"></object>
+      </object-param>
     </init-params>
   </component>
 

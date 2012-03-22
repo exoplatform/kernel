@@ -131,12 +131,12 @@
     </xsd:complexType>
 
     <xsd:complexType name="initParamsType">
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="object-param" type="objectParamType"/>
-            <xsd:element name="properties-param" type="propertiesParamType"/>
-            <xsd:element name="value-param" type="valueParamType"/>
-            <xsd:element name="values-param" type="valuesParamType"/>
-        </xsd:choice>
+        <xsd:sequence>
+            <xsd:element name="value-param" type="valueParamType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="values-param" type="valuesParamType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="properties-param" type="propertiesParamType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="object-param" type="objectParamType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="componentPluginType">
@@ -184,8 +184,8 @@
             <xsd:element name="jmx-name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="show-deploy-info" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="multi-instance" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="show-deploy-info" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="multi-instance" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="component-plugins" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>

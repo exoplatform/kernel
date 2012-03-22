@@ -18,7 +18,10 @@
  */
 package org.exoplatform.container.management;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
@@ -31,6 +34,7 @@ import org.exoplatform.services.log.Log;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,6 +53,11 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
     * The logger
     */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ManagementContextImpl");
+
+   /**
+    * The previous container
+    */
+   private static final ThreadLocal<ExoContainer> previousContainer = new ThreadLocal<ExoContainer>();
 
    /** . */
    private final Map<Class<?>, Object> scopingDataList;
@@ -306,16 +315,48 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
 
    public void beforeInvoke(Object managedResource)
    {
-      ExoContainer container = findContainer();
+      final ExoContainer container = findContainer();
       if (container != null)
       {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+               if (!(oldContainer instanceof RootContainer))
+               {
+                  previousContainer.set(oldContainer);
+               }
+               ExoContainerContext.setCurrentContainer(container);
+               return null;
+            }
+         });
          RequestLifeCycle.begin(container);
       }
    }
 
    public void afterInvoke(Object managedResource)
    {
-      RequestLifeCycle.end();
+      try
+      {
+         RequestLifeCycle.end();
+      }
+      finally
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               ExoContainer oldContainer = previousContainer.get();
+               if (oldContainer != null)
+               {
+                  previousContainer.set(null);
+               }
+               ExoContainerContext.setCurrentContainer(oldContainer);
+               return null;
+            }
+         });
+      }
    }
 
    @Override

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.jmx.support;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -29,7 +31,7 @@ import org.exoplatform.management.jmx.annotations.Property;
  */
 @Managed
 @NameTemplate(@Property(key = "object", value = "{Name}"))
-public class ManagedWithObjectNameTemplate
+public class ManagedWithObjectNameTemplate implements ExoContainerFinder
 {
 
    private String name;
@@ -42,6 +44,12 @@ public class ManagedWithObjectNameTemplate
    public ManagedWithObjectNameTemplate(String name)
    {
       this.name = name;
+   }
+
+   @Managed
+   public ExoContainer getCurrentExoContainer()
+   {
+      return ExoContainerContext.getCurrentContainerIfPresent();
    }
 
    @Managed
