@@ -510,7 +510,7 @@ public class TestDistributedExoCache extends BasicTestCase
       }
    }
 
-   public static class MyKeyGenerator implements KeyGenerator<DistributedExoCache.CacheKey<MyKey>>
+   public static class MyKeyGenerator implements KeyGenerator<DistributedExoCache.CacheKey<Serializable>>
    {
 
       public static final Random rnd = new Random();
@@ -523,9 +523,9 @@ public class TestDistributedExoCache extends BasicTestCase
       }
 
       @Override
-      public DistributedExoCache.CacheKey<MyKey> getKey()
+      public DistributedExoCache.CacheKey<Serializable> getKey()
       {
-         return new DistributedExoCache.CacheKey<MyKey>(fullName, new MyKey(rnd.nextLong()));
+         return new DistributedExoCache.CacheKey<Serializable>(fullName, new MyKey(rnd.nextLong()));
       }
    }
 

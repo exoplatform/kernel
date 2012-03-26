@@ -29,21 +29,18 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.Parser;
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
-import org.infinispan.util.Util;
 import org.picocontainer.Startable;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.transaction.TransactionManager;
 
@@ -143,8 +140,7 @@ public class DistributedCacheManager implements Startable
             LOG.debug("The configuration file of the DistributedCacheManager will be loaded from " + configurationFile);
          }
          final TemplateConfigurationHelper helper =
-            new TemplateConfigurationHelper(new String[]{"^jgroups-configuration", "^infinispan-.*"},
-               new String[]{"^infinispan-configuration"}, configManager);
+            new TemplateConfigurationHelper(new String[]{"^.*"}, new String[]{}, configManager);
          if (LOG.isDebugEnabled() && parameters != null && !parameters.isEmpty())
          {
             LOG.debug("The parameters to use while processing the configuration file are " + parameters);
@@ -168,21 +164,15 @@ public class DistributedCacheManager implements Startable
                      return tm;
                   }
                };
-               for (ConfigurationBuilder b : holder.getConfigurationBuilders())
+               for (Entry<String, ConfigurationBuilder> entry : holder.getNamedConfigurationBuilders().entrySet())
                {
+                  ConfigurationBuilder b = entry.getValue();
                   if (tm != null)
                   {
-                     b.transaction().transactionManagerLookup(tml);                     
+                     b.transaction().transactionManagerLookup(tml);
                   }
-                  //TODO remove it once ISPN-1689 will be fixed
-                  b.clustering()
-                     .hash()
-                     .consistentHash(
-                        Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
-                           .getContextClassLoader()));
-                  Configuration c = b.build();
-                  manager.defineConfiguration(c.name(), c);
-                  manager.getCache(c.name());
+                  manager.defineConfiguration(entry.getKey(), b.build());
+                  manager.getCache(entry.getKey());
                }
                return manager;
             }
@@ -190,8 +180,8 @@ public class DistributedCacheManager implements Startable
       }
       catch (Exception e)//NOSONAR
       {
-         throw new IllegalStateException("Could not initialize the cache manager corresponding to the configuration file "
-            + configurationFile, e);
+         throw new IllegalStateException(
+            "Could not initialize the cache manager corresponding to the configuration file " + configurationFile, e);
       }
    }
 
