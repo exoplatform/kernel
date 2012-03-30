@@ -2,14 +2,17 @@ Index: exo.kernel.commons/src/test/java/org/exoplatform/commons/utils/TestLogMes
 ===================================================================
 --- exo.kernel.commons/src/test/java/org/exoplatform/commons/utils/TestLogMessageFormatter.java	(revision 5990)
 +++ exo.kernel.commons/src/test/java/org/exoplatform/commons/utils/TestLogMessageFormatter.java	(working copy)
-@@ -57,4 +57,17 @@
+@@ -57,4 +57,20 @@
        assertEquals(t, LogMessageFormatter.getThrowable(new Object(), t));
        assertEquals(t, LogMessageFormatter.getThrowable("Just testing{}", new Object(), t));
     }
 +
-+   public void testMessageIsNull() throws Exception
++   public void testGetMessage() throws Exception
 +   {
++      //if object.toString return null
 +      LogMessageFormatter.getMessage("Hello, World {} ", new A());
++      //if object is null
++      LogMessageFormatter.getMessage("Hello, World {} {}", new Object(), null);
 +   }
 +
 +   class A
@@ -24,12 +27,20 @@ Index: exo.kernel.commons/src/main/java/org/exoplatform/services/log/impl/LogMes
 ===================================================================
 --- exo.kernel.commons/src/main/java/org/exoplatform/services/log/impl/LogMessageFormatter.java	(revision 5990)
 +++ exo.kernel.commons/src/main/java/org/exoplatform/services/log/impl/LogMessageFormatter.java	(working copy)
-@@ -41,13 +41,11 @@
+@@ -34,20 +34,18 @@
+ 
+    public static String getMessage(String str, Object... argsArray)
+    {
+-
+       if (argsArray != null && argsArray.length > 0)
+       {
+          for (int i = 0; i < argsArray.length; i++)
           {
              if (i != argsArray.length - 1 || !(argsArray[i] instanceof Throwable))
              {
 -               str = REPLACE_PATTERN.matcher(str).replaceFirst(String.valueOf(argsArray[i]));
-+               str = REPLACE_PATTERN.matcher(str).replaceFirst(String.valueOf(argsArray[i].toString()));
++               String message = String.valueOf(argsArray[i]);
++               str = REPLACE_PATTERN.matcher(str).replaceFirst(message != null ? message : "null");
              }
           }
        }
