@@ -41,13 +41,11 @@ public class LogMessageFormatter
          {
             if (i != argsArray.length - 1 || !(argsArray[i] instanceof Throwable))
             {
-               str = REPLACE_PATTERN.matcher(str).replaceFirst(String.valueOf(argsArray[i]));
+               str = REPLACE_PATTERN.matcher(str).replaceFirst(String.valueOf(argsArray[i].toString()));
             }
          }
       }
       return str;
-
-
    }
 
    public static Throwable getThrowable(Object... argsArray)
