@@ -34,14 +34,14 @@ public class LogMessageFormatter
 
    public static String getMessage(String str, Object... argsArray)
    {
-
       if (argsArray != null && argsArray.length > 0)
       {
          for (int i = 0; i < argsArray.length; i++)
          {
             if (i != argsArray.length - 1 || !(argsArray[i] instanceof Throwable))
             {
-               str = REPLACE_PATTERN.matcher(str).replaceFirst(String.valueOf(argsArray[i].toString()));
+               String message = String.valueOf(argsArray[i]);
+               str = REPLACE_PATTERN.matcher(str).replaceFirst(message != null ? message : "null");
             }
          }
       }
