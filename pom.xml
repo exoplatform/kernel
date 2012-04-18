@@ -41,6 +41,8 @@
       <org.exoplatform.framework.junit.version>1.2.1-GA</org.exoplatform.framework.junit.version>
       <forkMode>always</forkMode>
       <version.assembly.plugin>2.2.1</version.assembly.plugin>
+      <version.release.plugin>2.2.1</version.release.plugin>
+      <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
    </properties>
 
    <scm>
