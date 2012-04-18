@@ -43,9 +43,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/kernel/trunk</developerConnection>
-      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel/trunk</url>
+      <connection>scm:git:ssh://github.com/exodev/kernel.git</connection>
+      <developerConnection>scm:git:ssh://github.com/exodev/kernel.git</developerConnection>
+      <url>http://fisheye.jboss.org/browse/exo-jcr/kernel</url>
    </scm>
 
    <modules>
