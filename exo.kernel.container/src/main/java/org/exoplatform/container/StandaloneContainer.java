@@ -27,7 +27,7 @@ import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.management.jmx.annotations.NamingContext;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
 
@@ -51,7 +51,7 @@ import java.util.List;
  *          (from where JVM is started) for standalone. See
  */
 @Managed
-@NamingContext(@Property(key = "container", value = "standalone"))
+@NameTemplate(@Property(key = "container", value = "standalone"))
 @RESTEndpoint(path = "scontainer")
 public class StandaloneContainer extends ExoContainer implements SessionManagerContainer
 {
