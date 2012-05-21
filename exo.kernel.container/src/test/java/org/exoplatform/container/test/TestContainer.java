@@ -18,12 +18,13 @@
  */
 package org.exoplatform.container.test;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.mocks.MockService;
 import org.exoplatform.mocks.PriorityService;
-import org.exoplatform.test.BasicTestCase;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ import java.util.List;
  * Author : Mestrallet Benjamin benjamin.mestrallet@exoplatform.com
  * @version $Id: TestContainer.java 34394 2009-07-23 09:23:31Z dkatayev $
  */
-public class TestContainer extends BasicTestCase
+public class TestContainer extends TestCase
 {
 
    public void setUp() throws Exception
@@ -53,23 +54,17 @@ public class TestContainer extends BasicTestCase
       // performance test
 
       int INSERTLOOP = 0;
-      long start = System.currentTimeMillis();
       for (int i = 0; i < INSERTLOOP; i++)
       {
          rootContainer.getPortalContainer("name-" + Integer.toString(i));
       }
-      System.out.println("Insert 1000 components " + (System.currentTimeMillis() - start) + "ms");
 
       int LOOP = 10000000;
-      start = System.currentTimeMillis();
       for (int i = 0; i < LOOP; i++)
       {
          pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
          assertTrue("not null", pcontainer != null);
       }
-      System.out.println("Retrieve compoponent 10M times " + (System.currentTimeMillis() - start) + "ms");
-      System.out.println("AVG = " + (System.currentTimeMillis() - start) / LOOP + "ms");
-      System.out.println("-------------------------------------------------------------------------");
    }
 
    public void testComponent() throws Exception
@@ -82,38 +77,28 @@ public class TestContainer extends BasicTestCase
 
    public void testComponent2() throws Exception
    {
-      System.out.println("-------------------------MULTIBLE COMPONENT-------------------------");
       RootContainer rootContainer = RootContainer.getInstance();
       PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
       assertNotNull(pcontainer);
       MultibleComponent c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
       assertNotNull(c);
-      System.out.println("First instance MultibleComponent:  " + c.hash());
       c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
       assertNotNull(c);
-      System.out.println("Second instance MultibleComponent: " + c.hash());
       c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
       assertNotNull(c);
-      System.out.println("Third instance MultibleComponent:  " + c.hash());
-      System.out.println("-------------------------------------------------------------------------");
    }
 
    public void testComponent3() throws Exception
    {
-      System.out.println("-------------------------DEFAULT COMPONENT-------------------------");
       RootContainer rootContainer = RootContainer.getInstance();
       PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
       assertNotNull(pcontainer);
       DefaultComponent c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
       assertNotNull(c);
-      System.out.println("First instance DefaultComponent:  " + c.hash());
       c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
       assertNotNull(c);
-      System.out.println("Second instance DefaultComponent: " + c.hash());
       c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
       assertNotNull(c);
-      System.out.println("Third instance DefaultComponent:  " + c.hash());
-      System.out.println("-------------------------------------------------------------------------");
    }
 
    public void testPriorityPlugins()

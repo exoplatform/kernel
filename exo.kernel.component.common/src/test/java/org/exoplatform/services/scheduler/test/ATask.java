@@ -36,6 +36,5 @@ public class ATask extends Task
    public void execute() throws Exception
    {
       counter_++;
-      System.out.println("========>Executing Task in Queue Task Job");
    }
 }

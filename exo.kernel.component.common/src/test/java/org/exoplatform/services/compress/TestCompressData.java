@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.compress;
 
-import org.exoplatform.test.BasicTestCase;
+import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +30,7 @@ import java.io.OutputStream;
  * Created by The eXo Platform SAS Author : Chung Nguyen
  * nguyenchung136@yahoo.com Feb 13, 2006
  */
-public class TestCompressData extends BasicTestCase
+public class TestCompressData extends TestCase
 {
 
    public TestCompressData(String name)
@@ -45,7 +45,6 @@ public class TestCompressData extends BasicTestCase
       InputStream in = new FileInputStream("src/test/resources/ZipService.java");
       InputStream in2 = new FileInputStream("src/test/resources/helper.txt");
       // ---------- TEST InputStream --------------//
-      System.out.println("Test InputStream");
       compressIS.addInputStream("ZipService.java", in);
       compressIS.addInputStream("helper.txt", in2);
       compressIS.createJarFile("target/ZipServiceJar");
@@ -54,7 +53,6 @@ public class TestCompressData extends BasicTestCase
       in2.close();
 
       // ----------- Test with Add File ------------------//
-      System.out.println("Test File");
 
       File file = new File("src/test/resources/ZipService.java");
       File file2 = new File("src/test/resources/helper.txt");

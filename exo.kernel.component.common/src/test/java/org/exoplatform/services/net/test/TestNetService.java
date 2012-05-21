@@ -18,15 +18,16 @@
  */
 package org.exoplatform.services.net.test;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.net.NetService;
-import org.exoplatform.test.BasicTestCase;
 
 /**
  * Created by The eXo Platform SAS Author : HoaPham phamvuxuanhoa@yahoo.com Jan
  * 10, 2006
  */
-public class TestNetService extends BasicTestCase
+public class TestNetService extends TestCase
 {
    private NetService service_;
 
@@ -61,17 +62,6 @@ public class TestNetService extends BasicTestCase
 
    private void ping(String host, int port) throws Exception
    {
-      System.out.println("Ping host:" + host + " port: " + port + " .....");
-      long pingTime = 0;
-      pingTime = service_.ping(host, port);
-      if (pingTime > 0)
-      {
-         System.out.println("--------> Host is connected");
-         System.out.println("--------> Ping time(ms): " + pingTime);
-      }
-      else
-      {
-         System.out.println("--------> Internet is not connected or host doesn't exits");
-      }
+      service_.ping(host, port);
    }
 }

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.cache.test;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ObjectParameter;
@@ -32,7 +34,6 @@ import org.exoplatform.services.cache.FIFOExoCache;
 import org.exoplatform.services.cache.SimpleExoCache;
 import org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache;
 import org.exoplatform.services.cache.impl.CacheServiceImpl;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -57,7 +59,7 @@ import javax.management.ObjectName;
  * @since: 0.0
  * @email: tuan08@yahoo.com
  */
-public class TestCacheService extends BasicTestCase
+public class TestCacheService extends TestCase
 {
 
    CacheService service_;
@@ -191,23 +193,6 @@ public class TestCacheService extends BasicTestCase
       assertEquals(5, server.getAttribute(name, "Capacity"));
    }
 
-   /*
-     public void testLoggingListener() throws Exception {
-       ExoCache<String, Object> cache = service_.getCacheInstance("TestLogCache");
-       
-       int count = 100;
-       while (count-- > 0) {
-         cache.put("key"+count, "anything");
-       }
-       Log log = ExoLogger.getLogger("kernel.cache.log");
-       
-       assertTrue("logger is not MockTestLogger, you needto pass -Dorg.exoplatform.services.log.Log=org.exoplatform.services.cache.test.MockTestLogger", (log instanceof MockTestLogger));
-       
-       MockTestLogger logger = (MockTestLogger) log;
-       assertEquals("Number of warnings ", 6,logger.getWarnCount());
-     }
-   */
-
    public void testConcurrentCreation() throws Exception
    {
       int threads = 20;
@@ -290,10 +275,9 @@ public class TestCacheService extends BasicTestCase
          };
          thread.start();
       }
-      long start = System.currentTimeMillis();
       startSignal.countDown();
       doneSignal.await();
-      System.out.println("Total Time = " + (System.currentTimeMillis() - start));
+
       if (!errors.isEmpty())
       {
          for (Exception e : errors)
@@ -599,4 +583,16 @@ public class TestCacheService extends BasicTestCase
    }
    
    public static class MyExoCacheConfig extends ExoCacheConfig {}
+   
+   private static void hasObjectInCollection(Object obj, Collection c, Comparator comparator) throws Exception
+   {
+      Iterator iter = c.iterator();
+      while (iter.hasNext())
+      {
+         Object o = iter.next();
+         if (comparator.compare(obj, o) == 0)
+            return;
+      }
+      throw new Exception("Object " + obj + " hasn't in collection " + c);
+   }
 }

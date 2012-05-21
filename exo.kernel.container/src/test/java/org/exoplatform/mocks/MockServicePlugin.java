@@ -34,7 +34,6 @@ public class MockServicePlugin implements ComponentPlugin
 
    public MockServicePlugin(InitParams params)
    {
-      System.out.println("plugin init params: " + params);
    }
 
    public String getName()

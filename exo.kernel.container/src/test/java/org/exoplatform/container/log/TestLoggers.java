@@ -18,11 +18,12 @@
  */
 package org.exoplatform.container.log;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.log.LogConfigurationInitializer;
-import org.exoplatform.test.BasicTestCase;
 
 import java.util.Properties;
 
@@ -31,7 +32,7 @@ import java.util.Properties;
  * 
  * @author <a href="work.visor.ck@gmail.com">Dmytro Katayev</a> Jun 24, 2009
  */
-public class TestLoggers extends BasicTestCase
+public class TestLoggers extends TestCase
 {
 
    private final String logger = "org.slf4j.Logger";
@@ -64,17 +65,6 @@ public class TestLoggers extends BasicTestCase
       LogConfigurationInitializer initializer = new LogConfigurationInitializer(logger, confClass, props);
 
       log.info("Performance test.");
-      long started = System.currentTimeMillis();
-
-      // for (int i = 0; i< 10000; i++) {
-      // log.info("Info " + i);
-      // }
-
-      long finished = System.currentTimeMillis();
-
-      System.out.println(started);
-      System.out.println(finished);
-
    }
 
    public void _testLog4j() throws Exception

@@ -18,15 +18,14 @@
  */
 package org.exoplatform.container.configuration;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.configuration.ConfigurationUnmarshaller;
 import org.exoplatform.container.monitor.jvm.JVMRuntimeInfo;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ObjectParameter;
-import org.exoplatform.test.BasicTestCase;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
@@ -42,7 +41,7 @@ import java.net.URL;
  * @since: 0.0
  * @email: tuan08@yahoo.com
  */
-public class TestConfigurationService extends BasicTestCase
+public class TestConfigurationService extends TestCase
 {
    private ConfigurationManager service_;
 
@@ -93,7 +92,6 @@ public class TestConfigurationService extends BasicTestCase
       File f = new File(basedir + "/src/test/resources/configuration.xml");
 
       Object obj = unmarshaller.unmarshall(f.toURI().toURL());
-      System.out.print(obj);
 
       IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
       IMarshallingContext mctx = bfact.createMarshallingContext();
@@ -110,7 +108,6 @@ public class TestConfigurationService extends BasicTestCase
    public void testJVMEnvironment() throws Exception
    {
       JVMRuntimeInfo jvm = (JVMRuntimeInfo)RootContainer.getInstance().getComponentInstanceOfType(JVMRuntimeInfo.class);
-      System.out.println(jvm.getSystemPropertiesAsText());
    }
 
    protected String getDescription()

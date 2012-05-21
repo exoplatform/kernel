@@ -40,7 +40,6 @@ public class MockService
 
    public MockService(InitParams params)
    {
-      System.out.println("MockService constructor, init params: " + params);
    }
 
    public String hello()
@@ -55,7 +54,6 @@ public class MockService
 
    public void addPlugin(ComponentPlugin plugin)
    {
-      System.out.println("add plugin === >" + plugin.getName());
       plugins_.put(plugin.getName(), plugin);
    }
 

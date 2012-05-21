@@ -18,9 +18,10 @@
  */
 package org.exoplatform.container.configuration;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.support.ContainerBuilder;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -31,7 +32,7 @@ import java.net.URL;
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Revision$
  */
-public class TestXSD_1_2 extends BasicTestCase
+public class TestXSD_1_2 extends TestCase
 {
 
    public void testValidation() throws Exception

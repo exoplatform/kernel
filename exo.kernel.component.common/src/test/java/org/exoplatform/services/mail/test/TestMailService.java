@@ -20,13 +20,13 @@ package org.exoplatform.services.mail.test;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.dumbster.smtp.SmtpMessage;
+import junit.framework.TestCase;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.mail.Attachment;
 import org.exoplatform.services.mail.MailService;
 import org.exoplatform.services.mail.Message;
 import org.exoplatform.services.net.NetService;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
@@ -46,7 +46,7 @@ import javax.mail.internet.MimeMessage;
  * Created by The eXo Platform SAS Author : Phung Hai Nam phunghainam@gmail.com
  * Dec 23, 2005
  */
-public class TestMailService extends BasicTestCase
+public class TestMailService extends TestCase
 {
    /**
     * Test email subject used throughout the test cases

@@ -29,7 +29,6 @@ public class DefaultComponent
 
    public DefaultComponent(MockService ms)
    {
-      System.out.println("(Constructor) MoskService in DefaultComponent: " + ms);
    }
 
    public int hash()

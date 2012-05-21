@@ -192,12 +192,10 @@ public class InitialContextTest extends TestCase
    public void testCompositeNameUsing() throws Exception
    {
       Name name = new CompositeName("java:comp/env/jdbc/jcr");
-      System.out.println("NAME ---- " + name.get(0) + " " + name.getPrefix(1) + " " + name.getSuffix(1) + " "
-         + name.getPrefix(0) + " " + name.getSuffix(0));
       Enumeration en = name.getAll();
       while (en.hasMoreElements())
       {
-         System.out.println("---- " + en.nextElement());
+         en.nextElement();
       }
       InitialContext ctx = new InitialContext();
       ctx.bind(name, "foo");

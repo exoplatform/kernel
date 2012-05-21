@@ -18,11 +18,12 @@
  */
 package org.exoplatform.services.cache.impl.infinispan;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.impl.infinispan.TestExoCacheCreator.TestExoCache;
-import org.exoplatform.test.BasicTestCase;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.manager.CacheContainer;
 
@@ -32,7 +33,7 @@ import org.infinispan.manager.CacheContainer;
  *
  */
 @SuppressWarnings("rawtypes")
-public class TestExoCacheFactoryImpl extends BasicTestCase
+public class TestExoCacheFactoryImpl extends TestCase
 {
 
    CacheService service_;

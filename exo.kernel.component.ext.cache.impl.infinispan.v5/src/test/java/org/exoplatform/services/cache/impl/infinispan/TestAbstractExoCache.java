@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.cache.impl.infinispan;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -30,7 +32,6 @@ import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.ObjectCacheInfo;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Id$
  *
  */
-public class TestAbstractExoCache extends BasicTestCase
+public class TestAbstractExoCache extends TestCase
 {
 
    CacheService service;
@@ -252,7 +253,6 @@ public class TestAbstractExoCache extends BasicTestCase
 
    public void testMultiThreading() throws Exception
    {
-      long time = System.currentTimeMillis();
       final ExoCache<Serializable, Object> cache = service.getCacheInstance("test-multi-threading");
       final int totalElement = 100;
       final int totalTimes = 20;
@@ -436,8 +436,6 @@ public class TestAbstractExoCache extends BasicTestCase
          }
          throw errors.get(0);
       }
-      System.out.println("Total Time = " + (System.currentTimeMillis() - time));
-
       cache.clearCache();
    }
 
@@ -535,15 +533,14 @@ public class TestAbstractExoCache extends BasicTestCase
       }
    }   
 
+   /**
+    * WARNING: For Linux distributions the following JVM parameter must be set to true: java.net.preferIPv4Stack
+    */
    @SuppressWarnings("unchecked")
    public void testDistributedCache() throws Exception
    {
       // If the cache is still alive this test fails due to a TimeoutException.
       cache.cache.getCacheManager().stop();
-      
-      System.out
-         .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
-            + System.getProperty("java.net.preferIPv4Stack"));
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(8);

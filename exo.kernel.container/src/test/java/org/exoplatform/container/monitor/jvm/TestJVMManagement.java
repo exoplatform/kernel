@@ -18,8 +18,9 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.test.BasicTestCase;
 
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -32,7 +33,7 @@ import java.lang.management.ThreadMXBean;
  * @since: 0.0
  * @email: tuan08@yahoo.com
  */
-public class TestJVMManagement extends BasicTestCase
+public class TestJVMManagement extends TestCase
 {
 
    public TestJVMManagement(String name)
@@ -46,10 +47,6 @@ public class TestJVMManagement extends BasicTestCase
       if (threadBean == null)
          return;
       ThreadInfo[] infos = threadBean.getThreadInfo(threadBean.getAllThreadIds());
-      for (int i = 0; i < infos.length; i++)
-      {
-         System.out.println("Thread Name" + infos[i].getThreadName());
-      }
    }
 
 }

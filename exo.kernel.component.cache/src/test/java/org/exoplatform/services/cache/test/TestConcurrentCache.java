@@ -18,10 +18,11 @@
  */
 package org.exoplatform.services.cache.test;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
 import org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import java.util.Set;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class TestConcurrentCache extends BasicTestCase
+public class TestConcurrentCache extends TestCase
 {
 
    private final Object v1 = new Object();

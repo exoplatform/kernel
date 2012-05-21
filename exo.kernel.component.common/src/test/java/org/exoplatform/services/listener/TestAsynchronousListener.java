@@ -16,8 +16,9 @@
  */
 package org.exoplatform.services.listener;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.test.BasicTestCase;
 
 /**
  * Created by The eXo Platform SAS.
@@ -27,13 +28,12 @@ import org.exoplatform.test.BasicTestCase;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: TestAsynchronousListener.java 111 2008-11-11 11:11:11Z serg $
  */
-public class TestAsynchronousListener extends BasicTestCase
+public class TestAsynchronousListener extends TestCase
 {
    private ListenerService service_;
 
    public void setUp() throws Exception
    {
-      setTestNumber(1);
       PortalContainer manager = PortalContainer.getInstance();
       service_ = (ListenerService)manager.getComponentInstanceOfType(ListenerService.class);
    }

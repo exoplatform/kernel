@@ -173,7 +173,6 @@ public class TestSchedulerService extends SchedulerServiceTestBase
 
    public void testListener() throws Exception
    {
-      System.out.println("-------------------Test Global Listenner---------");
       // ---------getAllGlobalJobListener
       List<JobListener> jobListenerCol = service_.getAllGlobalJobListener();
       assertTrue("expect 2 GlobalJobListener is found", jobListenerCol.size() == 2);
@@ -210,9 +209,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       assertTrue("expect GlobalTriggerListener is removed", b);
       triggerListenerCol = service_.getAllGlobalTriggerListener();
       assertTrue("expect no trigger listenner is found", triggerListenerCol.size() == 0);
-      System.out.println("-------------------End Test Global Listener---------");
 
-      System.out.println("-------------------Test Non Global Listener---------");
       // --------------Test non global Job Listener
       jobListenerCol = service_.getAllJobListener();
       assertTrue("expect no non global job listener is found", jobListenerCol.size() == 0);
@@ -273,7 +270,6 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       assertTrue("expect 'SecondTriggerListener' is removed", b && triggerListener2nd == null);
       triggerListenerCol = service_.getAllTriggerListener();
       assertTrue("now, expect no non global trigger is found", triggerListenerCol.size() == 0);
-      System.out.println("-------------------End Test Non Global Listener---------");
    }
    
    public void testMultiplePortalContainers() throws Exception

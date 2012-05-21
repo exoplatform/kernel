@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.rpc.impl;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -29,7 +31,6 @@ import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.rpc.impl.AbstractRPCService.MemberHasLeftException;
 import org.exoplatform.services.rpc.jgv3.RPCServiceImpl;
-import org.exoplatform.test.BasicTestCase;
 import org.jgroups.Address;
 
 import java.io.Serializable;
@@ -46,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @version $Id$
  *
  */
-public class TestRPCServiceImpl extends BasicTestCase
+public class TestRPCServiceImpl extends TestCase
 {
    private PortalContainer container;
    private ConfigurationManager configManager;

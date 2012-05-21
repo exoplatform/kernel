@@ -18,10 +18,11 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.ExoCache;
-import org.exoplatform.test.BasicTestCase;
 
 /**
  * Created by The eXo Platform SAS
@@ -29,7 +30,7 @@ import org.exoplatform.test.BasicTestCase;
  *          exo@exoplatform.com
  * 21 juil. 2009  
  */
-public class TestFIFOCache extends BasicTestCase
+public class TestFIFOCache extends TestCase
 {
 
    CacheService service_;

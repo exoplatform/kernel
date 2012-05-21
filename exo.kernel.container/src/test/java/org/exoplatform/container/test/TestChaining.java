@@ -18,15 +18,16 @@
  */
 package org.exoplatform.container.test;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.component.ExecutionContext;
 import org.exoplatform.container.component.ExecutionUnit;
-import org.exoplatform.test.BasicTestCase;
 
 /**
  * Created by the Exo Development team. Author : Mestrallet Benjamin
  * benjamin.mestrallet@exoplatform.com
  */
-public class TestChaining extends BasicTestCase
+public class TestChaining extends TestCase
 {
    public void testChain() throws Throwable
    {
@@ -49,10 +50,7 @@ public class TestChaining extends BasicTestCase
 
       public Object execute(ExecutionContext context) throws Throwable
       {
-         System.out.println("start execution: " + name_);
-         Object result = context.executeNextUnit();
-         System.out.println("end execution: " + name_);
-         return result;
+         return context.executeNextUnit();
       }
    }
 

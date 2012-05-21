@@ -29,7 +29,6 @@ public class MultibleComponent
 
    public MultibleComponent(MockService ms)
    {
-      System.out.println("(Constructor) MoskService in MultibleComponent: " + ms);
    }
 
    public int hash()

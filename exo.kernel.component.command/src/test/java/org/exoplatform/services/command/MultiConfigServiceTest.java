@@ -72,7 +72,7 @@ public class MultiConfigServiceTest extends TestCase
       int cnt = 0;
       while (commands.hasNext())
       {
-         System.out.println(" command >>> " + commands.next());
+         commands.next();
          cnt++;
       }
 
@@ -82,7 +82,7 @@ public class MultiConfigServiceTest extends TestCase
       cnt = 0;
       while (commands.hasNext())
       {
-         System.out.println(" command(1) >>> " + commands.next());
+         commands.next();
          cnt++;
       }
 
@@ -101,7 +101,7 @@ public class MultiConfigServiceTest extends TestCase
       int cnt = 0;
       while (commands.hasNext())
       {
-         System.out.println(" command before >>> " + commands.next());
+         commands.next();
          cnt++;
       }
 
@@ -114,7 +114,7 @@ public class MultiConfigServiceTest extends TestCase
       cnt = 0;
       while (commands.hasNext())
       {
-         System.out.println(" command after >>> " + commands.next());
+         commands.next();
          cnt++;
       }
 
@@ -122,7 +122,7 @@ public class MultiConfigServiceTest extends TestCase
       cnt = 0;
       while (commands.hasNext())
       {
-         System.out.println(" command fromput >>> " + commands.next());
+         commands.next();
          cnt++;
       }
 

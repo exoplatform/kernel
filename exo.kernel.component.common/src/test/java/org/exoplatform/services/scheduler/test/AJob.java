@@ -56,6 +56,5 @@ public class AJob extends BaseJob
             errorCounter_++;
          }
       }
-      System.out.println("calll  TestTask.......................");
    }
 }

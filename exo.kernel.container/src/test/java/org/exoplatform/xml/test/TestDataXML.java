@@ -51,7 +51,6 @@ public class TestDataXML extends TestCase
       IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
       Object obj = uctx.unmarshalDocument(new FileInputStream(projectdir + "/src/test/resources/object.xml"), null);
-      System.out.print(obj);
 
       IMarshallingContext mctx = bfact.createMarshallingContext();
       mctx.setIndent(2);
@@ -66,8 +65,6 @@ public class TestDataXML extends TestCase
       FileOutputStream os = new FileOutputStream(projectdir + "/target/test-object-1.xml");
       os.write(xml1.getBytes());
       os.close();
-      System.out.println("---------XML Object------------------------");
-      // System.out.println(ObjectDebuger.asString(xmlobj.toObject())) ;
 
       File file = new File(projectdir + "/target/test-object-1.xml");
       FileInputStream is = new FileInputStream(file);
@@ -98,13 +95,6 @@ public class TestDataXML extends TestCase
       os = new FileOutputStream(projectdir + "/target/list.xml");
       os.write(xmllist.toByteArray("UTF-8"));
       os.close();
-      /*
-       * int[] intarray = new int[10] ; Object[] array = new Object[10] ;
-       * System.out.println("int array class type = " +
-       * intarray.getClass().getName()) ;
-       * System.out.println("int array class type = " +
-       * array.getClass().getName()) ;
-       */
    }
 
    static public class TestObject

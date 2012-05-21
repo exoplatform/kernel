@@ -35,10 +35,6 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.exoplatform.tool</groupId>
-         <artifactId>exo.tool.framework.junit</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
       </dependency>

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.cache.impl.infinispan.distributed;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -31,7 +33,6 @@ import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.services.cache.impl.infinispan.ExoCacheFactoryImpl;
 import org.exoplatform.services.ispn.DistributedCacheManager;
-import org.exoplatform.test.BasicTestCase;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyAffinityServiceFactory;
 import org.infinispan.affinity.KeyGenerator;
@@ -56,7 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Id$
  *
  */
-public class TestDistributedExoCache extends BasicTestCase
+public class TestDistributedExoCache extends TestCase
 {
 
    CacheService service;
@@ -243,7 +244,6 @@ public class TestDistributedExoCache extends BasicTestCase
 
    public void testMultiThreading() throws Exception
    {
-      long time = System.currentTimeMillis();
       final int totalElement = 100;
       final int totalTimes = 20;
       int reader = 20;
@@ -426,7 +426,6 @@ public class TestDistributedExoCache extends BasicTestCase
          }
          throw errors.get(0);
       }
-      System.out.println("Total Time = " + (System.currentTimeMillis() - time));
    }
 
    public static class MyCacheListener implements CacheListener<Serializable, Object>
@@ -529,13 +528,15 @@ public class TestDistributedExoCache extends BasicTestCase
       }
    }
 
+   /**
+    * WARNING: For Linux distributions the following JVM parameter must be set to true: java.net.preferIPv4Stack.
+    * 
+    * @throws Exception
+    */
    @SuppressWarnings({"rawtypes", "unchecked"})
    public void testDistributedCache() throws Exception
    {
       PortalContainer pc = PortalContainer.getInstance();
-      System.out
-         .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
-            + System.getProperty("java.net.preferIPv4Stack"));
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(5);
@@ -631,10 +632,6 @@ public class TestDistributedExoCache extends BasicTestCase
       boolean isALocal = dm.getLocality(new DistributedExoCache.CacheKey(cache1.getFullName(), new MyKey(a))).isLocal();
       boolean isBLocal = dm.getLocality(new DistributedExoCache.CacheKey(cache1.getFullName(), new MyKey(b))).isLocal();
       boolean isCLocal = dm.getLocality(new DistributedExoCache.CacheKey(cache1.getFullName(), new MyKey(c))).isLocal();
-      System.out.println("#####################################");
-      System.out.println("'a' is local = " + isALocal);
-      System.out.println("'b' is local = " + isBLocal);
-      System.out.println("'c' is local = " + isCLocal);
       MyKey key = new MyKey(a);
       cache1.put(key, "b");
       assertEquals(1, cache1.getCacheSize());

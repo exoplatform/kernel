@@ -33,7 +33,6 @@ public class SetValueBeanListener extends Listener<TestListenerService, TestList
    public void onEvent(Event<TestListenerService, TestListenerService.Bean> event)
    {
       TestListenerService.Bean bean = event.getData();
-      System.out.println("\n set value " + bean.getValue() + "\n\n");
    }
 
 }

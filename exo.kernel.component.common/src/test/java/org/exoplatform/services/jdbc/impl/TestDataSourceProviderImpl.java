@@ -18,12 +18,13 @@
  */
 package org.exoplatform.services.jdbc.impl;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.transaction.TransactionService;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.PrintWriter;
 import java.sql.Array;
@@ -65,7 +66,7 @@ import javax.transaction.xa.XAResource;
  * @version $Id$
  *
  */
-public class TestDataSourceProviderImpl extends BasicTestCase
+public class TestDataSourceProviderImpl extends TestCase
 {
    private static String DS_NAME = "TestDataSourceProviderImpl-DS";
    

@@ -139,8 +139,6 @@ public class TestJ2EEServerInfo extends TestCase
 
       initConfigurationURL(null);
 
-      System.out.println(configurationURL.getFile());
-
       if (!System.getProperty("file.separator").equals("/"))
       {
          String sTemp = confPath.replace(System.getProperty("file.separator"), "/");
@@ -154,8 +152,7 @@ public class TestJ2EEServerInfo extends TestCase
 
    public void tearDown()
    {
-      if (confFile.delete())
-         System.out.println("delete ok!");
+      confFile.delete();
    }
 
    private static void initConfigurationURL(ClassLoader configClassLoader) throws MalformedURLException,

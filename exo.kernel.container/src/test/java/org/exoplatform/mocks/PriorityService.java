@@ -39,7 +39,6 @@ public class PriorityService
 
    public void addPlugin(ComponentPlugin plugin)
    {
-      System.out.println("add plugin " + plugin.getName());
       plugins.add(plugin);
    }
 

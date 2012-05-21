@@ -32,7 +32,6 @@ public class BeanListener extends Listener<TestListenerService, TestListenerServ
 
    public void onEvent(Event<TestListenerService, TestListenerService.BeanHandler> event)
    {
-      System.out.println("\n creating new bean handler..." + event + "\n");
    }
 
 }

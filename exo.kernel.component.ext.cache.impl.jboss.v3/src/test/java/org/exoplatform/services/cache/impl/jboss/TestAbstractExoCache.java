@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -33,7 +35,6 @@ import org.exoplatform.services.cache.ExoCacheInitException;
 import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.services.cache.impl.jboss.lru.LRUExoCacheCreator;
 import org.exoplatform.services.cache.invalidation.InvalidationExoCache;
-import org.exoplatform.test.BasicTestCase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *          exo@exoplatform.com
  * 21 juil. 2009  
  */
-public class TestAbstractExoCache extends BasicTestCase
+public class TestAbstractExoCache extends TestCase
 {
 
    CacheService service;
@@ -256,9 +257,6 @@ public class TestAbstractExoCache extends BasicTestCase
    @SuppressWarnings("unchecked")
    public void testDistributedCache() throws Exception
    {
-      System.out
-         .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
-            + System.getProperty("java.net.preferIPv4Stack"));
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(5);
@@ -460,9 +458,6 @@ public class TestAbstractExoCache extends BasicTestCase
    @SuppressWarnings("unchecked")
    public void testDistributedCacheWithNSValues() throws Exception
    {
-      System.out
-         .println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = "
-            + System.getProperty("java.net.preferIPv4Stack"));
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributedWithNSValues");
       config.setMaxSize(5);
@@ -700,7 +695,6 @@ public class TestAbstractExoCache extends BasicTestCase
 
    public void testMultiThreading() throws Exception
    {
-      long time = System.currentTimeMillis();
       final ExoCache<Serializable, Object> cache = service.getCacheInstance("test-multi-threading");
       final int totalElement = 100;
       final int totalTimes = 20;
@@ -884,7 +878,6 @@ public class TestAbstractExoCache extends BasicTestCase
          }
          throw errors.get(0);
       }
-      System.out.println("Total Time = " + (System.currentTimeMillis() - time));
    }
 
    public static class MyCacheListener<T> implements CacheListener<Serializable, T>

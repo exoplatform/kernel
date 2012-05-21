@@ -18,11 +18,12 @@
  */
 package org.exoplatform.services.cache.impl.jboss;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.impl.jboss.TestExoCacheCreator.TestExoCache;
-import org.exoplatform.test.BasicTestCase;
 import org.jboss.cache.config.Configuration.CacheMode;
 
 /**
@@ -31,7 +32,7 @@ import org.jboss.cache.config.Configuration.CacheMode;
  *          exo@exoplatform.com
  * 20 juil. 2009  
  */
-public class TestExoCacheFactoryImpl extends BasicTestCase
+public class TestExoCacheFactoryImpl extends TestCase
 {
 
    CacheService service_;

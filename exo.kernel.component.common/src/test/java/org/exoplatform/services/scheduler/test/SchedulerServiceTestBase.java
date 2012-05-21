@@ -18,24 +18,27 @@
  */
 package org.exoplatform.services.scheduler.test;
 
+import junit.framework.TestCase;
+
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.services.scheduler.BaseJob;
 import org.exoplatform.services.scheduler.JobContext;
 import org.exoplatform.services.scheduler.JobSchedulerService;
-import org.exoplatform.test.BasicTestCase;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
 import org.quartz.Trigger;
 import org.quartz.TriggerListener;
 
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham hoapham@exoplatform.com Oct
  * 5, 2005
  */
-public class SchedulerServiceTestBase extends BasicTestCase
+public class SchedulerServiceTestBase extends TestCase
 {
    protected JobSchedulerService service_;
 
@@ -70,7 +73,6 @@ public class SchedulerServiceTestBase extends BasicTestCase
       public void triggerFired(Trigger arg0, JobExecutionContext arg1)
       {
          countTriggerFired_++;
-         System.out.println("trigger fired.......................");
       }
 
       public boolean vetoJobExecution(Trigger arg0, JobExecutionContext arg1)
@@ -80,13 +82,11 @@ public class SchedulerServiceTestBase extends BasicTestCase
 
       public void triggerMisfired(Trigger arg0)
       {
-         System.out.println("calll  TestJob.......................");
       }
 
       public void triggerComplete(Trigger arg0, JobExecutionContext arg1, int arg2)
       {
          countTriggerComplete_++;
-         System.out.println("trigger complete.......................");
       }
    }
 
@@ -105,7 +105,6 @@ public class SchedulerServiceTestBase extends BasicTestCase
       public void triggerFired(Trigger arg0, JobExecutionContext arg1)
       {
          countTriggerFired_++;
-         System.out.println("trigger fired.......................");
       }
 
       public boolean vetoJobExecution(Trigger arg0, JobExecutionContext arg1)
@@ -115,13 +114,11 @@ public class SchedulerServiceTestBase extends BasicTestCase
 
       public void triggerMisfired(Trigger arg0)
       {
-         System.out.println("calll  TestJob.......................");
       }
 
       public void triggerComplete(Trigger arg0, JobExecutionContext arg1, int arg2)
       {
          countTriggerComplete_++;
-         System.out.println("trigger complete.......................");
       }
    }
 
@@ -140,7 +137,6 @@ public class SchedulerServiceTestBase extends BasicTestCase
       public void triggerFired(Trigger arg0, JobExecutionContext arg1)
       {
          countTriggerFired_++;
-         System.out.println("trigger fired.......................");
       }
 
       public boolean vetoJobExecution(Trigger arg0, JobExecutionContext arg1)
@@ -150,13 +146,11 @@ public class SchedulerServiceTestBase extends BasicTestCase
 
       public void triggerMisfired(Trigger arg0)
       {
-         System.out.println("calll  TestJob.......................");
       }
 
       public void triggerComplete(Trigger arg0, JobExecutionContext arg1, int arg2)
       {
          countTriggerComplete_++;
-         System.out.println("trigger complete.......................");
       }
    }
 
@@ -230,4 +224,15 @@ public class SchedulerServiceTestBase extends BasicTestCase
       }
    }
 
+   protected static void hasObjectInCollection(Object obj, Collection c, Comparator comparator) throws Exception
+   {
+      Iterator iter = c.iterator();
+      while (iter.hasNext())
+      {
+         Object o = iter.next();
+         if (comparator.compare(obj, o) == 0)
+            return;
+      }
+      throw new Exception("Object " + obj + " hasn't in collection " + c);
+   }
 }
