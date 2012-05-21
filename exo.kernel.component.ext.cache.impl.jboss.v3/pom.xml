@@ -30,10 +30,6 @@
    <description>JBoss Cache Implementation for the Cache Service</description>
    <dependencies>
       <dependency>
-         <groupId>org.exoplatform.tool</groupId>
-         <artifactId>exo.tool.framework.junit</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.commons</artifactId>
       </dependency>

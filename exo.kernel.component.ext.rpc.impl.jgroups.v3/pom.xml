@@ -50,10 +50,6 @@
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
       </dependency>
-      <dependency>
-         <groupId>org.exoplatform.tool</groupId>
-         <artifactId>exo.tool.framework.junit</artifactId>
-      </dependency>                   
    </dependencies>
    <build>
       <plugins>

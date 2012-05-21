@@ -52,10 +52,6 @@
 			<groupId>picocontainer</groupId>
 			<artifactId>picocontainer</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.exoplatform.tool</groupId>
-			<artifactId>exo.tool.framework.junit</artifactId>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
