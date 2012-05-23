@@ -18,6 +18,7 @@ package org.exoplatform.container.web;
 
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -29,6 +30,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * This filter will allow to prevent to any accesses to a web application corresponding to a
@@ -65,7 +67,14 @@ public class PortalContainerFilter extends AbstractFilter
          onPortalContainerDisabled(request, response, chain);
          return;
       }
-
+      else if (PropertyManager.isDevelopping())
+      {
+         HttpSession sess = ((HttpServletRequest)request).getSession(false);
+         if (sess != null && sess.getAttribute(RootContainer.SESSION_TO_BE_INVALIDATED_ATTRIBUTE_NAME) != null)
+         {
+            sess.invalidate();
+         }
+      }
       chain.doFilter(request, response);
    }
 

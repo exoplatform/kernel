@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import java.lang.ref.WeakReference;
 import java.util.Set;
 
 /**
@@ -32,14 +33,22 @@ class PortalContainerClassLoader extends UnifiedClassLoader
 {
 
    /**
-    * The related portal container
+    * The weak reference to the related portal container
     */
-   private final PortalContainer container;
+   private volatile WeakReference<PortalContainer> containerRef;
+
+   /**
+    * The name of the related portal container used in case of developing mode
+    */
+   private final String portalContainerName;
 
    PortalContainerClassLoader(PortalContainer container)
    {
       super(getClassLoaders(container));
-      this.container = container;
+      // In case of developing mode we want to avoid to use hard reference in case 
+      // we would like to reload the container
+      this.containerRef = new WeakReference<PortalContainer>(container);
+      this.portalContainerName = container.getName();
    }
 
    /**
@@ -63,6 +72,18 @@ class PortalContainerClassLoader extends UnifiedClassLoader
     */
    protected ClassLoader[] getClassLoaders()
    {
-      return getClassLoaders(container);
+      return getClassLoaders(getPortalContainer());
+   }
+   
+   private PortalContainer getPortalContainer()
+   {
+      PortalContainer container = containerRef.get();
+      if (container != null)
+      {
+         return container;
+      }
+      container = RootContainer.getInstance().getPortalContainer(portalContainerName);
+      containerRef = new WeakReference<PortalContainer>(container);
+      return container;
    }
 }

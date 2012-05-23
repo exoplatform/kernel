@@ -64,6 +64,12 @@ public class Configuration implements Cloneable
 
    private ArrayList<String> removeConfiguration_;
 
+   private String currentXML;
+
+   private int currentSize;
+   
+   private int currentHash;
+   
    public Collection<ContainerLifecyclePlugin> getContainerLifecyclePlugins()
    {
       List<ContainerLifecyclePlugin> plugins =
@@ -354,5 +360,35 @@ public class Configuration implements Cloneable
          }            
       }
       return sw.toString();
+   }
+   
+   /**
+    * This will keep the current state of the configuration like its size and hash
+    */
+   public void keepCurrentState()
+   {
+      String xml = toXML();
+      if (xml != null)
+      {
+         this.currentXML = xml;
+         this.currentSize = xml.length();
+         this.currentHash = xml.hashCode();
+      }
+   }
+
+   /**
+    * @return the currentSize
+    */
+   public int getCurrentSize()
+   {
+      return currentSize;
+   }
+
+   /**
+    * @return the currentHash
+    */
+   public int getCurrentHash()
+   {
+      return currentHash;
    }
 }

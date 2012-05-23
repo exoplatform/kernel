@@ -62,6 +62,8 @@ public class ConfigurationManagerImpl implements ConfigurationManager
    private String contextPath = null;
 
    private boolean validateSchema = true;
+   
+   private boolean logEnabled = true;
 
    /** . */
    private final Set<String> profiles;
@@ -86,6 +88,12 @@ public class ConfigurationManagerImpl implements ConfigurationManager
    public ConfigurationManagerImpl(Set<String> profiles)
    {
       this.profiles = profiles;
+   }
+
+   public ConfigurationManagerImpl(Set<String> profiles, boolean logEnabled)
+   {
+      this(profiles);
+      this.logEnabled = logEnabled;
    }
 
    public ConfigurationManagerImpl(ServletContext context, Set<String> profiles)
@@ -136,7 +144,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    private void addConfiguration(ServletContext context, URL url) throws Exception
    {
-      if (LOG_DEBUG)
+      if (logEnabled && LOG_DEBUG)
          LOG.info("Add configuration " + url);
       if (url == null)
          return;
@@ -218,7 +226,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
             URL urlObject = getURL(uri);
             if (urlObject != null)
             {
-               if (LOG_DEBUG)
+               if (logEnabled && LOG_DEBUG)
                   LOG.info(prefix + "import " + urlObject);
                // Set the URL of imported file
                currentURL.set(urlObject);

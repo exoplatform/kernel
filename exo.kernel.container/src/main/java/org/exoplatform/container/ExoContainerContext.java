@@ -22,6 +22,7 @@ import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +36,7 @@ import java.util.Set;
 public final class ExoContainerContext implements java.io.Serializable
 {
 
-   private static ThreadLocal<ExoContainer> currentContainer = new ThreadLocal<ExoContainer>();
+   private static ThreadLocal<WeakReference<ExoContainer>> currentContainer = new ThreadLocal<WeakReference<ExoContainer>>();
 
    private static volatile ExoContainer topContainer;
 
@@ -149,7 +150,8 @@ public final class ExoContainerContext implements java.io.Serializable
 
    public static ExoContainer getCurrentContainer()
    {
-      ExoContainer container = currentContainer.get();
+      WeakReference<ExoContainer> ref = currentContainer.get();
+      ExoContainer container = ref == null ? null : ref.get();
       if (container == null)
          container = getTopContainer();
       return container;
@@ -157,7 +159,8 @@ public final class ExoContainerContext implements java.io.Serializable
 
    public static ExoContainer getCurrentContainerIfPresent()
    {
-      ExoContainer container = currentContainer.get();
+      WeakReference<ExoContainer> ref = currentContainer.get();
+      ExoContainer container = ref == null ? null : ref.get();
       if (container == null)
          return topContainer;
       return container;
@@ -168,7 +171,7 @@ public final class ExoContainerContext implements java.io.Serializable
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);      
-      currentContainer.set(instance);
+      currentContainer.set(new WeakReference<ExoContainer>(instance));
    }
 
    public static ExoContainer getContainerByName(String name)

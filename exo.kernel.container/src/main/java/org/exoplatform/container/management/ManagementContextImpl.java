@@ -224,7 +224,15 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
             }
 
             //
-            registrations.put(resource, managementContext);
+            if (registrations.containsKey(resource))
+            {
+               LOG.debug("The component " + resource + " has already been registered");
+               return;
+            }
+            else
+            {
+               registrations.put(resource, managementContext);
+            }
 
             //
             ManageableContainer container = findContainer();
@@ -257,8 +265,23 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       ManagementContextImpl context = registrations.remove(o);
       if (context != null)
       {
-         for (Map.Entry<ManagementProvider, Object> entry : context.managedSet.entrySet()) {
-            entry.getKey().unmanage(entry.getValue());
+         if (!(o instanceof ManageableContainer))
+         {
+            context.unregisterAll();
+         }
+         for (Map.Entry<ManagementProvider, Object> entry : context.managedSet.entrySet())
+         {
+            try
+            {
+               entry.getKey().unmanage(entry.getValue());
+            }
+            catch (Exception e)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Could not unmanage " + o + " for the provider " + entry.getKey(), e);
+               }
+            }
          }
       }
    }
@@ -275,9 +298,23 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
          iterator.remove();
          if (contextEntry.getValue() != null)
          {
+            if (!(contextEntry.getKey() instanceof ManageableContainer))
+            {
+               contextEntry.getValue().unregisterAll();
+            }
             for (Map.Entry<ManagementProvider, Object> provider : contextEntry.getValue().managedSet.entrySet())
             {
-               provider.getKey().unmanage(provider.getValue());
+               try
+               {
+                  provider.getKey().unmanage(provider.getValue());
+               }
+               catch (Exception e)
+               {
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("Could not unmanage " + contextEntry.getKey() + " for the provider " + provider.getKey(), e);
+                  }
+               }
             }
          }
       }

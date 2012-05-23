@@ -19,8 +19,6 @@
 package org.exoplatform.container.web;
 
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
-import org.exoplatform.container.RootContainer.PortalContainerPreInitTask;
 import org.exoplatform.container.util.EnvSpecific;
 
 import javax.servlet.ServletContext;
@@ -41,20 +39,11 @@ public class PortalContainerConfigOwner implements ServletContextListener
 
    public void contextInitialized(ServletContextEvent event)
    {
-      final PortalContainerPreInitTask task = new PortalContainerPreInitTask()
-      {
-
-         public void execute(ServletContext context, PortalContainer portalContainer)
-         {
-            portalContainer.registerContext(context);
-         }
-      };
-
       ServletContext ctx = event.getServletContext();
       try
       {
          EnvSpecific.initThreadEnv(ctx);
-         PortalContainer.addInitTask(ctx, task);
+         PortalContainer.addInitTask(ctx, new PortalContainer.RegisterTask());
       }
       finally
       {
@@ -64,14 +53,6 @@ public class PortalContainerConfigOwner implements ServletContextListener
 
    public void contextDestroyed(ServletContextEvent event)
    {
-      final PortalContainerPostInitTask task = new PortalContainerPostInitTask()
-      {
-
-         public void execute(ServletContext context, PortalContainer portalContainer)
-         {
-            portalContainer.unregisterContext(context);
-         }
-      };
-      PortalContainer.addInitTask(event.getServletContext(), task);
+      PortalContainer.addInitTask(event.getServletContext(), new PortalContainer.UnregisterTask());
    }
 }

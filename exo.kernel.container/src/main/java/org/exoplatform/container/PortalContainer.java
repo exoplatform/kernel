@@ -23,6 +23,7 @@ import static org.exoplatform.container.ExoContainer.LOG;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;
+import org.exoplatform.container.RootContainer.PortalContainerPreInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.container.security.ContainerPermissions;
@@ -66,38 +67,25 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    /**
     * The default name of the portal container
     */
-   public static final String DEFAULT_PORTAL_CONTAINER_NAME;
+   public static String DEFAULT_PORTAL_CONTAINER_NAME;
 
    /**
     * The default name of a the {@link ServletContext} of the rest web application
     */
-   public static final String DEFAULT_REST_CONTEXT_NAME;
+   public static String DEFAULT_REST_CONTEXT_NAME;
 
    /**
     * The default name of a the realm
     */
-   public static final String DEFAULT_REALM_NAME;
+   public static String DEFAULT_REALM_NAME;
 
    /**
     * The configuration of the portal containers
     */
-   private static final PortalContainerConfig CONFIG;
+   private static PortalContainerConfig CONFIG;
    static
    {
-      ExoContainer top = ExoContainerContext.getTopContainer();
-      CONFIG = top instanceof RootContainer ? ((RootContainer)top).getPortalContainerConfig() : null;
-      if (CONFIG == null)
-      {
-         DEFAULT_PORTAL_CONTAINER_NAME = PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME;
-         DEFAULT_REST_CONTEXT_NAME = PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME;
-         DEFAULT_REALM_NAME = PortalContainerConfig.DEFAULT_REALM_NAME;
-      }
-      else
-      {
-         DEFAULT_PORTAL_CONTAINER_NAME = CONFIG.getDefaultPortalContainer();
-         DEFAULT_REST_CONTEXT_NAME = CONFIG.getDefaultRestContext();
-         DEFAULT_REALM_NAME = CONFIG.getDefaultRealmName();
-      }
+      reloadConfig();
    }
 
    private volatile boolean started_;
@@ -728,6 +716,49 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
          {
             return idx1 - idx2;
          }
+      }
+   }
+
+   /**
+    * Reloads the portal container configuration
+    */
+   static void reloadConfig()
+   {
+      ExoContainer top = ExoContainerContext.getTopContainer();
+      CONFIG = top instanceof RootContainer ? ((RootContainer)top).getPortalContainerConfig() : null;
+      if (CONFIG == null)
+      {
+         DEFAULT_PORTAL_CONTAINER_NAME = PortalContainerConfig.DEFAULT_PORTAL_CONTAINER_NAME;
+         DEFAULT_REST_CONTEXT_NAME = PortalContainerConfig.DEFAULT_REST_CONTEXT_NAME;
+         DEFAULT_REALM_NAME = PortalContainerConfig.DEFAULT_REALM_NAME;
+      }
+      else
+      {
+         DEFAULT_PORTAL_CONTAINER_NAME = CONFIG.getDefaultPortalContainer();
+         DEFAULT_REST_CONTEXT_NAME = CONFIG.getDefaultRestContext();
+         DEFAULT_REALM_NAME = CONFIG.getDefaultRealmName();
+      }
+   }
+   
+   /**
+    * This class is used to register a portal container
+    */
+   public static class RegisterTask extends PortalContainerPreInitTask
+   {
+      public void execute(ServletContext context, PortalContainer portalContainer)
+      {
+         portalContainer.registerContext(context);
+      }
+   }
+   
+   /**
+    * This class is used to unregister a portal container
+    */
+   public static class UnregisterTask extends PortalContainerPreInitTask
+   {
+      public void execute(ServletContext context, PortalContainer portalContainer)
+      {
+         portalContainer.unregisterContext(context);
       }
    }
 }

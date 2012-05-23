@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
@@ -66,6 +67,8 @@ public class ExoContainer extends ManageableContainer
     */
    private static Set<String> SET_PROFILES = Collections.unmodifiableSet(new HashSet<String>());
    
+   protected final AtomicBoolean stopping = new AtomicBoolean();
+  
    /**
     * Returns an unmodifiable set of profiles defined by the value returned by invoking
     * {@link PropertyManager#getProperty(String)} with the {@link org.exoplatform.commons.utils.PropertyManager#RUNTIME_PROFILES}
@@ -277,6 +280,7 @@ public class ExoContainer extends ManageableContainer
       
       if (canBeStopped())
       {
+         stopping.set(true);
          stopContainerInternal();
          super.stop();         
       }

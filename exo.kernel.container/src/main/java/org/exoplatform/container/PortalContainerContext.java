@@ -19,6 +19,7 @@
 package org.exoplatform.container;
 
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -52,25 +53,45 @@ class PortalContainerContext implements ServletContext
 {
 
    /**
-    * The related portal container
+    * The weak reference to the related portal container
     */
-   private final PortalContainer container;
+   private volatile WeakReference<PortalContainer> containerRef;
+
+   /**
+    * The name of the related portal container used in case of developing mode
+    */
+   private final String portalContainerName;
 
    PortalContainerContext(PortalContainer container)
    {
-      this.container = container;
+      // In case of developing mode we want to avoid to use hard reference in case 
+      // we would like to reload the container
+      this.containerRef = new WeakReference<PortalContainer>(container);
+      this.portalContainerName = container.getName();
    }
 
    private WebAppInitContext[] getWebAppInitContexts()
    {
-      final Set<WebAppInitContext> contexts = container.getWebAppInitContexts();
+      final Set<WebAppInitContext> contexts = getPortalContainer().getWebAppInitContexts();
       final WebAppInitContext[] aContexts = new WebAppInitContext[contexts.size()];
       return (WebAppInitContext[])contexts.toArray(aContexts);
    }
-
+   
+   private PortalContainer getPortalContainer()
+   {
+      PortalContainer container = containerRef.get();
+      if (container != null)
+      {
+         return container;
+      }
+      container = RootContainer.getInstance().getPortalContainer(portalContainerName);
+      containerRef = new WeakReference<PortalContainer>(container);
+      return container;
+   }
+   
    private ServletContext getPortalContext()
    {
-      return container.portalContext;
+      return getPortalContainer().portalContext;
    }
 
    /**
@@ -122,7 +143,7 @@ class PortalContainerContext implements ServletContext
    @SuppressWarnings("unchecked")
    public Enumeration<String> getInitParameterNames()
    {
-      final Set<WebAppInitContext> contexts = container.getWebAppInitContexts();
+      final Set<WebAppInitContext> contexts = getPortalContainer().getWebAppInitContexts();
       Set<String> names = null;
       for (WebAppInitContext context : contexts)
       {
@@ -265,7 +286,7 @@ class PortalContainerContext implements ServletContext
    @SuppressWarnings("unchecked")
    public Set<String> getResourcePaths(String path)
    {
-      final Set<WebAppInitContext> contexts = container.getWebAppInitContexts();
+      final Set<WebAppInitContext> contexts = getPortalContainer().getWebAppInitContexts();
       Set<String> paths = null;
       for (WebAppInitContext context : contexts)
       {

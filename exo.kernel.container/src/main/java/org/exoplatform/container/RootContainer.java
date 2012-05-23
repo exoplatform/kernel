@@ -40,21 +40,37 @@ import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.test.mocks.servlet.MockServletContext;
+import org.gatein.wci.WebAppEvent;
+import org.gatein.wci.WebAppLifeCycleEvent;
+import org.gatein.wci.WebAppListener;
+import org.gatein.wci.authentication.AuthenticationEvent;
+import org.gatein.wci.authentication.AuthenticationListener;
+import org.gatein.wci.impl.DefaultServletContainerFactory;
+import org.picocontainer.PicoException;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
@@ -63,13 +79,19 @@ import javax.servlet.ServletContext;
 @Managed
 @NameTemplate(@Property(key = "container", value = "root"))
 @RESTEndpoint(path = "rcontainer")
-public class RootContainer extends ExoContainer
+public class RootContainer extends ExoContainer implements WebAppListener, AuthenticationListener
 {
 
    /**
     * Serial Version UID
     */
    private static final long serialVersionUID = 812448359436635438L;
+
+   /**
+    * The name of the attribute used to mark a session as to be invalidated
+    */
+   public static final String SESSION_TO_BE_INVALIDATED_ATTRIBUTE_NAME = RootContainer.class.getName()
+      + "_TO_BE_INVALIDATED";
 
    /** The field is volatile to properly implement the double checked locking pattern. */
    private static volatile RootContainer singleton_;
@@ -79,23 +101,45 @@ public class RootContainer extends ExoContainer
    private PortalContainerConfig config_;
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.RootContainer");
-
-   private static volatile boolean booting = false;
+   
+   private static final AtomicBoolean booting = new AtomicBoolean();
 
    private final J2EEServerInfo serverenv_ = new J2EEServerInfo();
 
    private final Set<String> profiles;
+   
+   private final Thread hook = new ShutdownThread(this);
+   
+   private final AtomicBoolean reloading = new AtomicBoolean();
+   
+   private final AtomicLong lastUpdateTime = new AtomicLong();
+   
+   private ClassLoader loadingCL;
+   
+   private Properties loadingSystemProperties;
+   
+   private volatile Thread reloadingThread;
 
    /**
     * The list of all the tasks to execute while initializing the corresponding portal containers
     */
-   private final ConcurrentMap<String, ConcurrentMap<String, Queue<PortalContainerInitTaskContext>>> initTasks =
+   private ConcurrentMap<String, ConcurrentMap<String, Queue<PortalContainerInitTaskContext>>> initTasks =
       new ConcurrentHashMap<String, ConcurrentMap<String, Queue<PortalContainerInitTaskContext>>>();
 
    /**
     * The list of the web application contexts corresponding to all the portal containers
     */
-   private final Queue<WebAppInitContext> portalContexts = new ConcurrentLinkedQueue<WebAppInitContext>();
+   private Set<WebAppInitContext> portalContexts = new CopyOnWriteArraySet<WebAppInitContext>();
+
+   /**
+    * The list of the all the existing sessions, this will be used in developing mode only
+    */
+   private final Set<WeakHttpSession> sessions = new CopyOnWriteArraySet<WeakHttpSession>();
+
+   /**
+    * The list of the all the portal containers to reload
+    */
+   private final Set<String> portalContainer2Reload = new CopyOnWriteArraySet<String>();
 
    public RootContainer()
    {
@@ -119,7 +163,7 @@ public class RootContainer extends ExoContainer
       {
          public Void run()
          {
-            Runtime.getRuntime().addShutdownHook(new ShutdownThread(RootContainer.this));
+            Runtime.getRuntime().addShutdownHook(hook);
             return null;
          }
       });
@@ -129,6 +173,11 @@ public class RootContainer extends ExoContainer
          public Void run()
          {
             registerComponentInstance(J2EEServerInfo.class, serverenv_);
+            if (PropertyManager.isDevelopping())
+            {
+               loadingCL = Thread.currentThread().getContextClassLoader();
+               loadingSystemProperties = (Properties)System.getProperties().clone();
+            }
             return null;
          }
       });
@@ -168,6 +217,20 @@ public class RootContainer extends ExoContainer
    public J2EEServerInfo getServerEnvironment()
    {
       return serverenv_;
+   }   
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Object getComponentInstance(Object componentKey) throws PicoException
+   {
+      if (reloading.get())
+      {
+         // To prevent any early access to the portal container
+         synchronized(RootContainer.class) {}
+      }
+      return super.getComponentInstance(componentKey);
    }
 
    public PortalContainer getPortalContainer(final String name)
@@ -225,7 +288,7 @@ public class RootContainer extends ExoContainer
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       PortalContainerConfig config = getPortalContainerConfig();
       if (config.hasDefinition())
@@ -248,15 +311,7 @@ public class RootContainer extends ExoContainer
             config.disablePortalContainer(context.getServletContextName());
          }
          // We assume that a ServletContext of a portal container owns configuration files
-         final PortalContainerPreInitTask task = new PortalContainerPreInitTask()
-         {
-
-            public void execute(ServletContext context, PortalContainer portalContainer)
-            {
-               portalContainer.registerContext(context);
-            }
-         };
-         PortalContainer.addInitTask(context, task);
+         PortalContainer.addInitTask(context, new PortalContainer.RegisterTask());
       }
       else
       {
@@ -275,12 +330,12 @@ public class RootContainer extends ExoContainer
    {
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
-      WebAppInitContext context;
       boolean hasChanged = false;
       try
       {
-         while ((context = portalContexts.poll()) != null)
+         for (Iterator<WebAppInitContext> it = portalContexts.iterator();it.hasNext();)
          {
+            WebAppInitContext context = it.next();
             // Set the context classloader of the related web application
             Thread.currentThread().setContextClassLoader(context.getWebappClassLoader());
             hasChanged = true;
@@ -295,20 +350,227 @@ public class RootContainer extends ExoContainer
             Thread.currentThread().setContextClassLoader(currentClassLoader);
          }
       }
-      PortalContainerConfig config = getPortalContainerConfig();
-      for (String portalContainerName : initTasks.keySet())
+      if (PropertyManager.isDevelopping())
       {
-         if (config.isPortalContainerName(portalContainerName))
+         DefaultServletContainerFactory.getInstance().getServletContainer().addWebAppListener(this);
+         DefaultServletContainerFactory.getInstance().getServletContainer().addAuthenticationListener(this);
+      }
+      else
+      {
+         PortalContainerConfig config = getPortalContainerConfig();
+         for (String portalContainerName : initTasks.keySet())
          {
-            // Unregister name of portal container that doesn't exist
-            LOG.warn("The portal container '" + portalContainerName + "' doesn't not exist or"
-               + " it has not yet been registered, please check your PortalContainerDefinitions and "
-               + "the loading order.");
-            config.unregisterPortalContainerName(portalContainerName);            
+            if (config.isPortalContainerName(portalContainerName))
+            {
+               // Unregister name of portal container that doesn't exist
+               LOG.warn("The portal container '" + portalContainerName + "' doesn't exist or"
+                  + " it has not yet been registered, please check your PortalContainerDefinitions and "
+                  + "the loading order.");
+               config.unregisterPortalContainerName(portalContainerName);            
+            }
+         }
+         // remove all the registered web application contexts 
+         // corresponding to the portal containers
+         portalContexts.clear();
+         // remove all the unneeded tasks
+         initTasks.clear();
+      }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void onEvent(WebAppEvent event)
+   {
+      if (event instanceof WebAppLifeCycleEvent && !stopping.get())
+      {
+         WebAppLifeCycleEvent waEvent = (WebAppLifeCycleEvent)event;
+         if (waEvent.getType() == WebAppLifeCycleEvent.REMOVED)
+         {
+            String contextName = event.getWebApp().getServletContext().getServletContextName();
+            boolean updated = false;
+            for (Entry<String, ConcurrentMap<String, Queue<PortalContainerInitTaskContext>>> entry : initTasks.entrySet())
+            {
+               String portalContainer = entry.getKey();
+               ConcurrentMap<String, Queue<PortalContainerInitTaskContext>> queues = entry.getValue();
+               for (Queue<PortalContainerInitTaskContext> queue : queues.values())
+               {
+                  for (Iterator<PortalContainerInitTaskContext> it = queue.iterator(); it.hasNext();)
+                  {
+                     PortalContainerInitTaskContext context = it.next();
+                     if (context.getServletContextName().equals(contextName))
+                     {
+                        it.remove();
+                        portalContainer2Reload.add(portalContainer);
+                        updated = true;
+                        lastUpdateTime.set(System.currentTimeMillis());
+                     }
+                  }
+               }
+            }
+            if (updated)
+            {
+               LOG.info("The webapp '" + contextName + "' has been undeployed, the related init tasks have been removed");
+            }
+         }
+         else if (waEvent.getType() == WebAppLifeCycleEvent.ADDED && lastUpdateTime.get() > 0 && reloadingThread == null)
+         {
+            // Reloading thread used to reload asynchronously the containers
+            reloadingThread = new Thread("Reloading")
+            {
+               @Override
+               public void run()
+               {
+                  // We delay the reloading to ensure that there is no other webapp that will be reloaded
+                  long pause = 5000;
+                  do
+                  {
+                     try
+                     {
+                        sleep(500);
+                     }
+                     catch (InterruptedException e)
+                     {
+                        interrupted();
+                     }
+                  }
+                  while (System.currentTimeMillis() < lastUpdateTime.get() + pause);
+                  dynamicReload();
+               }
+            };
+            reloadingThread.setDaemon(true);
+            reloadingThread.start();
          }
       }
-      // remove all the unneeded tasks
-      initTasks.clear();
+   }
+   
+   private void dynamicReload()
+   {
+      final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+      final Properties currentSystemProperties = System.getProperties();
+      boolean hasChanged = false;
+      Configuration newConfig = null;
+      try
+      {
+         Thread.currentThread().setContextClassLoader(loadingCL);
+         hasChanged = true;
+         System.setProperties(loadingSystemProperties);
+         ConfigurationManager cm = loadConfigurationManager(this, false);
+         if (cm != null)
+         {
+            newConfig = cm.getConfiguration();
+         }
+      }
+      catch (Exception e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Could not load the new configuration of the root container", e);
+         }
+      }
+      finally
+      {
+         if (hasChanged)
+         {
+            Thread.currentThread().setContextClassLoader(currentClassLoader);
+            System.setProperties(currentSystemProperties);
+         }         
+      }
+      if (newConfig == null)
+      {
+         // We have no way to know if the configuration of the root container has changed so
+         // we reload everything
+         LOG.info("The new configuration of the root container could not be loaded," +
+         		" thus everything will be reloaded");
+         reload();
+         return;
+      }
+      Configuration currentConfig = getConfiguration();
+      if (currentConfig == null)
+      {
+         // We have no way to know if the configuration of the root container has changed so
+         // we reload everything
+         LOG.info("The current configuration of the root container could not be loaded," +
+                  " thus everything will be reloaded");
+         reload();
+         return;         
+      }
+      if (newConfig.getCurrentSize() != currentConfig.getCurrentSize() || newConfig.getCurrentHash() != currentConfig.getCurrentHash())
+      {
+         // The root container has changed so we reload everything
+         LOG.info("The configuration of the root container has changed," +
+                  " thus everything will be reloaded");
+         reload();
+         return;         
+      }
+      LOG.info("The configuration of the root container did not change," +
+               " thus only affected portal containers will be reloaded");
+      for (String pc : portalContainer2Reload)
+      {
+         // At least one dependency has changed so we reload all the affected portal containers
+         reload(pc);
+      }
+   }
+   
+   /**
+    * Adds a session attribute indicating that the sessions have to be invalidated
+    */
+   private void markSessionsAsToBeInvalidated(String portalContainerName)
+   {
+      for (WeakHttpSession wSess : sessions)
+      {
+         HttpSession sess = wSess.get();
+         if (sess == null)
+         {
+            continue;
+         }
+         else if (portalContainerName == null
+            || portalContainerName.equals(sess.getServletContext().getServletContextName()))
+         {
+            try
+            {
+               sess.setAttribute(SESSION_TO_BE_INVALIDATED_ATTRIBUTE_NAME, Boolean.TRUE);
+            }
+            catch (IllegalStateException e)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Could not set the flag indicating that the session must be invalidated", e);
+               }
+            }
+         }
+      }
+      sessions.clear();
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void onLogin(AuthenticationEvent evt)
+   {
+      HttpSession sess = evt.getRequest().getSession(false);
+
+      if (sess == null)
+         return;
+      if (getPortalContainerConfig().isPortalContainerName(sess.getServletContext().getServletContextName()))
+      {
+         sessions.add(new WeakHttpSession(sess));
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void onLogout(AuthenticationEvent evt)
+   {
+      HttpSession sess = evt.getRequest().getSession(false);
+
+      if (sess == null)
+         return;
+      if (getPortalContainerConfig().isPortalContainerName(sess.getServletContext().getServletContextName()))
+      {
+         sessions.remove(new WeakHttpSession(sess));
+      }
    }
 
    public synchronized void createPortalContainer(ServletContext context)
@@ -380,7 +642,7 @@ public class RootContainer extends ExoContainer
          // add config from application server,
          // $AH_HOME/exo-conf/portal/configuration.xml
          String overrideConfig =
-            singleton_.getServerEnvironment().getExoConfigurationDirectory() + "/portal/" + portalContainerName
+            getServerEnvironment().getExoConfigurationDirectory() + "/portal/" + portalContainerName
                + "/configuration.xml";
          try
          {
@@ -453,20 +715,7 @@ public class RootContainer extends ExoContainer
       try
       {
          final RootContainer rootContainer = new RootContainer();
-         final ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles);
-         service.addConfiguration(ContainerUtil.getConfigurationURL("conf/configuration.xml"));
-         if (PrivilegedSystemHelper.getProperty("maven.exoplatform.dir") != null)
-         {
-            service.addConfiguration(ContainerUtil.getConfigurationURL("conf/test-configuration.xml"));
-         }
-         String confDir = rootContainer.getServerEnvironment().getExoConfigurationDirectory();
-         String overrideConf = confDir + "/configuration.xml";
-         File file = new File(overrideConf);
-         if (PrivilegedFileHelper.exists(file))
-         {
-            service.addConfiguration("file:" + overrideConf);
-         }
-         service.processRemoveConfiguration();
+         final ConfigurationManager service = loadConfigurationManager(rootContainer, true);
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
             public Void run()
@@ -489,6 +738,38 @@ public class RootContainer extends ExoContainer
    }
 
    /**
+    * @param rootContainer
+    * @return
+    * @throws Exception
+    */
+   private static ConfigurationManager loadConfigurationManager(RootContainer rootContainer, boolean logEnabled) throws Exception
+   {
+      final ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles, logEnabled);
+      service.addConfiguration(ContainerUtil.getConfigurationURL("conf/configuration.xml"));
+      if (PrivilegedSystemHelper.getProperty("maven.exoplatform.dir") != null)
+      {
+         service.addConfiguration(ContainerUtil.getConfigurationURL("conf/test-configuration.xml"));
+      }
+      String confDir = rootContainer.getServerEnvironment().getExoConfigurationDirectory();
+      String overrideConf = confDir + "/configuration.xml";
+      File file = new File(overrideConf);
+      if (PrivilegedFileHelper.exists(file))
+      {
+         service.addConfiguration("file:" + overrideConf);
+      }
+      service.processRemoveConfiguration();
+      if (PropertyManager.isDevelopping())
+      {
+         Configuration conf = service.getConfiguration();
+         if (conf != null)
+         {
+            conf.keepCurrentState();
+         }
+      }
+      return service;
+   }
+
+   /**
     * Get the unique instance of the root container per VM. The implementation relies on the double
     * checked locking pattern to guarantee that only one instance will be initialized. See
     *
@@ -504,13 +785,13 @@ public class RootContainer extends ExoContainer
             result = singleton_;
             if (result == null)
             {
-               if (booting)
+               if (booting.get())
                {
                   throw new IllegalStateException("Already booting by the same thread");
                }
                else
                {
-                  booting = true;
+                  booting.set(true);
                   try
                   {
                      LOG.info("Building root container");
@@ -538,7 +819,7 @@ public class RootContainer extends ExoContainer
                   }
                   finally
                   {
-                     booting = false;
+                     booting.set(false);
                   }
                }
             }
@@ -568,7 +849,149 @@ public class RootContainer extends ExoContainer
       }
       return config.toXML();
    }
+   
+   @Managed
+   @ManagedDescription("Make the RootContainer reloads itself and all the portal containers.")
+   public void reload()
+   {
+      if (!PropertyManager.isDevelopping())
+      {
+         LOG.debug("The containers can be reloaded only in developping mode, please set the system property 'exo.product.developing' to 'true'");
+         return;
+      }
+      else if (stopping.get())
+      {
+         LOG.debug("The containers cannot be reloaded as we are currently stopping the root container.");
+         return;         
+      }
+      try
+      {
+         long time = System.currentTimeMillis();
+         LOG.info("Trying to reload all the containers");
+         LOG.info("Trying to stop all the containers");
+         stop();
+         markSessionsAsToBeInvalidated(null);
+         synchronized (RootContainer.class)
+         {
+            // Make early accesses to the root container to wait
+            singleton_ = null;
+            LOG.info("All the containers have been stopped successfully");
+            // We unregister the root container
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  Runtime.getRuntime().removeShutdownHook(hook);
+                  return null;
+               }
+            });
+            DefaultServletContainerFactory.getInstance().getServletContainer().removeWebAppListener(this);
+            DefaultServletContainerFactory.getInstance().getServletContainer().removeAuthenticationlistener(this);
+            LOG.info("Trying to restart the root container");
+            RootContainer rootContainer = null;
+            final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+            boolean hasChanged = false;
+            try
+            {
+               Thread.currentThread().setContextClassLoader(loadingCL);
+               hasChanged = true;
+               System.setProperties(loadingSystemProperties);
+               rootContainer = RootContainer.getInstance();
+               rootContainer.reloading.set(true);
+               rootContainer.initTasks = initTasks;
+               rootContainer.portalContexts = portalContexts;
+               PortalContainer.reloadConfig();
+               LOG.info("Trying to restart all the portal containers");
+               rootContainer.createPortalContainers();
+            }
+            finally
+            {
+               if (rootContainer != null)
+               {
+                  rootContainer.reloading.set(false);                  
+               }
+               if (hasChanged)
+               {
+                  Thread.currentThread().setContextClassLoader(currentClassLoader);
+               }
+            }            
+         }
+         LOG.info("All the containers have been reloaded successfully in " + (System.currentTimeMillis() - time) + " ms");
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not reload the containers", e);
+      }
+   }
 
+   @Managed
+   @ManagedDescription("Make the RootContainer reloads only a given portal container.")
+   public void reload(String portalContainerName)
+   {
+      if (!PropertyManager.isDevelopping())
+      {
+         LOG.debug("The portal container '" + portalContainerName + "' can be reloaded only in developping mode, please set the system property 'exo.product.developing' to 'true'");
+         return;
+      }
+      else if (stopping.get())
+      {
+         LOG.debug("The portal container '" + portalContainerName + "' cannot be reloaded as we are currently stopping the root container.");
+         return;         
+      }
+      try
+      {
+         long time = System.currentTimeMillis();
+         LOG.info("Trying to reload the portal container '" + portalContainerName + "'");
+         PortalContainer pc = getPortalContainer(portalContainerName);
+         if (pc == null)
+         {
+            throw new IllegalArgumentException("The portal container '" + portalContainerName + "' doesn't exists or has not yet been created");
+         }
+         LOG.info("Trying to stop the portal container '" + portalContainerName + "'");
+         pc.stop();
+         markSessionsAsToBeInvalidated(portalContainerName);
+         synchronized (RootContainer.class)
+         {
+            LOG.info("The portal container '" + portalContainerName + "' has been stopped successfully");
+            final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+            boolean hasChanged = false;
+            try
+            {
+               reloading.set(true);
+               // Make early accesses to the root container to wait
+               unregisterComponent(portalContainerName);
+               LOG.info("Trying to restart the portal container '" + portalContainerName + "'");
+               for (Iterator<WebAppInitContext> it = portalContexts.iterator();it.hasNext();)
+               {
+                  WebAppInitContext context = it.next();
+                  if (context.getServletContextName().equals(portalContainerName))
+                  {
+                     // Set the context classloader of the related web application
+                     Thread.currentThread().setContextClassLoader(context.getWebappClassLoader());
+                     hasChanged = true;
+                     createPortalContainer(context.getServletContext());
+                     break;
+                  }
+               }
+            }
+            finally
+            {
+               if (hasChanged)
+               {
+                  // Re-set the old classloader
+                  Thread.currentThread().setContextClassLoader(currentClassLoader);
+               }
+               reloading.set(false);
+            }               
+         }
+         LOG.info("The portal container '" + portalContainerName + "' has been reloaded successfully in " + (System.currentTimeMillis() - time) + " ms");
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not reload the portal container '" + portalContainerName + "'", e);
+      }      
+   }
+   
    /**
     * Calls the other method <code>addInitTask</code> with <code>ServletContext.getServletContextName()</code>
     * as portal container name
@@ -594,10 +1017,10 @@ public class RootContainer extends ExoContainer
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       final PortalContainer container = getPortalContainer(portalContainer);
-      if (!task.alreadyExists(container))
+      if (!task.alreadyExists(container) || lastUpdateTime.get() > 0)
       {
          if (LOG.isDebugEnabled())
             LOG.debug("The portal container '" + portalContainer
@@ -633,6 +1056,23 @@ public class RootContainer extends ExoContainer
             if (q != null)
             {
                queue = q;
+            }
+         }
+         else if (reloading.get())
+         {
+            // The queue already exists and we are in reloading phase, we will then check
+            // if a task of the same type exist for the same servlet context if so we replace it
+            // with a new one
+            String contextName = context.getServletContextName();
+            Class<?> c = task.getClass();
+            for (Iterator<PortalContainerInitTaskContext> it = queue.iterator(); it.hasNext();)
+            {
+               PortalContainerInitTaskContext ctx = it.next();
+               if (ctx.getServletContextName().equals(contextName) && ctx.getTask().getClass().equals(c))
+               {
+                  it.remove();
+                  break;
+               }
             }
          }
          queue.add(new PortalContainerInitTaskContext(context, task));
@@ -679,6 +1119,11 @@ public class RootContainer extends ExoContainer
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
       PortalContainerInitTaskContext context;
       boolean hasChanged = false;
+      Collection<PortalContainerInitTaskContext> bckCollection = null;
+      if (PropertyManager.isDevelopping())
+      {
+         bckCollection = new ArrayList<PortalContainerInitTaskContext>(queue);
+      }
       try
       {
          while ((context = queue.poll()) != null)
@@ -697,10 +1142,23 @@ public class RootContainer extends ExoContainer
             Thread.currentThread().setContextClassLoader(currentClassLoader);
          }
       }
-      queues.remove(type);
-      if (queues.isEmpty())
+      if (PropertyManager.isDevelopping())
       {
-         initTasks.remove(portalContainerName);
+         // reload the queue, it is required because PriorityBlockingQueue only guarantee the order when we use the method poll if we try to
+         // use the iterator the priority is not respected
+         queue.addAll(bckCollection);
+      }
+      else
+      {
+         // Clear the queue of task
+         queue.clear();
+         // Remove this specific type of PortalContainerInitTaskContext from the existing queues 
+         queues.remove(type);
+         if (queues.isEmpty())
+         {
+            // If there is no queue anymore remove init tasks holder for this portal container
+            initTasks.remove(portalContainerName);
+         }         
       }
       if (LOG.isDebugEnabled())
          LOG.debug("End launching the " + type + " tasks of the portal container '" + portalContainer + "'");
@@ -944,6 +1402,50 @@ public class RootContainer extends ExoContainer
          {
             return idx1 - idx2;
          }
+      }
+   }
+   
+   private static class WeakHttpSession extends WeakReference<HttpSession>
+   {
+      public WeakHttpSession(HttpSession session)
+      {
+         super(session);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (getClass() != obj.getClass())
+            return false;
+         WeakHttpSession other = (WeakHttpSession)obj;
+         HttpSession session = get();
+         HttpSession otherSession = other.get();
+         if (session == null)
+         {
+            return otherSession == null;
+         }
+         else if (otherSession == null)
+         {
+            return false;
+         }
+         return session.getId().equals(otherSession.getId());
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public int hashCode()
+      {
+         HttpSession session = get();
+         return session == null ? 0 : session.getId().hashCode();
       }
    }
 }
