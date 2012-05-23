@@ -47,7 +47,7 @@
 
    <scm>
       <connection>scm:git:git://github.com/exoplatform/kernel.git</connection>
-      <developerConnection>scm:git:git@github.com/exoplatform/kernel.git</developerConnection>
+      <developerConnection>scm:git:git@github.com:exoplatform/kernel.git</developerConnection>
       <url>http://fisheye.jboss.org/browse/exo-jcr/kernel</url>
    </scm>
 
