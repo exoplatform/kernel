@@ -137,7 +137,7 @@ public class PropertyInfo
             throw new IllegalArgumentException("Getter for property " + key + " on class "
                + getter.getClass().getName() + " returned a null value");
          }
-         return ObjectName.quote(value.toString());
+         return value.toString();
       }
    }
 
