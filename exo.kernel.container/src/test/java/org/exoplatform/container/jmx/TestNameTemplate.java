@@ -65,8 +65,8 @@ public class TestNameTemplate extends TestCase
    public void testSame()
    {
       assertSame(new MBean1(), MBean1.class, "foo:a=b");
-      assertSame(new MBean2(), MBean2.class, "foo:a=\"something\"");
-      assertSame(new MBean3(), MBean3.class, "foo:foo=\"3\"");
+      assertSame(new MBean2(), MBean2.class, "foo:a=something");
+      assertSame(new MBean3(), MBean3.class, "foo:foo=3");
    }
 
    @NameTemplate(@Property(key = "a", value = "b"))

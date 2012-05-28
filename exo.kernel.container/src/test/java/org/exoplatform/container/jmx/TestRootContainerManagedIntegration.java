@@ -56,9 +56,9 @@ public class TestRootContainerManagedIntegration extends AbstractTestContainer
       assertNotNull(expectedBar);
       MBeanServer server = container.getMBeanServer();
       assertNotNull(server);
-      Object foo = server.getAttribute(ObjectName.getInstance("exo:object=\"Foo\""), "Reference");
+      Object foo = server.getAttribute(ObjectName.getInstance("exo:object=Foo"), "Reference");
       assertNotNull(foo);
-      Object bar = server.getAttribute(ObjectName.getInstance("exo:object=\"Bar\""), "Reference");
+      Object bar = server.getAttribute(ObjectName.getInstance("exo:object=Bar"), "Reference");
       assertNotNull(bar);
       assertEquals(expectedFoo, foo);
       assertEquals(expectedBar, bar);
@@ -86,16 +86,16 @@ public class TestRootContainerManagedIntegration extends AbstractTestContainer
       assertNotNull(aware.context);
       MBeanServer server = container.getMBeanServer();
       assertNotNull(server);
-      Object foo = server.getAttribute(ObjectName.getInstance("exo:object=\"Foo\""), "Reference");
+      Object foo = server.getAttribute(ObjectName.getInstance("exo:object=Foo"), "Reference");
       assertNotNull(foo);
       assertEquals(aware.foo, foo);
       ManagedDependent expectedBar = new ManagedDependent("Bar");
       aware.context.register(expectedBar);
-      assertEquals(1, server.queryMBeans(ObjectName.getInstance("exo:object=\"Bar\""), null).size());
-      Object bar = server.getAttribute(ObjectName.getInstance("exo:object=\"Bar\""), "Reference");
+      assertEquals(1, server.queryMBeans(ObjectName.getInstance("exo:object=Bar"), null).size());
+      Object bar = server.getAttribute(ObjectName.getInstance("exo:object=Bar"), "Reference");
       assertEquals(expectedBar, bar);
       aware.context.unregister(expectedBar);
-      assertEquals(0, server.queryMBeans(ObjectName.getInstance("exo:object=\"Bar\""), null).size());
+      assertEquals(0, server.queryMBeans(ObjectName.getInstance("exo:object=Bar"), null).size());
    }
 
    public void testManagementAwareManagingOtherBeans() throws Exception
@@ -103,7 +103,7 @@ public class TestRootContainerManagedIntegration extends AbstractTestContainer
       RootContainer container = createRootContainer("configuration4.xml");
       ManagedManagementAware aware = (ManagedManagementAware)container.getComponentInstance("ManagedManagementAware");
       aware.context.register(new ManagedWithObjectNameTemplate("juu"));
-      container.getMBeanServer().getObjectInstance(new ObjectName("exo:object=\"juu\""));
+      container.getMBeanServer().getObjectInstance(new ObjectName("exo:object=juu"));
    }
 
    public void testRootManagedRequestLifeCycle() throws Exception

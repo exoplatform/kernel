@@ -48,7 +48,7 @@ public class TestRegistration extends AbstractTestContainer
 
       MBeanServer server = root.getMBeanServer();
 
-      Set<ObjectInstance> set = server.queryMBeans(ObjectName.getInstance("exo:object=\"Foo\""), null);
+      Set<ObjectInstance> set = server.queryMBeans(ObjectName.getInstance("exo:object=Foo"), null);
       assertEquals(1, set.size());
 
       ObjectInstance oi = set.iterator().next();
@@ -82,7 +82,7 @@ public class TestRegistration extends AbstractTestContainer
       Object instance2 = root.getComponentInstance("Bar");
       assertNotNull(instance2);
 
-      Set set2 = server.queryMBeans(ObjectName.getInstance("exo:object=\"Bar\""), null);
+      Set set2 = server.queryMBeans(ObjectName.getInstance("exo:object=Bar"), null);
       assertEquals(1, set2.size());
 
    }

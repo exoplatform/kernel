@@ -175,7 +175,7 @@ public class TestCacheService extends TestCase
          (MBeanServerLocator)PortalContainer.getInstance().getComponentInstanceOfType(MBeanServerLocator.class);
       MBeanServer server = locator.server;
       assertNotNull(locator.server);
-      ObjectName name = new ObjectName("exo:service=cache,name=\"cacheLiveTime2s\",portal=\"portal\"");
+      ObjectName name = new ObjectName("exo:service=cache,name=cacheLiveTime2s,portal=portal");
       MBeanInfo info = server.getMBeanInfo(name);
       assertNotNull(info);
       Map<String, MBeanAttributeInfo> infoMap = new HashMap<String, MBeanAttributeInfo>();
