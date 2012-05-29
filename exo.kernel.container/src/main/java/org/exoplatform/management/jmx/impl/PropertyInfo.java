@@ -115,6 +115,20 @@ public class PropertyInfo
          this.getter = getter;
       }
 
+      boolean specialCharsExists(String valueString)
+      {
+         if (valueString.indexOf("%") >= 0 || valueString.indexOf(":") >= 0 || valueString.indexOf('"') >= 0 || valueString.indexOf("=") >= 0 ||
+            valueString.indexOf("?") >= 0 || valueString.indexOf("*") >= 0 || valueString.indexOf(",") >= 0 || valueString.indexOf("\\") >= 0 ||
+            valueString.indexOf("/") >= 0 || valueString.indexOf(".") >= 0 || valueString.indexOf("'") >= 0)
+         {
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+      }
+
       String resolve(Object instance)
       {
          Object value;
@@ -137,7 +151,15 @@ public class PropertyInfo
             throw new IllegalArgumentException("Getter for property " + key + " on class "
                + getter.getClass().getName() + " returned a null value");
          }
-         return value.toString();
+         String valueString = value.toString();
+         if (specialCharsExists(valueString))
+         {
+            return ObjectName.quote(valueString);
+         }
+         else
+         {
+            return valueString;
+         }
       }
    }
 
