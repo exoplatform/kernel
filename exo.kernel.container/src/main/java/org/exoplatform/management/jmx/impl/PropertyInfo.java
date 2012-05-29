@@ -115,18 +115,40 @@ public class PropertyInfo
          this.getter = getter;
       }
 
-      boolean specialCharsExists(String valueString)
+      boolean hasSpecialChars(String valueString)
       {
-         if (valueString.indexOf("%") >= 0 || valueString.indexOf(":") >= 0 || valueString.indexOf('"') >= 0 || valueString.indexOf("=") >= 0 ||
-            valueString.indexOf("?") >= 0 || valueString.indexOf("*") >= 0 || valueString.indexOf(",") >= 0 || valueString.indexOf("\\") >= 0 ||
-            valueString.indexOf("/") >= 0 || valueString.indexOf(".") >= 0 || valueString.indexOf("'") >= 0)
+         for (int i = 0, length = valueString.length(); i < length; i++)
          {
-            return true;
+            char c = valueString.charAt(i);
+            switch (c)
+            {
+               case '%':
+                  return true;
+               case ':':
+                  return true;
+               case '"':
+                  return true;
+               case '=':
+                  return true;
+               case '?':
+                  return true;
+               case '*':
+                  return true;
+               case ',':
+                  return true;
+               case '\\':
+                  return true;
+               case '/':
+                  return true;
+               case '.':
+                  return true;
+               case '\'':
+                  return true;
+               default:
+                  continue;
+            }
          }
-         else
-         {
-            return false;
-         }
+         return false;
       }
 
       String resolve(Object instance)
@@ -152,14 +174,7 @@ public class PropertyInfo
                + getter.getClass().getName() + " returned a null value");
          }
          String valueString = value.toString();
-         if (specialCharsExists(valueString))
-         {
-            return ObjectName.quote(valueString);
-         }
-         else
-         {
-            return valueString;
-         }
+         return hasSpecialChars(valueString) ? ObjectName.quote(valueString) : valueString;
       }
    }
 
