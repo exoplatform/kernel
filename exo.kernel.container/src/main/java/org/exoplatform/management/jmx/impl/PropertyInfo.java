@@ -123,25 +123,15 @@ public class PropertyInfo
             switch (c)
             {
                case '%':
-                  return true;
                case ':':
-                  return true;
                case '"':
-                  return true;
                case '=':
-                  return true;
                case '?':
-                  return true;
                case '*':
-                  return true;
                case ',':
-                  return true;
                case '\\':
-                  return true;
                case '/':
-                  return true;
                case '.':
-                  return true;
                case '\'':
                   return true;
                default:
