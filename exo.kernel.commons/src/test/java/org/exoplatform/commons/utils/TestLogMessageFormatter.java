@@ -57,4 +57,20 @@ public class TestLogMessageFormatter extends TestCase
       assertEquals(t, LogMessageFormatter.getThrowable(new Object(), t));
       assertEquals(t, LogMessageFormatter.getThrowable("Just testing{}", new Object(), t));
    }
+
+   public void testGetMessage() throws Exception
+   {
+      //if object.toString return null
+      LogMessageFormatter.getMessage("Hello, World {} ", new A());
+      //if object is null
+      LogMessageFormatter.getMessage("Hello, World {} {}", new Object(), null);
+   }
+
+   class A
+   {
+      public String toString()
+      {
+         return null;
+      }
+   }
 }
