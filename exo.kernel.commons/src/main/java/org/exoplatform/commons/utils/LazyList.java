@@ -139,7 +139,7 @@ public class LazyList<E> extends AbstractList<E> implements RandomAccess
       }
       catch (Exception e)
       {
-         throw new IllegalStateException("Cannot access resource size");
+         throw new IllegalStateException("Cannot access resource size", e);
       }
    }
 

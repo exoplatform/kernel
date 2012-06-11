@@ -173,7 +173,7 @@ public class MCComponentAdapter
          lastComponentInstance = target;
          return target;
       }
-      catch (Throwable ex)
+      catch (Throwable ex) //NOSONAR
       {
          throw new RuntimeException("Failed to perform MC interception on component: "
                   + delegate.getComponentImplementation(), ex);

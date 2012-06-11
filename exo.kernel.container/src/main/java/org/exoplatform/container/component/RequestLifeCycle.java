@@ -70,7 +70,7 @@ public class RequestLifeCycle
          {
             componentRLF.endRequest(container);
          }
-         catch (Throwable throwable)
+         catch (Throwable throwable) //NOSONAR
          {
             t = throwable;
          }

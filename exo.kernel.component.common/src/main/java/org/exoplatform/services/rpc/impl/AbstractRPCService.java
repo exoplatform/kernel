@@ -500,7 +500,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          }
          return execResult;
       }
-      catch (Throwable x)
+      catch (Throwable x) //NOSONAR
       {
          if (LOG.isTraceEnabled())
          {

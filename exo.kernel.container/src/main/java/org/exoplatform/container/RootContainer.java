@@ -480,8 +480,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       {
          // We have no way to know if the configuration of the root container has changed so
          // we reload everything
-         LOG.info("The new configuration of the root container could not be loaded," +
-         		" thus everything will be reloaded");
+         LOG.info("The new configuration of the root container could not be loaded,"
+            + " thus everything will be reloaded");
          reload();
          return;
       }
@@ -495,7 +495,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          reload();
          return;         
       }
-      if (newConfig.getCurrentSize() != currentConfig.getCurrentSize() || newConfig.getCurrentHash() != currentConfig.getCurrentHash())
+      if (newConfig.getCurrentSize() != currentConfig.getCurrentSize()
+         || newConfig.getCurrentHash() != currentConfig.getCurrentHash())
       {
          // The root container has changed so we reload everything
          LOG.info("The configuration of the root container has changed," +
@@ -856,7 +857,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       if (!PropertyManager.isDevelopping())
       {
-         LOG.debug("The containers can be reloaded only in developping mode, please set the system property 'exo.product.developing' to 'true'");
+         LOG.debug("The containers can be reloaded only in developping mode, "
+            + "please set the system property 'exo.product.developing' to 'true'");
          return;
       }
       else if (stopping.get())
@@ -930,12 +932,15 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       if (!PropertyManager.isDevelopping())
       {
-         LOG.debug("The portal container '" + portalContainerName + "' can be reloaded only in developping mode, please set the system property 'exo.product.developing' to 'true'");
+         LOG.debug("The portal container '"
+            + portalContainerName
+            + "' can be reloaded only in developping mode, please set the system property 'exo.product.developing' to 'true'");
          return;
       }
       else if (stopping.get())
       {
-         LOG.debug("The portal container '" + portalContainerName + "' cannot be reloaded as we are currently stopping the root container.");
+         LOG.debug("The portal container '" + portalContainerName
+            + "' cannot be reloaded as we are currently stopping the root container.");
          return;         
       }
       try
@@ -945,7 +950,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          PortalContainer pc = getPortalContainer(portalContainerName);
          if (pc == null)
          {
-            throw new IllegalArgumentException("The portal container '" + portalContainerName + "' doesn't exists or has not yet been created");
+            throw new IllegalArgumentException("The portal container '" + portalContainerName
+               + "' doesn't exists or has not yet been created");
          }
          LOG.info("Trying to stop the portal container '" + portalContainerName + "'");
          pc.stop();
@@ -984,7 +990,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                reloading.set(false);
             }               
          }
-         LOG.info("The portal container '" + portalContainerName + "' has been reloaded successfully in " + (System.currentTimeMillis() - time) + " ms");
+         LOG.info("The portal container '" + portalContainerName + "' has been reloaded successfully in "
+            + (System.currentTimeMillis() - time) + " ms");
       }
       catch (Exception e)
       {
@@ -1144,8 +1151,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
       if (PropertyManager.isDevelopping())
       {
-         // reload the queue, it is required because PriorityBlockingQueue only guarantee the order when we use the method poll if we try to
-         // use the iterator the priority is not respected
+         // reload the queue, it is required because PriorityBlockingQueue only guarantee the order 
+         // when we use the method poll if we try to use the iterator the priority is not respected
          queue.addAll(bckCollection);
       }
       else
