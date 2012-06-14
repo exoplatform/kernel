@@ -59,7 +59,6 @@
       <module>exo.kernel.component.ext.cache.impl.infinispan.v5</module>
       <module>exo.kernel.component.command</module>
       <module>exo.kernel.mc-integration</module>
-      <module>packaging/module</module>
    </modules>
 
    <dependencyManagement>
