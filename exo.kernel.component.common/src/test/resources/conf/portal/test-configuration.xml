@@ -27,6 +27,9 @@
    <component>
       <type>org.exoplatform.services.scheduler.test.TestSchedulerService$MyComponent</type>
    </component>
+   <component>
+      <type>org.exoplatform.services.listener.TestAsynchronousListener$TestHolder</type>
+   </component>
 	
    <component>
       <key>org.exoplatform.services.net.NetService</key>
