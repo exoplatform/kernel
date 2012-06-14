@@ -23,8 +23,23 @@
    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd">
 
    <component>
-      <key>A</key>
       <type>org.exoplatform.container.TestThreadContextHandler$TestHolder</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.container.TestThreadContextHandler$TestHolder2</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.container.TestThreadContextHandler$TestHolder3</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.container.TestThreadContextHandler$TestHolder4</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.container.TestThreadContextHandler$TestHolder5</type>
    </component>
 
 </configuration>

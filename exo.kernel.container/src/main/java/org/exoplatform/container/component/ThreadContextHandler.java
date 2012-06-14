@@ -68,6 +68,11 @@ public class ThreadContextHandler
             {
                ThreadContextHolder holder = components.get(i);
                ThreadContext tc = holder.getThreadContext();
+               if (tc == null)
+               {
+                  // This ThreadContextHolder has nothing valuable to share so we skip it
+                  continue;
+               }
                contexts.add(tc);
                tc.store();
             }
