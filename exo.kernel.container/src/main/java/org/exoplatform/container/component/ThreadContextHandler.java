@@ -46,7 +46,7 @@ public class ThreadContextHandler
 
    /**
     * Stores into memory the current values of all the Thread Local variables
-    * of all the registered {@link ThreadContextHolder} within the {@link ExoContainer}
+    * of all the registered {@link ThreadContextHolder} of the {@link ExoContainer}
     */
    @SuppressWarnings("unchecked")
    public void store()
@@ -83,7 +83,7 @@ public class ThreadContextHandler
 
    /**
     * Pushes values stored into memory into all the Thread Local variables
-    * of all the registered {@link ThreadContextHolder} within the {@link ExoContainer}
+    * of all the registered {@link ThreadContextHolder} of the {@link ExoContainer}
     */
    public void push()
    {
@@ -100,7 +100,7 @@ public class ThreadContextHandler
 
    /**
     * Restores all the Thread Local variables of all the registered {@link ThreadContextHolder}
-    *  within the {@link ExoContainer}
+    *  of the {@link ExoContainer}
     */
    public void restore()
    {
