@@ -21,8 +21,15 @@ package org.exoplatform.services.jdbc.impl;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sql.DataSource;
+
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 
 /**
  * This class is used to wrap the original {@link DataSource}
@@ -37,6 +44,24 @@ public class CloseableDataSource implements DataSource
     * The wrapped {@link DataSource}
     */
    private DataSource ds;
+
+   /**
+    * Flag which is set to true if we closed DataSource.
+    */
+   private final AtomicBoolean closed = new AtomicBoolean(false);
+
+   /**
+    * Exception instance for logging of call stack which called a closing of DataSource. Need for finding where exists usage of closed sessions.
+    */
+   private Exception closedByCallStack;
+
+   private static final Log log = ExoLogger.getLogger("exo.kernel.component.common.CloseableDataSource");
+
+   /**
+    * Property value which responsible for allowing of closed DataSource usage.
+    */
+   private static final boolean PROHIBIT_CLOSED_DATASOURCE_USAGE = Boolean.valueOf(PrivilegedSystemHelper.getProperty("exo.jcr.prohibit.closed.datasource.usage", "true"));
+
 
    /**
     * Constructor CloseableDataSource.
@@ -123,20 +148,38 @@ public class CloseableDataSource implements DataSource
     */
    public void close()
    {
-      ds = null;
+      closed.set(true);
+      if (PROHIBIT_CLOSED_DATASOURCE_USAGE)
+      {
+         ds = null;
+      }
+      if (PROHIBIT_CLOSED_DATASOURCE_USAGE || PropertyManager.isDevelopping())
+      {
+         this.closedByCallStack = new Exception("The datasource has been closed by the following call stack");
+      }
    }
 
    /**
     * Check if datasouce already closed.
-    * 
+    *
     * @throws SQLException
     *          if datasource is closed
     */
    private void checkValid() throws SQLException
    {
-      if (ds == null)
+      if (closed.get())
       {
-         throw new SQLException("The datasource is closed");
+         if (ds == null)
+         {
+            throw new SQLException("The datasource is closed", closedByCallStack);
+         }
+         else if (PropertyManager.isDevelopping())
+         {
+            log.warn("This kind of operation is forbidden after a DataSource closed, "
+               + "please note that an exception will be raised in the next jcr version.", new Exception(
+               closedByCallStack));
+         }
       }
    }
+
 }
