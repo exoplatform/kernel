@@ -57,10 +57,15 @@ public class ThreadContext
     */
    public void store()
    {
-      this.values = new Object[threadLocals.length];
-      for (int i = 0; i < threadLocals.length; i++)
+      this.values = new Object[threadLocals == null ? 0 : threadLocals.length];
+      for (int i = 0; i < values.length; i++)
       {
-         values[i] = threadLocals[i].get();
+         ThreadLocal<Object> tl = threadLocals[i];
+         if (tl == null)
+         {
+            continue;
+         }
+         values[i] = tl.get();
       }
    }
    
@@ -74,11 +79,16 @@ public class ThreadContext
       {
          throw new IllegalStateException("No values have been set, the store method has not been called or failed");
       }
-      this.oldValues = new Object[threadLocals.length];
-      for (int i = 0; i < threadLocals.length; i++)
+      this.oldValues = new Object[values.length];
+      for (int i = 0; i < values.length; i++)
       {
-         oldValues[i] = threadLocals[i].get();
-         threadLocals[i].set(values[i]);
+         ThreadLocal<Object> tl = threadLocals[i];
+         if (tl == null)
+         {
+            continue;
+         }         
+         oldValues[i] = tl.get();
+         tl.set(values[i]);
       }      
       this.values = null;
    }
@@ -92,9 +102,14 @@ public class ThreadContext
       {
          throw new IllegalStateException("No old values have been set, the push method has not been called or failed");
       }
-      for (int i = 0; i < threadLocals.length; i++)
+      for (int i = 0; i < oldValues.length; i++)
       {
-         threadLocals[i].set(oldValues[i]);
+         ThreadLocal<Object> tl = threadLocals[i];
+         if (tl == null)
+         {
+            continue;
+         }         
+         tl.set(oldValues[i]);
       }
       this.oldValues = null;
    }

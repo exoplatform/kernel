@@ -74,4 +74,37 @@ public class TestThreadContextHandler extends AbstractTestContainer
          return new ThreadContext(tl);
       }
    }
+   
+   public static class TestHolder2 implements ThreadContextHolder
+   {
+      public ThreadContext getThreadContext()
+      {
+         return null;
+      }
+   }   
+   
+   public static class TestHolder3 implements ThreadContextHolder
+   {
+      public ThreadContext getThreadContext()
+      {
+         return new ThreadContext();
+      }
+   }   
+   
+   public static class TestHolder4 implements ThreadContextHolder
+   {
+      public ThreadContext getThreadContext()
+      {
+         return new ThreadContext(null);
+      }
+   }   
+   
+   public static class TestHolder5 implements ThreadContextHolder
+   {
+      public ThreadLocal<String> tl = new ThreadLocal<String>();
+      public ThreadContext getThreadContext()
+      {
+         return new ThreadContext(tl, null, tl);
+      }
+   }
 }
