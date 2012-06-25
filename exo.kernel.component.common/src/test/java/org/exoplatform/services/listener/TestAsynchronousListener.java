@@ -19,6 +19,8 @@ package org.exoplatform.services.listener;
 import junit.framework.TestCase;
 
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.component.ThreadContext;
+import org.exoplatform.container.component.ThreadContextHolder;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,8 +44,9 @@ public class TestAsynchronousListener extends TestCase
    {
       final String listenerName = "test_asynch";
       final String baseString = "Value not changed";
+      final String resultString = "Value become changed";
 
-      assertTrue(service_ != null);
+      assertNotNull(service_);
       Listener<Object, StrValue> listener = new AsynchListener();
       listener.setName(listenerName);
       listener.setDescription("Asynchronous listener");
@@ -51,20 +54,27 @@ public class TestAsynchronousListener extends TestCase
       service_.addListener(listener);
 
       StrValue testValue = new StrValue(baseString);
+      TestHolder.tl.set("-suffix");
+      synchronized (testValue)
+      {
+         service_.broadcast(listenerName, new Object(), testValue);
 
-      service_.broadcast(listenerName, new Object(), testValue);
-
-      // if asynch enabled value must be changed later so it's same exact after listener 
-      // broadcasting
-      assertEquals(baseString, testValue.getValue());
+         // if asynch enabled value must be changed later so it's same exact after listener 
+         // broadcasting
+         assertEquals(baseString, testValue.getValue());
+         testValue.wait();
+         assertEquals(resultString + "-suffix", testValue.getValue());
+      }
+      assertEquals("-suffix", TestHolder.tl.get());
    }
 
    public void testParentAsynchListener() throws Exception
    {
       final String listenerName = "test_parent_asynch";
       final String baseString = "Value not changed";
+      final String resultString = "Value become changed";
 
-      assertTrue(service_ != null);
+      assertNotNull(service_);
       Listener<Object, StrValue> listener = new ExtendedAsynchListener();
       listener.setName(listenerName);
       listener.setDescription("Asynchronous listener");
@@ -73,19 +83,26 @@ public class TestAsynchronousListener extends TestCase
 
       StrValue testValue = new StrValue(baseString);
 
-      service_.broadcast(listenerName, new Object(), testValue);
-
-      // if asynch enabled value must be changed later so it's same exact after listener 
-      // broadcasting
-      assertEquals(baseString, testValue.getValue());
+      synchronized (testValue)
+      {
+         service_.broadcast(listenerName, new Object(), testValue);
+      
+         // if asynch enabled value must be changed later so it's same exact after listener 
+         // broadcasting
+         assertEquals(baseString, testValue.getValue());
+         testValue.wait();
+         assertEquals(resultString + "-suffix", testValue.getValue());
+      }
+      assertEquals("-suffix", TestHolder.tl.get());
    }
 
    public void testSynchronousListener() throws Exception
    {
       final String listenerName = "test_synch";
       final String baseString = "Value not changed";
+      final String resultString = "Value become changed";
 
-      assertTrue(service_ != null);
+      assertNotNull(service_);
       Listener<Object, StrValue> listener = new SynchListener();
       listener.setName(listenerName);
       listener.setDescription("Synchronous listener");
@@ -94,11 +111,14 @@ public class TestAsynchronousListener extends TestCase
 
       StrValue testValue = new StrValue(baseString);
 
+      TestHolder.tl.set("-suffix");
       service_.broadcast(listenerName, null, testValue);
 
       // if Synch enabled - broadcast must wait until all events will be processed, 
       // so value must be changed
       assertFalse(baseString.equals(testValue.getValue()));
+      assertEquals(resultString + "-suffix", testValue.getValue());
+      assertEquals("-suffix", TestHolder.tl.get());
    }
 
    public void testSynchronousExeption() throws Exception
@@ -107,7 +127,7 @@ public class TestAsynchronousListener extends TestCase
       {
          final String listenerName = "test_synch_exeption";
 
-         assertTrue(service_ != null);
+         assertNotNull(service_);
          Listener<Object, StrValue> listener = new SynchListenerWithException();
          listener.setName(listenerName);
          listener.setDescription("Synchronous listener with exception");
@@ -131,7 +151,7 @@ public class TestAsynchronousListener extends TestCase
       {
          final String listenerName = "test_asynch_exeption";
 
-         assertTrue(service_ != null);
+         assertNotNull(service_);
          Listener<Object, StrValue> listener = new AsynchListenerWithException();
          listener.setName(listenerName);
          listener.setDescription("Asynchronous listener with exception");
@@ -143,11 +163,7 @@ public class TestAsynchronousListener extends TestCase
          service_.broadcast(listenerName, null, testValue);
          // exception must be ignored
 
-         Object obj = new Object();
-         synchronized (obj)
-         {
-            obj.wait(1000);
-         }
+         Thread.sleep(1000);
       }
       catch (Exception e)
       {
@@ -166,7 +182,7 @@ public class TestAsynchronousListener extends TestCase
 
       public void setValue(String value)
       {
-         val = value;
+         val = value + TestHolder.tl.get();
       }
 
       public String getValue()
@@ -181,14 +197,14 @@ public class TestAsynchronousListener extends TestCase
       @Override
       public void onEvent(Event<Object, StrValue> event) throws Exception
       {
+         StrValue value = event.getData();
          //wait
-         Object obj = new Object();
-         synchronized (obj)
+         synchronized (value)
          {
-            obj.wait(1000);
+            //change test value
+            value.setValue("Value become changed");
+            value.notifyAll();
          }
-         //change test value
-         event.getData().setValue("Value become changed");
       }
    }
 
@@ -198,11 +214,7 @@ public class TestAsynchronousListener extends TestCase
       public void onEvent(Event<Object, StrValue> event) throws Exception
       {
          //wait
-         Object obj = new Object();
-         synchronized (obj)
-         {
-            obj.wait(1000);
-         }
+         Thread.sleep(1000);
          //change test value
          event.getData().setValue("Value become changed");
       }
@@ -221,11 +233,7 @@ public class TestAsynchronousListener extends TestCase
       public void onEvent(Event<Object, StrValue> event) throws Exception
       {
          //wait
-         Object obj = new Object();
-         synchronized (obj)
-         {
-            obj.wait(1000);
-         }
+         Thread.sleep(1000);
 
          throw new Exception("This is test exception");
       }
@@ -237,13 +245,18 @@ public class TestAsynchronousListener extends TestCase
       public void onEvent(Event<Object, StrValue> event) throws Exception
       {
          //wait
-         Object obj = new Object();
-         synchronized (obj)
-         {
-            obj.wait(1000);
-         }
+         Thread.sleep(1000);
 
          throw new Exception("This is test exception");
+      }
+   }
+   
+   public static class TestHolder implements ThreadContextHolder
+   {
+      public static ThreadLocal<String> tl = new ThreadLocal<String>();
+      public ThreadContext getThreadContext()
+      {
+         return new ThreadContext(tl);
       }
    }
 }
