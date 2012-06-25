@@ -22,15 +22,15 @@ import java.security.Permission;
 
 /**
  * <p>Defines a component that holds variables of type {@link ThreadLocal}
- * whose value is required by the component to work normally and cannot be retrieved. 
+ * whose value is required by the component to work normally and cannot be recovered. 
  * This component is mainly used when we want to do a task asynchronously, in that case
  * to ensure that the task will be executed in the same conditions as if it would be 
  * executed synchronously we need to transfer the thread context from the original
  * thread to the executor thread.</p>
  * 
  * <p>Warning please note that this interface must be used with caution, only
- * the most important components that have {@link ThreadLocal} variable which value
- * cannot be recovered should implement this interface</p>
+ * the most important components that have {@link ThreadLocal} variables whose value
+ * cannot be recovered should implement this interface.</p>
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
