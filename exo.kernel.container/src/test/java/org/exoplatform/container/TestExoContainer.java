@@ -21,7 +21,6 @@ import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
-import org.exoplatform.container.support.ContainerBuilder;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Disposable;

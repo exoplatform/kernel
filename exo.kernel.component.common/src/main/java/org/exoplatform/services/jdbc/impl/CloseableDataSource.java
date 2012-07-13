@@ -18,17 +18,20 @@
  */
 package org.exoplatform.services.jdbc.impl;
 
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.sql.DataSource;
-
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
+
+import javax.sql.DataSource;
 
 
 /**
@@ -179,6 +182,23 @@ public class CloseableDataSource implements DataSource
                + "please note that an exception will be raised in the next jcr version.", new Exception(
                closedByCallStack));
          }
+      }
+   }
+
+   /**
+    * @see javax.sql.CommonDataSource#getParentLogger()
+    */
+   public Logger getParentLogger() throws SQLFeatureNotSupportedException
+   {
+      try
+      {
+         checkValid();
+         Method m = ds.getClass().getMethod("getParentLogger");
+         return (Logger)m.invoke(ds);
+      }
+      catch (Exception e)
+      {
+         throw new SQLFeatureNotSupportedException(e);
       }
    }
 

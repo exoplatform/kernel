@@ -451,8 +451,15 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          throw new IllegalArgumentException("No null cache key accepted");
       }
       @SuppressWarnings("rawtypes")
-      CacheKey key = new CacheKey<Serializable>(fullName, name);
-      V result = cache.remove(key);
+      final CacheKey key = new CacheKey<Serializable>(fullName, name);
+      V result = SecurityHelper.doPrivilegedAction(new PrivilegedAction<V>()
+      {
+         @Override
+         public V run()
+         {
+            return cache.remove(key);
+         }
+      });
       onRemove(key, result);
       return result;
    }

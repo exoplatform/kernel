@@ -7,14 +7,15 @@ grant codeBase "@MAIN_CLASSES@-"{
 };
 
 grant codeBase "@TEST_CLASSES@-"{
-   permission java.lang.RuntimePermission "accessRPCService";
-};
-
-grant codeBase "@TEST_CLASSES@-"{
-   permission java.lang.RuntimePermission "manageContainer";
-   permission java.lang.RuntimePermission "manageThreadLocal";
-   permission java.net.SocketPermission "127.0.0.1:2526", "connect, resolve"; 
-   permission java.net.SocketPermission "127.0.0.1:2525", "connect, resolve"; 
+//   We have a deadlock in java.net.PlainDatagramSocketImpl.peekData with Java7 in case
+//   we have the security manager installed and we don't have AllPermission granted
+//   for an unknown reason
+//   permission java.lang.RuntimePermission "accessRPCService";
+//   permission java.lang.RuntimePermission "manageContainer";
+//   permission java.lang.RuntimePermission "manageThreadLocal";
+//   permission java.net.SocketPermission "127.0.0.1:2526", "connect, resolve"; 
+//   permission java.net.SocketPermission "127.0.0.1:2525", "connect, resolve"; 
+   permission java.security.AllPermission;
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{
@@ -28,7 +29,3 @@ grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons/-"{
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.container/-"{
    permission java.security.AllPermission;
 };
-
-
-
-

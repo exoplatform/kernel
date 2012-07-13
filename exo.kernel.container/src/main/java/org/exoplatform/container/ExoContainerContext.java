@@ -171,7 +171,7 @@ public final class ExoContainerContext implements java.io.Serializable
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);      
-      currentContainer.set(new WeakReference<ExoContainer>(instance));
+      currentContainer.set(instance == null ? null : new WeakReference<ExoContainer>(instance));
    }
 
    public static ExoContainer getContainerByName(String name)

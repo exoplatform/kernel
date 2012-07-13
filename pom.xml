@@ -235,9 +235,9 @@
             <version>3.7.0</version>
          </dependency>
          <dependency>
-            <groupId>dumbster</groupId>
-            <artifactId>dumbster</artifactId>
-            <version>1.6</version>
+            <groupId>org.subethamail</groupId>
+            <artifactId>subethasmtp</artifactId>
+            <version>3.1.7</version>
             <scope>test</scope>
          </dependency>
          <dependency>

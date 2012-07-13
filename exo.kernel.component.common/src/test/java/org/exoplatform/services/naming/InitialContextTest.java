@@ -50,43 +50,51 @@ public class InitialContextTest extends TestCase
 
    private static String TEST_CONTEXT_FACTORY = "org.exoplatform.services.naming.SimpleContextFactory";
 
-   private PortalContainer container;
-
+   private InitialContextInitializer initializer;
+   
    public void setUp() throws Exception
    {
-
-      //      StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-configuration.xml");
-
-      container = PortalContainer.getInstance();
-   }
-
-   public void testConfig() throws Exception
-   {
-
-      InitialContextInitializer initializer =
-         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
-
+      PortalContainer container = PortalContainer.getInstance();
+      initializer = (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
       assertNotNull(initializer);
-
-      assertNotNull(initializer.getDefaultContextFactory());
-
-      assertEquals(TEST_CONTEXT_FACTORY, initializer.getDefaultContextFactory());
-
-      List plugins = (List)initializer.getPlugins();
-
-      assertFalse("No plugins configured", plugins.isEmpty());
-
-      assertTrue("Plugin is not BindReferencePlugin type", plugins.get(0) instanceof BindReferencePlugin);
-
-      BindReferencePlugin plugin = (BindReferencePlugin)plugins.get(0);
-
-      assertNotNull(plugin.getBindName());
-      assertNotNull(plugin.getReference());
-
    }
 
-   public void testGetContext() throws Exception
+   public void testCompositeNameUsing() throws Exception
    {
+      Name name = new CompositeName("java:comp/env/jdbc/jcr");
+      Enumeration en = name.getAll();
+      while (en.hasMoreElements())
+      {
+         en.nextElement();
+      }
+      InitialContext ctx = new InitialContext();
+      ctx.bind(name, "foo");
+      assertEquals("foo", ctx.lookup(name));
+      try
+      {
+         ctx.bind(name, "foo2");
+         fail("A NameAlreadyBoundException is expected here");
+      }
+      catch (NameAlreadyBoundException e)
+      {
+         // expected exception
+      }
+      assertEquals("foo", ctx.lookup(name));
+      assertEquals("foo", ctx.lookup("java:comp/env/jdbc/jcr"));
+      ctx.unbind(name);
+      try
+      {
+         ctx.lookup(name);
+         fail("A NameNotFoundException is expected here");
+      }
+      catch (NameNotFoundException e)
+      {
+         // expected exception
+      }
+   }
+   
+   public void testGetContext() throws Exception
+   {    
       assertNotNull(System.getProperty(Context.INITIAL_CONTEXT_FACTORY));
       InitialContext ctx = new InitialContext();
       assertNotNull(ctx);
@@ -104,11 +112,7 @@ public class InitialContextTest extends TestCase
       assertEquals("test", ctx.lookup("test"));
       ctx.rebind("test", "test2");
       assertEquals("test2", ctx.lookup("test"));
-      
-      InitialContextInitializer initializer =
-         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
 
-      assertNotNull(initializer);
       initializer.getInitialContext().bind("test", "test3");
       assertEquals("test3", ctx.lookup("test"));
       ctx.rebind("test", "test4");
@@ -188,39 +192,25 @@ public class InitialContextTest extends TestCase
       Object obj2 = initializer.getInitialContext().lookup("bla");
       assertTrue(obj1 == obj2);
    }
-
-   public void testCompositeNameUsing() throws Exception
+   
+   public void testConfig() throws Exception
    {
-      Name name = new CompositeName("java:comp/env/jdbc/jcr");
-      Enumeration en = name.getAll();
-      while (en.hasMoreElements())
-      {
-         en.nextElement();
-      }
-      InitialContext ctx = new InitialContext();
-      ctx.bind(name, "foo");
-      assertEquals("foo", ctx.lookup(name));
-      try
-      {
-         ctx.bind(name, "foo2");
-         fail("A NameAlreadyBoundException is expected here");
-      }
-      catch (NameAlreadyBoundException e)
-      {
-         // expected exception
-      }
-      assertEquals("foo", ctx.lookup(name));
-      assertEquals("foo", ctx.lookup("java:comp/env/jdbc/jcr"));
-      ctx.unbind(name);
-      try
-      {
-         ctx.lookup(name);
-         fail("A NameNotFoundException is expected here");
-      }
-      catch (NameNotFoundException e)
-      {
-         // expected exception
-      }
+
+      assertNotNull(initializer.getDefaultContextFactory());
+
+      assertEquals(TEST_CONTEXT_FACTORY, initializer.getDefaultContextFactory());
+
+      List plugins = (List)initializer.getPlugins();
+
+      assertFalse("No plugins configured", plugins.isEmpty());
+
+      assertTrue("Plugin is not BindReferencePlugin type", plugins.get(0) instanceof BindReferencePlugin);
+
+      BindReferencePlugin plugin = (BindReferencePlugin)plugins.get(0);
+
+      assertNotNull(plugin.getBindName());
+      assertNotNull(plugin.getReference());
+
    }
 
    /* 
@@ -230,10 +220,6 @@ public class InitialContextTest extends TestCase
     */
    public void testDifferentFileUsage() throws FileNotFoundException, NamingException, XMLStreamException
    {
-
-      InitialContextInitializer initializer =
-         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
-
       Map<String, String> refAddr = new HashMap<String, String>();
       refAddr.put("driverClassName", "org.hsqldb.jdbcDriver");
       refAddr.put("url", "jdbc:hsqldb:file:target/temp/data/portal");

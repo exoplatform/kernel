@@ -17,7 +17,6 @@
 package org.exoplatform.container;
 
 import org.exoplatform.container.jmx.AbstractTestContainer;
-import org.exoplatform.container.support.ContainerBuilder;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 
@@ -31,6 +30,35 @@ import java.net.URL;
  */
 public class TestPortalContainer extends AbstractTestContainer
 {
+   public void testGetConfigurationXML()
+   {
+      URL rootURL = getClass().getResource("test-exo-container.xml");
+      URL portalURL = getClass().getResource("/conf/test-configuration.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      //
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
+      
+      String configXML = RootContainer.getInstance().getConfigurationXML();
+      assertNotNull(configXML);
+      int size = configXML.length();
+      int hash = configXML.hashCode();
+      configXML = RootContainer.getInstance().getConfigurationXML();
+      assertNotNull(configXML);
+      assertTrue(size > 0);
+      assertEquals(size, configXML.length());
+      assertEquals(hash, configXML.hashCode());
+      
+      configXML = PortalContainer.getInstance().getConfigurationXML();
+      assertNotNull(configXML);
+      assertTrue(size > 0);
+      size = configXML.length();
+      hash = configXML.hashCode();
+      configXML = PortalContainer.getInstance().getConfigurationXML();
+      assertNotNull(configXML);
+      assertEquals(size, configXML.length());
+      assertEquals(hash, configXML.hashCode());
+   }
    
    public void testInitValues()
    {
@@ -159,36 +187,6 @@ public class TestPortalContainer extends AbstractTestContainer
       assertNull(PortalContainer.getCurrentSetting("long"));
       assertNull(PortalContainer.getCurrentSetting("double"));
       assertNull(PortalContainer.getCurrentSetting("boolean"));     
-   }
-   
-   public void testGetConfigurationXML()
-   {
-      URL rootURL = getClass().getResource("test-exo-container.xml");
-      URL portalURL = getClass().getResource("/conf/test-configuration.xml");
-      assertNotNull(rootURL);
-      assertNotNull(portalURL);
-      //
-      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
-      
-      String configXML = RootContainer.getInstance().getConfigurationXML();
-      assertNotNull(configXML);
-      int size = configXML.length();
-      int hash = configXML.hashCode();
-      configXML = RootContainer.getInstance().getConfigurationXML();
-      assertNotNull(configXML);
-      assertTrue(size > 0);
-      assertEquals(size, configXML.length());
-      assertEquals(hash, configXML.hashCode());
-      
-      configXML = PortalContainer.getInstance().getConfigurationXML();
-      assertNotNull(configXML);
-      assertTrue(size > 0);
-      size = configXML.length();
-      hash = configXML.hashCode();
-      configXML = PortalContainer.getInstance().getConfigurationXML();
-      assertNotNull(configXML);
-      assertEquals(size, configXML.length());
-      assertEquals(hash, configXML.hashCode());
    }
    
    public static class MyComponent

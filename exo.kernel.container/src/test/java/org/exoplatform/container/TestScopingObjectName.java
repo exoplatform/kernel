@@ -18,7 +18,6 @@
 package org.exoplatform.container;
 
 import org.exoplatform.container.jmx.AbstractTestContainer;
-import org.exoplatform.container.support.ContainerBuilder;
 
 import java.net.URL;
 

@@ -38,36 +38,14 @@ public class TestAsynchronousListener extends TestCase
    {
       PortalContainer manager = PortalContainer.getInstance();
       service_ = (ListenerService)manager.getComponentInstanceOfType(ListenerService.class);
-   }
-
-   public void testAsynchronousListener() throws Exception
-   {
-      final String listenerName = "test_asynch";
-      final String baseString = "Value not changed";
-      final String resultString = "Value become changed";
-
-      assertNotNull(service_);
-      Listener<Object, StrValue> listener = new AsynchListener();
-      listener.setName(listenerName);
-      listener.setDescription("Asynchronous listener");
-
-      service_.addListener(listener);
-
-      StrValue testValue = new StrValue(baseString);
       TestHolder.tl.set("-suffix");
-      synchronized (testValue)
-      {
-         service_.broadcast(listenerName, new Object(), testValue);
-
-         // if asynch enabled value must be changed later so it's same exact after listener 
-         // broadcasting
-         assertEquals(baseString, testValue.getValue());
-         testValue.wait();
-         assertEquals(resultString + "-suffix", testValue.getValue());
-      }
-      assertEquals("-suffix", TestHolder.tl.get());
    }
-
+   
+   protected void tearDown() throws Exception
+   {
+      TestHolder.tl.remove();
+   }
+   
    public void testParentAsynchListener() throws Exception
    {
       final String listenerName = "test_parent_asynch";
@@ -87,6 +65,34 @@ public class TestAsynchronousListener extends TestCase
       {
          service_.broadcast(listenerName, new Object(), testValue);
       
+         // if asynch enabled value must be changed later so it's same exact after listener 
+         // broadcasting
+         assertEquals(baseString, testValue.getValue());
+         testValue.wait();
+         assertEquals(resultString + "-suffix", testValue.getValue());
+      }
+      assertEquals("-suffix", TestHolder.tl.get());
+   }
+   
+   public void testAsynchronousListener() throws Exception
+   {
+      final String listenerName = "test_asynch";
+      final String baseString = "Value not changed";
+      final String resultString = "Value become changed";
+
+      assertNotNull(service_);
+      Listener<Object, StrValue> listener = new AsynchListener();
+      listener.setName(listenerName);
+      listener.setDescription("Asynchronous listener");
+
+      service_.addListener(listener);
+
+      StrValue testValue = new StrValue(baseString);
+      TestHolder.tl.set("-suffix");
+      synchronized (testValue)
+      {
+         service_.broadcast(listenerName, new Object(), testValue);
+
          // if asynch enabled value must be changed later so it's same exact after listener 
          // broadcasting
          assertEquals(baseString, testValue.getValue());

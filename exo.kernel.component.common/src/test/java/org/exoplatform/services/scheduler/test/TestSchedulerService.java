@@ -47,116 +47,12 @@ public class TestSchedulerService extends SchedulerServiceTestBase
 
    public void setUp() throws Exception
    {
-      if (service_ == null)
-      {
-         PortalContainer manager = PortalContainer.getInstance();
-         service_ = (JobSchedulerService)manager.getComponentInstanceOfType(JobSchedulerService.class);
-      }
+      PortalContainer manager = PortalContainer.getInstance();
+      service_ = (JobSchedulerService)manager.getComponentInstanceOfType(JobSchedulerService.class);
    }
 
    public void tearDown() throws Exception
    {
-   }
-
-   public void testJobWithNonStartedServices() throws Exception
-   {
-      MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
-      assertEquals(Boolean.TRUE, component.getResult());
-   }
-   
-   
-   public void testSeviceWithGlobalListener() throws Exception
-   {
-      assertTrue("JobScheduler is not deployed correctly", service_ != null);
-      Thread.sleep(1000);
-      Date startTime = new Date(System.currentTimeMillis() + 1000);
-      Date endTime = null;
-      JobInfo jinfo;
-
-      // Test addJob(JobInfo, Date startTime) and GlobalTriggerListener()
-      resetTestEnvironment();
-      jinfo = new JobInfo("TestAddJob", null/* default group */, AJob.class);
-      AJob.expectExecuteTime_ = startTime;
-      service_.addGlobalTriggerListener(new GlobalTriggerListener());
-      service_.addJob(jinfo, startTime);
-      Thread.sleep(1100);
-      assertEquals("task has been run once", 1, AJob.counter_);
-      // assertEquals("GlobalTriggerListener detect one task", 2,
-      // GlobalTriggerListener.countTriggerFired_) ;
-      assertTrue("The task is triggered  at the correct time  within 500ms margin", AJob.errorCounter_ == 0);
-
-      /*
-       * Test addJobPeriod(JobInfo jinfo,JobPeriodInfor pinfor) Job will fire
-       * after 3 second, repeat forever, 2 second pause between repeat fire
-       */
-      resetTestEnvironment();
-      jinfo = new JobInfo("TestJobPeriod", null/* default group */, AJob.class);
-      startTime = new Date(System.currentTimeMillis() + 1000);
-      PeriodInfo jpinfo = new PeriodInfo(startTime, null /* endTime */, 2/* repeatCount */, 1000/* period */);
-      service_.addPeriodJob(jinfo, jpinfo);
-      Thread.sleep(2100);
-      assertEquals("task has been run exactly two times", 2, AJob.repeatCounter_);
-
-      /*
-       * Test addJobPeriod(JobInfo jinfo,JobPeriodInfor pinfor) Job will fire
-       * after 1 second, stop after 2 second, 1 second pause between repeat fire
-       */
-      resetTestEnvironment();
-      long currentTime = System.currentTimeMillis();
-      jinfo = new JobInfo("TestJobPeriod", null/* default group */, AJob.class);
-      startTime = new Date(currentTime + 1000);
-      endTime = new Date(currentTime + 2100);
-      jpinfo = new PeriodInfo(startTime, endTime, 0/* repeatCount */, 1000/* period */);
-      service_.addPeriodJob(jinfo, jpinfo);
-      Thread.sleep(2500);
-      assertEquals("task has been run exactly two times", 2, AJob.repeatCounter_);
-
-      /*
-       * test test addPeriodJob(JobInfo jinfo,JobperiodInfo pinfo) Job will run
-       * imediately, and exactly two times, 1 second pause between repeat run
-       */
-      resetTestEnvironment();
-      jinfo = new JobInfo("ImediatelyPeriodJob", null/* default group */, AJob.class);
-      jpinfo = new PeriodInfo(null/* startTime */, null/* endTime */, 2/* repeatCount */, 500/* period */);
-      service_.addPeriodJob(jinfo, jpinfo);
-      Thread.sleep(1100);
-      assertEquals("task has been run exactly two times", 2, AJob.repeatCounter_);
-      service_.removeJob(jinfo);
-      /*
-       * test addCronJob(JobInfor jinfo, String exp); Job will fire at 10: am
-       * every day "0 15 10 ? * *"
-       */
-      resetTestEnvironment();
-      String exp = "0 25 11 ? * *";
-      jinfo = new JobInfo("TestCronJob", "cronGroup"/* default group */, AJob.class);
-      service_.addCronJob(jinfo, exp);
-      assertEquals("task has been run exactly one times at " + exp, 0, AJob.repeatCounter_);
-      service_.removeJob(jinfo);
-
-      /*
-       * test test addPeriodJob(JobInfo jinfo,JobperiodInfo pinfo) Job will run
-       * imediately, and forever, 1 second pause between repeat run
-       */
-      resetTestEnvironment();
-      jinfo = new JobInfo("ForeverPeriodJob", null/* default group */, AJob.class);
-      jpinfo = new PeriodInfo(null/* startTime */, null/* endTime */, 0/* repeatCount */, 500/* period */);
-      service_.addPeriodJob(jinfo, jpinfo);
-      Thread.sleep(1100);
-      assertEquals("task has been run forever: ", 3, AJob.repeatCounter_);
-      boolean b = service_.removeJob(jinfo);
-      b = service_.removeGlobaTriggerListener("GlobalTriggerListener");
-      assertTrue("expect Global Trigger Listener is removed", b);
-   }
-
-   public void testgetAvailableJobs() throws Exception
-   {
-      List availableJobs = service_.getAllJobs();
-      assertEquals("Expect 1 job inthe queue", 1, availableJobs.size());
-      // some information about job execution
-      Date firedTime = new Date(System.currentTimeMillis() + 1000000);
-      service_.addJob(new JobInfo("queuejob", null/* default group */, AJob.class), firedTime);
-      availableJobs = service_.getAllJobs();
-      assertEquals("Expect one job inthe queue", 2, availableJobs.size());
    }
 
    public void testQueueTask() throws Exception
@@ -272,6 +168,12 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       assertTrue("now, expect no non global trigger is found", triggerListenerCol.size() == 0);
    }
    
+   public void testJobWithNonStartedServices() throws Exception
+   {
+      MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
+      assertEquals(Boolean.TRUE, component.getResult());
+   }
+   
    public void testMultiplePortalContainers() throws Exception
    {
       ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
@@ -313,21 +215,106 @@ public class TestSchedulerService extends SchedulerServiceTestBase
             System.setProperty(PropertyManager.RUNTIME_PROFILES, oldProfileList);            
          }
          PropertyManager.refresh();
-         if (container != null)
-         {
-            container.stop();            
-         }
-         
-         if (container2 != null)
-         {
-            container2.stop();            
-         }
       }
       assertEquals("myJob1", component.name);
       assertEquals(container, component.container);
       assertEquals("myJob2", component2.name);
       assertEquals(container2, component2.container);
       
+   }
+   
+   public void testSeviceWithGlobalListener() throws Exception
+   {
+      assertTrue("JobScheduler is not deployed correctly", service_ != null);
+      Thread.sleep(1000);
+      Date startTime = new Date(System.currentTimeMillis() + 1000);
+      Date endTime = null;
+      JobInfo jinfo;
+
+      // Test addJob(JobInfo, Date startTime) and GlobalTriggerListener()
+      resetTestEnvironment();
+      jinfo = new JobInfo("TestAddJob", null/* default group */, AJob.class);
+      AJob.expectExecuteTime_ = startTime;
+      service_.addGlobalTriggerListener(new GlobalTriggerListener());
+      service_.addJob(jinfo, startTime);
+      Thread.sleep(1100);
+      assertEquals("task has been run once", 1, AJob.counter_);
+      // assertEquals("GlobalTriggerListener detect one task", 2,
+      // GlobalTriggerListener.countTriggerFired_) ;
+      assertTrue("The task is triggered  at the correct time  within 500ms margin", AJob.errorCounter_ == 0);
+
+      /*
+       * Test addJobPeriod(JobInfo jinfo,JobPeriodInfor pinfor) Job will fire
+       * after 3 second, repeat forever, 2 second pause between repeat fire
+       */
+      resetTestEnvironment();
+      jinfo = new JobInfo("TestJobPeriod", null/* default group */, AJob.class);
+      startTime = new Date(System.currentTimeMillis() + 1000);
+      PeriodInfo jpinfo = new PeriodInfo(startTime, null /* endTime */, 2/* repeatCount */, 1000/* period */);
+      service_.addPeriodJob(jinfo, jpinfo);
+      Thread.sleep(2100);
+      assertEquals("task has been run exactly two times", 2, AJob.repeatCounter_);
+
+      /*
+       * Test addJobPeriod(JobInfo jinfo,JobPeriodInfor pinfor) Job will fire
+       * after 1 second, stop after 2 second, 1 second pause between repeat fire
+       */
+      resetTestEnvironment();
+      long currentTime = System.currentTimeMillis();
+      jinfo = new JobInfo("TestJobPeriod", null/* default group */, AJob.class);
+      startTime = new Date(currentTime + 1000);
+      endTime = new Date(currentTime + 2100);
+      jpinfo = new PeriodInfo(startTime, endTime, 0/* repeatCount */, 1000/* period */);
+      service_.addPeriodJob(jinfo, jpinfo);
+      Thread.sleep(2500);
+      assertEquals("task has been run exactly two times", 2, AJob.repeatCounter_);
+
+      /*
+       * test test addPeriodJob(JobInfo jinfo,JobperiodInfo pinfo) Job will run
+       * imediately, and exactly two times, 1 second pause between repeat run
+       */
+      resetTestEnvironment();
+      jinfo = new JobInfo("ImediatelyPeriodJob", null/* default group */, AJob.class);
+      jpinfo = new PeriodInfo(null/* startTime */, null/* endTime */, 2/* repeatCount */, 500/* period */);
+      service_.addPeriodJob(jinfo, jpinfo);
+      Thread.sleep(1100);
+      assertEquals("task has been run exactly two times", 2, AJob.repeatCounter_);
+      service_.removeJob(jinfo);
+      /*
+       * test addCronJob(JobInfor jinfo, String exp); Job will fire at 10: am
+       * every day "0 15 10 ? * *"
+       */
+      resetTestEnvironment();
+      String exp = "0 25 11 ? * *";
+      jinfo = new JobInfo("TestCronJob", "cronGroup"/* default group */, AJob.class);
+      service_.addCronJob(jinfo, exp);
+      assertEquals("task has been run exactly one times at " + exp, 0, AJob.repeatCounter_);
+      service_.removeJob(jinfo);
+
+      /*
+       * test test addPeriodJob(JobInfo jinfo,JobperiodInfo pinfo) Job will run
+       * imediately, and forever, 1 second pause between repeat run
+       */
+      resetTestEnvironment();
+      jinfo = new JobInfo("ForeverPeriodJob", null/* default group */, AJob.class);
+      jpinfo = new PeriodInfo(null/* startTime */, null/* endTime */, 0/* repeatCount */, 500/* period */);
+      service_.addPeriodJob(jinfo, jpinfo);
+      Thread.sleep(1100);
+      assertEquals("task has been run forever: ", 3, AJob.repeatCounter_);
+      boolean b = service_.removeJob(jinfo);
+      b = service_.removeGlobaTriggerListener("GlobalTriggerListener");
+      assertTrue("expect Global Trigger Listener is removed", b);
+   }
+   
+   public void testgetAvailableJobs() throws Exception
+   {
+      List availableJobs = service_.getAllJobs();
+      int size = availableJobs.size();
+      // some information about job execution
+      Date firedTime = new Date(System.currentTimeMillis() + 1000000);
+      service_.addJob(new JobInfo("queuejob", null/* default group */, AJob.class), firedTime);
+      availableJobs = service_.getAllJobs();
+      assertEquals("Expect one job inthe queue", size + 1, availableJobs.size());
    }
    
    public static class MyContainerLifecyclePlugin extends BaseContainerLifecyclePlugin

@@ -1183,7 +1183,14 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       @Override
       public void run()
       {
-         container_.stop();
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               container_.stop();
+               return null;
+            }
+         });
       }
    }
 

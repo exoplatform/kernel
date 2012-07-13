@@ -37,6 +37,7 @@ import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -45,6 +46,8 @@ import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
+import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -285,6 +288,14 @@ public class TestDataSourceProviderImpl extends TestCase
       public Connection getConnection(String username, String password) throws SQLException
       {
          return con = new MyConnection();
+      }
+
+      /**
+       * @see javax.sql.CommonDataSource#getParentLogger()
+       */
+      public Logger getParentLogger() throws SQLFeatureNotSupportedException
+      {
+         return null;
       }      
    }
    
@@ -674,6 +685,45 @@ public class TestDataSourceProviderImpl extends TestCase
        */
       public void setHoldability(int holdability) throws SQLException
       {
+      }
+
+      /**
+       * @see java.sql.Connection#setSchema(java.lang.String)
+       */
+      public void setSchema(String schema) throws SQLException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /**
+       * @see java.sql.Connection#getSchema()
+       */
+      public String getSchema() throws SQLException
+      {
+         return null;
+      }
+
+      /**
+       * @see java.sql.Connection#abort(java.util.concurrent.Executor)
+       */
+      public void abort(Executor executor) throws SQLException
+      {
+      }
+
+      /**
+       * @see java.sql.Connection#setNetworkTimeout(java.util.concurrent.Executor, int)
+       */
+      public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException
+      {
+      }
+
+      /**
+       * @see java.sql.Connection#getNetworkTimeout()
+       */
+      public int getNetworkTimeout() throws SQLException
+      {
+         return 0;
       }      
    }
    

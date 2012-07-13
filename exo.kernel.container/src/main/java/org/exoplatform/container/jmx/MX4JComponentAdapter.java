@@ -207,7 +207,8 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
          if (name.equals(m.getName()))
          {
             Class<?>[] types = m.getParameterTypes();
-            if (types != null && types.length == 1 && ComponentPlugin.class.isAssignableFrom(types[0]))
+            if (types != null && types.length == 1 && ComponentPlugin.class.isAssignableFrom(types[0])
+               && types[0].isAssignableFrom(pluginClass))
             {
                int currentDepth = getClosestMatchDepth(pluginClass, types[0]);
                if (currentDepth == 0)

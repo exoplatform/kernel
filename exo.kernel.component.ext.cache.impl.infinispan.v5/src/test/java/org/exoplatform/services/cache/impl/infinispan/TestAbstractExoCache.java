@@ -68,32 +68,6 @@ public class TestAbstractExoCache extends TestCase
       this.cache = (AbstractExoCache<Serializable, Object>)service.getCacheInstance("myCache");
    }
 
-   public void testPut() throws Exception
-   {
-      cache.put(new MyKey("a"), "a");
-      cache.put(new MyKey("b"), "b");
-      cache.put(new MyKey("c"), "c");
-      assertEquals(3, cache.getCacheSize());
-      cache.put(new MyKey("a"), "c");
-      assertEquals(3, cache.getCacheSize());
-      cache.put(new MyKey("d"), "c");
-      assertEquals(4, cache.getCacheSize());
-
-      cache.clearCache();
-   }
-
-   public void testClearCache() throws Exception
-   {
-      cache.put(new MyKey("a"), "a");
-      cache.put(new MyKey("b"), "b");
-      cache.put(new MyKey("c"), "c");
-      assertTrue(cache.getCacheSize() > 0);
-      cache.clearCache();
-      assertTrue(cache.getCacheSize() == 0);
-
-      cache.clearCache();
-   }
-
    public void testGet() throws Exception
    {
       cache.put(new MyKey("a"), "a");
@@ -540,7 +514,7 @@ public class TestAbstractExoCache extends TestCase
    public void testDistributedCache() throws Exception
    {
       // If the cache is still alive this test fails due to a TimeoutException.
-      cache.cache.getCacheManager().stop();
+//      cache.cache.getCacheManager().stop();
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(8);
@@ -745,5 +719,31 @@ public class TestAbstractExoCache extends TestCase
          cache2.cache.getCacheManager().stop();
 //         cache3.cache.getCacheManager().stop();
       }
+   }
+
+   public void testPut() throws Exception
+   {
+      cache.put(new MyKey("a"), "a");
+      cache.put(new MyKey("b"), "b");
+      cache.put(new MyKey("c"), "c");
+      assertEquals(3, cache.getCacheSize());
+      cache.put(new MyKey("a"), "c");
+      assertEquals(3, cache.getCacheSize());
+      cache.put(new MyKey("d"), "c");
+      assertEquals(4, cache.getCacheSize());
+
+      cache.clearCache();
+   }
+
+   public void testClearCache() throws Exception
+   {
+      cache.put(new MyKey("a"), "a");
+      cache.put(new MyKey("b"), "b");
+      cache.put(new MyKey("c"), "c");
+      assertTrue(cache.getCacheSize() > 0);
+      cache.clearCache();
+      assertTrue(cache.getCacheSize() == 0);
+
+      cache.clearCache();
    }   
 }

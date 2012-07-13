@@ -20,8 +20,8 @@ package org.exoplatform.container.configuration;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.ContainerBuilder;
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.support.ContainerBuilder;
 
 import java.io.File;
 import java.io.FileFilter;

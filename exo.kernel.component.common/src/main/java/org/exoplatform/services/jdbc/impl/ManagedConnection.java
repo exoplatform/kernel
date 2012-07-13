@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jdbc.impl;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.lang.reflect.Method;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -35,6 +39,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 /**
  * This classes wraps a jdbc connection in order to prevent any forbidden
@@ -46,6 +51,10 @@ import java.util.Properties;
  */
 public class ManagedConnection implements Connection
 {
+   /**
+    * The logger
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.ManagedConnection");
 
    /**
     * The nested connection
@@ -454,5 +463,112 @@ public class ManagedConnection implements Connection
    public void setHoldability(int holdability) throws SQLException
    {
       con.setHoldability(holdability);
+   }
+
+   /**
+    * @see java.sql.Connection#setSchema(java.lang.String)
+    */
+   public void setSchema(String schema) throws SQLException
+   {
+      try
+      {
+         Method m = con.getClass().getMethod("setSchema", String.class);
+         m.invoke(con, schema);
+      }
+      catch (NoSuchMethodException e)
+      {
+         LOG.debug("The method setSchema cannot be found in the class " + con.getClass() + 
+                  ", so we assume it is not supported");
+      }
+      catch (Exception e)
+      {
+         throw new SQLException(e);
+      }
+   }
+
+   /**
+    * @see java.sql.Connection#getSchema()
+    */
+   public String getSchema() throws SQLException
+   {
+      try
+      {
+         Method m = con.getClass().getMethod("getSchema");
+         return (String)m.invoke(con);
+      }
+      catch (NoSuchMethodException e)
+      {
+         LOG.debug("The method getSchema cannot be found in the class " + con.getClass() + 
+                  ", so we assume it is not supported");
+      }
+      catch (Exception e)
+      {
+         throw new SQLException(e);
+      }
+      return null;
+   }
+
+   /**
+    * @see java.sql.Connection#abort(java.util.concurrent.Executor)
+    */
+   public void abort(Executor executor) throws SQLException
+   {
+      try
+      {
+         Method m = con.getClass().getMethod("abort", Executor.class);
+         m.invoke(con, executor);
+      }
+      catch (NoSuchMethodException e)
+      {
+         LOG.debug("The method abort cannot be found in the class " + con.getClass() + 
+            ", so we assume it is not supported");
+      }
+      catch (Exception e)
+      {
+         throw new SQLException(e);
+      }
+   }
+
+   /**
+    * @see java.sql.Connection#setNetworkTimeout(java.util.concurrent.Executor, int)
+    */
+   public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException
+   {
+      try
+      {
+         Method m = con.getClass().getMethod("setNetworkTimeout", Executor.class, int.class);
+         m.invoke(con, executor, milliseconds);
+      }
+      catch (NoSuchMethodException e)
+      {
+         LOG.debug("The method setNetworkTimeout cannot be found in the class " + con.getClass() + 
+            ", so we assume it is not supported");
+      }
+      catch (Exception e)
+      {
+         throw new SQLException(e);
+      }
+   }
+
+   /**
+    * @see java.sql.Connection#getNetworkTimeout()
+    */
+   public int getNetworkTimeout() throws SQLException
+   {
+      try
+      {
+         Method m = con.getClass().getMethod("getNetworkTimeout");
+         return (Integer)m.invoke(con);
+      }
+      catch (NoSuchMethodException e)
+      {
+         LOG.debug("The method getNetworkTimeout cannot be found in the class " + con.getClass() + 
+                  ", so we assume it is not supported");
+      }
+      catch (Exception e)
+      {
+         throw new SQLException(e);
+      }
+      return 0;
    }
 }

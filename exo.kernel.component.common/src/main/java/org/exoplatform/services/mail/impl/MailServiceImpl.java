@@ -254,13 +254,11 @@ public class MailServiceImpl implements MailService
    /**
     * {@inheritDoc}
     */
-   @Override
    public Future<Boolean> sendMessageInFuture(final String from, final String to, final String subject,
       final String body)
    {
       return executorService.submit(new Callable<Boolean>()
       {
-         @Override
          public Boolean call() throws Exception
          {
             sendMessage(from, to, subject, body);
@@ -272,12 +270,10 @@ public class MailServiceImpl implements MailService
    /**
     * {@inheritDoc}
     */
-   @Override
    public Future<Boolean> sendMessageInFuture(final Message message)
    {
       return executorService.submit(new Callable<Boolean>()
       {
-         @Override
          public Boolean call() throws Exception
          {
             sendMessage(message);
@@ -289,12 +285,10 @@ public class MailServiceImpl implements MailService
    /**
     * {@inheritDoc}
     */
-   @Override
    public Future<Boolean> sendMessageInFuture(final MimeMessage message)
    {
       return executorService.submit(new Callable<Boolean>()
       {
-         @Override
          public Boolean call() throws Exception
          {
             sendMessage(message);

@@ -16,14 +16,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.support;
+package org.exoplatform.container;
 
 import junit.framework.AssertionFailedError;
 
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.Tools;
-import org.exoplatform.container.ExoContainerContext;
-import org.exoplatform.container.RootContainer;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -168,6 +166,7 @@ public class ContainerBuilder
       topContainerField.setAccessible(true);
       topContainerField.set(null, null);
 
+      ExoContainerContext.setCurrentContainer(null);
       // Same remark than above
       Field singletonField = RootContainer.class.getDeclaredField("singleton_");
       singletonField.setAccessible(true);
@@ -230,6 +229,8 @@ public class ContainerBuilder
          //
          root = RootContainer.getInstance();
 
+         PortalContainer.reloadConfig();
+         
          //
          for (String portalName : portalConfigURLs.keySet())
          {

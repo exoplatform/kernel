@@ -47,9 +47,9 @@ public class TestComponentPlugin extends AbstractTestContainer
 
       public int countRegisterCP1;
 
-      public void register(ComponentPlugin plugin)
+      public void register(ComponentPlugin1 plugin)
       {
-         countRegisterCP++;
+         countRegisterCP1++;
       }
 
       public void register(AComponentPlugin plugin)
@@ -57,11 +57,10 @@ public class TestComponentPlugin extends AbstractTestContainer
          countRegisterACP++;
       }
 
-      public void register(ComponentPlugin1 plugin)
+      public void register(ComponentPlugin plugin)
       {
-         countRegisterCP1++;
+         countRegisterCP++;
       }
-
    }
 
    public static abstract class AComponentPlugin implements ComponentPlugin

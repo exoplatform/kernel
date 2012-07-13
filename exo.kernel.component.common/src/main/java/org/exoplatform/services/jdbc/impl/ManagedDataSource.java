@@ -22,8 +22,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 import javax.transaction.Status;
@@ -159,5 +162,21 @@ public class ManagedDataSource implements DataSource
    private boolean providesManagedConnection()
    {
       return !checkIfTxActive || isTxActive();
+   }
+
+   /**
+    * @see javax.sql.CommonDataSource#getParentLogger()
+    */
+   public Logger getParentLogger() throws SQLFeatureNotSupportedException
+   {
+      try
+      {
+         Method m = ds.getClass().getMethod("getParentLogger");
+         return (Logger)m.invoke(ds);
+      }
+      catch (Exception e)
+      {
+         throw new SQLFeatureNotSupportedException(e);
+      }
    }
 }

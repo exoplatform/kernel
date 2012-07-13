@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.Permission;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,7 +44,12 @@ public class TestSecurityManager extends SecurityManager
    /**
     * Map of methods to exclude and for each method we define a list of method called to ignore
     */
-   private final Map<String, Set<String>> excludes = getExcludes();
+   private Map<String, Set<String>> excludes;
+
+   /**
+    * Indicates whether or not we are currently loading the file <code>tsm-excludes.properties</code>
+    */
+   private final ThreadLocal<Boolean> loading = new ThreadLocal<Boolean>();
 
    /**
     * {@inheritDoc}
@@ -51,6 +57,11 @@ public class TestSecurityManager extends SecurityManager
    @Override
    public void checkPermission(Permission perm)
    {
+      if (loading.get() != null)
+      {
+         //skip permission checking
+         return;
+      }
       try
       {
          super.checkPermission(perm);
@@ -62,6 +73,11 @@ public class TestSecurityManager extends SecurityManager
          boolean srcCode = false;
          boolean testCode = false;
 
+         // We need to lazy load the file 'tsm-excludes.properties' to prevent exception of type
+         // com.sun.org.apache.xml.internal.serializer.utils.WrappedRuntimeException: 
+         // Could not load the propery file 'output_xml.properties' for output method 'xml' (check CLASSPATH)
+         Map<String, Set<String>> excludes = getExcludes();
+         
          while (e != null)
          {
             StackTraceElement[] traceElements = e.getStackTrace();
@@ -70,8 +86,7 @@ public class TestSecurityManager extends SecurityManager
                String className = traceElements[i].getClassName();
                String fileName = traceElements[i].getFileName();
                String methodName = traceElements[i].getMethodName();
-               if (excludes != null && i - 1 >= 0
-                  && excludes.containsKey(className + "." + methodName)
+               if (i - 1 >= 0 && excludes.containsKey(className + "." + methodName)
                   && excludes.get(className + "." + methodName).contains(traceElements[i - 1].getMethodName()))
                {
                   // the called method is excluded thus we ignore the exception
@@ -97,7 +112,7 @@ public class TestSecurityManager extends SecurityManager
                else if (className.startsWith("org.apache.jackrabbit.test"))
                {
                   if (fileName.endsWith("Test.java") || fileName.equals("JCRTestResult.java")
-                           || fileName.equals("RepositoryHelper.java") || fileName.equals("RepositoryStub.java"))
+                     || fileName.equals("RepositoryHelper.java") || fileName.equals("RepositoryStub.java"))
                   {
                      testCode = true;
                   }
@@ -112,24 +127,34 @@ public class TestSecurityManager extends SecurityManager
          {
             return;
          }
-        
-         // Only for debug purpose
-         //if (!se
-         // .getMessage()
-         // .equals(
-         //    "access denied (java.lang.RuntimePermission accessClassInPackage.com.sun.xml.internal.bind.v2.runtime.reflect)"))
-         //{
-         //    se.printStackTrace(); //NOSONAR
-         //}
-
          throw se;
       }
    }
 
-   /**
-    * @return
-    */
    private Map<String, Set<String>> getExcludes()
+   {
+      if (excludes == null)
+      {
+         synchronized (this)
+         {
+            if (excludes == null)
+            {
+               try
+               {
+                  loading.set(Boolean.TRUE);
+                  excludes = loadExcludes();
+               }
+               finally
+               {
+                  loading.remove();
+               }
+            }
+         }
+      }
+      return excludes;
+   }
+
+   private Map<String, Set<String>> loadExcludes()
    {
       InputStream is = null;
       try
@@ -138,7 +163,7 @@ public class TestSecurityManager extends SecurityManager
       }
       catch (Exception e)
       {
-         return null;
+         return Collections.emptyMap();
       }
 
       if (is != null)
@@ -173,6 +198,6 @@ public class TestSecurityManager extends SecurityManager
          }
       }
 
-      return null;
+      return Collections.emptyMap();
    }
 }

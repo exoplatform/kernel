@@ -41,6 +41,55 @@ public class TestContainer extends TestCase
       System.setProperty("maven.exoplatform.dir", TestContainer.class.getResource("/").getFile());
    }
 
+   public void testComponent() throws Exception
+   {
+      RootContainer rootContainer = RootContainer.getInstance();
+      MockService mservice = (MockService)rootContainer.getComponentInstance("MockService");
+      assertTrue(mservice != null);
+      assertTrue(mservice.getPlugins().size() == 2);
+   }
+
+   public void testComponent2() throws Exception
+   {
+      RootContainer rootContainer = RootContainer.getInstance();
+      PortalContainer pcontainer = rootContainer.getPortalContainer("portal");
+      assertNotNull(pcontainer);
+      MultibleComponent c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
+      assertNotNull(c);
+      c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
+      assertNotNull(c);
+      c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
+      assertNotNull(c);
+   }
+
+   public void testComponent3() throws Exception
+   {
+      RootContainer rootContainer = RootContainer.getInstance();
+      PortalContainer pcontainer = rootContainer.getPortalContainer("portal");
+      assertNotNull(pcontainer);
+      DefaultComponent c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
+      assertNotNull(c);
+      c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
+      assertNotNull(c);
+      c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
+      assertNotNull(c);
+   }
+
+   public void testPriorityPlugins()
+   {
+      RootContainer rootContainer = RootContainer.getInstance();
+      PortalContainer pcontainer = rootContainer.getPortalContainer("portal");
+      assertNotNull(pcontainer);
+      PriorityService ps = (PriorityService)pcontainer.getComponentInstanceOfType(PriorityService.class);
+      assertNotNull(ps);
+      List<ComponentPlugin> l = ps.getPlugins();
+      assertNotNull(l);
+      assertEquals(3, l.size());
+      assertEquals("PluginPriority3", l.get(0).getName());
+      assertEquals("PluginPriority1", l.get(1).getName());
+      assertEquals("PluginPriority2", l.get(2).getName());
+   }
+   
    public void testPortalContainer() throws Exception
    {
       RootContainer rootContainer = RootContainer.getInstance();
@@ -65,54 +114,5 @@ public class TestContainer extends TestCase
          pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
          assertTrue("not null", pcontainer != null);
       }
-   }
-
-   public void testComponent() throws Exception
-   {
-      RootContainer rootContainer = RootContainer.getInstance();
-      MockService mservice = (MockService)rootContainer.getComponentInstance("MockService");
-      assertTrue(mservice != null);
-      assertTrue(mservice.getPlugins().size() == 2);
-   }
-
-   public void testComponent2() throws Exception
-   {
-      RootContainer rootContainer = RootContainer.getInstance();
-      PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
-      assertNotNull(pcontainer);
-      MultibleComponent c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
-      assertNotNull(c);
-      c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
-      assertNotNull(c);
-      c = (MultibleComponent)pcontainer.getComponentInstanceOfType(MultibleComponent.class);
-      assertNotNull(c);
-   }
-
-   public void testComponent3() throws Exception
-   {
-      RootContainer rootContainer = RootContainer.getInstance();
-      PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
-      assertNotNull(pcontainer);
-      DefaultComponent c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
-      assertNotNull(c);
-      c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
-      assertNotNull(c);
-      c = (DefaultComponent)pcontainer.getComponentInstanceOfType(DefaultComponent.class);
-      assertNotNull(c);
-   }
-
-   public void testPriorityPlugins()
-   {
-      RootContainer rootContainer = RootContainer.getInstance();
-      PortalContainer pcontainer = (PortalContainer)rootContainer.getComponentInstance("portal");
-      assertNotNull(pcontainer);
-      PriorityService ps = (PriorityService)pcontainer.getComponentInstanceOfType(PriorityService.class);
-      assertNotNull(ps);
-      List<ComponentPlugin> l = ps.getPlugins();
-      assertNotNull(l);
-      assertEquals(3, l.size());
-      assertEquals("PluginPriority3", l.get(0).getName());
-      assertEquals("PluginPriority1", l.get(1).getName());
-      assertEquals("PluginPriority2", l.get(2).getName());
-   }
+   }   
 }

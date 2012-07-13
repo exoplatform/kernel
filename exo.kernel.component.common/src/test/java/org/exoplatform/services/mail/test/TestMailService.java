@@ -18,17 +18,17 @@
  */
 package org.exoplatform.services.mail.test;
 
-import com.dumbster.smtp.SimpleSmtpServer;
-import com.dumbster.smtp.SmtpMessage;
 import junit.framework.TestCase;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.mail.Attachment;
 import org.exoplatform.services.mail.MailService;
 import org.exoplatform.services.mail.Message;
-import org.exoplatform.services.net.NetService;
+import org.subethamail.wiser.Wiser;
+import org.subethamail.wiser.WiserMessage;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -94,11 +94,9 @@ public class TestMailService extends TestCase
    /**
     * SMTP mail server instance, to emulate basic SMTP mail server functions
     */
-   protected SimpleSmtpServer mailServer;
+   protected Wiser mailServer;
 
    private MailService service;
-
-   private NetService netService;
 
    public TestMailService(String name)
    {
@@ -107,17 +105,12 @@ public class TestMailService extends TestCase
 
    public void setUp() throws Exception
    {
-      if (service == null)
-      {
-         PortalContainer pcontainer = PortalContainer.getInstance();
-         service = (MailService)pcontainer.getComponentInstanceOfType(MailService.class);
-         netService = (NetService)pcontainer.getComponentInstanceOfType(NetService.class);
-      }
+      PortalContainer pcontainer = PortalContainer.getInstance();
+      service = (MailService)pcontainer.getComponentInstanceOfType(MailService.class);
       // starting dummy SMTP Server
-      if (mailServer == null)
-      {
-         mailServer = SimpleSmtpServer.start(SMTP_PORT);
-      }
+      mailServer = new Wiser();
+      mailServer.setPort(SMTP_PORT);
+      mailServer.start();
    }
 
    public void tearDown() throws Exception
@@ -136,12 +129,11 @@ public class TestMailService extends TestCase
       flags.add(Flags.Flag.RECENT);
       message.setFlags(flags, true);
 
-      cleanEmailMessages();
-      assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should be now empty", 0, mailServer.getMessages().size());
       assertFalse(isEmailMessageSent(MAIL_SUBJECT));
       service.sendMessage(message);
       Thread.sleep(ONE_SECOND);
-      assertEquals("SMTP server should have one message", 1, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should have one message", 1, mailServer.getMessages().size());
       assertTrue(isEmailMessageSent(MAIL_SUBJECT));
    }
 
@@ -160,23 +152,21 @@ public class TestMailService extends TestCase
       attachment.setMimeType(TEXT_PLAIN);
       message.addAttachment(attachment);
 
-      cleanEmailMessages();
-      assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should be now empty", 0, mailServer.getMessages().size());
       assertFalse(isEmailMessageSent(MAIL_SUBJECT));
       service.sendMessage(message);
       Thread.sleep(ONE_SECOND);
-      assertEquals("SMTP server should have one message", 1, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should have one message", 5, mailServer.getMessages().size());
       assertTrue(isEmailMessageSent(MAIL_SUBJECT));
    }
 
    public void testSendSimplMessage() throws Exception
    {
-      cleanEmailMessages();
-      assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should be now empty", 0, mailServer.getMessages().size());
       assertFalse(isEmailMessageSent(MAIL_SUBJECT));
       service.sendMessage(generateRandomEmailSender(), generateRandomEmailRecipient(), MAIL_SUBJECT, MAIL_CONTENTS);
       Thread.sleep(ONE_SECOND);
-      assertEquals("SMTP server should have one message", 1, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should have one message", 1, mailServer.getMessages().size());
       assertTrue(isEmailMessageSent(MAIL_SUBJECT));
    }
 
@@ -214,9 +204,7 @@ public class TestMailService extends TestCase
       @SuppressWarnings("unchecked")
       Future<Boolean>[] futures = new Future[THREAD_NUMBER];
 
-      cleanEmailMessages();
-
-      assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should be now empty", 0, mailServer.getMessages().size());
       for (int i = 0; i < THREAD_NUMBER; i++)
       {
          assertFalse(isEmailMessageSent(MAIL_SUBJECT + i));
@@ -232,7 +220,7 @@ public class TestMailService extends TestCase
       }
       //we assume that one thread sends one email
       assertEquals("SMTP server should have" + THREAD_NUMBER + " message (asynchronously sent)", THREAD_NUMBER,
-         mailServer.getReceivedEmailSize());
+         mailServer.getMessages().size());
    }
 
 
@@ -284,9 +272,7 @@ public class TestMailService extends TestCase
       Flags flags = new Flags(Flags.Flag.RECENT);
       Session session = service.getMailSession();
 
-      cleanEmailMessages();
-
-      assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should be now empty", 0, mailServer.getMessages().size());
 
       for (int i = 0; i < THREAD_NUMBER; i++)
       {
@@ -309,7 +295,7 @@ public class TestMailService extends TestCase
       }
       //we assume that one thread sends one email
       assertEquals("SMTP server should have" + THREAD_NUMBER + " message (asynchronously sent)", THREAD_NUMBER,
-         mailServer.getReceivedEmailSize());
+         mailServer.getMessages().size());
    }
 
    /**
@@ -363,9 +349,7 @@ public class TestMailService extends TestCase
       @SuppressWarnings("unchecked")
       Future<Boolean>[] futures = new Future[THREAD_NUMBER];
 
-      cleanEmailMessages();
-
-      assertEquals("SMTP server should be now empty", 0, mailServer.getReceivedEmailSize());
+      assertEquals("SMTP server should be now empty", 0, mailServer.getMessages().size());
 
       for (int i = 0; i < THREAD_NUMBER; i++)
       {
@@ -391,26 +375,8 @@ public class TestMailService extends TestCase
          assertTrue(isEmailMessageSent(MAIL_SUBJECT + i));
       }
       //we assume that one thread sends one email
-      assertEquals("SMTP server should have" + THREAD_NUMBER + " message (asynchronously sent)", THREAD_NUMBER,
-         mailServer.getReceivedEmailSize());
-   }
-
-   /**
-    * Utility method to clean mail server. 
-    * Removes all stored messages one by one.
-    */
-   private void cleanEmailMessages()
-   {
-      if (mailServer.getReceivedEmailSize() > 0)
-      {
-         @SuppressWarnings("unchecked")
-         Iterator<SmtpMessage> it = mailServer.getReceivedEmail();
-         while (it.hasNext())
-         {
-            it.next();
-            it.remove();
-         }
-      }
+      assertEquals("SMTP server should have" + (5 * THREAD_NUMBER) + " message (asynchronously sent)", 5 * THREAD_NUMBER,
+         mailServer.getMessages().size());
    }
 
    /**
@@ -419,18 +385,18 @@ public class TestMailService extends TestCase
     * there is an email with defined 'subject' header.
     * @param subject 
     * @return
+    * @throws MessagingException 
     */
-   private boolean isEmailMessageSent(String subject)
+   private boolean isEmailMessageSent(String subject) throws MessagingException
    {
-      if (mailServer.getReceivedEmailSize() > 0)
+      if (mailServer.getMessages().size() > 0)
       {
-         @SuppressWarnings("unchecked")
-         Iterator<SmtpMessage> it = mailServer.getReceivedEmail();
-         SmtpMessage message;
+         Iterator<WiserMessage> it = new ArrayList<WiserMessage>(mailServer.getMessages()).iterator();
+         WiserMessage message;
          while (it.hasNext())
          {
             message = it.next();
-            if (message.getHeaderValue("Subject") != null && message.getHeaderValue("Subject").equals(subject))
+            if (message.getMimeMessage().getSubject() != null && message.getMimeMessage().getSubject().equals(subject))
             {
                return true;
             }

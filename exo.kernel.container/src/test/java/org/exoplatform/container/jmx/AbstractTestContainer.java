@@ -20,8 +20,8 @@ package org.exoplatform.container.jmx;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.ContainerBuilder;
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.support.ContainerBuilder;
 
 import java.net.URL;
 

@@ -23,7 +23,6 @@ import junit.framework.TestCase;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
-import org.exoplatform.container.support.ContainerBuilder;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValueParam;
@@ -62,6 +61,30 @@ public class TestPropertyManagerConfigurator extends TestCase
       }
       previous = current;
       return additions;
+   }
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      PropertyManager.refresh();
+   }
+
+   public void testFromXML() throws Exception
+   {
+      reset();
+      URL propertiesURL = TestPropertyManagerConfigurator.class.getResource("property-configurator.xml");
+      assertNotNull(propertiesURL);
+      System.setProperty(PropertyManager.PROPERTIES_URL, propertiesURL.toString());
+      System.setProperty("property_2", "property_value_2");
+      PropertiesParam propertiesParam = new PropertiesParam();
+      InitParams params = new InitParams();
+      params.put("properties", propertiesParam);
+      new PropertyConfigurator(params, new ConfigurationManagerImpl(new HashSet<String>()));
+      Map<String, String> additions = reset();
+      assertEquals("property_value_1", additions.get("property_1"));
+      assertEquals("property_value_2", additions.get("property_2"));
+      assertEquals("${property_3}", additions.get("property_3"));
+      assertEquals("property_value_1-property_value_2", additions.get("property_4"));
    }
 
    public void testSimple()
@@ -138,24 +161,6 @@ public class TestPropertyManagerConfigurator extends TestCase
    {
       reset();
       URL propertiesURL = TestPropertyManagerConfigurator.class.getResource("property-configurator.properties");
-      assertNotNull(propertiesURL);
-      System.setProperty(PropertyManager.PROPERTIES_URL, propertiesURL.toString());
-      System.setProperty("property_2", "property_value_2");
-      PropertiesParam propertiesParam = new PropertiesParam();
-      InitParams params = new InitParams();
-      params.put("properties", propertiesParam);
-      new PropertyConfigurator(params, new ConfigurationManagerImpl(new HashSet<String>()));
-      Map<String, String> additions = reset();
-      assertEquals("property_value_1", additions.get("property_1"));
-      assertEquals("property_value_2", additions.get("property_2"));
-      assertEquals("${property_3}", additions.get("property_3"));
-      assertEquals("property_value_1-property_value_2", additions.get("property_4"));
-   }
-
-   public void testFromXML() throws Exception
-   {
-      reset();
-      URL propertiesURL = TestPropertyManagerConfigurator.class.getResource("property-configurator.xml");
       assertNotNull(propertiesURL);
       System.setProperty(PropertyManager.PROPERTIES_URL, propertiesURL.toString());
       System.setProperty("property_2", "property_value_2");

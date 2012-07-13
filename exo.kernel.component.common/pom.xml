@@ -99,8 +99,8 @@
          <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>dumbster</groupId>
-         <artifactId>dumbster</artifactId>
+         <groupId>org.subethamail</groupId>
+         <artifactId>subethasmtp</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
