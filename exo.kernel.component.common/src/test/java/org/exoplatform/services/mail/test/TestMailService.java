@@ -254,9 +254,9 @@ public class TestMailService extends TestCase
       }
       catch (ExecutionException ee)
       {
-         assertEquals("We tried to send mail with malformed SMTP port (" + SMTP_PORT + 1
-            + "), so we expect a MessagingException to be the real cause of ExecutionException", ee.getCause()
-            .getClass(), MessagingException.class);
+         assertTrue("We tried to send mail with malformed SMTP port (" + SMTP_PORT + 1
+            + "), so we expect a MessagingException to be the real cause of ExecutionException",
+            MessagingException.class.isAssignableFrom(ee.getCause().getClass()));
       }
    }
 
