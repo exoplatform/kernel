@@ -366,7 +366,6 @@ public class TestMailService extends TestCase
          message.addAttachment(attachment);
 
          futures[i] = service.sendMessageInFuture(message);
-         assertFalse(futures[i].isDone());
       }
 
       for (int i = 0; i < THREAD_NUMBER; i++)
