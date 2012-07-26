@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham hoapham@exoplatform.com Oct
@@ -58,11 +59,15 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    public void testQueueTask() throws Exception
    {
       service_.addGlobalTriggerListener(new GlobalTriggerListener());
-      service_.queueTask(new ATask());
-      service_.queueTask(new ATask());
-      service_.queueTask(new ATask());
-      Thread.sleep(1500);
-      assertEquals("expect a task is run 3 times", 3, ATask.counter_);
+      AtomicInteger counter = new AtomicInteger(3);
+      synchronized (counter)
+      {
+         service_.queueTask(new ATask(counter));
+         service_.queueTask(new ATask(counter));
+         service_.queueTask(new ATask(counter));
+         counter.wait(30000);
+      }
+      assertEquals("expect a task is run 3 times", 3, 3 - counter.get());
       boolean b = service_.removeGlobaTriggerListener("GlobalTriggerListener");
       assertTrue("expect Global Trigger Listener is removed", b);
    }

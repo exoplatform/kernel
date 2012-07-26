@@ -20,21 +20,29 @@ package org.exoplatform.services.scheduler.test;
 
 import org.exoplatform.services.scheduler.Task;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham
  * hoapham@exoplatform.com,phamvuxuanhoa@yahoo.com Oct 7, 2005
  */
 public class ATask extends Task
 {
-   static int counter_ = 0;
-
-   static void reset()
+   private final AtomicInteger counter;
+   
+   public ATask(AtomicInteger counter)
    {
-      counter_ = 0;
+      this.counter = counter;
    }
 
    public void execute() throws Exception
    {
-      counter_++;
+      synchronized (counter)
+      {
+         if (counter.decrementAndGet() == 0)
+         {
+            counter.notify();
+         }
+      }
    }
 }
