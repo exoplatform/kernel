@@ -23,7 +23,7 @@
   <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
  
   <!-- xml object mapping -->
-  <mapping class="org.exoplatform.xml.object.XMLBaseObject" abstract="true" label="base-object">
+  <mapping class="org.exoplatform.xml.object.XMLBaseObject" abstract="true">
     <value name="string" usage="optional" get-method="getString" set-method="setString" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
     <value name="int"  usage="optional" get-method="getInt" set-method="setInt" deserializer="org.exoplatform.container.xml.Deserializer.resolveInteger"/>
     <value name="long"  usage="optional" get-method="getLong" set-method="setLong" deserializer="org.exoplatform.container.xml.Deserializer.resolveLong"/>
@@ -43,16 +43,22 @@
   <mapping name="value" 
            class="org.exoplatform.xml.object.XMLValue" 
            extends="org.exoplatform.xml.object.XMLBaseObject">
-    <structure using="base-object"/>
+    <structure map-as="org.exoplatform.xml.object.XMLBaseObject"/>
+  </mapping>
+
+  <mapping name="key" 
+           class="org.exoplatform.xml.object.XMLKey" 
+           extends="org.exoplatform.xml.object.XMLBaseObject">
+    <structure map-as="org.exoplatform.xml.object.XMLBaseObject"/>
   </mapping>
 
   <mapping name="entry" class="org.exoplatform.xml.object.XMLEntry">
-    <structure get-method="getKey" set-method="setKey" name="key" using="base-object"/>
-    <structure get-method="getValue" set-method="setValue" name="value" using="base-object"/>
+    <structure get-method="getKey" set-method="setKey" field="key_" map-as="org.exoplatform.xml.object.XMLKey"/>
+    <structure get-method="getValue" set-method="setValue" field="value_" map-as="org.exoplatform.xml.object.XMLValue"/>
   </mapping>
 
 
-  <mapping name="map" label="map" class="org.exoplatform.xml.object.XMLMap">
+  <mapping name="map" class="org.exoplatform.xml.object.XMLMap">
     <value name="type"  get-method="getType" set-method="setType" style="attribute"/>
     <collection item-type="org.exoplatform.xml.object.XMLEntry" field="listmap"/>
   </mapping>
