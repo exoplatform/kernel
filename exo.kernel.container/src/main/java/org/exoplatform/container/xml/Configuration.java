@@ -103,7 +103,7 @@ public class Configuration implements Cloneable
    public void addComponentLifecyclePlugin(Object object)
    {
       ComponentLifecyclePlugin plugin = (ComponentLifecyclePlugin)object;
-      String key = plugin.getClass().getName();
+      String key = plugin.getType();
       componentLifecyclePlugin_.put(key, plugin);
    }
 

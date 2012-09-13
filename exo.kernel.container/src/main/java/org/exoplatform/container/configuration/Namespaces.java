@@ -51,6 +51,9 @@ public class Namespaces
    // We keep it for backward compatibility
    public static final String KERNEL_1_2_URI_OLD = "http://www.exoplaform.org/xml/ns/kernel_1_2.xsd";
 
+   /** . */
+   public static final String KERNEL_1_3_URI = "http://www.exoplatform.org/xml/ns/kernel_1_3.xsd";
+
    /**
     * All the namespaces related to the kernel
     */
@@ -62,6 +65,7 @@ public class Namespaces
       tmp.add(KERNEL_1_0_URI);
       tmp.add(KERNEL_1_1_URI);
       tmp.add(KERNEL_1_2_URI);
+      tmp.add(KERNEL_1_3_URI);
       // we add the namespaces badly spelled for backward compatibility
       tmp.add(KERNEL_1_0_URI_OLD);
       tmp.add(KERNEL_1_1_URI_OLD);
@@ -78,6 +82,7 @@ public class Namespaces
       resourceMap.put(KERNEL_1_0_URI, "org/exoplatform/container/configuration/kernel-configuration_1_0.xsd");
       resourceMap.put(KERNEL_1_1_URI, "org/exoplatform/container/configuration/kernel-configuration_1_1.xsd");
       resourceMap.put(KERNEL_1_2_URI, "org/exoplatform/container/configuration/kernel-configuration_1_2.xsd");
+      resourceMap.put(KERNEL_1_3_URI, "org/exoplatform/container/configuration/kernel-configuration_1_3.xsd");
       // we add the namespaces badly spelled for backward compatibility
       resourceMap.put(KERNEL_1_0_URI_OLD, "org/exoplatform/container/configuration/kernel-configuration_1_0_OLD.xsd");
       resourceMap.put(KERNEL_1_1_URI_OLD, "org/exoplatform/container/configuration/kernel-configuration_1_1_OLD.xsd");
@@ -90,8 +95,8 @@ public class Namespaces
     */
    public static String[] getKernelNamespaces()
    {
-      return new String[]{KERNEL_1_0_URI, KERNEL_1_1_URI, KERNEL_1_2_URI, KERNEL_1_0_URI_OLD, KERNEL_1_1_URI_OLD,
-         KERNEL_1_2_URI_OLD};
+      return new String[]{KERNEL_1_0_URI, KERNEL_1_1_URI, KERNEL_1_2_URI, KERNEL_1_3_URI, KERNEL_1_0_URI_OLD,
+         KERNEL_1_1_URI_OLD, KERNEL_1_2_URI_OLD};
    }
    
    /**

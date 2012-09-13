@@ -20,8 +20,12 @@
 
 -->
 <configuration
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
+
+   <remove-configuration>empty</remove-configuration>
+   <remove-configuration profiles="foo">foo</remove-configuration>
+   <remove-configuration profiles="bar">bar</remove-configuration>
 
 </configuration>
