@@ -40,12 +40,12 @@ import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.test.mocks.servlet.MockServletContext;
+import org.gatein.wci.ServletContainerFactory;
 import org.gatein.wci.WebAppEvent;
 import org.gatein.wci.WebAppLifeCycleEvent;
 import org.gatein.wci.WebAppListener;
 import org.gatein.wci.authentication.AuthenticationEvent;
 import org.gatein.wci.authentication.AuthenticationListener;
-import org.gatein.wci.impl.DefaultServletContainerFactory;
 import org.picocontainer.PicoException;
 
 import java.io.File;
@@ -352,8 +352,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
       if (PropertyManager.isDevelopping())
       {
-         DefaultServletContainerFactory.getInstance().getServletContainer().addWebAppListener(this);
-         DefaultServletContainerFactory.getInstance().getServletContainer().addAuthenticationListener(this);
+         ServletContainerFactory.getServletContainer().addWebAppListener(this);
+         ServletContainerFactory.getServletContainer().addAuthenticationListener(this);
       }
       else
       {
@@ -547,30 +547,23 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    /**
     * {@inheritDoc}
     */
-   public void onLogin(AuthenticationEvent evt)
+   public void onEvent(AuthenticationEvent evt)
    {
       HttpSession sess = evt.getRequest().getSession(false);
 
-      if (sess == null)
+      if (sess == null
+         || !getPortalContainerConfig().isPortalContainerName(sess.getServletContext().getServletContextName()))
          return;
-      if (getPortalContainerConfig().isPortalContainerName(sess.getServletContext().getServletContextName()))
+      switch (evt.getType())
       {
-         sessions.add(new WeakHttpSession(sess));
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void onLogout(AuthenticationEvent evt)
-   {
-      HttpSession sess = evt.getRequest().getSession(false);
-
-      if (sess == null)
-         return;
-      if (getPortalContainerConfig().isPortalContainerName(sess.getServletContext().getServletContextName()))
-      {
-         sessions.remove(new WeakHttpSession(sess));
+         case LOGIN :
+         {
+            sessions.add(new WeakHttpSession(sess));            
+         }
+         case LOGOUT :
+         {
+            sessions.remove(new WeakHttpSession(sess));            
+         }
       }
    }
 
@@ -887,8 +880,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                   return null;
                }
             });
-            DefaultServletContainerFactory.getInstance().getServletContainer().removeWebAppListener(this);
-            DefaultServletContainerFactory.getInstance().getServletContainer().removeAuthenticationlistener(this);
+            ServletContainerFactory.getServletContainer().removeWebAppListener(this);
+            ServletContainerFactory.getServletContainer().removeAuthenticationlistener(this);
             LOG.info("Trying to restart the root container");
             RootContainer rootContainer = null;
             final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
