@@ -24,6 +24,8 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.scheduler.AddJobListenerComponentPlugin;
+import org.exoplatform.services.scheduler.AddTriggerListenerComponentPlugin;
 import org.exoplatform.services.scheduler.CronJob;
 import org.exoplatform.services.scheduler.JobInfo;
 import org.exoplatform.services.scheduler.JobSchedulerService;
@@ -32,23 +34,32 @@ import org.exoplatform.services.scheduler.PeriodJob;
 import org.exoplatform.services.scheduler.QueueTasks;
 import org.exoplatform.services.scheduler.Task;
 import org.picocontainer.Startable;
-import org.quartz.CronTrigger;
+import org.quartz.CronScheduleBuilder;
 import org.quartz.InterruptableJob;
 import org.quartz.Job;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 import org.quartz.JobListener;
+import org.quartz.Matcher;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 import org.quartz.TriggerListener;
+import org.quartz.impl.matchers.EverythingMatcher;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.quartz.impl.matchers.KeyMatcher;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
 /**
@@ -61,10 +72,11 @@ import java.util.Set;
  */
 public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 {
-   
+
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.JobSchedulerServiceImpl");
-   
+
    static final String STANDALONE_CONTAINER_NAME = "$Standalone";
+
    private final Scheduler scheduler_;
 
    private final String containerName_;
@@ -98,22 +110,30 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public void addJob(JobDetail job, Trigger trigger) throws Exception
    {
-      scheduler_.scheduleJob(job, trigger);
+      String gname = getGroupName(job.getKey().getGroup());
+      trigger = trigger.getTriggerBuilder().withIdentity(job.getKey().getName(), gname).build();
+      scheduler_.scheduleJob(job.getJobBuilder().withIdentity(job.getKey().getName(), gname).build(), trigger);
    }
 
    public void addJob(JobInfo jinfo, Trigger trigger) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
+      trigger = trigger.getTriggerBuilder().withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).build();
+      @SuppressWarnings("unchecked")
+      JobDetail job =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).build();
       scheduler_.scheduleJob(job, trigger);
    }
 
    public void addJob(JobInfo jinfo, Date date) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
-      SimpleTrigger trigger = new SimpleTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), date);
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
-      job.setDescription(jinfo.getDescription());
+      Trigger trigger =
+         TriggerBuilder.newTrigger().withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).startAt(date).build();
+      @SuppressWarnings("unchecked")
+      JobDetail job =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withDescription(jinfo.getDescription()).build();
       scheduler_.scheduleJob(job, trigger);
    }
 
@@ -127,9 +147,17 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       else
          repeat = repeatCount - 1;
       JobInfo jobinfo = getJobInfo(jinfo);
-      SimpleTrigger trigger = new SimpleTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), repeat, period);
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
-      job.setDescription(jobinfo.getDescription());
+      Trigger trigger =
+         TriggerBuilder
+            .newTrigger()
+            .withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withSchedule(
+               SimpleScheduleBuilder.simpleSchedule().withRepeatCount(repeat).withIntervalInMilliseconds(period))
+            .build();
+      @SuppressWarnings("unchecked")
+      JobDetail job =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withDescription(jinfo.getDescription()).build();
       scheduler_.scheduleJob(job, trigger);
    }
 
@@ -144,28 +172,46 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          repeat = SimpleTrigger.REPEAT_INDEFINITELY;
       else
          repeat = repeat - 1;
-      SimpleTrigger trigger =
-         new SimpleTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), start, pinfo.getEndTime(), repeat, pinfo
-            .getRepeatInterval());
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
-      job.setDescription(jobinfo.getDescription());
+      Trigger trigger =
+         TriggerBuilder
+            .newTrigger()
+            .withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withSchedule(
+               SimpleScheduleBuilder.simpleSchedule().withRepeatCount(repeat)
+                  .withIntervalInMilliseconds(pinfo.getRepeatInterval())).startAt(start).endAt(pinfo.getEndTime())
+            .build();
+      @SuppressWarnings("unchecked")
+      JobDetail job =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withDescription(jinfo.getDescription()).build();
       scheduler_.scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(ComponentPlugin plugin) throws Exception
    {
       PeriodJob pjob = (PeriodJob)plugin;
-      addPeriodJob(pjob.getJobInfo(), pjob.getPeriodInfo(), pjob.getJobDataMap());
+      try
+      {
+         addPeriodJob(pjob.getJobInfo(), pjob.getPeriodInfo(), pjob.getJobDataMap());
+      }
+      catch (Exception e)
+      {
+         LOG.warn("Could not add the period job (" + pjob.getJobInfo().getJobName() + ", "
+            + pjob.getJobInfo().getGroupName() + ") defined in the plugin " + plugin.getName() + " : " + e.getMessage());
+      }
    }
 
    public void addCronJob(JobInfo jinfo, String exp) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
-      CronTrigger trigger =
-         new CronTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJobName(), jobinfo.getGroupName(),
-         exp);
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
-      job.setDescription(jobinfo.getDescription());
+      Trigger trigger =
+         TriggerBuilder.newTrigger().withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .forJob(jobinfo.getJobName(), jobinfo.getGroupName()).withSchedule(CronScheduleBuilder.cronSchedule(exp))
+            .build();
+      @SuppressWarnings("unchecked")
+      JobDetail job =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withDescription(jinfo.getDescription()).build();
       scheduler_.addJob(job, true);
       scheduler_.scheduleJob(trigger);
    }
@@ -173,19 +219,29 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public void addCronJob(ComponentPlugin plugin) throws Exception
    {
       CronJob cjob = (CronJob)plugin;
-      addCronJob(cjob.getJobInfo(),cjob.getExpression(), cjob.getJobDataMap());
-
+      try
+      {
+         addCronJob(cjob.getJobInfo(), cjob.getExpression(), cjob.getJobDataMap());
+      }
+      catch (Exception e)
+      {
+         LOG.warn("Could not add the cron job (" + cjob.getJobInfo().getJobName() + ", "
+            + cjob.getJobInfo().getGroupName() + ") defined in the plugin " + plugin.getName() + " : " + e.getMessage());
+      }
    }
 
    public void addCronJob(JobInfo jinfo, String exp, JobDataMap jdatamap) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
-      CronTrigger trigger =
-         new CronTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJobName(), jobinfo.getGroupName(),
-         exp);
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
-      job.setJobDataMap(jdatamap);
-      job.setDescription(jobinfo.getDescription());
+      Trigger trigger =
+         TriggerBuilder.newTrigger().withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .forJob(jobinfo.getJobName(), jobinfo.getGroupName()).withSchedule(CronScheduleBuilder.cronSchedule(exp))
+            .build();
+      @SuppressWarnings("unchecked")
+      JobBuilder jb =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withDescription(jinfo.getDescription());
+      JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
       scheduler_.addJob(job, true);
       scheduler_.scheduleJob(trigger);
    }
@@ -201,36 +257,43 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          repeat = SimpleTrigger.REPEAT_INDEFINITELY;
       else
          repeat = repeat - 1;
-      SimpleTrigger trigger =
-         new SimpleTrigger(jobinfo.getJobName(), jobinfo.getGroupName(), start, pinfo.getEndTime(), repeat, pinfo
-            .getRepeatInterval());
-      JobDetail job = new JobDetail(jobinfo.getJobName(), jobinfo.getGroupName(), jobinfo.getJob());
-      job.setJobDataMap(jdatamap);
-      job.setDescription(jobinfo.getDescription());
+      Trigger trigger =
+         TriggerBuilder
+            .newTrigger()
+            .withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withSchedule(
+               SimpleScheduleBuilder.simpleSchedule().withRepeatCount(repeat)
+                  .withIntervalInMilliseconds(pinfo.getRepeatInterval())).startAt(start).endAt(pinfo.getEndTime())
+            .build();
+      @SuppressWarnings("unchecked")
+      JobBuilder jb =
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
+            .withDescription(jinfo.getDescription());
+      JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
       scheduler_.scheduleJob(job, trigger);
    }
 
    public boolean removeJob(JobInfo jinfo) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
-      return scheduler_.deleteJob(jobinfo.getJobName(), jobinfo.getGroupName());
+      return scheduler_.deleteJob(JobKey.jobKey(jobinfo.getJobName(), jobinfo.getGroupName()));
    }
 
-   public List getAllExcutingJobs() throws Exception
+   public List<JobExecutionContext> getAllExcutingJobs() throws Exception
    {
       return scheduler_.getCurrentlyExecutingJobs();
    }
 
-   public List getAllJobs() throws Exception
+   public List<JobDetail> getAllJobs() throws Exception
    {
-      List jlist = new ArrayList();
-      String jgroup[] = scheduler_.getJobGroupNames();
-      for (int i = 1; i < jgroup.length; i++)
+      List<JobDetail> jlist = new ArrayList<JobDetail>();
+      List<String> jgroups = scheduler_.getJobGroupNames();
+      for (int i = 0, length = jgroups.size(); i < length; i++)
       {
-         String jname[] = scheduler_.getJobNames(jgroup[i]);
-         for (int j = 0; j < jname.length; j++)
+         Set<JobKey> jkeys = scheduler_.getJobKeys(GroupMatcher.jobGroupEquals(jgroups.get(i)));
+         for (JobKey jkey : jkeys)
          {
-            jlist.add(scheduler_.getJobDetail(jname[j], jgroup[i]));
+            jlist.add(scheduler_.getJobDetail(jkey));
          }
       }
       return jlist;
@@ -238,131 +301,181 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public void addGlobalJobListener(ComponentPlugin plugin) throws Exception
    {
-      scheduler_.addGlobalJobListener((JobListener)plugin);
+      JobListener jl = (JobListener)plugin;
+      try
+      {
+         scheduler_.getListenerManager().addJobListener(jl);
+      }
+      catch (Exception e)
+      {
+         LOG.warn("Could not add the global job listener (" + jl.getName() + ") defined in the plugin "
+            + plugin.getName() + " : " + e.getMessage());
+      }
    }
 
-   public List getAllGlobalJobListener() throws Exception
+   public List<JobListener> getAllGlobalJobListener() throws Exception
    {
-      return scheduler_.getGlobalJobListeners();
+      List<JobListener> listeners = scheduler_.getListenerManager().getJobListeners();
+      List<JobListener> result = new ArrayList<JobListener>();
+      for (JobListener l : listeners)
+      {
+         List<Matcher<JobKey>> matchers = scheduler_.getListenerManager().getJobListenerMatchers(l.getName());
+         if (matchers.contains(EverythingMatcher.allJobs()))
+         {
+            result.add(l);
+         }
+      }
+      return result;
    }
 
    public JobListener getGlobalJobListener(String name) throws Exception
    {
-      JobListener jlistener;
-      List listener = scheduler_.getGlobalJobListeners();
-      ListIterator iterator = listener.listIterator();
-      while (iterator.hasNext())
-      {
-         jlistener = (JobListener)iterator.next();
-         if (jlistener.getName().equals(name))
-         {
-            return jlistener;
-         }
-      }
-      return null;
+      return scheduler_.getListenerManager().getJobListener(name);
    }
 
    public boolean removeGlobalJobListener(String name) throws Exception
    {
-      JobListener jlistener = getGlobalJobListener(name);
-      return scheduler_.removeGlobalJobListener(jlistener);
+      return scheduler_.getListenerManager().removeJobListener(name);
    }
 
-   public void addJobListener(ComponentPlugin plugin) throws Exception
+   public void addJobListener(AddJobListenerComponentPlugin plugin) throws Exception
    {
-      scheduler_.addJobListener((JobListener)plugin);
-   }
-
-   public List getAllJobListener() throws Exception
-   {
-      Set jlNames = scheduler_.getJobListenerNames();
-      List jlisteners = new ArrayList();
-      if (jlNames.isEmpty())
-         return jlisteners;
-      for (Object obj : jlNames.toArray())
+      JobListener jl = (JobListener)plugin;
+      try
       {
-         jlisteners.add(getJobListener(obj.toString()));
+         List<Matcher<JobKey>> matchers = null;
+         if (plugin.getKeys() != null)
+         {
+            matchers = new ArrayList<Matcher<JobKey>>();
+            for (org.exoplatform.services.scheduler.JobKey key : plugin.getKeys())
+            {
+               matchers.add(KeyMatcher.keyEquals(JobKey.jobKey(key.getName(), getGroupName(key.getGroup()))));
+            }
+         }
+         scheduler_.getListenerManager().addJobListener(jl, matchers);
       }
-      return jlisteners;
+      catch (Exception e)
+      {
+         LOG.warn("Could not add the job listener (" + jl.getName() + ") defined in the plugin " + plugin.getName()
+            + " : " + e.getMessage());
+      }
+   }
+
+   public List<JobListener> getAllJobListener() throws Exception
+   {
+      List<JobListener> listeners = scheduler_.getListenerManager().getJobListeners();
+      List<JobListener> result = new ArrayList<JobListener>();
+      for (JobListener l : listeners)
+      {
+         List<Matcher<JobKey>> matchers = scheduler_.getListenerManager().getJobListenerMatchers(l.getName());
+         if (!matchers.contains(EverythingMatcher.allJobs()))
+         {
+            result.add(l);
+         }
+      }
+      return result;
    }
 
    public JobListener getJobListener(String name) throws Exception
    {
-      return scheduler_.getJobListener(name);
+      return scheduler_.getListenerManager().getJobListener(name);
    }
 
    public boolean removeJobListener(String name) throws Exception
    {
-      return scheduler_.removeJobListener(name);
+      return scheduler_.getListenerManager().removeJobListener(name);
    }
 
    public void addGlobalTriggerListener(ComponentPlugin plugin) throws Exception
    {
-      scheduler_.addGlobalTriggerListener((TriggerListener)plugin);
+      TriggerListener tl = (TriggerListener)plugin;
+      try
+      {
+         scheduler_.getListenerManager().addTriggerListener(tl);
+      }
+      catch (Exception e)
+      {
+         LOG.warn("Could not add the global trigger listener (" + tl.getName() + ") defined in the plugin "
+            + plugin.getName() + " : " + e.getMessage());
+      }
    }
 
-   public List getAllGlobalTriggerListener() throws Exception
+   public List<TriggerListener> getAllGlobalTriggerListener() throws Exception
    {
-      return scheduler_.getGlobalTriggerListeners();
+      List<TriggerListener> listeners = scheduler_.getListenerManager().getTriggerListeners();
+      List<TriggerListener> result = new ArrayList<TriggerListener>();
+      for (TriggerListener l : listeners)
+      {
+         List<Matcher<TriggerKey>> matchers = scheduler_.getListenerManager().getTriggerListenerMatchers(l.getName());
+         if (matchers.contains(EverythingMatcher.allJobs()))
+         {
+            result.add(l);
+         }
+      }
+      return result;
    }
 
    public TriggerListener getGlobalTriggerListener(String name) throws Exception
    {
-      TriggerListener tlistener;
-      List listener = scheduler_.getGlobalTriggerListeners();
-      ListIterator iterator = listener.listIterator();
-      while (iterator.hasNext())
-      {
-         tlistener = (TriggerListener)iterator.next();
-         if (tlistener.getName().equals(name))
-         {
-            return tlistener;
-         }
-      }
-      return null;
+      return scheduler_.getListenerManager().getTriggerListener(name);
    }
 
    public boolean removeGlobaTriggerListener(String name) throws Exception
    {
-      TriggerListener tlistener = getGlobalTriggerListener(name);
-      return scheduler_.removeGlobalTriggerListener(tlistener);
+      return scheduler_.getListenerManager().removeTriggerListener(name);
    }
 
-   public void addTriggerListener(ComponentPlugin plugin) throws Exception
+   public void addTriggerListener(AddTriggerListenerComponentPlugin plugin) throws Exception
    {
-      scheduler_.addTriggerListener((TriggerListener)plugin);
-   }
-
-   public List getAllTriggerListener() throws Exception
-   {
-      List tlisteners = new ArrayList();
-      Set tlistenerNames = scheduler_.getTriggerListenerNames();
-      if (tlistenerNames.isEmpty())
-         return tlisteners;
-      for (Object obj : tlistenerNames.toArray())
+      TriggerListener tl = (TriggerListener)plugin;
+      try
       {
-         tlisteners.add(getTriggerListener(obj.toString()));
+         List<Matcher<TriggerKey>> matchers = null;
+         if (plugin.getKeys() != null)
+         {
+            matchers = new ArrayList<Matcher<TriggerKey>>();
+            for (org.exoplatform.services.scheduler.JobKey key : plugin.getKeys())
+            {
+               matchers.add(KeyMatcher.keyEquals(TriggerKey.triggerKey(key.getName(), getGroupName(key.getGroup()))));
+            }
+         }
+         scheduler_.getListenerManager().addTriggerListener(tl, matchers);
       }
-      return tlisteners;
+      catch (Exception e)
+      {
+         LOG.warn("Could not add the trigger listener (" + tl.getName() + ") defined in the plugin " + plugin.getName()
+            + " : " + e.getMessage());
+      }
+   }
+
+   public List<TriggerListener> getAllTriggerListener() throws Exception
+   {
+      List<TriggerListener> listeners = scheduler_.getListenerManager().getTriggerListeners();
+      List<TriggerListener> result = new ArrayList<TriggerListener>();
+      for (TriggerListener l : listeners)
+      {
+         List<Matcher<TriggerKey>> matchers = scheduler_.getListenerManager().getTriggerListenerMatchers(l.getName());
+         if (!matchers.contains(EverythingMatcher.allJobs()))
+         {
+            result.add(l);
+         }
+      }
+      return result;
    }
 
    public TriggerListener getTriggerListener(String name) throws Exception
    {
-      return scheduler_.getTriggerListener(name);
+      return scheduler_.getListenerManager().getTriggerListener(name);
    }
 
    public boolean removeTriggerListener(String name) throws Exception
    {
-      return scheduler_.removeTriggerListener(name);
+      return scheduler_.getListenerManager().removeTriggerListener(name);
    }
 
    private JobInfo getJobInfo(JobInfo jinfo) throws Exception
    {
-      String gname;
-      if (jinfo.getGroupName() == null)
-         gname = containerName_;
-      else
-         gname = containerName_ + ":" + jinfo.getGroupName();
+      String gname = getGroupName(jinfo.getGroupName());
       JobInfo jobInfo = new JobInfo(jinfo.getJobName(), gname, jinfo.getJob());
       jobInfo.setDescription(jinfo.getDescription());
       return jobInfo;
@@ -370,32 +483,38 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    public void pauseJob(String jobName, String groupName) throws Exception
    {
-      scheduler_.pauseJob(jobName, groupName);
+      scheduler_.pauseJob(JobKey.jobKey(jobName, getGroupName(groupName)));
    }
 
    public void resumeJob(String jobName, String groupName) throws Exception
    {
-      scheduler_.resumeJob(jobName, groupName);
+      scheduler_.resumeJob(JobKey.jobKey(jobName, getGroupName(groupName)));
    }
 
    public void executeJob(String jname, String jgroup, JobDataMap jdatamap) throws Exception
    {
-      scheduler_.triggerJobWithVolatileTrigger(jname, jgroup, jdatamap);
+      Trigger trigger = TriggerBuilder.newTrigger().withIdentity(jname, getGroupName(jgroup)).startNow().build();
+      JobBuilder jb = JobBuilder.newJob().withIdentity(jname, getGroupName(jgroup));
+      JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
+      scheduler_.scheduleJob(job, trigger);
    }
 
    public Trigger[] getTriggersOfJob(String jobName, String groupName) throws Exception
    {
-      return scheduler_.getTriggersOfJob(jobName, groupName);
+      List<? extends Trigger> triggers = scheduler_.getTriggersOfJob(JobKey.jobKey(jobName, getGroupName(groupName)));
+      Trigger[] aTriggers = new Trigger[triggers.size()];
+      return (Trigger[])triggers.toArray(aTriggers);
    }
 
-   public int getTriggerState(String triggerName, String triggerGroup) throws Exception
+   public TriggerState getTriggerState(String jobName, String groupName) throws Exception
    {
-      return scheduler_.getTriggerState(triggerName, triggerGroup);
+      return scheduler_.getTriggerState(TriggerKey.triggerKey(jobName, getGroupName(groupName)));
    }
 
-   public Date rescheduleJob(String triggerName, String groupName, Trigger newTrigger) throws SchedulerException
+   public Date rescheduleJob(String jobName, String groupName, Trigger newTrigger) throws SchedulerException
    {
-      return scheduler_.rescheduleJob(triggerName, groupName, newTrigger);
+      return scheduler_.rescheduleJob(TriggerKey.triggerKey(jobName, getGroupName(groupName)), newTrigger
+         .getTriggerBuilder().withIdentity(jobName, getGroupName(groupName)).build());
    }
 
    @Managed
@@ -415,7 +534,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    }
 
    @Managed
-   @ManagedDescription("Resume all the existing jobs")   
+   @ManagedDescription("Resume all the existing jobs")
    public boolean resume()
    {
       try
@@ -429,7 +548,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       return false;
    }
-   
+
    public void start()
    {
       try
@@ -437,7 +556,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          // Ensure that only one JobEnvironmentConfigListener will be registered
          while (removeGlobalJobListener(JobEnvironmentConfigListener.NAME));
          // Add the unique instance of JobEnvironmentConfigListener
-         scheduler_.addGlobalJobListener(new JobEnvironmentConfigListener());
+         scheduler_.getListenerManager().addJobListener(new JobEnvironmentConfigListener());
       }
       catch (Exception e)
       {
@@ -449,10 +568,9 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    {
       try
       {
-         List jobs = getAllExcutingJobs();
-         for (Object object : jobs)
+         List<JobExecutionContext> jobs = getAllExcutingJobs();
+         for (JobExecutionContext ctx : jobs)
          {
-            JobExecutionContext ctx = (JobExecutionContext)object;
             Job job = ctx.getJobInstance();
             if (job instanceof InterruptableJob)
             {
@@ -470,6 +588,16 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public JobDetail getJob(JobInfo jobInfo) throws Exception
    {
       JobInfo innerJobInfo = getJobInfo(jobInfo);
-      return scheduler_.getJobDetail(innerJobInfo.getJobName(), innerJobInfo.getGroupName());
+      return scheduler_.getJobDetail(JobKey.jobKey(innerJobInfo.getJobName(), innerJobInfo.getGroupName()));
+   }
+
+   private String getGroupName(String initialGroupName)
+   {
+      String gname;
+      if (initialGroupName == null || (initialGroupName = initialGroupName.trim()).isEmpty())
+         gname = containerName_;
+      else
+         gname = containerName_ + ":" + initialGroupName;
+      return gname;
    }
 }

@@ -123,7 +123,7 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
     */
    private static String extractContainerName(JobExecutionContext context)
    {
-      String group = context.getJobDetail().getGroup();
+      String group = context.getJobDetail().getKey().getGroup();
       if (group == null || (group = group.trim()).length() == 0)
       {
          return null;

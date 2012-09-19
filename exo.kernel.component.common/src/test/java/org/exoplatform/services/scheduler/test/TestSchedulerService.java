@@ -28,6 +28,7 @@ import org.exoplatform.services.scheduler.JobInfo;
 import org.exoplatform.services.scheduler.JobSchedulerService;
 import org.exoplatform.services.scheduler.PeriodInfo;
 import org.quartz.Job;
+import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
@@ -76,26 +77,22 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    {
       // ---------getAllGlobalJobListener
       List<JobListener> jobListenerCol = service_.getAllGlobalJobListener();
-      assertTrue("expect 2 GlobalJobListener is found", jobListenerCol.size() == 2);
+      assertEquals("expect 1 GlobalJobListener is found", 1, jobListenerCol.size());
       /* -----2 joblistener------------- */
       JobListener jcontext = service_.getGlobalJobListener("JobContextConfigListener");
-      JobListener jmanager = service_.getGlobalJobListener("org.quartz.core.ExecutingJobsManager");
       assertTrue("exepect found 'JobContextConfigListenner'", jcontext != null
          && jcontext.getName().equals("JobContextConfigListener"));
-      assertTrue("exepect found 'org.quartz.core.ExecutingJobsManager'", jmanager != null
-         && jmanager.getName().equals("org.quartz.core.ExecutingJobsManager"));
       hasObjectInCollection(jcontext, jobListenerCol, new JobListenerComparator());
-      hasObjectInCollection(jmanager, jobListenerCol, new JobListenerComparator());
       // --------------remove JobContextConfigListenner of SchedulerSerice-------
       boolean b = service_.removeGlobalJobListener(jcontext.getName());
       jcontext = service_.getGlobalJobListener("JobContextConfigListener");
       assertTrue("expect JobContextConfigListenner is removed", b && jcontext == null);
       jobListenerCol = service_.getAllGlobalJobListener();
-      assertTrue("expect 1 job listenner is found", jobListenerCol.size() == 1);
+      assertEquals("expect 1 job listenner is found", 0, jobListenerCol.size());
 
       // -----Test global trigger listener
       List<TriggerListener> triggerListenerCol = service_.getAllGlobalTriggerListener();
-      assertTrue("expect no global trigger listener is found", triggerListenerCol.size() == 0);
+      assertEquals("expect no global trigger listener is found", 0, triggerListenerCol.size());
       /* ----------add TriggerListenner--- */
       service_.addGlobalTriggerListener(new GlobalTriggerListener());
       // ------getAllTriggerListener---
@@ -103,50 +100,77 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       assertTrue("expect 'GlobalTriggerListener' is found", globalTriggerListener != null
          && globalTriggerListener.getName().equals("GlobalTriggerListener"));
       triggerListenerCol = service_.getAllGlobalTriggerListener();
-      assertTrue("expect 1 trigger listenner is found", triggerListenerCol.size() == 1);
+      assertEquals("expect 1 trigger listenner is found", 1, triggerListenerCol.size());
       hasObjectInCollection(globalTriggerListener, triggerListenerCol, new TriggerListenerComparator());
       // ----------------remove GlobalTriggerListener
       b = service_.removeGlobaTriggerListener(globalTriggerListener.getName());
       assertTrue("expect GlobalTriggerListener is removed", b);
       triggerListenerCol = service_.getAllGlobalTriggerListener();
-      assertTrue("expect no trigger listenner is found", triggerListenerCol.size() == 0);
+      assertEquals("expect no trigger listenner is found", 0, triggerListenerCol.size());
 
       // --------------Test non global Job Listener
       jobListenerCol = service_.getAllJobListener();
-      assertTrue("expect no non global job listener is found", jobListenerCol.size() == 0);
+      assertEquals("expect no non global job listener is found", 0, jobListenerCol.size());
       // ----add 2 Non Global Job Listenner----
+      service_.addGlobalJobListener(new GlobalJobListener());
       service_.addJobListener(new FirstJobListener());
       service_.addJobListener(new SecondJobListener());
+      JobListener globalListener = service_.getGlobalJobListener("GlobalJobListener");
       JobListener joblistener1st = service_.getJobListener("FirstJobListener");
       JobListener joblistener2nd = service_.getJobListener("SecondJobListener");
+      assertTrue("expect 'GlobalJobListener' is found", globalListener != null
+               && globalListener.getName().equals("GlobalJobListener"));
       assertTrue("expect 'FirstJobListener' is found", joblistener1st != null
          && joblistener1st.getName().equals("FirstJobListener"));
       assertTrue("expect 'SecondJobListenner' is found", joblistener2nd != null
          && joblistener2nd.getName().equals("SecondJobListener"));
       jobListenerCol = service_.getAllJobListener();
-      assertTrue("expect 2 non global job listener is found", jobListenerCol.size() == 2);
+      assertEquals("expect 1 global job listener is found", 1, service_.getAllGlobalJobListener().size());
+      assertEquals("expect 2 non global job listener is found", 2, jobListenerCol.size());
       hasObjectInCollection(joblistener1st, jobListenerCol, new JobListenerComparator());
       hasObjectInCollection(joblistener2nd, jobListenerCol, new JobListenerComparator());
+      
+      GlobalJobListener.countCalled_ = 0;
+      FirstJobListener.countCalled_ = 0;
+      SecondJobListener.countCalled_ = 0;
+      assertEquals(0, GlobalJobListener.countCalled_);
+      assertEquals(0, FirstJobListener.countCalled_);
+      assertEquals(0, SecondJobListener.countCalled_);
+      
+      service_.addJob(new JobInfo("GlobalJobListener", null/* default group */, AJob.class), new Date());
+      service_.addJob(new JobInfo("FirstJobListener", null/* default group */, AJob.class), new Date());
+      service_.addJob(new JobInfo("SecondJobListener", null/* default group */, AJob.class), new Date());
+      Thread.sleep(100);
+      
+      assertEquals(3, GlobalJobListener.countCalled_);
+      assertEquals(1, FirstJobListener.countCalled_);
+      assertEquals(1, SecondJobListener.countCalled_);
       // ---remove FirstJobListenner---
       b = service_.removeJobListener(joblistener1st.getName());
       assertTrue("expect FirstJobListenner is removed", b);
       joblistener1st = service_.getJobListener("FirstJobListenner");
       assertTrue("expect FirstJobListenner is not found", joblistener1st == null);
       jobListenerCol = service_.getAllJobListener();
-      assertTrue("now,expect 1 non global job is found", jobListenerCol.size() == 1);
+      assertEquals("now,expect 1 non global job is found", 1, jobListenerCol.size());
       // ---remove SecondJobListenner---
       b = service_.removeJobListener(joblistener2nd.getName());
       joblistener2nd = service_.getJobListener("SecondJobListener");
       assertTrue("expect SecondJobListenner is removed", b && joblistener2nd == null);
       jobListenerCol = service_.getAllJobListener();
-      assertTrue("now,expect no non global job is found", jobListenerCol.size() == 0);
+      assertEquals("now,expect no non global job is found", 0, jobListenerCol.size());
 
+      b = service_.removeGlobalJobListener(globalListener.getName());
+      globalListener = service_.getGlobalJobListener("GlobalJobListener");
+      assertTrue("expect GlobalJobListener is removed", b && globalListener == null);
+      assertEquals("now we expect no global job listener", 0,  service_.getAllGlobalJobListener().size());
+      
       Thread.sleep(2500);
 
       // -----Test non global Trigger Listenner ----
       triggerListenerCol = service_.getAllTriggerListener();
-      assertTrue("expect no non global trigger listener is found", triggerListenerCol.size() == 0);
+      assertEquals("expect no non global trigger listener is found", 0, triggerListenerCol.size());
       // ----------add 2 non global trigger listener---
+      service_.addGlobalTriggerListener(new GlobalTriggerListener());
       service_.addTriggerListener(new FirstTriggerListener());
       service_.addTriggerListener(new SecondTriggerListener());
       TriggerListener triggerListener1st = service_.getTriggerListener("FirstTriggerListener");
@@ -156,21 +180,46 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       assertTrue("expect 'SecondTriggerListener' is found", triggerListener2nd != null
          && triggerListener2nd.getName().equals("SecondTriggerListener"));
       triggerListenerCol = service_.getAllTriggerListener();
-      assertTrue("expect 2 non global trigger listener is found", triggerListenerCol.size() == 2);
+      globalTriggerListener = service_.getGlobalTriggerListener("GlobalTriggerListener");
+      assertTrue("expect 'GlobalTriggerListener' is found", globalTriggerListener != null
+         && globalTriggerListener.getName().equals("GlobalTriggerListener"));
+      assertEquals("expect 1 trigger listenner is found", 1, service_.getAllGlobalTriggerListener().size());     
+      assertEquals("expect 2 non global trigger listener is found", 2, triggerListenerCol.size());
       hasObjectInCollection(triggerListener1st, triggerListenerCol, new TriggerListenerComparator());
       hasObjectInCollection(triggerListener2nd, triggerListenerCol, new TriggerListenerComparator());
+      
+      GlobalTriggerListener.countTriggerComplete_ = 0;
+      FirstTriggerListener.countTriggerComplete_ = 0;
+      SecondTriggerListener.countTriggerComplete_ = 0;
+      assertEquals(0, GlobalTriggerListener.countTriggerComplete_);
+      assertEquals(0, FirstTriggerListener.countTriggerComplete_);
+      assertEquals(0, SecondTriggerListener.countTriggerComplete_);
+      
+      service_.addJob(new JobInfo("GlobalTriggerListener", null/* default group */, AJob.class), new Date());
+      service_.addJob(new JobInfo("FirstTriggerListener", null/* default group */, AJob.class), new Date());
+      service_.addJob(new JobInfo("SecondTriggerListener", null/* default group */, AJob.class), new Date());
+      Thread.sleep(100);
+      
+      assertEquals(3, GlobalTriggerListener.countTriggerComplete_);
+      assertEquals(1, FirstTriggerListener.countTriggerComplete_);
+      assertEquals(1, SecondTriggerListener.countTriggerComplete_);
+      
       // ----remove non global trigger listener----
       b = service_.removeTriggerListener(triggerListener1st.getName());
       triggerListener1st = service_.getTriggerListener("FirstTriggerListener");
       assertTrue("expect 'FirstTriggerListener' is removed", b && triggerListener1st == null);
       triggerListenerCol = service_.getAllTriggerListener();
-      assertTrue("now, expect 1 non global trigger is found", triggerListenerCol.size() == 1);
+      assertEquals("now, expect 1 non global trigger is found", 1, triggerListenerCol.size());
       b = service_.removeTriggerListener(triggerListener2nd.getName());
       // -----remove Second Trigger Listener----
       triggerListener2nd = service_.getTriggerListener("SecondTriggerListener");
       assertTrue("expect 'SecondTriggerListener' is removed", b && triggerListener2nd == null);
       triggerListenerCol = service_.getAllTriggerListener();
-      assertTrue("now, expect no non global trigger is found", triggerListenerCol.size() == 0);
+      assertEquals("now, expect no non global trigger is found", 0, triggerListenerCol.size());
+      b = service_.removeGlobaTriggerListener(globalTriggerListener.getName());
+      assertTrue("expect GlobalTriggerListener is removed", b);
+      triggerListenerCol = service_.getAllGlobalTriggerListener();
+      assertEquals("expect no trigger listenner is found", 0, triggerListenerCol.size());
    }
    
    public void testJobWithNonStartedServices() throws Exception
@@ -307,13 +356,16 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       Thread.sleep(1100);
       assertEquals("task has been run forever: ", 3, AJob.repeatCounter_);
       boolean b = service_.removeJob(jinfo);
+      assertTrue("expect Job is removed", b);
+      Thread.sleep(1000);
+      assertEquals("task has been run forever: ", 3, AJob.repeatCounter_);
       b = service_.removeGlobaTriggerListener("GlobalTriggerListener");
       assertTrue("expect Global Trigger Listener is removed", b);
    }
    
    public void testgetAvailableJobs() throws Exception
    {
-      List availableJobs = service_.getAllJobs();
+      List<JobDetail> availableJobs = service_.getAllJobs();
       int size = availableJobs.size();
       // some information about job execution
       Date firedTime = new Date(System.currentTimeMillis() + 1000000);
@@ -377,7 +429,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       public void execute(JobExecutionContext context) throws JobExecutionException
       {         
          MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
-         component.name = context.getJobDetail().getName();
+         component.name = context.getJobDetail().getKey().getName();
          component.container = PortalContainer.getInstance();
       }
    }   

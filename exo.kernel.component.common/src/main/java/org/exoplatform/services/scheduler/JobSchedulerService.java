@@ -25,8 +25,10 @@ import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
 import org.quartz.JobListener;
 import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerListener;
 
 import java.util.Date;
@@ -61,15 +63,15 @@ public interface JobSchedulerService
 
    public void addGlobalJobListener(ComponentPlugin plugin) throws Exception;
 
-   public List getAllGlobalJobListener() throws Exception;
+   public List<JobListener> getAllGlobalJobListener() throws Exception;
 
    public JobListener getGlobalJobListener(String name) throws Exception;
 
    public boolean removeGlobalJobListener(String name) throws Exception;
 
-   public void addJobListener(ComponentPlugin plugin) throws Exception;
+   public void addJobListener(AddJobListenerComponentPlugin plugin) throws Exception;
 
-   public List getAllJobListener() throws Exception;
+   public List<JobListener> getAllJobListener() throws Exception;
 
    public JobListener getJobListener(String name) throws Exception;
 
@@ -77,17 +79,17 @@ public interface JobSchedulerService
 
    public void addGlobalTriggerListener(ComponentPlugin plugin) throws Exception;
 
-   public List getAllGlobalTriggerListener() throws Exception;
+   public List<TriggerListener> getAllGlobalTriggerListener() throws Exception;
 
    public TriggerListener getGlobalTriggerListener(String name) throws Exception;
 
    public boolean removeGlobaTriggerListener(String name) throws Exception;
 
-   public int getTriggerState(String triggerName, String triggerGroup) throws Exception;
+   public TriggerState getTriggerState(String jobName, String groupName) throws Exception;
 
-   public void addTriggerListener(ComponentPlugin plugin) throws Exception;
+   public void addTriggerListener(AddTriggerListenerComponentPlugin plugin) throws Exception;
 
-   public List getAllTriggerListener() throws Exception;
+   public List<TriggerListener> getAllTriggerListener() throws Exception;
 
    public TriggerListener getTriggerListener(String name) throws Exception;
 
@@ -95,9 +97,9 @@ public interface JobSchedulerService
 
    public void queueTask(Task task);
 
-   public List getAllExcutingJobs() throws Exception;
+   public List<JobExecutionContext> getAllExcutingJobs() throws Exception;
 
-   public List getAllJobs() throws Exception;
+   public List<JobDetail> getAllJobs() throws Exception;
 
    public void pauseJob(String jobName, String groupName) throws Exception;
 
@@ -105,7 +107,7 @@ public interface JobSchedulerService
 
    public Trigger[] getTriggersOfJob(String jobName, String groupName) throws Exception;
 
-   public Date rescheduleJob(String triggerName, String groupName, Trigger newTrigger) throws Exception;
+   public Date rescheduleJob(String jobName, String groupName, Trigger newTrigger) throws Exception;
 
    public JobDetail getJob(JobInfo jobInfo) throws Exception;
    
