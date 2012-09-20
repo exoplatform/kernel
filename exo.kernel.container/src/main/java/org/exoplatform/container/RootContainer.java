@@ -558,15 +558,34 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       {
          case LOGIN :
          {
-            sessions.add(new WeakHttpSession(sess));            
+            cleanupSessions();
+            sessions.add(new WeakHttpSession(sess));
+            break;
          }
-         case LOGOUT :
+         default:
          {
-            sessions.remove(new WeakHttpSession(sess));            
          }
       }
    }
 
+   /**
+    * This is used to lazy-cleanup the set of sessions to prevent memory leak. This is needed since
+    * WCI doesn't provide anymore the logout event.
+    */
+   private void cleanupSessions()
+   {
+      Set<WeakHttpSession> sessionsToBeRemoved = new HashSet<WeakHttpSession>();
+      for (WeakHttpSession wSess : sessions)
+      {
+         HttpSession sess = wSess.get();
+         if (sess == null)
+         {
+            sessionsToBeRemoved.add(wSess);
+         }
+      }
+      sessions.removeAll(sessionsToBeRemoved);
+   }
+   
    public synchronized void createPortalContainer(ServletContext context)
    {
       SecurityManager security = System.getSecurityManager();
