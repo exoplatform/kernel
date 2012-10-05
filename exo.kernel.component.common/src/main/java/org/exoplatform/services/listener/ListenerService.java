@@ -18,11 +18,17 @@
  */
 package org.exoplatform.services.listener;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.component.RequestLifeCycle;
+import org.exoplatform.container.component.ThreadContextHandler;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,30 +54,44 @@ public class ListenerService
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.ListenerService");
 
+   private final ExoContainer container;
+   
    /**
     * Construct a listener service.
     */
-   public ListenerService()
+   public ListenerService(ExoContainerContext ctx)
    {
-      listeners_ = new HashMap<String, List<Listener>>();
-      executor = Executors.newFixedThreadPool(1, new ListenerThreadFactory());
+      this(ctx, null, null);
+   }
+   
+   /**
+    * Construct a listener service.
+    */
+   public ListenerService(ExoContainerContext ctx, InitialContextInitializer initializer)
+   {
+      this(ctx, initializer, null);
+   }
+   
+   /**
+    * Construct a listener service.
+    */
+   public ListenerService(ExoContainerContext ctx, InitParams params)
+   {
+      this(ctx, null, params);
    }
 
    /**
     * Construct a listener service.
     */
-   public ListenerService(InitialContextInitializer initializer, InitParams params)
+   public ListenerService(ExoContainerContext ctx, InitialContextInitializer initializer, InitParams params)
    {
+      container = ctx.getContainer();
       listeners_ = new HashMap<String, List<Listener>>();
       int poolSize = 1;
 
-      if (params != null)
+      if (params != null && params.getValueParam("asynchPoolSize") != null)
       {
-         if (params.getValueParam("asynchPoolSize") != null)
-         {
-
-            poolSize = Integer.parseInt(params.getValueParam("asynchPoolSize").getValue());
-         }
+         poolSize = Integer.parseInt(params.getValueParam("asynchPoolSize").getValue());
       }
       executor = Executors.newFixedThreadPool(poolSize, new ListenerThreadFactory());
    }
@@ -251,11 +271,15 @@ public class ListenerService
       private Listener<S, D> listener;
 
       private Event<S, D> event;
+      
+      private final ThreadContextHandler handler;
 
       public RunListener(Listener<S, D> listener, Event<S, D> event)
       {
          this.listener = listener;
          this.event = event;
+         this.handler = new ThreadContextHandler(container);
+         handler.store();
       }
 
       /**
@@ -265,6 +289,16 @@ public class ListenerService
       {
          try
          {
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  ExoContainerContext.setCurrentContainer(container);
+                  return null;
+               }
+            });
+            RequestLifeCycle.begin(container);
+            handler.push();
             listener.onEvent(event);
          }
          catch (Exception e)
@@ -272,6 +306,25 @@ public class ListenerService
             // Do not throw exception. Event is asynchronous so just report error.
             // Must say that exception will be ignored even in synchronous events.
             LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e);
+         }
+         finally
+         {
+            try
+            {
+               handler.restore();
+               RequestLifeCycle.end();
+            }
+            finally
+            {
+               SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+               {
+                  public Void run()
+                  {
+                     ExoContainerContext.setCurrentContainer(null);
+                     return null;
+                  }
+               });
+            }
          }
       }
    }
