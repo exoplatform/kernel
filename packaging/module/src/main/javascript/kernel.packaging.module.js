@@ -13,8 +13,7 @@ function getModule(params) {
     new Project("org.exoplatform.kernel", "exo.kernel.commons", "jar", module.version).
     addDependency(new Project("commons-lang", "commons-lang", "jar", "2.6")).
     addDependency(new Project("eu.medsea.mimeutil", "mime-util", "jar", "2.1.3")).
-    addDependency(new Project("xpp3", "xpp3", "jar", "1.1.4c")).
-    addDependency(new Project("dom4j", "dom4j", "jar", "1.6.1"));
+    addDependency(new Project("xpp3", "xpp3", "jar", "1.1.4c"));
     
   module.container = 
     new Project("org.exoplatform.kernel", "exo.kernel.container", "jar", module.version).
@@ -22,17 +21,7 @@ function getModule(params) {
     addDependency(new Project("picocontainer", "picocontainer", "jar", "1.1")).
     addDependency(new Project("commons-beanutils", "commons-beanutils", "jar", "1.8.3")).
     addDependency(new Project("org.jibx", "jibx-run", "jar", "1.2.4.5")).
-    addDependency(new Project("org.jibx", "jibx-bind", "jar", "1.2.4.5")).
-    addDependency(new Project("cglib", "cglib", "jar", "2.2"));
-
-  module.misc = {} ;
-  module.misc.drools = 
-    new Project("drools", "drools-core", "jar", "2.0").
-    addDependency(new Project("janino", "janino", "jar", "2.3.2")).
-    addDependency(new Project("drools", "drools-base", "jar", "2.0")).
-    addDependency(new Project("drools", "drools-io", "jar", "2.0")).
-    addDependency(new Project("drools", "drools-java", "jar", "2.0")).
-    addDependency(new Project("drools", "drools-smf", "jar", "2.0")) ;
+    addDependency(new Project("org.jibx", "jibx-bind", "jar", "1.2.4.5"));
 
   module.component = {};
   module.component.common = 
