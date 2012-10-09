@@ -235,8 +235,9 @@ public class TestMailService extends TestCase
       flags.add(Flags.Flag.RECENT);
 
       Properties props = new Properties(System.getProperties());
+      props.putAll(service.getMailSession().getProperties());
       props.put("mail.smtp.port", SMTP_PORT + 1);
-      Session session = Session.getDefaultInstance(props, null);
+      Session session = Session.getInstance(props);
 
       MimeMessage message = new MimeMessage(session);
       message.setFrom(new InternetAddress(generateRandomEmailSender()));
@@ -244,7 +245,6 @@ public class TestMailService extends TestCase
       message.setSubject(MAIL_SUBJECT);
       message.setContent(MAIL_CONTENTS, TEXT_PLAIN);
       message.setFlags(flags, true);
-
       Future<Boolean> future = service.sendMessageInFuture(message);
 
       try

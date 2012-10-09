@@ -21,13 +21,13 @@ package org.exoplatform.services.command;
 import junit.framework.TestCase;
 
 import org.apache.commons.chain.Catalog;
+import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.command.impl.CommandService;
 
 import java.io.ByteArrayInputStream;
-import java.util.Iterator;
 
 /**
  * Created by The eXo Platform SAS .
@@ -90,16 +90,15 @@ public class CommandServiceTest extends TestCase
    {
 
       CommandService cservice = (CommandService)container.getComponentInstanceOfType(CommandService.class);
-      Iterator cs = cservice.getCatalog().getNames();
-      String c1 = (String)cs.next();
-      String c2 = (String)cs.next();
+      Command c1 = cservice.getCatalog().getCommand("Execute2");
+      Command c2 = cservice.getCatalog().getCommand("StrCommand");
 
       Catalog c = cservice.getCatalog();
 
       Context ctx = new ContextBase();
       ctx.put("test", Integer.valueOf(0));
-      c.getCommand(c1).execute(ctx);
-      c.getCommand(c2).execute(ctx);
+      c1.execute(ctx);
+      c2.execute(ctx);
       assertEquals(3, ((Integer)ctx.get("test")).intValue());
 
    }
