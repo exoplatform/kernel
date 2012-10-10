@@ -76,6 +76,8 @@ public class TestCacheService extends TestCase
 
    public void testConcurrentCreation() throws Exception
    {
+      //Needed for that case if testCacheFactory will be executed before testConcurrentCreation and MyExoCache.count will have value bigger than 0
+      MyExoCache.count.getAndSet(0);
       int threads = 20;
       final CountDownLatch startSignal = new CountDownLatch(1);
       final CountDownLatch doneSignal = new CountDownLatch(threads);
@@ -115,7 +117,7 @@ public class TestCacheService extends TestCase
       }
       assertEquals(1, MyExoCache.count.get());
    }
-   
+
    public void testPerf() throws Exception
    {
       // Pre-create it 
@@ -135,7 +137,7 @@ public class TestCacheService extends TestCase
                   startSignal.await();
                   for (int i = 0; i < 1000000; i++)
                   {
-                     assertNotNull(service_.getCacheInstance("FooCache"));                     
+                     assertNotNull(service_.getCacheInstance("FooCache"));
                   }
                }
                catch (Exception e)
@@ -160,9 +162,9 @@ public class TestCacheService extends TestCase
             e.printStackTrace();
          }
          throw errors.get(0);
-      }      
+      }
    }
-   
+
    public void testCacheFactory() throws Exception
    {
       InitParams params = new InitParams();
@@ -172,7 +174,7 @@ public class TestCacheService extends TestCase
       config.setName(param.getName());
       param.setObject(config);
       params.addParameter(param);
-      
+
       param = new ObjectParameter();
       param.setName("KnownImpl");
       config = new ExoCacheConfig();
@@ -180,7 +182,7 @@ public class TestCacheService extends TestCase
       config.setImplementation("org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache");
       param.setObject(config);
       params.addParameter(param);
-      
+
       param = new ObjectParameter();
       param.setName("UnKnownImpl");
       config = new ExoCacheConfig();
@@ -188,7 +190,7 @@ public class TestCacheService extends TestCase
       config.setImplementation("fakeImpl");
       param.setObject(config);
       params.addParameter(param);
-      
+
       param = new ObjectParameter();
       param.setName("UnKnownImplButCorrectFQN");
       config = new ExoCacheConfig();
@@ -196,14 +198,14 @@ public class TestCacheService extends TestCase
       config.setImplementation("java.lang.String");
       param.setObject(config);
       params.addParameter(param);
-      
+
       param = new ObjectParameter();
       param.setName("NoImpl-MyExoCacheConfig");
       config = new MyExoCacheConfig();
       config.setName(param.getName());
       param.setObject(config);
       params.addParameter(param);
-      
+
       param = new ObjectParameter();
       param.setName("KnownImpl-MyExoCacheConfig");
       config = new MyExoCacheConfig();
@@ -211,7 +213,7 @@ public class TestCacheService extends TestCase
       config.setImplementation("org.exoplatform.services.cache.FIFOExoCache");
       param.setObject(config);
       params.addParameter(param);
-      
+
       param = new ObjectParameter();
       param.setName("UnKnownImpl-MyExoCacheConfig");
       config = new MyExoCacheConfig();
@@ -219,8 +221,7 @@ public class TestCacheService extends TestCase
       config.setImplementation("fakeImpl");
       param.setObject(config);
       params.addParameter(param);
-      
-      
+
       param = new ObjectParameter();
       param.setName("UnKnownImplButCorrectFQN-MyExoCacheConfig");
       config = new MyExoCacheConfig();
@@ -230,16 +231,25 @@ public class TestCacheService extends TestCase
       params.addParameter(param);
 
       CacheService cs = new CacheServiceImpl(params, new MyExoCacheFactory());
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("NoImpl").getClass(), cs.getCacheInstance("NoImpl") instanceof MyExoCache);
-      assertTrue("Expected type ConcurrentFIFOExoCache found " + cs.getCacheInstance("KnownImpl").getClass(), cs.getCacheInstance("KnownImpl") instanceof ConcurrentFIFOExoCache);
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImpl").getClass(), cs.getCacheInstance("UnKnownImpl") instanceof MyExoCache);
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImplButCorrectFQN").getClass(), cs.getCacheInstance("UnKnownImplButCorrectFQN") instanceof MyExoCache);
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("NoImpl-MyExoCacheConfig").getClass(), cs.getCacheInstance("NoImpl-MyExoCacheConfig") instanceof MyExoCache);
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("KnownImpl-MyExoCacheConfig").getClass(), cs.getCacheInstance("KnownImpl-MyExoCacheConfig") instanceof MyExoCache);
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImpl-MyExoCacheConfig").getClass(), cs.getCacheInstance("UnKnownImpl-MyExoCacheConfig") instanceof MyExoCache);
-      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImplButCorrectFQN-MyExoCacheConfig").getClass(), cs.getCacheInstance("UnKnownImplButCorrectFQN-MyExoCacheConfig") instanceof MyExoCache);
+      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("NoImpl").getClass(),
+         cs.getCacheInstance("NoImpl") instanceof MyExoCache);
+      assertTrue("Expected type ConcurrentFIFOExoCache found " + cs.getCacheInstance("KnownImpl").getClass(),
+         cs.getCacheInstance("KnownImpl") instanceof ConcurrentFIFOExoCache);
+      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImpl").getClass(),
+         cs.getCacheInstance("UnKnownImpl") instanceof MyExoCache);
+      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImplButCorrectFQN").getClass(),
+         cs.getCacheInstance("UnKnownImplButCorrectFQN") instanceof MyExoCache);
+      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("NoImpl-MyExoCacheConfig").getClass(),
+         cs.getCacheInstance("NoImpl-MyExoCacheConfig") instanceof MyExoCache);
+      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("KnownImpl-MyExoCacheConfig").getClass(),
+         cs.getCacheInstance("KnownImpl-MyExoCacheConfig") instanceof MyExoCache);
+      assertTrue("Expected type MyExoCache found " + cs.getCacheInstance("UnKnownImpl-MyExoCacheConfig").getClass(),
+         cs.getCacheInstance("UnKnownImpl-MyExoCacheConfig") instanceof MyExoCache);
+      assertTrue("Expected type MyExoCache found "
+         + cs.getCacheInstance("UnKnownImplButCorrectFQN-MyExoCacheConfig").getClass(),
+         cs.getCacheInstance("UnKnownImplButCorrectFQN-MyExoCacheConfig") instanceof MyExoCache);
    }
-   
+
    public void testCacheService() throws Exception
    {
       assertNotNull(service_.getAllCacheInstances());
@@ -362,7 +372,7 @@ public class TestCacheService extends TestCase
       assertEquals(5, server.getAttribute(name, "Capacity"));
       assertEquals(size + 7, service_.getAllCacheInstances().size());
    }
-  
+
    private static class ExoCacheComparator implements Comparator
    {
 
@@ -383,17 +393,17 @@ public class TestCacheService extends TestCase
    {
       return "Test Cache Service";
    }
-   
+
    public static class MyExoCache<V> implements ExoCache<Serializable, V>
    {
 
       private static AtomicInteger count = new AtomicInteger();
-      
+
       public MyExoCache()
       {
          count.incrementAndGet();
       }
-      
+
       /**
        * @see org.exoplatform.services.cache.ExoCache#getName()
        */
@@ -445,7 +455,7 @@ public class TestCacheService extends TestCase
        */
       public void put(Serializable key, V value) throws NullPointerException
       {
-         
+
       }
 
       /**
@@ -454,7 +464,7 @@ public class TestCacheService extends TestCase
       public void putMap(Map<? extends Serializable, ? extends V> objs) throws NullPointerException,
          IllegalArgumentException
       {
-         
+
       }
 
       /**
@@ -462,7 +472,7 @@ public class TestCacheService extends TestCase
        */
       public void clearCache()
       {
-         
+
       }
 
       /**
@@ -470,7 +480,7 @@ public class TestCacheService extends TestCase
        */
       public void select(CachedObjectSelector<? super Serializable, ? super V> selector) throws Exception
       {
-         
+
       }
 
       /**
@@ -564,9 +574,9 @@ public class TestCacheService extends TestCase
       public void setLogEnabled(boolean b)
       {
       }
-      
+
    }
-   
+
    public static class MyExoCacheFactory implements ExoCacheFactory
    {
 
@@ -577,11 +587,13 @@ public class TestCacheService extends TestCase
       {
          return new MyExoCache();
       }
-      
+
    }
-   
-   public static class MyExoCacheConfig extends ExoCacheConfig {}
-   
+
+   public static class MyExoCacheConfig extends ExoCacheConfig
+   {
+   }
+
    private static void hasObjectInCollection(Object obj, Collection c, Comparator comparator) throws Exception
    {
       Iterator iter = c.iterator();

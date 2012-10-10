@@ -38,9 +38,8 @@ import java.io.ByteArrayInputStream;
 public class CommandServiceTest extends TestCase
 {
 
-   private static final String IS =
-      "<catalog>" + "<command name='StrCommand'" + " className='org.exoplatform.services.command.TestCommand1'/>"
-         + "</catalog>";
+   private static final String IS = "<catalog>" + "<command name='StrCommand'"
+      + " className='org.exoplatform.services.command.TestCommand1'/>" + "</catalog>";
 
    private StandaloneContainer container;
 
@@ -91,7 +90,7 @@ public class CommandServiceTest extends TestCase
 
       CommandService cservice = (CommandService)container.getComponentInstanceOfType(CommandService.class);
       Command c1 = cservice.getCatalog().getCommand("Execute2");
-      Command c2 = cservice.getCatalog().getCommand("StrCommand");
+      Command c2 = cservice.getCatalog().getCommand("Command1");
 
       Catalog c = cservice.getCatalog();
 
