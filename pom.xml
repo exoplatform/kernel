@@ -28,6 +28,7 @@
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
       <version>12-SNAPSHOT</version>
+      <relativePath/>
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
