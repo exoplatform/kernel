@@ -26,6 +26,7 @@
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
       <version>7</version>
+      <relativePath/>
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
