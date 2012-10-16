@@ -118,7 +118,7 @@ public class MimeTypeResolver
     */
    public void setDefaultMimeType(String defaultMimeType)
    {
-      this.defaultMimeType = defaultMimeType;
+      this.defaultMimeType = defaultMimeType.toLowerCase();
    }
 
    /**
@@ -131,7 +131,7 @@ public class MimeTypeResolver
     */
    public String getMimeType(String filename)
    {
-      String ext = filename.substring(filename.lastIndexOf(".") + 1);
+      String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
       if (ext.isEmpty())
       {
          ext = filename;
@@ -179,6 +179,8 @@ public class MimeTypeResolver
     */
    public String getExtension(String mimeType)
    {
+      mimeType = mimeType.toLowerCase();
+
       if (mimeType.isEmpty() || mimeType.equals(defaultMimeType))
       {
          return "";
@@ -213,6 +215,7 @@ public class MimeTypeResolver
     */
    protected void processLine(String aLine)
    {
+      aLine = aLine.toLowerCase();
       int p = aLine.indexOf("=");
 
       String ext = aLine.substring(0, p);
