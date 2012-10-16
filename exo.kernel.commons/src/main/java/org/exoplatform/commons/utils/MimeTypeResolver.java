@@ -131,13 +131,13 @@ public class MimeTypeResolver
     */
    public String getMimeType(String filename)
    {
-      String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+      String ext = filename.substring(filename.lastIndexOf(".") + 1);
       if (ext.isEmpty())
       {
          ext = filename;
       }
 
-      List<String> values = mimeTypes.get(ext);
+      List<String> values = mimeTypes.get(ext.toLowerCase());
       return values == null ? defaultMimeType : values.get(0);
    }
 
@@ -158,7 +158,7 @@ public class MimeTypeResolver
          Collection<?> mimeTypes = MimeUtil.getMimeTypes(is);
          if (!mimeTypes.isEmpty())
          {
-            mimeType = mimeTypes.toArray()[0].toString();
+            mimeType = mimeTypes.toArray()[0].toString().toLowerCase();
          }
       }
 
