@@ -21,6 +21,7 @@ package org.exoplatform.container;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.RootContainer.PortalContainerInitTask;
+import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
 import org.exoplatform.container.RootContainer.PortalContainerPreInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
@@ -752,7 +753,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    /**
     * This class is used to unregister a portal container
     */
-   public static class UnregisterTask extends PortalContainerPreInitTask
+   public static class UnregisterTask extends PortalContainerPostInitTask
    {
       public void execute(ServletContext context, PortalContainer portalContainer)
       {
