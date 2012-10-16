@@ -118,7 +118,7 @@ public class MimeTypeResolver
     */
    public void setDefaultMimeType(String defaultMimeType)
    {
-      this.defaultMimeType = defaultMimeType;
+      this.defaultMimeType = defaultMimeType.toLowerCase();
    }
 
    /**
@@ -137,7 +137,7 @@ public class MimeTypeResolver
          ext = filename;
       }
 
-      List<String> values = mimeTypes.get(ext);
+      List<String> values = mimeTypes.get(ext.toLowerCase());
       return values == null ? defaultMimeType : values.get(0);
    }
 
@@ -158,7 +158,7 @@ public class MimeTypeResolver
          Collection<?> mimeTypes = MimeUtil.getMimeTypes(is);
          if (!mimeTypes.isEmpty())
          {
-            mimeType = mimeTypes.toArray()[0].toString();
+            mimeType = mimeTypes.toArray()[0].toString().toLowerCase();
          }
       }
 
@@ -179,6 +179,8 @@ public class MimeTypeResolver
     */
    public String getExtension(String mimeType)
    {
+      mimeType = mimeType.toLowerCase();
+
       if (mimeType.isEmpty() || mimeType.equals(defaultMimeType))
       {
          return "";
@@ -213,6 +215,7 @@ public class MimeTypeResolver
     */
    protected void processLine(String aLine)
    {
+      aLine = aLine.toLowerCase();
       int p = aLine.indexOf("=");
 
       String ext = aLine.substring(0, p);
