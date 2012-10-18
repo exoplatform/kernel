@@ -54,7 +54,8 @@ public class CloseableDataSource implements DataSource
    private final AtomicBoolean closed = new AtomicBoolean(false);
 
    /**
-    * Exception instance for logging of call stack which called a closing of DataSource. Need for finding where exists usage of closed sessions.
+    * Exception instance for logging of call stack which called a closing of DataSource. 
+    * Need for finding where exists usage of closed sessions.
     */
    private Exception closedByCallStack;
 
@@ -63,8 +64,8 @@ public class CloseableDataSource implements DataSource
    /**
     * Property value which responsible for allowing of closed DataSource usage.
     */
-   private static final boolean PROHIBIT_CLOSED_DATASOURCE_USAGE = Boolean.valueOf(PrivilegedSystemHelper.getProperty("exo.jcr.prohibit.closed.datasource.usage", "true"));
-
+   private static final boolean PROHIBIT_CLOSED_DATASOURCE_USAGE = Boolean.valueOf(PrivilegedSystemHelper.getProperty(
+      "exo.jcr.prohibit.closed.datasource.usage", "true"));
 
    /**
     * Constructor CloseableDataSource.
