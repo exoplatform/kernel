@@ -26,12 +26,12 @@
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
       <version>9</version>
-      <relativePath/>
+      <relativePath />
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.3.9-GA-SNAPSHOT</version>
+   <version>2.3.9-CR01</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
