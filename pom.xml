@@ -28,12 +28,12 @@
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
       <version>12</version>
-      <relativePath />
+      <relativePath/>
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.4.0-GA-SNAPSHOT</version>
+   <version>2.4.0-CR2-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
