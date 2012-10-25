@@ -24,6 +24,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.tenant.TenantsContainerController;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ComponentLifecyclePlugin;
 import org.exoplatform.container.xml.ContainerLifecyclePlugin;
@@ -221,6 +222,40 @@ public class ContainerUtil
          }
       }
    }
+
+   public static void findTenantsController(ExoContainer container, ConfigurationManager conf)
+   {
+     Collection components = conf.getComponents();
+     if (components == null)
+       return;
+
+     Iterator i = components.iterator();
+     while (i.hasNext())
+     {
+       Component component = (Component)i.next();
+       String key = component.getKey();
+       if (key.equals(TenantsContainerController.class.getName()))
+       {
+         String type = component.getType();
+         try {
+           Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
+           container.setTenantsContainerController((TenantsContainerController)keyType.newInstance());
+         }
+         catch (ClassNotFoundException e)
+         {
+           LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", e);
+         } catch (InstantiationException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (IllegalAccessException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         }
+       }
+
+
+
+     }
+   }
+
 
    /**
     * Loads the properties file corresponding to the given url
