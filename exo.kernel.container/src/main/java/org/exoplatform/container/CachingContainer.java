@@ -19,6 +19,7 @@
 package org.exoplatform.container;
 
 import org.exoplatform.container.mc.MCIntegrationContainer;
+import org.exoplatform.container.tenant.TenantsContainerController;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Parameter;
 import org.picocontainer.PicoContainer;
@@ -55,6 +56,8 @@ public class CachingContainer extends MCIntegrationContainer
    private final ConcurrentMap<Class, List> adaptersByType = new ConcurrentHashMap<Class, List>();
 
    private final ConcurrentMap<Class, List> instancesByType = new ConcurrentHashMap<Class, List>();
+
+   private TenantsContainerController tenantsContainerController;
 
    public CachingContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
    {
@@ -229,4 +232,10 @@ public class CachingContainer extends MCIntegrationContainer
       invalidate();
       return adapter;
    }
+
+   public void setTenantsContainerController(TenantsContainerController tenantsContainerController)
+   {
+    this.tenantsContainerController = tenantsContainerController;
+   }
+
 }

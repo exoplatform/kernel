@@ -117,7 +117,7 @@ public class ContainerUtil
       // System.out.println("==> Add " + url);
       // }
       return map.values();
-   }
+   }                    ContainerUtil.addComponents
 
    static public void addContainerLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
    {
