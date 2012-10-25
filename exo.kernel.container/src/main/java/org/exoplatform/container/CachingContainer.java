@@ -57,7 +57,7 @@ public class CachingContainer extends MCIntegrationContainer
 
    private final ConcurrentMap<Class, List> instancesByType = new ConcurrentHashMap<Class, List>();
 
-   private TenantsContainerController tenantsContainerController;
+   protected TenantsContainerController tenantsContainerController;
 
    public CachingContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
    {
@@ -231,11 +231,6 @@ public class CachingContainer extends MCIntegrationContainer
       ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
       invalidate();
       return adapter;
-   }
-
-   public void setTenantsContainerController(TenantsContainerController tenantsContainerController)
-   {
-    this.tenantsContainerController = tenantsContainerController;
    }
 
 }

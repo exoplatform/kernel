@@ -223,11 +223,11 @@ public class ContainerUtil
       }
    }
 
-   public static void findTenantsController(ExoContainer container, ConfigurationManager conf)
+   public static TenantsContainerController findTenantsController(ExoContainer container, ConfigurationManager conf)
    {
      Collection components = conf.getComponents();
      if (components == null)
-       return;
+       return null;
 
      Iterator i = components.iterator();
      while (i.hasNext())
@@ -239,7 +239,7 @@ public class ContainerUtil
          String type = component.getType();
          try {
            Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
-           container.setTenantsContainerController((TenantsContainerController)keyType.newInstance());
+           return (TenantsContainerController)keyType.newInstance();
          }
          catch (ClassNotFoundException e)
          {
@@ -250,10 +250,8 @@ public class ContainerUtil
            LOG.error("Cannot instantiate new instance of '" + type + "'", e);
          }
        }
-
-
-
      }
+     return null;
    }
 
 
