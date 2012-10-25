@@ -18,12 +18,9 @@
  */
 package org.exoplatform.container.tenant;
 
-import org.exoplatform.container.ExoContainer;
 import org.picocontainer.ComponentAdapter;
 
 public interface TenantsContainerController {
-
-  public void setContainer(ExoContainer container);
 
   public void createTenantContainer(String tenant);
 

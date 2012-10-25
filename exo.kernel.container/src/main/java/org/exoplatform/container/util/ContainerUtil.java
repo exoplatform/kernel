@@ -36,6 +36,7 @@ import org.picocontainer.defaults.ConstructorInjectionComponentAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
@@ -118,7 +119,7 @@ public class ContainerUtil
       // System.out.println("==> Add " + url);
       // }
       return map.values();
-   }                    ContainerUtil.addComponents
+   }
 
    static public void addContainerLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
    {
@@ -239,7 +240,8 @@ public class ContainerUtil
          String type = component.getType();
          try {
            Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
-           return (TenantsContainerController)keyType.newInstance();
+           Constructor<TenantsContainerController> controllerConstructor = (Constructor<TenantsContainerController>)keyType.getConstructor(ExoContainer.class);
+           return controllerConstructor.newInstance(container);
          }
          catch (ClassNotFoundException e)
          {
@@ -248,7 +250,15 @@ public class ContainerUtil
            LOG.error("Cannot instantiate new instance of '" + type + "'", e);
          } catch (IllegalAccessException e) {
            LOG.error("Cannot instantiate new instance of '" + type + "'", e);
-         }
+         } catch (SecurityException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (NoSuchMethodException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "' constructor with parameter '" + ExoContainer.class.getName() + "' not found", e);
+         } catch (IllegalArgumentException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (InvocationTargetException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+        }
        }
      }
      return null;
