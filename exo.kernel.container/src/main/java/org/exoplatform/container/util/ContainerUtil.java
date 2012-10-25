@@ -239,8 +239,8 @@ public class ContainerUtil
        {
          String type = component.getType();
          try {
-           Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
-           Constructor<TenantsContainerController> controllerConstructor = (Constructor<TenantsContainerController>)keyType.getConstructor(ExoContainer.class);
+           Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
+           Constructor<TenantsContainerController> controllerConstructor = (Constructor<TenantsContainerController>)typeClass.getConstructor(ExoContainer.class);
            return controllerConstructor.newInstance(container);
          }
          catch (ClassNotFoundException e)
