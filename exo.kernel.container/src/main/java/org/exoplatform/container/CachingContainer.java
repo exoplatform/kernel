@@ -81,7 +81,7 @@ public class CachingContainer extends MCIntegrationContainer
 
    public ComponentAdapter getComponentAdapterOfType(Class componentType)
    {
-      if (tenantsContainerController != null)
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
       {
          ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
          if (tenancyAdapter != null)
@@ -129,7 +129,7 @@ public class CachingContainer extends MCIntegrationContainer
 
    public Object getComponentInstance(Object componentKey) throws PicoException
    {
-      if (tenantsContainerController != null)
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
       {
          ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentKey);
          if (tenancyAdapter != null)
@@ -149,7 +149,7 @@ public class CachingContainer extends MCIntegrationContainer
 
    public Object getComponentInstanceOfType(Class componentType)
    {
-      if (tenantsContainerController != null)
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
       {
          ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
          if (tenancyAdapter != null)
