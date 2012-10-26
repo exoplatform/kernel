@@ -27,7 +27,9 @@ public interface TenantsContainerController {
   public void removeTenantContainer(String tenant);
 
   public ComponentAdapter getComponentOfType(Object key);
-
+  
+  public boolean isNeedRegister(Object componentKey);
+  
   public void registerComponent(ComponentAdapter component);
 
 }

@@ -28,6 +28,7 @@ import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.PicoVisitor;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
+import org.picocontainer.defaults.InstanceComponentAdapter;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,7 +59,7 @@ public class CachingContainer extends MCIntegrationContainer
    private final ConcurrentMap<Class, List> instancesByType = new ConcurrentHashMap<Class, List>();
 
    protected TenantsContainerController tenantsContainerController;
-
+   
    public CachingContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
    {
       super(componentAdapterFactory, parent);
@@ -80,6 +81,12 @@ public class CachingContainer extends MCIntegrationContainer
 
    public ComponentAdapter getComponentAdapterOfType(Class componentType)
    {
+      if (tenantsContainerController != null)
+      {
+         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
+         if (tenancyAdapter != null)
+            return tenancyAdapter;
+      }
       ComponentAdapter adapter = adapterByType.get(componentType);
       if (adapter == null)
       {
@@ -122,6 +129,12 @@ public class CachingContainer extends MCIntegrationContainer
 
    public Object getComponentInstance(Object componentKey) throws PicoException
    {
+      if (tenantsContainerController != null)
+      {
+         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentKey);
+         if (tenancyAdapter != null)
+            return tenancyAdapter;
+      }
       Object instance = instanceByKey.get(componentKey);
       if (instance == null)
       {
@@ -136,6 +149,12 @@ public class CachingContainer extends MCIntegrationContainer
 
    public Object getComponentInstanceOfType(Class componentType)
    {
+      if (tenantsContainerController != null)
+      {
+         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
+         if (tenancyAdapter != null)
+            return tenancyAdapter;
+      }
       Object instance = instanceByType.get(componentType);
       if (instance == null)
       {
@@ -174,6 +193,11 @@ public class CachingContainer extends MCIntegrationContainer
    public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
       throws DuplicateComponentKeyRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentAdapter.getComponentKey()))
+      {
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponent(componentAdapter);
       invalidate();
       return adapter;
@@ -188,6 +212,12 @@ public class CachingContainer extends MCIntegrationContainer
 
    public ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(component.getClass()))
+      {
+        ComponentAdapter componentAdapter = new InstanceComponentAdapter(component.getClass(), component);
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponentInstance(component);
       invalidate();
       return adapter;
@@ -196,6 +226,12 @@ public class CachingContainer extends MCIntegrationContainer
    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
       throws PicoRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+      {
+        ComponentAdapter componentAdapter = new InstanceComponentAdapter(componentKey, componentInstance);
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
       invalidate();
       return adapter;
@@ -204,6 +240,12 @@ public class CachingContainer extends MCIntegrationContainer
    public ComponentAdapter registerComponentImplementation(Class componentImplementation)
       throws PicoRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentImplementation))
+      {
+        ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentImplementation, componentImplementation, null);
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponentImplementation(componentImplementation);
       invalidate();
       return adapter;
@@ -212,6 +254,12 @@ public class CachingContainer extends MCIntegrationContainer
    public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
       throws PicoRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+      {
+        ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, null);
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation);
       invalidate();
       return adapter;
@@ -220,6 +268,12 @@ public class CachingContainer extends MCIntegrationContainer
    public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
       Parameter[] parameters) throws PicoRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+      {
+        ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, parameters);
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
       invalidate();
       return adapter;
@@ -228,6 +282,13 @@ public class CachingContainer extends MCIntegrationContainer
    public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
       List parameters) throws PicoRegistrationException
    {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+      {
+        Parameter[] parametersAsArray = (Parameter[])parameters.toArray(new Parameter[parameters.size()]);
+        ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, parametersAsArray);
+        tenantsContainerController.registerComponent(componentAdapter);
+        return componentAdapter;
+      }
       ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
       invalidate();
       return adapter;
