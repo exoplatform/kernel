@@ -20,12 +20,18 @@ package org.exoplatform.container.tenant;
 
 import org.picocontainer.ComponentAdapter;
 
+import java.util.List;
+
 public interface TenantsContainerController {
 
   public void createTenantContainer(String tenant);
 
   public void removeTenantContainer(String tenant);
 
+  public List getComponentAdaptersOfType(Class componentType);
+  
+  public List getComponentInstancesOfType(Class componentType);
+  
   public ComponentAdapter getComponentOfType(Object key);
   
   public boolean isNeedRegister(Object componentKey);

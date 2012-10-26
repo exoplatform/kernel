@@ -76,6 +76,31 @@ public class TenancyContainer extends CachingContainer {
       }
       return super.getComponentInstance(componentKey);
    }
+   
+
+   @Override
+   public List getComponentAdaptersOfType(Class componentType)
+   {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
+      {
+         List adapters = tenantsContainerController.getComponentAdaptersOfType(componentType);
+         if (adapters != null)
+            return adapters;
+      }
+      return super.getComponentAdaptersOfType(componentType);
+   }
+
+   @Override
+   public List getComponentInstancesOfType(Class componentType) throws PicoException
+   {
+      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
+      {
+         List instances = tenantsContainerController.getComponentInstancesOfType(componentType);
+         if (instances != null)
+            return instances;
+      }
+      return super.getComponentInstancesOfType(componentType);
+   }
 
    @Override
    public Object getComponentInstanceOfType(Class componentType)
