@@ -58,7 +58,7 @@ public class TenancyContainer extends CachingContainer {
    {
       if (tenantsContainerController != null)
       {
-         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
+         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentAdapterOfType(componentType);
          if (tenancyAdapter != null)
             return tenancyAdapter;
       }
@@ -70,7 +70,7 @@ public class TenancyContainer extends CachingContainer {
    {
       if (tenantsContainerController != null)
       {
-         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentKey);
+         Object tenancyAdapter = tenantsContainerController.getComponentInstance(componentKey);
          if (tenancyAdapter != null)
             return tenancyAdapter;
       }
@@ -107,7 +107,7 @@ public class TenancyContainer extends CachingContainer {
    {
       if (tenantsContainerController != null)
       {
-         ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
+         Object tenancyAdapter = tenantsContainerController.getComponentInstanceOfType(componentType);
          if (tenancyAdapter != null)
             return tenancyAdapter;
       }

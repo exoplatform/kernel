@@ -32,7 +32,11 @@ public interface TenantsContainerController {
   
   public List getComponentInstancesOfType(Class componentType);
   
-  public ComponentAdapter getComponentOfType(Object key);
+  public ComponentAdapter getComponentAdapterOfType(Class key);
+  
+  public Object getComponentInstance(Object componentKey);
+  
+  public Object getComponentInstanceOfType(Class<?> componentType);
   
   public boolean isNeedRegister(Object componentKey);
   
