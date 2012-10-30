@@ -56,7 +56,7 @@ public class TenancyContainer extends CachingContainer {
    @Override
    public ComponentAdapter getComponentAdapterOfType(Class componentType)
    {
-      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
+      if (tenantsContainerController != null)
       {
          ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
          if (tenancyAdapter != null)
@@ -68,7 +68,7 @@ public class TenancyContainer extends CachingContainer {
    @Override
    public Object getComponentInstance(Object componentKey) throws PicoException
    {
-      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+      if (tenantsContainerController != null)
       {
          ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentKey);
          if (tenancyAdapter != null)
@@ -81,7 +81,7 @@ public class TenancyContainer extends CachingContainer {
    @Override
    public List getComponentAdaptersOfType(Class componentType)
    {
-      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
+      if (tenantsContainerController != null)
       {
          List adapters = tenantsContainerController.getComponentAdaptersOfType(componentType);
          if (adapters != null)
@@ -93,7 +93,7 @@ public class TenancyContainer extends CachingContainer {
    @Override
    public List getComponentInstancesOfType(Class componentType) throws PicoException
    {
-      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
+      if (tenantsContainerController != null)
       {
          List instances = tenantsContainerController.getComponentInstancesOfType(componentType);
          if (instances != null)
@@ -105,7 +105,7 @@ public class TenancyContainer extends CachingContainer {
    @Override
    public Object getComponentInstanceOfType(Class componentType)
    {
-      if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentType))
+      if (tenantsContainerController != null)
       {
          ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentOfType(componentType);
          if (tenancyAdapter != null)
