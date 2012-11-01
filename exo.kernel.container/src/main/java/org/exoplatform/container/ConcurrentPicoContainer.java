@@ -36,7 +36,6 @@ import org.picocontainer.defaults.DefaultPicoContainer;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 import org.picocontainer.defaults.InstanceComponentAdapter;
 import org.picocontainer.defaults.VerifyingVisitor;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -386,12 +385,35 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       return result;
    }
 
-   public Object getComponentInstance(Object componentKey) throws PicoException
+
+  public boolean hasComponentInstanceOfType(Class componentType) throws PicoException
+  {
+    for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
+    {
+      ComponentAdapter componentAdapter = iterator.next();
+      if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
+        return true;
+    }
+    return false;
+  }
+
+  public boolean hasComponentInstanceOfType(Object componentKey) throws PicoException
+  {
+    ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
+    if (adapter != null)
+    {
+      return true;
+    }
+      return false;
+  }
+
+
+  public Object getComponentInstance(Object componentKey) throws PicoException
    {
-      ComponentAdapter componentAdapter = getComponentAdapter(componentKey);
-      if (componentAdapter != null)
+     ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
+      if (adapter != null)
       {
-         return getInstance(componentAdapter);
+         return getInstance(adapter);
       }
       else
       {
