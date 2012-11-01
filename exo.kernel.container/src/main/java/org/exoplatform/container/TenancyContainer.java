@@ -28,6 +28,7 @@ import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 import org.picocontainer.defaults.InstanceComponentAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TenancyContainer extends CachingContainer {
@@ -81,25 +82,31 @@ public class TenancyContainer extends CachingContainer {
    @Override
    public List getComponentAdaptersOfType(Class componentType)
    {
+      List result = new ArrayList();
       if (tenantsContainerController != null)
       {
          List adapters = tenantsContainerController.getComponentAdaptersOfType(componentType);
          if (adapters != null)
-            return adapters;
+           result.addAll(adapters);
       }
-      return super.getComponentAdaptersOfType(componentType);
+      List adapters = super.getComponentAdaptersOfType(componentType);
+      result.addAll(adapters);
+      return result;
    }
 
    @Override
    public List getComponentInstancesOfType(Class componentType) throws PicoException
    {
+      List result = new ArrayList();
       if (tenantsContainerController != null)
       {
          List instances = tenantsContainerController.getComponentInstancesOfType(componentType);
          if (instances != null)
-            return instances;
+           result.addAll(instances);
       }
-      return super.getComponentInstancesOfType(componentType);
+      List instances = super.getComponentInstancesOfType(componentType);
+      result.addAll(instances);
+      return result;
    }
 
    @Override
