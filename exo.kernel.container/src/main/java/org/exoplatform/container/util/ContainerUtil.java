@@ -24,7 +24,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.tenant.TenantsContainerController;
+import org.exoplatform.container.tenant.TenantContainerContext;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ComponentLifecyclePlugin;
 import org.exoplatform.container.xml.ContainerLifecyclePlugin;
@@ -224,7 +224,7 @@ public class ContainerUtil
       }
    }
 
-   public static TenantsContainerController findTenantsController(ExoContainer container, ConfigurationManager conf)
+   public static TenantContainerContext findTenantsController(ExoContainer container, ConfigurationManager conf)
    {
      Collection components = conf.getComponents();
      if (components == null)
@@ -235,12 +235,12 @@ public class ContainerUtil
      {
        Component component = (Component)i.next();
        String key = component.getKey();
-       if (key.equals(TenantsContainerController.class.getName()))
+       if (key.equals(TenantContainerContext.class.getName()))
        {
          String type = component.getType();
          try {
            Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
-           Constructor<TenantsContainerController> controllerConstructor = (Constructor<TenantsContainerController>)typeClass.getConstructor(ExoContainer.class);
+           Constructor<TenantContainerContext> controllerConstructor = (Constructor<TenantContainerContext>)typeClass.getConstructor(ExoContainer.class);
            return controllerConstructor.newInstance(container);
          }
          catch (ClassNotFoundException e)

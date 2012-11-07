@@ -209,7 +209,7 @@ public class ExoContainer extends ManageableContainer
    private void initContainerInternal()
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
-      tenantsContainerController  = ContainerUtil.findTenantsController(this, manager);
+      tenantContainerContext = ContainerUtil.findTenantsController(this, manager);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);

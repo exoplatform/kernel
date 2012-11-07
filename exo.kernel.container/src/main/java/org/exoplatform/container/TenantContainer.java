@@ -18,7 +18,7 @@
  */
 package org.exoplatform.container;
 
-import org.exoplatform.container.tenant.TenantsContainerController;
+import org.exoplatform.container.tenant.TenantContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Parameter;
 import org.picocontainer.PicoContainer;
@@ -30,35 +30,35 @@ import org.picocontainer.defaults.InstanceComponentAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TenancyContainer extends CachingContainer {
+public class TenantContainer extends CachingContainer {
 
-  protected TenantsContainerController tenantsContainerController;
+  protected TenantContainerContext tenantContainerContext;
 
-  public TenancyContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
+  public TenantContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
   {
     super(componentAdapterFactory, parent);
   }
 
-  public TenancyContainer(PicoContainer parent)
+  public TenantContainer(PicoContainer parent)
   {
     super(parent);
   }
 
-  public TenancyContainer(ComponentAdapterFactory componentAdapterFactory)
+  public TenantContainer(ComponentAdapterFactory componentAdapterFactory)
   {
     super(componentAdapterFactory);
   }
 
-  public TenancyContainer()
+  public TenantContainer()
   {
   }
 
   @Override
   public ComponentAdapter getComponentAdapterOfType(Class componentType)
   {
-    if (tenantsContainerController != null)
+    if (tenantContainerContext != null)
     {
-      ComponentAdapter tenancyAdapter = tenantsContainerController.getComponentAdapterOfType(componentType);
+      ComponentAdapter tenancyAdapter = tenantContainerContext.getComponentAdapterOfType(componentType);
       if (tenancyAdapter != null)
         return tenancyAdapter;
     }
@@ -68,9 +68,9 @@ public class TenancyContainer extends CachingContainer {
   @Override
   public Object getComponentInstance(Object componentKey) throws PicoException
   {
-    if (tenantsContainerController != null)
+    if (tenantContainerContext != null)
     {
-      Object tenancyAdapter = tenantsContainerController.getComponentInstance(componentKey);
+      Object tenancyAdapter = tenantContainerContext.getComponentInstance(componentKey);
       if (tenancyAdapter != null)
         return tenancyAdapter;
     }
@@ -82,9 +82,9 @@ public class TenancyContainer extends CachingContainer {
   public List getComponentAdaptersOfType(Class componentType)
   {
     List result = new ArrayList();
-    if (tenantsContainerController != null)
+    if (tenantContainerContext != null)
     {
-      List adapters = tenantsContainerController.getComponentAdaptersOfType(componentType);
+      List adapters = tenantContainerContext.getComponentAdaptersOfType(componentType);
       if (adapters != null)
         result.addAll(adapters);
     }
@@ -97,9 +97,9 @@ public class TenancyContainer extends CachingContainer {
   public List getComponentInstancesOfType(Class componentType) throws PicoException
   {
     List result = new ArrayList();
-    if (tenantsContainerController != null)
+    if (tenantContainerContext != null)
     {
-      List instances = tenantsContainerController.getComponentInstancesOfType(componentType);
+      List instances = tenantContainerContext.getComponentInstancesOfType(componentType);
       if (instances != null)
         result.addAll(instances);
     }
@@ -111,9 +111,9 @@ public class TenancyContainer extends CachingContainer {
   @Override
   public Object getComponentInstanceOfType(Class componentType)
   {
-    if (tenantsContainerController != null && !componentType.equals(ExoContainerContext.class))
+    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class))
     {
-      Object tenancyAdapter = tenantsContainerController.getComponentInstanceOfType(componentType);
+      Object tenancyAdapter = tenantContainerContext.getComponentInstanceOfType(componentType);
       if (tenancyAdapter != null)
         return tenancyAdapter;
     }
@@ -124,9 +124,9 @@ public class TenancyContainer extends CachingContainer {
   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
     throws DuplicateComponentKeyRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentAdapter.getComponentKey()))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentAdapter.getComponentKey()))
     {
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponent(componentAdapter);
@@ -135,10 +135,10 @@ public class TenancyContainer extends CachingContainer {
   @Override
   public ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(component.getClass()))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(component.getClass()))
     {
       ComponentAdapter componentAdapter = new InstanceComponentAdapter(component.getClass(), component);
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponentInstance(component);
@@ -148,10 +148,10 @@ public class TenancyContainer extends CachingContainer {
   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
     throws PicoRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
     {
       ComponentAdapter componentAdapter = new InstanceComponentAdapter(componentKey, componentInstance);
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponentInstance(componentKey, componentInstance);
@@ -161,10 +161,10 @@ public class TenancyContainer extends CachingContainer {
   public ComponentAdapter registerComponentImplementation(Class componentImplementation)
     throws PicoRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentImplementation))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentImplementation))
     {
       ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentImplementation, componentImplementation, null);
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponentImplementation(componentImplementation);
@@ -174,10 +174,10 @@ public class TenancyContainer extends CachingContainer {
   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
     throws PicoRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
     {
       ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, null);
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponentImplementation(componentKey, componentImplementation);
@@ -187,10 +187,10 @@ public class TenancyContainer extends CachingContainer {
   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
                                                           Parameter[] parameters) throws PicoRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
     {
       ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, parameters);
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
@@ -200,11 +200,11 @@ public class TenancyContainer extends CachingContainer {
   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
                                                           List parameters) throws PicoRegistrationException
   {
-    if (tenantsContainerController != null && tenantsContainerController.isNeedRegister(componentKey))
+    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
     {
       Parameter[] parametersAsArray = (Parameter[])parameters.toArray(new Parameter[parameters.size()]);
       ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, parametersAsArray);
-      tenantsContainerController.registerComponent(componentAdapter);
+      tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
