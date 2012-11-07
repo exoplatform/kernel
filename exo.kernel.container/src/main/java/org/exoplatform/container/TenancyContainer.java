@@ -209,5 +209,4 @@ public class TenancyContainer extends CachingContainer {
     }
     return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
   }
-
 }
