@@ -224,7 +224,7 @@ public class ContainerUtil
       }
    }
 
-   public static TenantContainerContext findTenantsContext(ExoContainer container, ConfigurationManager conf)
+   public static TenantContainerContext findTenantContext(ExoContainer container, ConfigurationManager conf)
    {
      Collection components = conf.getComponents();
      if (components == null)
