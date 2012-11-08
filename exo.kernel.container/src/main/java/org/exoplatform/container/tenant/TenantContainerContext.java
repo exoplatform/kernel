@@ -34,7 +34,7 @@ public interface TenantContainerContext
   
   public Object getComponentInstanceOfType(Class<?> componentType);
   
-  public boolean isNeedRegister(Object componentKey);
+  public boolean isNeedRegister(ComponentAdapter adapter);
   
   public void registerComponent(ComponentAdapter component);
 

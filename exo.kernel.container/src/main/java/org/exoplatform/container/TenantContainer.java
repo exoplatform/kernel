@@ -20,13 +20,12 @@ package org.exoplatform.container;
 
 import org.exoplatform.container.tenant.TenantContainerContext;
 import org.picocontainer.ComponentAdapter;
-import org.picocontainer.Parameter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
-import org.picocontainer.PicoRegistrationException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 import org.picocontainer.defaults.InstanceComponentAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,89 +123,11 @@ public class TenantContainer extends CachingContainer {
   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
     throws DuplicateComponentKeyRegistrationException
   {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentAdapter.getComponentKey()))
+    if (tenantContainerContext != null && !(componentAdapter instanceof InstanceComponentAdapter) && tenantContainerContext.isNeedRegister(componentAdapter))
     {
       tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponent(componentAdapter);
-  }
-
-  @Override
-  public ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
-  {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(component.getClass()))
-    {
-      ComponentAdapter componentAdapter = new InstanceComponentAdapter(component.getClass(), component);
-      tenantContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
-    }
-    return super.registerComponentInstance(component);
-  }
-
-  @Override
-  public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-    throws PicoRegistrationException
-  {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
-    {
-      ComponentAdapter componentAdapter = new InstanceComponentAdapter(componentKey, componentInstance);
-      tenantContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
-    }
-    return super.registerComponentInstance(componentKey, componentInstance);
-  }
-
-  @Override
-  public ComponentAdapter registerComponentImplementation(Class componentImplementation)
-    throws PicoRegistrationException
-  {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentImplementation))
-    {
-      ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentImplementation, componentImplementation, null);
-      tenantContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
-    }
-    return super.registerComponentImplementation(componentImplementation);
-  }
-
-  @Override
-  public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
-    throws PicoRegistrationException
-  {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
-    {
-      ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, null);
-      tenantContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
-    }
-    return super.registerComponentImplementation(componentKey, componentImplementation);
-  }
-
-  @Override
-  public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
-                                                          Parameter[] parameters) throws PicoRegistrationException
-  {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
-    {
-      ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, parameters);
-      tenantContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
-    }
-    return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
-  }
-
-  @Override
-  public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
-                                                          List parameters) throws PicoRegistrationException
-  {
-    if (tenantContainerContext != null && tenantContainerContext.isNeedRegister(componentKey))
-    {
-      Parameter[] parametersAsArray = (Parameter[])parameters.toArray(new Parameter[parameters.size()]);
-      ComponentAdapter componentAdapter = componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation, parametersAsArray);
-      tenantContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
-    }
-    return super.registerComponentImplementation(componentKey, componentImplementation, parameters);
   }
 }
