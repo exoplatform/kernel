@@ -58,9 +58,9 @@ public class TenantContainer extends CachingContainer {
   {
     if (tenantContainerContext != null)
     {
-      ComponentAdapter tenancyAdapter = tenantContainerContext.getComponentAdapterOfType(componentType);
-      if (tenancyAdapter != null)
-        return tenancyAdapter;
+      ComponentAdapter adapter = tenantContainerContext.getComponentAdapterOfType(componentType);
+      if (adapter != null)
+        return adapter;
     }
     return super.getComponentAdapterOfType(componentType);
   }
@@ -70,9 +70,9 @@ public class TenantContainer extends CachingContainer {
   {
     if (tenantContainerContext != null)
     {
-      Object tenancyAdapter = tenantContainerContext.getComponentInstance(componentKey);
-      if (tenancyAdapter != null)
-        return tenancyAdapter;
+      Object adapter = tenantContainerContext.getComponentInstance(componentKey);
+      if (adapter != null)
+        return adapter;
     }
     return super.getComponentInstance(componentKey);
   }
@@ -113,9 +113,9 @@ public class TenantContainer extends CachingContainer {
   {
     if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class))
     {
-      Object tenancyAdapter = tenantContainerContext.getComponentInstanceOfType(componentType);
-      if (tenancyAdapter != null)
-        return tenancyAdapter;
+      Object adapter = tenantContainerContext.getComponentInstanceOfType(componentType);
+      if (adapter != null)
+        return adapter;
     }
     return super.getComponentInstanceOfType(componentType);
   }

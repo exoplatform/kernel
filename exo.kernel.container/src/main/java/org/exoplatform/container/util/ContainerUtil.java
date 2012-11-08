@@ -29,6 +29,7 @@ import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ComponentLifecyclePlugin;
 import org.exoplatform.container.xml.ContainerLifecyclePlugin;
 import org.exoplatform.container.xml.Deserializer;
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.defaults.ConstructorInjectionComponentAdapter;
@@ -238,10 +239,11 @@ public class ContainerUtil
        if (key.equals(TenantContainerContext.class.getName()))
        {
          String type = component.getType();
+         InitParams params = component.getInitParams();
          try {
            Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
-           Constructor<TenantContainerContext> controllerConstructor = (Constructor<TenantContainerContext>)typeClass.getConstructor(ExoContainer.class);
-           return controllerConstructor.newInstance(container);
+           Constructor<TenantContainerContext> controllerConstructor = (Constructor<TenantContainerContext>)typeClass.getConstructor(ExoContainer.class, InitParams.class);
+           return controllerConstructor.newInstance(container, params);
          }
          catch (ClassNotFoundException e)
          {
