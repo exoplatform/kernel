@@ -409,19 +409,19 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
 
 
   public Object getComponentInstance(Object componentKey) throws PicoException
-   {
-     ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
-      if (adapter != null)
-      {
-         return getInstance(adapter);
-      }
-      else
-      {
-         return null;
-      }
-   }
+  {
+    ComponentAdapter componentAdapter = getComponentAdapter(componentKey);
+    if (componentAdapter != null)
+    {
+      return getInstance(componentAdapter);
+    }
+    else
+    {
+      return null;
+    }
+  }
 
-   /**
+  /**
     * If no {@link ComponentAdapter} can be found it returns <tt>null</tt> otherwise
     * it first try to get it from the dependency resolution context if it still cannot
     * be found we get the instance from the {@link ComponentAdapter}.
