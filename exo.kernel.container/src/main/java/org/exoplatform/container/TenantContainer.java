@@ -55,7 +55,7 @@ public class TenantContainer extends CachingContainer {
   @Override
   public ComponentAdapter getComponentAdapterOfType(Class componentType)
   {
-    if (tenantContainerContext != null)
+    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class))
     {
       ComponentAdapter adapter = tenantContainerContext.getComponentAdapterOfType(componentType);
       if (adapter != null)
