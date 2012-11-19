@@ -56,8 +56,10 @@ public class TenantContainer extends CachingContainer {
 
   @SuppressWarnings({ "rawtypes" })
   @Override
-  public ComponentAdapter getComponentAdapterOfType(Class componentType) {
-    if (tenantContainerContext != null) {
+  public ComponentAdapter getComponentAdapterOfType(Class componentType)
+  {
+    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class))
+    {
       ComponentAdapter adapter = tenantContainerContext.getComponentAdapterOfType(componentType);
       if (adapter != null) {
         return adapter;
