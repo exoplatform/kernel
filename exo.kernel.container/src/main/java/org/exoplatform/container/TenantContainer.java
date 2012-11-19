@@ -29,102 +29,100 @@ import org.picocontainer.defaults.InstanceComponentAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ *
+ */
 public class TenantContainer extends CachingContainer {
+
+  private static final long        serialVersionUID = 1945046643718969920L;
 
   protected TenantContainerContext tenantContainerContext;
 
-  public TenantContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
-  {
+  public TenantContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent) {
     super(componentAdapterFactory, parent);
   }
 
-  public TenantContainer(PicoContainer parent)
-  {
+  public TenantContainer(PicoContainer parent) {
     super(parent);
   }
 
-  public TenantContainer(ComponentAdapterFactory componentAdapterFactory)
-  {
+  public TenantContainer(ComponentAdapterFactory componentAdapterFactory) {
     super(componentAdapterFactory);
   }
 
-  public TenantContainer()
-  {
+  public TenantContainer() {
   }
 
+  @SuppressWarnings({ "rawtypes" })
   @Override
-  public ComponentAdapter getComponentAdapterOfType(Class componentType)
-  {
-    if (tenantContainerContext != null)
-    {
+  public ComponentAdapter getComponentAdapterOfType(Class componentType) {
+    if (tenantContainerContext != null) {
       ComponentAdapter adapter = tenantContainerContext.getComponentAdapterOfType(componentType);
-      if (adapter != null)
+      if (adapter != null) {
         return adapter;
+      }
     }
     return super.getComponentAdapterOfType(componentType);
   }
 
   @Override
-  public Object getComponentInstance(Object componentKey) throws PicoException
-  {
-    if (tenantContainerContext != null)
-    {
+  public Object getComponentInstance(Object componentKey) throws PicoException {
+    if (tenantContainerContext != null) {
       Object adapter = tenantContainerContext.getComponentInstance(componentKey);
-      if (adapter != null)
+      if (adapter != null) {
         return adapter;
+      }
     }
     return super.getComponentInstance(componentKey);
   }
 
-
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public List getComponentAdaptersOfType(Class componentType)
-  {
+  public List getComponentAdaptersOfType(Class componentType) {
     List result = new ArrayList();
-    if (tenantContainerContext != null)
-    {
+    result.addAll(super.getComponentAdaptersOfType(componentType));
+
+    if (tenantContainerContext != null) {
       List adapters = tenantContainerContext.getComponentAdaptersOfType(componentType);
-      if (adapters != null)
+      if (adapters != null) {
         result.addAll(adapters);
+      }
     }
-    List adapters = super.getComponentAdaptersOfType(componentType);
-    result.addAll(adapters);
     return result;
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public List getComponentInstancesOfType(Class componentType) throws PicoException
-  {
+  public List getComponentInstancesOfType(Class componentType) throws PicoException {
+    // XXX: order of components in the list broken as we taking it from two sources
     List result = new ArrayList();
-    if (tenantContainerContext != null)
-    {
+    result.addAll(super.getComponentInstancesOfType(componentType));
+
+    if (tenantContainerContext != null) {
       List instances = tenantContainerContext.getComponentInstancesOfType(componentType);
-      if (instances != null)
+      if (instances != null) {
         result.addAll(instances);
+      }
     }
-    List instances = super.getComponentInstancesOfType(componentType);
-    result.addAll(instances);
     return result;
   }
 
+  @SuppressWarnings({ "rawtypes" })
   @Override
-  public Object getComponentInstanceOfType(Class componentType)
-  {
-    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class))
-    {
+  public Object getComponentInstanceOfType(Class componentType) {
+    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class)) {
       Object adapter = tenantContainerContext.getComponentInstanceOfType(componentType);
-      if (adapter != null)
+      if (adapter != null) {
         return adapter;
+      }
     }
     return super.getComponentInstanceOfType(componentType);
   }
 
   @Override
-  public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
-    throws DuplicateComponentKeyRegistrationException
-  {
-    if (tenantContainerContext != null && !(componentAdapter instanceof InstanceComponentAdapter) && tenantContainerContext.isNeedRegister(componentAdapter))
-    {
+  public ComponentAdapter registerComponent(ComponentAdapter componentAdapter) throws DuplicateComponentKeyRegistrationException {
+    if (tenantContainerContext != null && tenantContainerContext.accept(componentAdapter)) {
       tenantContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }

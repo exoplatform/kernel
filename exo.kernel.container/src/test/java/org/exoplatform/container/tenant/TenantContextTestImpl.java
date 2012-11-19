@@ -49,7 +49,7 @@ public class TenantContextTestImpl implements  TenantContainerContext {
   }
 
   @Override
-  public boolean isNeedRegister(ComponentAdapter adapter)
+  public boolean accept(ComponentAdapter adapter)
   {
     return true;
   }

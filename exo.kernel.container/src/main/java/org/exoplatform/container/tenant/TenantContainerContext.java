@@ -18,24 +18,36 @@
  */
 package org.exoplatform.container.tenant;
 
+import org.exoplatform.container.TenantContainer;
 import org.picocontainer.ComponentAdapter;
 
 import java.util.List;
 
-public interface TenantContainerContext
-{
-  public List getComponentAdaptersOfType(Class componentType);
-  
-  public List getComponentInstancesOfType(Class componentType);
-  
-  public ComponentAdapter getComponentAdapterOfType(Class key);
-  
-  public Object getComponentInstance(Object componentKey);
-  
-  public Object getComponentInstanceOfType(Class<?> componentType);
-  
-  public boolean isNeedRegister(ComponentAdapter adapter);
-  
-  public void registerComponent(ComponentAdapter component);
+/**
+ * Context for {@link TenantContainer}. Prescribes general contract between container and
+ * multitenancy capable components registration. Container should user
+ * {@link #accept(ComponentAdapter)} method during the registration to answer  should be some
+ * component registered in {@link TenantContainer} or not. <br>
+ * Context applies own container for per-tenant managed components and used in
+ * {@link TenantContainer} for its methods implementation.
+ */
+public interface TenantContainerContext {
+
+  @SuppressWarnings("rawtypes")
+  List getComponentAdaptersOfType(Class componentType);
+
+  @SuppressWarnings("rawtypes")
+  List getComponentInstancesOfType(Class componentType);
+
+  @SuppressWarnings("rawtypes")
+  ComponentAdapter getComponentAdapterOfType(Class key);
+
+  Object getComponentInstance(Object componentKey);
+
+  Object getComponentInstanceOfType(Class<?> componentType);
+
+  boolean accept(ComponentAdapter adapter);
+
+  void registerComponent(ComponentAdapter component);
 
 }
