@@ -227,41 +227,43 @@ public class ContainerUtil
 
    public static TenantContainerContext findTenantContext(ExoContainer container, ConfigurationManager conf)
    {
-     Collection components = conf.getComponents();
-     if (components == null)
-       return null;
-
-     Iterator i = components.iterator();
-     while (i.hasNext())
+     try
      {
-       Component component = (Component)i.next();
-       String key = component.getKey();
-       if (key.equals(TenantContainerContext.class.getName()))
+       Component component = conf.getComponent(TenantContainerContext.class.getName());
+       if (component != null)
        {
-         String type = component.getType();
-         InitParams params = component.getInitParams();
-         try {
-           Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
-           Constructor<TenantContainerContext> controllerConstructor = (Constructor<TenantContainerContext>)typeClass.getConstructor(ExoContainer.class, InitParams.class);
-           return controllerConstructor.newInstance(container, params);
-         }
-         catch (ClassNotFoundException e)
+         String key = component.getKey();
+         if (key.equals(TenantContainerContext.class.getName()))
          {
-           LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", e);
-         } catch (InstantiationException e) {
-           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
-         } catch (IllegalAccessException e) {
-           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
-         } catch (SecurityException e) {
-           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
-         } catch (NoSuchMethodException e) {
-           LOG.error("Cannot instantiate new instance of '" + type + "' constructor with parameter '" + ExoContainer.class.getName() + "' not found", e);
-         } catch (IllegalArgumentException e) {
-           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
-         } catch (InvocationTargetException e) {
-           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
-        }
+           String type = component.getType();
+           InitParams params = component.getInitParams();
+           try {
+             Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
+             Constructor<TenantContainerContext> controllerConstructor = (Constructor<TenantContainerContext>)typeClass.getConstructor(ExoContainer.class, InitParams.class);
+             return controllerConstructor.newInstance(container, params);
+           }
+           catch (ClassNotFoundException e)
+           {
+             LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", e);
+           } catch (InstantiationException e) {
+             LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+           } catch (IllegalAccessException e) {
+             LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+           } catch (SecurityException e) {
+             LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+           } catch (NoSuchMethodException e) {
+             LOG.error("Cannot instantiate new instance of '" + type + "' constructor with parameter '" + ExoContainer.class.getName() + "' not found", e);
+           } catch (IllegalArgumentException e) {
+             LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+           } catch (InvocationTargetException e) {
+             LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+           }
+         }
        }
+     }
+     catch(Exception e)
+     {
+       LOG.error("Exception was thrown when trying to find TenantContainerContext component", e);
      }
      return null;
    }

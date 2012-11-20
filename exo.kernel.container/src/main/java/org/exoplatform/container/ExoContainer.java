@@ -24,6 +24,7 @@ import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.management.ManageableContainer;
 import org.exoplatform.container.security.ContainerPermissions;
+import org.exoplatform.container.tenant.TenantContainerContext;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.InitParams;
@@ -210,6 +211,8 @@ public class ExoContainer extends ManageableContainer
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
       tenantContainerContext = ContainerUtil.findTenantContext(this, manager);
+      if (tenantContainerContext != null)
+         registerComponentInstance(TenantContainerContext.class, tenantContainerContext);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);

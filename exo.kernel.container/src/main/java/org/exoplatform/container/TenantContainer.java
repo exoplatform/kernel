@@ -123,6 +123,15 @@ public class TenantContainer extends CachingContainer {
   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
     throws DuplicateComponentKeyRegistrationException
   {
+    Object componentKey = componentAdapter.getComponentKey();
+    if (componentKey instanceof Class && TenantContainerContext.class.isAssignableFrom(((Class<?>)componentKey)))
+    {
+      if (componentAdapter instanceof InstanceComponentAdapter)
+        return super.registerComponent(componentAdapter);
+      else
+        return getComponentAdapterOfType(TenantContainerContext.class);
+    }
+    
     if (tenantContainerContext != null && !(componentAdapter instanceof InstanceComponentAdapter) && tenantContainerContext.isNeedRegister(componentAdapter))
     {
       tenantContainerContext.registerComponent(componentAdapter);
