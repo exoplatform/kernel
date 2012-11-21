@@ -25,8 +25,8 @@
     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd">
     
     <component>
-      <key>org.exoplatform.container.tenant.TenantContainerContext</key>
-      <type>org.exoplatform.container.tenant.TenantContextTestImpl</type>
+      <key>org.exoplatform.container.tenant.TenantsContainerContext</key>
+      <type>org.exoplatform.container.tenant.DummyTenantsContainerContextImpl</type>
     </component>
 
 </configuration>

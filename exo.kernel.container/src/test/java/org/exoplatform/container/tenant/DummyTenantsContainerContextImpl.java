@@ -7,12 +7,12 @@ import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.PicoContainer;
 import java.util.List;
 
-public class TenantContextTestImpl implements  TenantContainerContext {
+public class DummyTenantsContainerContextImpl implements  TenantsContainerContext {
 
   public ExoContainer container;
   private final PicoContainer defaultContainer;
 
-  public TenantContextTestImpl(ExoContainer container, InitParams params)
+  public DummyTenantsContainerContextImpl(ExoContainer container, InitParams params)
   {
     this.container = container;
     this.defaultContainer =  new ExoContainer(container);

@@ -2,7 +2,7 @@ package org.exoplatform.container;
 
 
 import org.exoplatform.container.jmx.AbstractTestContainer;
-import org.exoplatform.container.tenant.TenantContextTestImpl;
+import org.exoplatform.container.tenant.DummyTenantsContainerContextImpl;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoInitializationException;
@@ -17,16 +17,16 @@ public class TestTenantContainer extends AbstractTestContainer
   public void testTenantContextCreated()
   {
     RootContainer root = createRootContainer("test-tenant-container.xml");
-    assertNotNull(root.tenantContainerContext);
+    assertNotNull(root.tenantsContainerContext);
     root = createRootContainer("empty-config.xml");
-    assertNull(root.tenantContainerContext);
+    assertNull(root.tenantsContainerContext);
   }
 
   public void testRegisterComponent()
   {
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     root.registerComponent(new DummyAdapter());
-    ExoContainer defaultContainer = ((TenantContextTestImpl)root.tenantContainerContext).getDefaultContainer();
+    ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getDefaultContainer();
     assertTrue(defaultContainer.hasComponentInstanceOfType(DummyAdapter.class));
   }
 
@@ -35,8 +35,8 @@ public class TestTenantContainer extends AbstractTestContainer
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     ComponentAdapter adapter = root.registerComponentInstance(new C2());
     assertNotNull(adapter);
-    ExoContainer defaultContainer = ((TenantContextTestImpl)root.tenantContainerContext).getDefaultContainer();
-    assertFalse(defaultContainer.hasComponentInstanceOfType(C2.class)); //Must not be registered in TenantContainer
+    ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getDefaultContainer();
+    assertFalse(defaultContainer.hasComponentInstanceOfType(C2.class)); //Must not be registered in TenantsContainer
     assertTrue(root.hasComponentInstanceOfType(C2.class));
   }
   
@@ -44,7 +44,7 @@ public class TestTenantContainer extends AbstractTestContainer
   {
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     root.registerComponentImplementation(C1.class, C1.class);
-    ExoContainer defaultContainer = ((TenantContextTestImpl)root.tenantContainerContext).getDefaultContainer();
+    ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getDefaultContainer();
     defaultContainer.registerComponentImplementation(C2.class, C2.class);
     List<? extends ComponentAdapter> adapters = null;
     try

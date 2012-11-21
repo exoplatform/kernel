@@ -180,6 +180,24 @@ public class ExoContainer extends ManageableContainer
       this.parent = parent;
    }
 
+   protected ExoContainer(PicoContainer parent, boolean initContext)
+   {
+      super(parent);
+      if (initContext) 
+      {
+        context = new ExoContainerContext(this, this.getClass().getSimpleName());
+        SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+        {
+           public Void run()
+           {
+              registerComponentInstance(context);
+              return null;
+           }
+        });
+      }
+      this.parent = parent;
+   }
+   
    public ExoContainerContext getContext()
    {
       return context;
@@ -209,7 +227,7 @@ public class ExoContainer extends ManageableContainer
    private void initContainerInternal()
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
-      tenantContainerContext = ContainerUtil.findTenantContext(this, manager);
+      tenantsContainerContext = ContainerUtil.createTenantsContext(this, manager);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);

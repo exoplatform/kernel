@@ -18,20 +18,20 @@
  */
 package org.exoplatform.container.tenant;
 
-import org.exoplatform.container.TenantContainer;
+import org.exoplatform.container.TenantsContainer;
 import org.picocontainer.ComponentAdapter;
 
 import java.util.List;
 
 /**
- * Context for {@link TenantContainer}. Prescribes general contract between container and
+ * Context for {@link TenantsContainer}. Prescribes general contract between container and
  * multitenancy capable components registration. Container should user
  * {@link #accept(ComponentAdapter)} method during the registration to answer  should be some
- * component registered in {@link TenantContainer} or not. <br>
+ * component registered in {@link TenantsContainer} or not. <br>
  * Context applies own container for per-tenant managed components and used in
- * {@link TenantContainer} for its methods implementation.
+ * {@link TenantsContainer} for its methods implementation.
  */
-public interface TenantContainerContext {
+public interface TenantsContainerContext {
 
   @SuppressWarnings("rawtypes")
   List getComponentAdaptersOfType(Class componentType);

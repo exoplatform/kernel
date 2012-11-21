@@ -18,49 +18,48 @@
  */
 package org.exoplatform.container;
 
-import org.exoplatform.container.tenant.TenantContainerContext;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.exoplatform.container.tenant.TenantsContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
-import org.picocontainer.defaults.InstanceComponentAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 
  *
  */
-public class TenantContainer extends CachingContainer {
+public class TenantsContainer extends CachingContainer {
 
   private static final long        serialVersionUID = 1945046643718969920L;
 
-  protected TenantContainerContext tenantContainerContext;
+  protected TenantsContainerContext tenantsContainerContext;
 
-  public TenantContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent) {
+  public TenantsContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent) {
     super(componentAdapterFactory, parent);
   }
 
-  public TenantContainer(PicoContainer parent) {
+  public TenantsContainer(PicoContainer parent) {
     super(parent);
   }
 
-  public TenantContainer(ComponentAdapterFactory componentAdapterFactory) {
+  public TenantsContainer(ComponentAdapterFactory componentAdapterFactory) {
     super(componentAdapterFactory);
   }
 
-  public TenantContainer() {
+  public TenantsContainer() {
   }
 
   @SuppressWarnings({ "rawtypes" })
   @Override
   public ComponentAdapter getComponentAdapterOfType(Class componentType)
   {
-    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class))
+    if (tenantsContainerContext != null && !componentType.equals(ExoContainerContext.class))
     {
-      ComponentAdapter adapter = tenantContainerContext.getComponentAdapterOfType(componentType);
+      ComponentAdapter adapter = tenantsContainerContext.getComponentAdapterOfType(componentType);
       if (adapter != null) {
         return adapter;
       }
@@ -70,8 +69,8 @@ public class TenantContainer extends CachingContainer {
 
   @Override
   public Object getComponentInstance(Object componentKey) throws PicoException {
-    if (tenantContainerContext != null) {
-      Object adapter = tenantContainerContext.getComponentInstance(componentKey);
+    if (tenantsContainerContext != null) {
+      Object adapter = tenantsContainerContext.getComponentInstance(componentKey);
       if (adapter != null) {
         return adapter;
       }
@@ -85,8 +84,8 @@ public class TenantContainer extends CachingContainer {
     List result = new ArrayList();
     result.addAll(super.getComponentAdaptersOfType(componentType));
 
-    if (tenantContainerContext != null) {
-      List adapters = tenantContainerContext.getComponentAdaptersOfType(componentType);
+    if (tenantsContainerContext != null) {
+      List adapters = tenantsContainerContext.getComponentAdaptersOfType(componentType);
       if (adapters != null) {
         result.addAll(adapters);
       }
@@ -101,8 +100,8 @@ public class TenantContainer extends CachingContainer {
     List result = new ArrayList();
     result.addAll(super.getComponentInstancesOfType(componentType));
 
-    if (tenantContainerContext != null) {
-      List instances = tenantContainerContext.getComponentInstancesOfType(componentType);
+    if (tenantsContainerContext != null) {
+      List instances = tenantsContainerContext.getComponentInstancesOfType(componentType);
       if (instances != null) {
         result.addAll(instances);
       }
@@ -113,9 +112,9 @@ public class TenantContainer extends CachingContainer {
   @SuppressWarnings({ "rawtypes" })
   @Override
   public Object getComponentInstanceOfType(Class componentType) {
-    if (tenantContainerContext != null && !componentType.equals(ExoContainerContext.class)) {
-      Object adapter = tenantContainerContext.getComponentInstanceOfType(componentType);
-      if (adapter != null) {
+    if (tenantsContainerContext != null && !componentType.equals(ExoContainerContext.class)) {
+      Object adapter = tenantsContainerContext.getComponentInstanceOfType(componentType);
+      if (adapter != null) { // TODO no need to check on null here, context already uses parent container
         return adapter;
       }
     }
@@ -124,8 +123,8 @@ public class TenantContainer extends CachingContainer {
 
   @Override
   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter) throws DuplicateComponentKeyRegistrationException {
-    if (tenantContainerContext != null && tenantContainerContext.accept(componentAdapter)) {
-      tenantContainerContext.registerComponent(componentAdapter);
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentAdapter)) {
+      tenantsContainerContext.registerComponent(componentAdapter);
       return componentAdapter;
     }
     return super.registerComponent(componentAdapter);

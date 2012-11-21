@@ -24,7 +24,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.tenant.TenantContainerContext;
+import org.exoplatform.container.tenant.TenantsContainerContext;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ComponentLifecyclePlugin;
 import org.exoplatform.container.xml.ContainerLifecyclePlugin;
@@ -225,25 +225,27 @@ public class ContainerUtil
       }
    }
 
-   public static TenantContainerContext findTenantContext(ExoContainer container, ConfigurationManager conf)
+   public static TenantsContainerContext createTenantsContext(ExoContainer container, ConfigurationManager conf)
    {
+     @SuppressWarnings("rawtypes")
      Collection components = conf.getComponents();
      if (components == null)
        return null;
-
+     
+     @SuppressWarnings("rawtypes")
      Iterator i = components.iterator();
      while (i.hasNext())
      {
        Component component = (Component)i.next();
        String key = component.getKey();
-       if (key.equals(TenantContainerContext.class.getName()))
+       if (key.equals(TenantsContainerContext.class.getName()))
        {
          String type = component.getType();
          InitParams params = component.getInitParams();
          try {
            Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
-           Constructor<TenantContainerContext> controllerConstructor = (Constructor<TenantContainerContext>)typeClass.getConstructor(ExoContainer.class, InitParams.class);
-           return controllerConstructor.newInstance(container, params);
+           Constructor<TenantsContainerContext> constructor = (Constructor<TenantsContainerContext>) typeClass.getConstructor(ExoContainer.class, InitParams.class);
+           return constructor.newInstance(container, params);
          }
          catch (ClassNotFoundException e)
          {
