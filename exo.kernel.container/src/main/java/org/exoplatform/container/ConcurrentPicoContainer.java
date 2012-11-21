@@ -159,6 +159,15 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       return adapter;
    }
 
+
+   public boolean hasComponentAdapterOfType(Class componentType)
+   {
+     if (getComponentAdapter(componentType) != null || getComponentAdaptersOfType(componentType).size() > 0)
+       return true;
+     else
+       return false;
+   }
+
    public ComponentAdapter getComponentAdapterOfType(Class componentType)
    {
       // See http://jira.codehaus.org/secure/ViewIssue.jspa?key=PICO-115
