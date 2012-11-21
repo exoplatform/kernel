@@ -28,12 +28,12 @@
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
       <version>12</version>
-      <relativePath/>
+      <relativePath />
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.4.0-CR2-SNAPSHOT</version>
+   <version>2.4.0-GA-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
@@ -41,8 +41,8 @@
 
    <properties>
       <exo.product.name>exo-kernel</exo.product.name>
-      <exo.product.specification>2.3</exo.product.specification>
-      <org.exoplatform.framework.junit.version>1.2.2-GA</org.exoplatform.framework.junit.version>
+      <exo.product.specification>2.4</exo.product.specification>
+      <org.exoplatform.framework.junit.version>1.2.3-GA</org.exoplatform.framework.junit.version>
       <forkMode>always</forkMode>
    </properties>
 
