@@ -1,21 +1,31 @@
 package org.exoplatform.container.tenant;
 
+import java.util.List;
+
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.PicoContainer;
-import java.util.List;
+import org.picocontainer.defaults.InstanceComponentAdapter;
 
 public class DummyTenantsContainerContextImpl implements  TenantsContainerContext {
 
-  public ExoContainer container;
-  private final PicoContainer defaultContainer;
+  class TenantContainer extends ExoContainer {
+    private static final long serialVersionUID = 5287379492951109958L;
 
-  public DummyTenantsContainerContextImpl(ExoContainer container, InitParams params)
+    TenantContainer(PicoContainer parent) {
+      super(parent, false);
+    }
+  }
+  
+  private ExoContainer parent;
+  private final TenantContainer defaultContainer;
+
+  public DummyTenantsContainerContextImpl(ExoContainer parent, InitParams params)
   {
-    this.container = container;
-    this.defaultContainer =  new ExoContainer(container);
+    this.parent = parent;
+    this.defaultContainer =  new TenantContainer(parent);
   }
 
   @Override
@@ -51,7 +61,7 @@ public class DummyTenantsContainerContextImpl implements  TenantsContainerContex
   @Override
   public boolean accept(ComponentAdapter adapter)
   {
-    return true;
+    return !(adapter instanceof InstanceComponentAdapter);
   }
 
   @Override
