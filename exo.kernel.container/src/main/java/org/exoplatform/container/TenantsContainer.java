@@ -77,10 +77,10 @@ public class TenantsContainer extends CachingContainer {
   {
     if (tenantsContainerContext != null) 
     {
-      Object adapter = tenantsContainerContext.getComponentInstance(componentKey);
-      if (adapter != null) 
+      Object comp = tenantsContainerContext.getComponentInstance(componentKey);
+      if (comp != null) 
       {
-        return adapter;
+        return comp;
       }
     }
     return super.getComponentInstance(componentKey);
@@ -128,10 +128,10 @@ public class TenantsContainer extends CachingContainer {
   {
     if (tenantsContainerContext != null && !componentType.equals(ExoContainerContext.class)) 
     {
-      Object adapter = tenantsContainerContext.getComponentInstanceOfType(componentType);
-      if (adapter != null) 
+      Object comp = tenantsContainerContext.getComponentInstanceOfType(componentType);
+      if (comp != null) 
       { // TODO no need to check on null here, context already uses parent container
-        return adapter;
+        return comp;
       }
     }
     return super.getComponentInstanceOfType(componentType);

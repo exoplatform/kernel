@@ -159,15 +159,6 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       return adapter;
    }
 
-
-   public boolean hasComponentAdapterOfType(Class componentType)
-   {
-     if (getComponentAdapter(componentType) != null || getComponentAdaptersOfType(componentType).size() > 0)
-       return true;
-     else
-       return false;
-   }
-
    public ComponentAdapter getComponentAdapterOfType(Class componentType)
    {
       // See http://jira.codehaus.org/secure/ViewIssue.jspa?key=PICO-115
@@ -394,29 +385,37 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       return result;
    }
 
+   // TODO cleanup
+//  public boolean hasComponentInstanceOfType(Class componentType) throws PicoException
+//  {
+//    for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
+//    {
+//      ComponentAdapter componentAdapter = iterator.next();
+//      if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
+//        return true;
+//    }
+//    return false;
+//  }
 
-  public boolean hasComponentInstanceOfType(Class componentType) throws PicoException
-  {
-    for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
-    {
-      ComponentAdapter componentAdapter = iterator.next();
-      if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
-        return true;
-    }
-    return false;
-  }
+//  public boolean hasComponentInstanceOfType(Object componentKey) throws PicoException
+//  {
+//    ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
+//    if (adapter != null)
+//    {
+//      return true;
+//    }
+//      return false;
+//  }
 
-  public boolean hasComponentInstanceOfType(Object componentKey) throws PicoException
-  {
-    ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
-    if (adapter != null)
-    {
-      return true;
-    }
-      return false;
-  }
+//public boolean hasComponentAdapterOfType(Class componentType)
+//{
+//  if (getComponentAdapter(componentType) != null || getComponentAdaptersOfType(componentType).size() > 0)
+//    return true;
+//  else
+//    return false;
+//}
 
-
+  
   public Object getComponentInstance(Object componentKey) throws PicoException
   {
     ComponentAdapter componentAdapter = getComponentAdapter(componentKey);
