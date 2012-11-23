@@ -242,7 +242,7 @@ public class ContainerUtil
          }
          catch (ClassNotFoundException e)
          {
-           LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", e);
+           LOG.error("Cannot register the component with key '" + key + "' and type '" + type + "'", e);
          } catch (InstantiationException e) {
            LOG.error("Cannot instantiate new instance of '" + type + "'", e);
          } catch (IllegalAccessException e) {

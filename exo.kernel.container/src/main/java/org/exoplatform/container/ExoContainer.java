@@ -18,6 +18,20 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.component.ComponentLifecyclePlugin;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.management.ManageableContainer;
+import org.exoplatform.container.security.ContainerPermissions;
+import org.exoplatform.container.util.ContainerUtil;
+import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.picocontainer.ComponentAdapter;
+import org.picocontainer.PicoContainer;
+import org.picocontainer.defaults.ComponentAdapterFactory;
 import java.lang.reflect.Constructor;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -29,22 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.container.component.ComponentLifecyclePlugin;
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.management.ManageableContainer;
-import org.exoplatform.container.security.ContainerPermissions;
-import org.exoplatform.container.tenant.TenantsContainerContext;
-import org.exoplatform.container.util.ContainerUtil;
-import org.exoplatform.container.xml.Configuration;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.defaults.ComponentAdapterFactory;
 
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
