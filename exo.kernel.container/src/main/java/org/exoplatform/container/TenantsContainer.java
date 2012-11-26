@@ -156,5 +156,18 @@ public class TenantsContainer extends CachingContainer {
     }
     return super.registerComponent(componentAdapter);
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ComponentAdapter unregisterComponent(Object componentKey) {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentKey))
+    {
+      return tenantsContainerContext.unregisterComponent(componentKey);
+    }
+    
+    return super.unregisterComponent(componentKey);
+  }
   
 }
