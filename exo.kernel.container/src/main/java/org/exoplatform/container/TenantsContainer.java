@@ -27,7 +27,6 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
-import org.picocontainer.defaults.InstanceComponentAdapter;
 
 /**
  * 
@@ -58,41 +57,43 @@ public class TenantsContainer extends CachingContainer {
   {
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @SuppressWarnings({ "rawtypes" })
   @Override
   public ComponentAdapter getComponentAdapterOfType(Class componentType)
   {
-    if (tenantsContainerContext != null && !componentType.equals(ExoContainerContext.class))
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType))
     {
-      ComponentAdapter adapter = tenantsContainerContext.getComponentAdapterOfType(componentType);
-      if (adapter != null) {
-        return adapter;
-      }
+      return tenantsContainerContext.getComponentAdapterOfType(componentType);
     }
     return super.getComponentAdapterOfType(componentType);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Object getComponentInstance(Object componentKey) throws PicoException 
   {
-    if (tenantsContainerContext != null) 
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentKey)) 
     {
-      Object comp = tenantsContainerContext.getComponentInstance(componentKey);
-      if (comp != null) 
-      {
-        return comp;
-      }
+      return tenantsContainerContext.getComponentInstance(componentKey);
     }
     return super.getComponentInstance(componentKey);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public List getComponentAdaptersOfType(Class componentType) {
     List result = new ArrayList();
     result.addAll(super.getComponentAdaptersOfType(componentType));
 
-    if (tenantsContainerContext != null) 
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) 
     {
       List adapters = tenantsContainerContext.getComponentAdaptersOfType(componentType);
       if (adapters != null) 
@@ -103,6 +104,9 @@ public class TenantsContainer extends CachingContainer {
     return result;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public List getComponentInstancesOfType(Class componentType) throws PicoException 
@@ -111,7 +115,7 @@ public class TenantsContainer extends CachingContainer {
     List result = new ArrayList();
     result.addAll(super.getComponentInstancesOfType(componentType));
 
-    if (tenantsContainerContext != null) 
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) 
     {
       List instances = tenantsContainerContext.getComponentInstancesOfType(componentType);
       if (instances != null) 
@@ -122,21 +126,23 @@ public class TenantsContainer extends CachingContainer {
     return result;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @SuppressWarnings({ "rawtypes" })
   @Override
   public Object getComponentInstanceOfType(Class componentType) 
   {
-    if (tenantsContainerContext != null && !componentType.equals(ExoContainerContext.class)) 
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) 
     {
-      Object comp = tenantsContainerContext.getComponentInstanceOfType(componentType);
-      if (comp != null) 
-      { // TODO no need to check on null here, context already uses parent container
-        return comp;
-      }
+      return tenantsContainerContext.getComponentInstanceOfType(componentType);
     }
     return super.getComponentInstanceOfType(componentType);
   }
   
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter) throws DuplicateComponentKeyRegistrationException
   {

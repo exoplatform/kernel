@@ -26,7 +26,7 @@
     
     <component>
       <key>org.exoplatform.container.tenant.TenantsContainerContext</key>
-      <type>org.exoplatform.container.tenant.DummyTenantsContainerContextImpl</type>
+      <type>org.exoplatform.container.tenant.DummyTenantsContainerContext</type>
     </component>
 
 </configuration>

@@ -1,96 +1,115 @@
 package org.exoplatform.container;
 
 
-import org.exoplatform.container.jmx.AbstractTestContainer;
-import org.exoplatform.container.tenant.DummyTenantsContainerContextImpl;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoInitializationException;
-import org.picocontainer.PicoIntrospectionException;
-import org.picocontainer.PicoVisitor;
-import org.picocontainer.Startable;
-
 import java.util.List;
+
+import org.exoplatform.container.jmx.AbstractTestContainer;
+import org.exoplatform.container.jmx.MX4JComponentAdapter;
+import org.exoplatform.container.management.ManageableComponentAdapter;
+import org.exoplatform.container.tenant.DummyTenantsContainerContext;
+import org.picocontainer.ComponentAdapter;
+import org.picocontainer.Startable;
 
 public class TestTenantContainer extends AbstractTestContainer
 {
-  public void testTenantContextCreated()
+  
+  protected Object getLastRegisteredKey(ExoContainer container) {
+    return ((DummyTenantsContainerContext)container.tenantsContainerContext).lastRegisteredKey;
+  }
+  
+  protected Object getLastUnregisteredKey(ExoContainer container) {
+    return ((DummyTenantsContainerContext)container.tenantsContainerContext).lastUnregisteredKey;
+  }
+  
+  protected Object getLastGetKey(ExoContainer container) {
+    return ((DummyTenantsContainerContext)container.tenantsContainerContext).lastGetKey;
+  }
+  
+  protected Object getLastGetListKey(ExoContainer container) {
+    return ((DummyTenantsContainerContext)container.tenantsContainerContext).lastGetListKey;
+  }
+  
+  protected List<Class<?>> getRegisteredTypes(ExoContainer container, Class<?> type) {
+    return ((DummyTenantsContainerContext)container.tenantsContainerContext).getRegisteredTypes(type);
+  }
+  
+  /**
+   * Ensure that context only created if its configuration exists.
+   */
+  public void testTenantContextConfigured()
   {
     RootContainer root = createRootContainer("test-tenant-container.xml");
     assertNotNull(root.tenantsContainerContext);
-    root = createRootContainer("empty-config.xml");
+  }
+  
+  /**
+   * Ensure that context not created if its configuration not exists.
+   */
+  public void testTenantContextNotConfigured()
+  {
+    RootContainer root = createRootContainer("empty-config.xml");
     assertNull(root.tenantsContainerContext);
   }
 
+  /**
+   * Check that registration goes through the tenant context 
+   * if this context exists and accept given component. 
+   */
   public void testRegisterComponent()
   {
     final RootContainer root = createRootContainer("test-tenant-container.xml");
-    root.registerComponent(new DummyAdapter());
-    ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getDefaultContainer();
-    assertNotNull(defaultContainer.getComponentInstanceOfType(DummyAdapter.class));
+    
+    ManageableComponentAdapter adapter = new ManageableComponentAdapter(root,
+                                                                        new MX4JComponentAdapter(C1.class,
+                                                                                                 C1.class));
+    
+    root.registerComponent(adapter);
+    //ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getTenantContainer();
+    assertEquals(C1.class, getLastRegisteredKey(root));
   }
 
-  public void testRegisterComponentInstance()
+  /**
+   * Ensure that component instances (singletons by creation) 
+   * are not registered in the tenant context, but are in the parent container. 
+   */
+  public void testNotRegisterComponentInstance()
   {
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     ComponentAdapter adapter = root.registerComponentInstance(new C2());
     assertNotNull(adapter);
-    ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getDefaultContainer();
-    assertNull(defaultContainer.getComponentInstanceOfType(C2.class)); //Must not be registered in TenantsContainer
+    //ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getTenantContainer();
+    assertNull(getLastRegisteredKey(root)); //Must not be registered in TenantsContainer
     assertNotNull(root.getComponentInstanceOfType(C2.class));
   }
   
-  public void testGetComponentsFromDefaultContainer()
+  public void testGetComponents()
   {
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     root.registerComponentImplementation(C1.class, C1.class);
-    ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getDefaultContainer();
-    defaultContainer.registerComponentImplementation(C2.class, C2.class);
-    List<? extends ComponentAdapter> adapters = null;
+    //ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getTenantContainer();
+    
+    assertEquals(C1.class, getLastRegisteredKey(root));
+    
+    root.registerComponentImplementation(C2.class, C2.class);
+    assertEquals(C2.class, getLastRegisteredKey(root));
+    
     try
     {
-      adapters = defaultContainer.getComponentAdaptersOfType(Startable.class);
+      root.getComponentAdaptersOfType(Startable.class);
     }
     catch (Throwable e)
     {
       e.printStackTrace();
+      fail(e.getMessage());
     }
-    assertEquals(2, adapters.size());
-    assertTrue(adapters.get(0).getComponentKey().equals(C1.class));
-    assertTrue(adapters.get(1).getComponentKey().equals(C2.class));
-  }
-
-
-
-
-  private class DummyAdapter implements ComponentAdapter
-  {
-
-    public void verify(PicoContainer arg0) throws PicoIntrospectionException
-    {
-    }
-
-    public Object getComponentKey()
-    {
-      return "testKey";
-    }
-
-    public Object getComponentInstance(PicoContainer arg0) throws PicoInitializationException,
-      PicoIntrospectionException
-    {
-      // Used to check a situation when RunTimeException occurs while retrieving an instance.
-      // This reproduces usecase from JCR-1565
-      throw new RuntimeException();
-    }
-
-    public Class getComponentImplementation()
-    {
-      return this.getClass();
-    }
-
-    public void accept(PicoVisitor arg0)
-    {
-    }
+    
+    assertEquals(Startable.class, getLastGetListKey(root));
+    
+    List<Class<?>> startable = getRegisteredTypes(root, Startable.class);
+    
+    assertEquals(2, startable.size());
+    assertTrue(startable.contains(C1.class));
+    assertTrue(startable.contains(C2.class));
   }
 
   public static class C1 implements Startable

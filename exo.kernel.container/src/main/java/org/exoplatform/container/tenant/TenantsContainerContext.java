@@ -44,8 +44,8 @@ public interface TenantsContainerContext {
   Object getComponentInstanceOfType(Class<?> componentType);
 
   /**
-   * Answers if given component will should be regarded as per-tenant service. Used in
-   * conjunction with {@link #registerComponent(ComponentAdapter)}.
+   * Answers if given component should be regarded as per-tenant service. This method created
+   * for use in conjunction with {@link #registerComponent(ComponentAdapter)}.
    * 
    * @param adapter {@link ComponentAdapter}
    * @return boolean, <code>true</code> if given component should be regarded as per-tenant service,
@@ -54,9 +54,9 @@ public interface TenantsContainerContext {
   boolean accept(ComponentAdapter adapter);
 
   /**
-   * Answers if given component key will should be regarded as a key of per-tenant service.
-   * Created to use with conjunction with {@link #unregisterComponent(Object componentKey)}. Don't
-   * use it for registration!
+   * Answers if given component key should be regarded as a key of per-tenant service.
+   * This method created for use in conjunction with
+   * {@link #unregisterComponent(Object componentKey)} and getters of components. 
    * 
    * @see #accept(ComponentAdapter)
    * @param key {@link Object}, it can be a {@link Class} otherwise it will be treated as
