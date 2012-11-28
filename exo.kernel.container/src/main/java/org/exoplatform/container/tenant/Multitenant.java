@@ -18,33 +18,18 @@
  */
 package org.exoplatform.container.tenant;
 
-import org.exoplatform.container.TenantsContainer;
-import org.picocontainer.PicoRegistrationException;
-
 /**
- * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
- *
+ * Provides contextual object holder for multi-tenant capable components. This holder provides
+ * a get method for getting a component from the tenant dependent context.
+ * 
  */
-public class TenantComponentRegistrationException extends PicoRegistrationException 
-{
-
-  private static final long serialVersionUID = 9019837435985415794L;
-
+public interface Multitenant<T> {
+  
   /**
-   * @param message
+   * Return component regarding the Current Tenant.
+   * 
+   * @return component instance regarding the Current Tenant
    */
-  public TenantComponentRegistrationException(String message) 
-  {
-    super(message);
-  }
-
-  /**
-   * @param message
-   * @param cause
-   */
-  public TenantComponentRegistrationException(String message, Throwable cause) 
-  {
-    super(message, cause);
-  }
-
+  T get();
+  
 }

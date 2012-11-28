@@ -10,7 +10,7 @@ import org.exoplatform.container.tenant.DummyTenantsContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Startable;
 
-public class TestTenantContainer extends AbstractTestContainer
+public class TestTenantsContainer extends AbstractTestContainer
 {
   
   protected Object getLastRegisteredKey(ExoContainer container) {
@@ -64,7 +64,6 @@ public class TestTenantContainer extends AbstractTestContainer
                                                                                                  C1.class));
     
     root.registerComponent(adapter);
-    //ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getTenantContainer();
     assertEquals(C1.class, getLastRegisteredKey(root));
   }
 
@@ -77,7 +76,6 @@ public class TestTenantContainer extends AbstractTestContainer
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     ComponentAdapter adapter = root.registerComponentInstance(new C2());
     assertNotNull(adapter);
-    //ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getTenantContainer();
     assertNull(getLastRegisteredKey(root)); //Must not be registered in TenantsContainer
     assertNotNull(root.getComponentInstanceOfType(C2.class));
   }
@@ -86,7 +84,6 @@ public class TestTenantContainer extends AbstractTestContainer
   {
     final RootContainer root = createRootContainer("test-tenant-container.xml");
     root.registerComponentImplementation(C1.class, C1.class);
-    //ExoContainer defaultContainer = ((DummyTenantsContainerContextImpl)root.tenantsContainerContext).getTenantContainer();
     
     assertEquals(C1.class, getLastRegisteredKey(root));
     

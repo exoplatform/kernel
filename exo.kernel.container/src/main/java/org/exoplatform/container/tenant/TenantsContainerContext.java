@@ -31,7 +31,8 @@ import java.util.List;
  * Context applies own container for per-tenant managed components and used in
  * {@link TenantsContainer} for its methods implementation.
  */
-public interface TenantsContainerContext {
+public interface TenantsContainerContext 
+{
 
   List<?> getComponentAdaptersOfType(Class<?> componentType);
 

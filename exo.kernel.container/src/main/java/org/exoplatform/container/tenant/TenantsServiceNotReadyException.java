@@ -18,33 +18,29 @@
  */
 package org.exoplatform.container.tenant;
 
-import org.exoplatform.container.TenantsContainer;
-import org.picocontainer.PicoRegistrationException;
-
 /**
- * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
+ * Exception indicating the {@link TenantsService} not ready to be used currently. 
  *
  */
-public class TenantComponentRegistrationException extends PicoRegistrationException 
+public class TenantsServiceNotReadyException extends Exception 
 {
 
-  private static final long serialVersionUID = 9019837435985415794L;
-
-  /**
-   * @param message
-   */
-  public TenantComponentRegistrationException(String message) 
-  {
-    super(message);
-  }
+  private static final long serialVersionUID = -8103482432374929L;
 
   /**
    * @param message
    * @param cause
    */
-  public TenantComponentRegistrationException(String message, Throwable cause) 
+  public TenantsServiceNotReadyException(String message, Throwable cause) 
   {
     super(message, cause);
   }
 
+  /**
+   * @param message
+   */
+  public TenantsServiceNotReadyException(String message) 
+  {
+    super(message);
+  }
 }

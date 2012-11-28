@@ -14,18 +14,6 @@ import org.picocontainer.defaults.InstanceComponentAdapter;
 public class DummyTenantsContainerContext implements TenantsContainerContext 
 {
 
-//  class TenantContainer extends ExoContainer {
-//    private static final long serialVersionUID = 5287379492951109958L;
-//
-//    TenantContainer(PicoContainer parent) {
-//      super(parent, false);
-//    }
-//  }
-
-  //final ExoContainer          parent;
-
-  // final TenantContainer container;
-  
   public Object lastGetKey;
   
   public Object lastGetListKey;
@@ -38,7 +26,6 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
 
   public DummyTenantsContainerContext(ExoContainer parent, InitParams config) 
   {
-    //this.container = new TenantContainer(parent);
   }
 
   @Override
@@ -122,7 +109,6 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
       lastRegisteredKey = component.getComponentKey();
       registeredKeys.add(component.getComponentKey());
     }
-    //container.registerComponent(component);
   }
 
   @Override
@@ -134,9 +120,4 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
     }
     return null;
   }
-
-//  public ExoContainer getTenantContainer() {
-//    return container;
-//  }
-
 }
