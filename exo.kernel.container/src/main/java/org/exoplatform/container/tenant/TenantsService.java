@@ -38,10 +38,9 @@ public interface TenantsService
   /**
    * Warp given component instance into multi-tenant context. Doing this an user gets a guaranty
    * that his component always will relate to the Current Tenant context (component will be taken
-   * from the
-   * tenant container).<br>
-   * Implementation of this method should find the component key(s) in the container and late use
-   * them for {@link Multitenant#get()} and {@link Multitenant#put(Object)} methods.
+   * from the tenant container).<br>
+   * Implementation of this method will find the component key(s) and late use
+   * them for {@link Multitenant#get()} method.
    * 
    * @param T component instance
    * @return {@link Multitenant} instance
@@ -53,7 +52,7 @@ public interface TenantsService
    * context. Doing this an user gets a guaranty that his component always will relate to the
    * Current Tenant context (component will be taken from the tenant container). <br>
    * Implementation of this method will use given class as a key in the container and late use
-   * it for {@link Multitenant#get()} and {@link Multitenant#put(Object)} methods.
+   * it for {@link Multitenant#get()} method.
    * 
    * @param Class componentType
    * @return {@link Multitenant} instance
