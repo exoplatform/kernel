@@ -23,8 +23,7 @@ package org.exoplatform.container.tenant;
  * multi-tenant capable services.
  * 
  */
-public interface TenantsService 
-{
+public interface TenantsService {
 
   /**
    * Return Current Tenant name or throws an exception if no current tenant was set.
@@ -36,11 +35,11 @@ public interface TenantsService
   String getCurrentTanantName() throws CurrentTenantNotSetException, TenantsServiceNotReadyException;
 
   /**
-   * Warp given component instance into multi-tenant context. Doing this an user gets a guaranty
+   * Wrap given component instance into multi-tenant context. Doing this an user gets a guaranty
    * that his component always will relate to the Current Tenant context (component will be taken
    * from the tenant container).<br>
-   * Implementation of this method will find the component key(s) and late use
-   * them for {@link Multitenant#get()} method.
+   * Implementation of this method will get the component key(s) from given instance and late will
+   * use them in {@link Multitenant#get()} method.
    * 
    * @param T component instance
    * @return {@link Multitenant} instance
@@ -51,8 +50,8 @@ public interface TenantsService
    * Create a component wrapper using given class as a component key for use in multi-tenant
    * context. Doing this an user gets a guaranty that his component always will relate to the
    * Current Tenant context (component will be taken from the tenant container). <br>
-   * Implementation of this method will use given class as a key in the container and late use
-   * it for {@link Multitenant#get()} method.
+   * Implementation of this method will use given class as a key in the container and late will use
+   * it in {@link Multitenant#get()} method.
    * 
    * @param Class componentType
    * @return {@link Multitenant} instance
