@@ -19,28 +19,16 @@
 package org.exoplatform.container.tenant;
 
 /**
- * Exception indicating that Current Tenant not set in runtime context.
+ * General abstraction for a tenant in multitenant environment.
  *
  */
-public class CurrentTenantNotSetException extends Exception 
-{
-
-  private static final long serialVersionUID = 7930133026313794289L;
+public interface Tenant {
 
   /**
-   * @param message
-   * @param cause
+   * Tenant name.
+   * 
+   * @return {@link String}
    */
-  public CurrentTenantNotSetException(String message, Throwable cause) 
-  {
-    super(message, cause);
-  }
-
-  /**
-   * @param message
-   */
-  public CurrentTenantNotSetException(String message) 
-  {
-    super(message);
-  }
+  String getName();
+  
 }

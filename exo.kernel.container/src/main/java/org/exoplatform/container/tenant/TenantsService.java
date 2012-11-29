@@ -20,7 +20,8 @@ package org.exoplatform.container.tenant;
 
 /**
  * Provides convenient methods to get an information about Current Tenant and provides support for
- * multi-tenant capable services.
+ * multi-tenant capable services. This service used by {@link TenantsContainerContext}
+ * implementation.
  * 
  */
 public interface TenantsService {
@@ -30,9 +31,8 @@ public interface TenantsService {
    * 
    * @return {@link String} with name of Current Tenant.
    * @throws RepositoryException if Current Tenant not found or not set.
-   * @throws TenantsServiceNotReadyException if service not ready (e.g. not started).
    */
-  String getCurrentTanantName() throws CurrentTenantNotSetException, TenantsServiceNotReadyException;
+  String getCurrentTanantName() throws CurrentTenantNotSetException;
 
   /**
    * Wrap given component instance into multi-tenant context. Doing this an user gets a guaranty

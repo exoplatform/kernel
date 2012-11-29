@@ -19,28 +19,17 @@
 package org.exoplatform.container.tenant;
 
 /**
- * Exception indicating the {@link TenantsService} not ready to be used currently. 
- *
+ * Default implementation of Current Tenant lookup. It throws {@link CurrentTenantNotSetException}
+ * always.
  */
-public class TenantsServiceNotReadyException extends Exception 
-{
-
-  private static final long serialVersionUID = -8103482432374929L;
+public class DefaultCurrentTenantLookupImpl implements CurrentTenantLookup {
 
   /**
-   * @param message
-   * @param cause
+   * {@inheritDoc}
    */
-  public TenantsServiceNotReadyException(String message, Throwable cause) 
-  {
-    super(message, cause);
+  @Override
+  public Tenant getCurrentTenant() throws CurrentTenantNotSetException {
+    throw new CurrentTenantNotSetException("Current Tenant not set.");
   }
 
-  /**
-   * @param message
-   */
-  public TenantsServiceNotReadyException(String message) 
-  {
-    super(message);
-  }
 }

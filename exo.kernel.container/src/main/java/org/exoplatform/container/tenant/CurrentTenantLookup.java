@@ -19,28 +19,18 @@
 package org.exoplatform.container.tenant;
 
 /**
- * Exception indicating that Current Tenant not set in runtime context.
- *
+ * A lookup mechanism to find a Current Tenant. This mechanism provides isolation between the
+ * Container and actual Multitenant implementation. <br>
+ * Implementations of this interface can provide different algorithms for an actual lookup.
  */
-public class CurrentTenantNotSetException extends Exception 
-{
-
-  private static final long serialVersionUID = 7930133026313794289L;
+public interface CurrentTenantLookup {
 
   /**
-   * @param message
-   * @param cause
+   * Return current tenant instance.
+   * 
+   * @throws CurrentTenantNotSetException if current tenant not set.
+   * @return {@link Tenant}
    */
-  public CurrentTenantNotSetException(String message, Throwable cause) 
-  {
-    super(message, cause);
-  }
+  Tenant getCurrentTenant() throws CurrentTenantNotSetException;
 
-  /**
-   * @param message
-   */
-  public CurrentTenantNotSetException(String message) 
-  {
-    super(message);
-  }
 }
