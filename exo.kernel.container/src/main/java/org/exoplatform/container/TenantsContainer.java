@@ -157,8 +157,10 @@ public class TenantsContainer extends CachingContainer {
     
     if (tenantsContainerContext != null && tenantsContainerContext.accept(componentAdapter))
     {
-      tenantsContainerContext.registerComponent(componentAdapter);
-      return componentAdapter;
+      if (tenantsContainerContext.registerComponent(componentAdapter)) 
+      {
+        return componentAdapter;
+      }
     }
     return super.registerComponent(componentAdapter);
   }
@@ -168,9 +170,14 @@ public class TenantsContainer extends CachingContainer {
    */
   @Override
   public ComponentAdapter unregisterComponent(Object componentKey) {
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentKey))
+    ComponentAdapter adapter = getComponentAdapter(componentKey);
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(adapter))
     {
-      return tenantsContainerContext.unregisterComponent(componentKey);
+      adapter = tenantsContainerContext.unregisterComponent(componentKey);
+      if (adapter != null) 
+      {
+        return adapter;
+      }
     }
     
     return super.unregisterComponent(componentKey);

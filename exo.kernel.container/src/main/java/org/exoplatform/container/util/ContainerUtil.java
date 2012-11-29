@@ -262,6 +262,11 @@ public class ContainerUtil
      {
        LOG.error("Exception was thrown when trying to find TenantContainerContext component", e);
      }
+     finally 
+     {
+       // finally remove context from configurations
+       conf.getConfiguration().removeConfiguration(TenantsContainerContext.class.getName());
+     }
      return null;
    }
 

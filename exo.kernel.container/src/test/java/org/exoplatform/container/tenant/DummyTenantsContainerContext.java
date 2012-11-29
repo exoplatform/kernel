@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.jmx.MX4JComponentAdapter;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.defaults.InstanceComponentAdapter;
@@ -103,12 +104,14 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
   }
 
   @Override
-  public void registerComponent(ComponentAdapter component) throws TenantComponentRegistrationException 
+  public boolean registerComponent(ComponentAdapter component) throws TenantComponentRegistrationException 
   {
     if (!TenantsContainerContext.class.equals(component.getComponentKey())) {
       lastRegisteredKey = component.getComponentKey();
       registeredKeys.add(component.getComponentKey());
+      return true;
     }
+    return false;
   }
 
   @Override
@@ -117,6 +120,7 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
     if (!TenantsContainerContext.class.equals(componentKey)) {
       lastUnregisteredKey = componentKey;
       registeredKeys.remove(componentKey);
+      return new MX4JComponentAdapter(componentKey, this.getClass()); // dummy stuff to return not null
     }
     return null;
   }
