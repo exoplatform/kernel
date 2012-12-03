@@ -159,7 +159,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          {
             if (container == null)
             {
-               container = createNStartContainer(configClassLoader, components);               
+               container = createNStartContainer(configClassLoader, components);
             }
          }
       }

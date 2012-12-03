@@ -142,8 +142,14 @@ public final class ExoContainerContext implements java.io.Serializable
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
-      if (topContainer != null && cont != null)
+      if (topContainer != null && cont != null && cont != topContainer)
+      {
          throw new IllegalStateException("Two top level containers created, but must be only one.");
+      }
+      else if (cont == topContainer)
+      {
+         return;
+      }
       LOG.info("Set the top container in its context");
       topContainer = cont;
    }
