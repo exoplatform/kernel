@@ -386,7 +386,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
     */
    public void onPut(CacheListenerContext context, K key, HashCode<V> obj) throws Exception
    {
-      V value = obj.getValue();
+      V value = obj == null ? null : obj.getValue();
       if (value != null)
       {
          // we assume that it is a local put since the value is inside the HashCode object

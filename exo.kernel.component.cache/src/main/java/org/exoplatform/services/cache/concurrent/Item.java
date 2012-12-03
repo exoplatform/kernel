@@ -42,7 +42,7 @@ public class Item
     */
    public final boolean equals(Object obj)
    {
-      return ((Item)obj).serial == serial;
+      return obj != null && ((Item)obj).serial == serial;
    }
 
    /**

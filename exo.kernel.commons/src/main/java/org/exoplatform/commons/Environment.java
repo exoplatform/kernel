@@ -23,21 +23,21 @@ import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 public class Environment
 {
 
-   static final public int UNKNOWN = 0;
+   public static final int UNKNOWN = 0;
 
-   static final public int STAND_ALONE = 1;
+   public static final int STAND_ALONE = 1;
 
-   static final public int TOMCAT_PLATFORM = 2;
+   public static final int TOMCAT_PLATFORM = 2;
 
-   static final public int JBOSS_PLATFORM = 3;
+   public static final int JBOSS_PLATFORM = 3;
 
-   static final public int JETTY_PLATFORM = 4;
+   public static final int JETTY_PLATFORM = 4;
 
-   static final public int WEBSHPERE_PLATFORM = 5;
+   public static final int WEBSHPERE_PLATFORM = 5;
 
-   static final public int WEBLOGIC_PLATFORM = 6;
+   public static final int WEBLOGIC_PLATFORM = 6;
 
-   static private Environment singleton_;
+   private static volatile Environment singleton_;
 
    private int platform_;
 

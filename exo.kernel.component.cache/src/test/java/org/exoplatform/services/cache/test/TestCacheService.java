@@ -91,7 +91,10 @@ public class TestCacheService extends TestCase
                try
                {
                   startSignal.await();
-                  assertNotNull(service_.getCacheInstance("TestConcurrentCreation"));
+                  if (service_.getCacheInstance("TestConcurrentCreation") == null)
+                  {
+                     throw new RuntimeException("The cache 'TestConcurrentCreation' cannot be null");
+                  }
                }
                catch (Exception e)
                {
@@ -137,7 +140,10 @@ public class TestCacheService extends TestCase
                   startSignal.await();
                   for (int i = 0; i < 1000000; i++)
                   {
-                     assertNotNull(service_.getCacheInstance("FooCache"));
+                     if (service_.getCacheInstance("FooCache") == null)
+                     {
+                        throw new RuntimeException("The cache 'FooCache' cannot be null");
+                     }
                   }
                }
                catch (Exception e)

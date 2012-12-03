@@ -93,7 +93,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
     */
-   private final ThreadLocal<Map<Object, Object>> depResolutionCtx = new ThreadLocal<Map<Object, Object>>();
+   private final transient ThreadLocal<Map<Object, Object>> depResolutionCtx = new ThreadLocal<Map<Object, Object>>();
 
    /**
     * Creates a new container with a custom ComponentAdapterFactory and a parent container.

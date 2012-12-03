@@ -70,9 +70,9 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    
    private static final long serialVersionUID = 12L;
 
-   private static StandaloneContainer container;
+   private static volatile StandaloneContainer container;
 
-   private static URL configurationURL = null;
+   private static volatile URL configurationURL = null;
 
    private static boolean useDefault = true;
 
@@ -155,33 +155,49 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    {
       if (container == null)
       {
-         container = new StandaloneContainer(configClassLoader);
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         synchronized (StandaloneContainer.class)
          {
-            public Void run()
+            if (container == null)
             {
-               ExoContainerContext.setTopContainer(container);
-               return null;
+               container = createNStartContainer(configClassLoader, components);               
             }
-         });
-         if (useDefault)
-            container.initDefaultConf();
-         // initialize configurationURL
-         initConfigurationURL(configClassLoader);
-         container.populate(configurationURL);
-         if (components != null)
-            container.registerArray(components);
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               container.start();
-               return null;
-            }
-         });
-         PrivilegedSystemHelper.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
-         LOG.info("StandaloneContainer initialized using:  " + configurationURL);
+         }
       }
+      return container;
+   }
+
+   /**
+    * Creates, initializes and starts the container.
+    */
+   private static StandaloneContainer createNStartContainer(ClassLoader configClassLoader, Object[][] components) throws Exception,
+      MalformedURLException, ConfigurationException
+   {
+      final StandaloneContainer container = new StandaloneContainer(configClassLoader);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            ExoContainerContext.setTopContainer(container);
+            return null;
+         }
+      });
+      if (useDefault)
+         container.initDefaultConf();
+      // initialize configurationURL
+      initConfigurationURL(configClassLoader);
+      container.populate(configurationURL);
+      if (components != null)
+         container.registerArray(components);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            container.start();
+            return null;
+         }
+      });
+      PrivilegedSystemHelper.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
+      LOG.info("StandaloneContainer initialized using:  " + configurationURL);
       return container;
    }
 
@@ -193,7 +209,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
             continue;
          if (comp[0] == null || comp[1] == null)
             continue;
-         if (comp[0].getClass().getName() != String.class.getName())
+         if (!comp[0].getClass().getName().equals(String.class.getName()))
             continue;
          String n = (String)comp[0];
          Object o = comp[1];
@@ -330,7 +346,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
     * {@inheritDoc}
     */
    @Override
-   public void stop()
+   public synchronized void stop()
    {
       super.stop();
       ExoContainerContext.setTopContainer(null);
@@ -382,37 +398,52 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
       // or
       if (configurationURL == null)
       {
-         final J2EEServerInfo env = new J2EEServerInfo();
-         
-         // (2) exo-configuration.xml in AS (standalone) home directory
+         synchronized (StandaloneContainer.class)
+         {
+            if (configurationURL == null)
+            {
+               configurationURL = getConfigurationURL(configClassLoader);     
+            }
+         }
+      }
+   }
+
+   /**
+    * Gives the configuration URL according to the given {@link ClassLoader}
+    */
+   private static URL getConfigurationURL(ClassLoader configClassLoader) throws MalformedURLException
+   {
+      final J2EEServerInfo env = new J2EEServerInfo();
+      
+      // (2) exo-configuration.xml in AS (standalone) home directory
+      URL configurationURL =
+         SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+         {
+            public URL run() throws Exception
+            {
+               return (new File(env.getServerHome() + "/exo-configuration.xml")).toURI().toURL();
+            }
+         });
+
+      // (3) AS_HOME/conf/exo-conf (JBossAS usecase)
+      if (!fileExists(configurationURL))
+      {
          configurationURL =
             SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
             {
                public URL run() throws Exception
                {
-                  return (new File(env.getServerHome() + "/exo-configuration.xml")).toURI().toURL();
+                  return (new File(env.getExoConfigurationDirectory() + "/exo-configuration.xml")).toURI().toURL();
                }
             });
-
-         // (3) AS_HOME/conf/exo-conf (JBossAS usecase)
-         if (!fileExists(configurationURL))
-         {
-            configurationURL =
-               SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
-               {
-                  public URL run() throws Exception
-                  {
-                     return (new File(env.getExoConfigurationDirectory() + "/exo-configuration.xml")).toURI().toURL();
-                  }
-               });
-         }
-         
-         // (4) conf/exo-configuration.xml in war/ear(?)
-         if (!fileExists(configurationURL) && configClassLoader != null)
-         {
-            configurationURL = configClassLoader.getResource("conf/exo-configuration.xml");
-         }
       }
+      
+      // (4) conf/exo-configuration.xml in war/ear(?)
+      if (!fileExists(configurationURL) && configClassLoader != null)
+      {
+         configurationURL = configClassLoader.getResource("conf/exo-configuration.xml");
+      }
+      return configurationURL;
    }
 
    private void initDefaultConf() throws Exception

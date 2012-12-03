@@ -69,6 +69,10 @@ public class JMXManagementProvider implements ManagementProvider
 
    public Object manage(ManagedResource context)
    {
+      if (context == null)
+      {
+         throw new IllegalArgumentException("The context cannot be null");
+      }
       ExoModelMBean mbean = null;
       try
       {
@@ -78,38 +82,28 @@ public class JMXManagementProvider implements ManagementProvider
       }
       catch (IllegalArgumentException e)
       {
-         LOG.warn(
-            "Could not create the ExoModelMBean for the class "
-               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
-            e);
+         LOG.warn("Could not create the ExoModelMBean for the class " + context.getResource() == null ? null : context
+            .getResource().getClass(), e);
       }
       catch (RuntimeOperationsException e)
       {
-         LOG.warn(
-            "Could not create the ExoModelMBean for the class "
-               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
-            e);
+         LOG.warn("Could not create the ExoModelMBean for the class " + context.getResource() == null ? null : context
+            .getResource().getClass(), e);
       }
       catch (InstanceNotFoundException e)
       {
-         LOG.warn(
-            "Could not create the ExoModelMBean for the class "
-               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
-            e);
+         LOG.warn("Could not create the ExoModelMBean for the class " + context.getResource() == null ? null : context
+            .getResource().getClass(), e);
       }
       catch (MBeanException e)
       {
-         LOG.warn(
-            "Could not create the ExoModelMBean for the class "
-               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
-            e);
+         LOG.warn("Could not create the ExoModelMBean for the class " + context.getResource() == null ? null : context
+            .getResource().getClass(), e);
       }
       catch (InvalidTargetObjectTypeException e)
       {
-         LOG.warn(
-            "Could not create the ExoModelMBean for the class "
-               + (context == null ? null : (context.getResource() == null ? null : context.getResource().getClass())),
-            e);
+         LOG.warn("Could not create the ExoModelMBean for the class " + context.getResource() == null ? null : context
+            .getResource().getClass(), e);
       }
 
       //

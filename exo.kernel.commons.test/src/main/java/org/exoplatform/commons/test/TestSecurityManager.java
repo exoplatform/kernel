@@ -44,7 +44,7 @@ public class TestSecurityManager extends SecurityManager
    /**
     * Map of methods to exclude and for each method we define a list of method called to ignore
     */
-   private Map<String, Set<String>> excludes;
+   private volatile Map<String, Set<String>> excludes;
 
    /**
     * Indicates whether or not we are currently loading the file <code>tsm-excludes.properties</code>

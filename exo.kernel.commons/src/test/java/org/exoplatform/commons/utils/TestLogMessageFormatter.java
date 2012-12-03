@@ -70,7 +70,7 @@ public class TestLogMessageFormatter extends TestCase
    {
       public String toString()
       {
-         return null;
+         return "";
       }
    }
 }
