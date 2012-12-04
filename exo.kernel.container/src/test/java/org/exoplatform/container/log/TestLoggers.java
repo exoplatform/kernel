@@ -62,7 +62,7 @@ public class TestLoggers extends TestCase
       props.put("log4j.appender.file.layout.ConversionPattern",
          "%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n");
 
-      LogConfigurationInitializer initializer = new LogConfigurationInitializer(logger, confClass, props);
+      new LogConfigurationInitializer(logger, confClass, props);
 
       log.info("Performance test.");
    }
@@ -106,7 +106,7 @@ public class TestLoggers extends TestCase
    public void testLog4jContainer() throws Exception
    {
 
-      PortalContainer container = PortalContainer.getInstance();
+      PortalContainer.getInstance();
       Log log = ExoLogger.getLogger(TestLoggers.class);
 
       log.info("Log4j Container Tests");
@@ -136,7 +136,7 @@ public class TestLoggers extends TestCase
       props.put("java.util.logging.FileHandler.pattern", "./target/java%u.log");
       props.put("java.util.logging.FileHandler.formatter", "java.util.logging.SimpleFormatter");
 
-      LogConfigurationInitializer initializer = new LogConfigurationInitializer(logger, confClass, props);
+      new LogConfigurationInitializer(logger, confClass, props);
       Log log = ExoLogger.getLogger(TestLoggers.class);
 
       log.info("JCL Tests");
@@ -154,7 +154,7 @@ public class TestLoggers extends TestCase
    public void _testJCLContainer() throws Exception
    {
 
-      PortalContainer container = PortalContainer.getInstance();
+      PortalContainer.getInstance();
       Log log = ExoLogger.getLogger(TestLoggers.class);
 
       log.info("JCL Container Tests");

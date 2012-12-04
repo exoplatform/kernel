@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An {@link org.exoplatform.services.cache.ExoCache} implementation based on {@link java.util.concurrent.ConcurrentHashMap}
@@ -52,9 +53,9 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
 
    private CacheState<K, V> state;
 
-   volatile int hits = 0;
+   AtomicInteger hits = new AtomicInteger();
 
-   volatile int misses = 0;
+   AtomicInteger misses = new AtomicInteger();
 
    private String label;
 
@@ -269,12 +270,12 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
 
    public int getCacheHit()
    {
-      return hits;
+      return hits.get();
    }
 
    public int getCacheMiss()
    {
-      return misses;
+      return misses.get();
    }
 
    public synchronized void addCacheListener(CacheListener<? super K, ? super V> listener)

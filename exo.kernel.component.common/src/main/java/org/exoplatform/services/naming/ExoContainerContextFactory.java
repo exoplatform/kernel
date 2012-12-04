@@ -168,9 +168,10 @@ public class ExoContainerContextFactory implements InitialContextFactory
        */
       public Object lookup(Name name) throws NamingException
       {
-         if (getBindings().containsKey(name) || isInitialContextInitializerCall())
+         String sName = nameToString(name);
+         if (getBindings().containsKey(sName) || isInitialContextInitializerCall())
          {
-            return super.lookup(nameToString(name));
+            return super.lookup(sName);
          }
          return getContext().lookup(name);
       }

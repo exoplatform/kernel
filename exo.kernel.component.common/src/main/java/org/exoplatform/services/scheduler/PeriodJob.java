@@ -33,13 +33,9 @@ import java.util.Date;
  */
 public class PeriodJob extends BaseComponentPlugin
 {
-   private static SimpleDateFormat ft_ = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
    private PeriodInfo pjinfo_;
 
    private JobInfo jinfo_;
-
-   private JobDataMap jdatamap_;
 
    public PeriodJob(InitParams params) throws Exception
    {
@@ -72,7 +68,8 @@ public class PeriodJob extends BaseComponentPlugin
       }
       else
       {
-         date = ft_.parse(stime);
+         SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+         date = ft.parse(stime);
       }
       return date;
    }
@@ -89,6 +86,6 @@ public class PeriodJob extends BaseComponentPlugin
 
    public JobDataMap getJobDataMap()
    {
-      return jdatamap_;
+      return null;
    }
 }

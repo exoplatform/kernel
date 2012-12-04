@@ -71,13 +71,13 @@ class CacheState<K extends Serializable, V>
          V o = entry.getObject();
          if (entry.isValid())
          {
-            config.hits++;
+            config.hits.incrementAndGet();
             config.onGet(entry.name, o);
             return o;
          }
          else
          {
-            config.misses++;
+            config.misses.incrementAndGet();
             if (map.remove(name, entry))
             {
                queue.remove(entry);

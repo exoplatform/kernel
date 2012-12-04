@@ -49,12 +49,12 @@ public class MCIntegrationInvoker
    /**
     * Reference to actual implementation of mc-integration - the one with hard dependencies on JBoss MC Kernel.
     */
-   private static MCIntegration mcInt;
+   private static volatile MCIntegration mcInt;
 
    /**
     * Error flag. When set it signals that MC integration is not available in current runtime environment.
     */
-   private static boolean permFailure;
+   private static volatile boolean permFailure;
 
    /**
     * @see MCIntegration#getMCAdapter(org.picocontainer.ComponentAdapter)
@@ -118,25 +118,31 @@ public class MCIntegrationInvoker
    {
       if (mcInt == null && permFailure == false)
       {
-         Class clazz = null;
-         try
+         synchronized (MCIntegrationInvoker.class)
          {
-            clazz = loadClass("org.exoplatform.container.mc.impl.MCIntegrationImpl");
-            Method m = clazz.getMethod("getInstance");
-            mcInt = (MCIntegration) m.invoke(null);
-         }
-         catch (ClassNotFoundException ignored)
-         {
-            permFailure = true;
-            LOG.debug("MC integration not available in this environment (missing class: "
-                  + ignored.getMessage() + ")");
+            if (mcInt == null && permFailure == false)
+            {
+               Class<?> clazz = null;
+               try
+               {
+                  clazz = loadClass("org.exoplatform.container.mc.impl.MCIntegrationImpl");
+                  Method m = clazz.getMethod("getInstance");
+                  mcInt = (MCIntegration) m.invoke(null);
+               }
+               catch (ClassNotFoundException ignored)
+               {
+                  permFailure = true;
+                  LOG.debug("MC integration not available in this environment (missing class: "
+                        + ignored.getMessage() + ")");
 
-            return null;
-         }
-         catch (Exception e)
-         {
-            permFailure = true;
-            throw new RuntimeException("MC Integration initialization error", e);
+                  return null;
+               }
+               catch (Exception e)
+               {
+                  permFailure = true;
+                  throw new RuntimeException("MC Integration initialization error", e);
+               }   
+            }
          }
       }
       return mcInt;

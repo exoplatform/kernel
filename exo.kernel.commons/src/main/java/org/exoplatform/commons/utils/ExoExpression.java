@@ -137,17 +137,26 @@ public class ExoExpression
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ZipOutputStream out = new ZipOutputStream(baos);
       out.putNextEntry(new ZipEntry(getEntry()));
-      if (bais != null && bais.available() != EOF)
+      try
       {
-         int count;
-         while ((count = bais.read(buf)) > 0)
+         if (bais != null && bais.available() != EOF)
          {
-            out.write(buf, 0, count);
+            int count;
+            while ((count = bais.read(buf)) > 0)
+            {
+               out.write(buf, 0, count);
+            }
+         }
+      }
+      finally
+      {
+         if (bais != null)
+         {
+            bais.close();            
          }
       }
       out.closeEntry();
       out.close();
-      bais.close();
       return new ByteArrayInputStream(baos.toByteArray());
    }
 

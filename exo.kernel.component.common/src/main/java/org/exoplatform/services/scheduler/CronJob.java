@@ -33,8 +33,6 @@ public class CronJob extends BaseComponentPlugin
    private String expression_;
 
    private JobInfo jinfo_;
-   
-   private JobDataMap jdatamap_;
 
    public CronJob(InitParams params) throws Exception
    {
@@ -61,7 +59,7 @@ public class CronJob extends BaseComponentPlugin
    
    public JobDataMap getJobDataMap()
    {
-      return jdatamap_;
+      return null;
    }
 
 }

@@ -51,17 +51,11 @@ public class ObjectParameter extends Parameter
    public void setXMLObject(XMLObject xmlobject) throws Exception
    {
       if (xmlobject == null)
+      {
          object = null;
-      try
-      {
-         object = xmlobject.toObject();
+         return;
       }
-      catch (Exception t)
-      {
-         // System .err.println("ERRORL: Cannot set value for  param : " +
-         // getName()) ;
-         throw t;
-      }
+      object = xmlobject.toObject();
    }
 
    public String toString()

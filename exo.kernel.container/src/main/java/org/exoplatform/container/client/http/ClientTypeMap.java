@@ -31,8 +31,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.PatternSyntaxException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -55,7 +53,7 @@ public class ClientTypeMap
 
    private ArrayList<HttpClientType> clientList_;
 
-   private static ClientTypeMap singleton_;
+   private static volatile ClientTypeMap singleton_;
 
    private void loadClientsInfos()
    {
@@ -72,23 +70,6 @@ public class ClientTypeMap
          XPathExpression rendererExp = xpath.compile("renderer/text()");
          ClassLoader cl = Thread.currentThread().getContextClassLoader();
          java.net.URL url = cl.getResource("conf/portal/clients-type.xml");
-         // S ystem.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-         // "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl") ;
-         // S ystem.out.println("==================> " +
-         // System.getProperty("javax.xml.parsers.DocumentBuilderFactory")) ;
-         // S ystem.out.println("==================>" +
-         // DocumentBuilderFactory.newInstance());
-         Iterator itr = System.getProperties().entrySet().iterator();
-         while (itr.hasNext())
-         {
-            Map.Entry entry = (Map.Entry)itr.next();
-            String key = (String)entry.getKey();
-            if (key.startsWith("javax"))
-            {
-               // System .out.println(key + " = " + entry.getValue());
-            }
-         }
-
          DocumentBuilderFactory finstance = DocumentBuilderFactory.newInstance();
          DocumentBuilder builder = finstance.newDocumentBuilder();
          Document document = builder.parse(url.openStream());
@@ -167,7 +148,10 @@ public class ClientTypeMap
       {
          synchronized (ClientTypeMap.class)
          {
-            singleton_ = new ClientTypeMap();
+            if (singleton_ == null)
+            {
+               singleton_ = new ClientTypeMap();               
+            }
          }
       }
       return singleton_;
