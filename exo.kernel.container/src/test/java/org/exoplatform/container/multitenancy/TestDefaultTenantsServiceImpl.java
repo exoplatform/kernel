@@ -153,6 +153,12 @@ public class TestDefaultTenantsServiceImpl extends TestCase
     parent = root.getPortalContainer(PortalContainer.DEFAULT_PORTAL_CONTAINER_NAME);
   }
 
+  
+  public void testMultitenantNotFound() {
+    Object obj = parent.getComponentInstanceOfType(SimpleComponent.class);
+    assertNull(obj);
+  }
+  
   public void testMultitenantObject() {
     parent.registerComponentImplementation(SimpleComponent.class, SimpleComponent.class);
     parent.registerComponentImplementation(DummyComponent.class, DummyComponent.class);

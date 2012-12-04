@@ -28,6 +28,7 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.ComponentAdapter;
+import org.picocontainer.defaults.AmbiguousComponentResolutionException;
 
 /**
  * Default implementation of {@link TenantsService}. <br>
@@ -58,7 +59,7 @@ public class DefaultTenantsServiceImpl implements TenantsService
       {
         ComponentAdapter adapter = (ComponentAdapter) ao;
         Object ckey = adapter.getComponentKey();
-        if (ckey instanceof Class) 
+        if (ckey instanceof Class && !ckey.equals(this.compType)) 
         {
           this.compTypes.add((Class<?>) ckey);
         }
@@ -89,15 +90,29 @@ public class DefaultTenantsServiceImpl implements TenantsService
       Object c = container.getComponentInstanceOfType(compType);
       if (c == null) 
       {
+        // TODO do we really need this? Maybe container already cowers this need?
+        // XXX on practice (debug) this code works only when component actually not found in the container 
         if (compTypes != null) 
         {
           // try other keys
           for (Iterator<Class<?>> ctiter = compTypes.iterator(); ctiter.hasNext();) 
           {
-            c = container.getComponentInstanceOfType(ctiter.next());
-            if (c != null) 
+            try
             {
-              return (T) c;
+              c = container.getComponentInstanceOfType(ctiter.next());
+              if (c != null) 
+              {
+                return (T) c;
+              }
+            } 
+            catch(AmbiguousComponentResolutionException e)
+            {
+              // we have several of this type and cannot use this type to get the comp, try next
+            }
+            catch(ClassCastException e)
+            {
+              LOG.error("Error casting component " + c + " to type " + compType.getName());
+              // this cast "(T) c" doesn't work, probably container contains two interfaces/superclasses with different implementations, try next  
             }
           }
         }
