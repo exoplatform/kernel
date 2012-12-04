@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 import org.exoplatform.container.TenantsContainer;
 import org.picocontainer.ComponentAdapter;
@@ -25,22 +25,53 @@ import java.util.List;
 
 /**
  * Context for {@link TenantsContainer}. Prescribes general contract between container and
- * multitenancy capable components registration. Container should user
+ * multitenancy capable components registration. Container should use
  * {@link #accept(ComponentAdapter)} method during the registration to answer should be some
- * component registered in {@link TenantsContainer} or not. <br>
- * Context applies own container for per-tenant managed components and used in
- * {@link TenantsContainer} for its methods implementation.
+ * component registered in {@link TenantsContainer} or not. The same way method 
+ * {@link #accept(Object)} should be used to choose from where to get a component in getters.<br>
+ * Context implementation should apply own "container" for per-tenant managed components and use it
+ * for {@link TenantsContainer} methods implementation.
  */
 public interface TenantsContainerContext {
 
+  /**
+   * Return list of component adapters regarding the given Class key and Current Tenant.
+   * 
+   * @param componentType {@link Class} type of a components 
+   * @return list of component adapters, an empty list if nothing found.
+   */
   List<?> getComponentAdaptersOfType(Class<?> componentType);
 
+  /**
+   * Return list of component instances regarding the given Class key and Current Tenant.
+   * 
+   * @param componentType {@link Class} type of instances 
+   * @return list of components, an empty list if nothing found.
+   */
   List<?> getComponentInstancesOfType(Class<?> componentType);
 
+  /**
+   * Return component adapter regarding the given Class key and Current Tenant.
+   * 
+   * @param key {@link Class} type of a component
+   * @return {@link ComponentAdapter} of a component or <code>null</code> if nothing found in Current Tenant.
+   */
   ComponentAdapter getComponentAdapterOfType(Class<?> key);
 
+  /**
+   * Return component instance regarding the given key (String in most cases) and Current Tenant.
+   * 
+   * @param key {@link Object} key of a component
+   * @return a component instance or <code>null</code> if nothing found in Current Tenant.
+   */
   Object getComponentInstance(Object componentKey);
 
+  /**
+   * Return component instance regarding the given Class key and Current Tenant.
+   * 
+   * @param componentType {@link Class} type of a component
+   * @return a component instance or <code>null</code> if nothing found in Current Tenant.
+   */
   Object getComponentInstanceOfType(Class<?> componentType);
 
   /**

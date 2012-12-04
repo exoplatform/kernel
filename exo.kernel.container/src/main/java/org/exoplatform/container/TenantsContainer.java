@@ -21,7 +21,7 @@ package org.exoplatform.container;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exoplatform.container.tenant.TenantsContainerContext;
+import org.exoplatform.container.multitenancy.TenantsContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
@@ -29,8 +29,12 @@ import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 /**
- * 
- *
+ * TenantsContainer's goal to separate generally used components from ones what should be instantiated, started 
+ * and stopped on per-tenant basis.<br> 
+ * It overrides component getters, {@link #registerComponent(ComponentAdapter)} and {@link #unregisterComponent(Object)} 
+ * methods to be able to get components taking in account Current Tenant context.<br>
+ * The Current Tenant context it's an abstraction what will be set by actual cloud implementation (for versions currently 
+ * in production it's based on JCR Current Repository, but this should be transparent for Kernel level). 
  */
 public class TenantsContainer extends CachingContainer {
 
@@ -146,15 +150,6 @@ public class TenantsContainer extends CachingContainer {
   @Override
   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter) throws DuplicateComponentKeyRegistrationException
   {
-//    Object componentKey = componentAdapter.getComponentKey();
-//    if (componentKey instanceof Class && TenantsContainerContext.class.isAssignableFrom(((Class<?>)componentKey)))
-//    {
-//      if (componentAdapter instanceof InstanceComponentAdapter)
-//        return super.registerComponent(componentAdapter);
-//      else
-//        return getComponentAdapterOfType(TenantsContainerContext.class);
-//    }
-    
     if (tenantsContainerContext != null && tenantsContainerContext.accept(componentAdapter))
     {
       if (tenantsContainerContext.registerComponent(componentAdapter)) 

@@ -16,20 +16,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 /**
- * Provides contextual object holder for multi-tenant capable components. This holder provides
- * a get method for getting a component from the tenant dependent context.
- * 
+ * General abstraction for a tenant in multitenant environment.
+ *
  */
-public interface Multitenant<T> {
-  
+public interface Tenant {
+
   /**
-   * Return component regarding the Current Tenant.
+   * Tenant name.
    * 
-   * @return component instance regarding the Current Tenant
+   * @return {@link String}
    */
-  T get();
+  String getName();
   
 }

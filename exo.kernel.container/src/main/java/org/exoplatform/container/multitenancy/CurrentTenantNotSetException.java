@@ -16,35 +16,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
-
-import org.exoplatform.container.TenantsContainer;
-import org.picocontainer.PicoRegistrationException;
+package org.exoplatform.container.multitenancy;
 
 /**
- * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
+ * Exception indicating that Current Tenant not set in runtime context.
  *
  */
-public class TenantComponentRegistrationException extends PicoRegistrationException 
+public class CurrentTenantNotSetException extends Exception 
 {
-
-  private static final long serialVersionUID = 9019837435985415794L;
-
-  /**
-   * @param message
-   */
-  public TenantComponentRegistrationException(String message) 
-  {
-    super(message);
-  }
-
+  private static final long serialVersionUID = 7930133026313794289L;
+  
   /**
    * @param message
    * @param cause
    */
-  public TenantComponentRegistrationException(String message, Throwable cause) 
+  public CurrentTenantNotSetException(String message, Throwable cause) 
   {
     super(message, cause);
   }
 
+  /**
+   * @param message
+   */
+  public CurrentTenantNotSetException(String message) 
+  {
+    super(message);
+  }
 }

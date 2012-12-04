@@ -16,19 +16,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
+
+import org.exoplatform.container.TenantsContainer;
+import org.picocontainer.PicoRegistrationException;
 
 /**
- * General abstraction for a tenant in multitenant environment.
+ * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
  *
  */
-public interface Tenant {
+public class TenantComponentRegistrationException extends PicoRegistrationException 
+{
+
+  private static final long serialVersionUID = 9019837435985415794L;
 
   /**
-   * Tenant name.
-   * 
-   * @return {@link String}
+   * @param message
    */
-  String getName();
-  
+  public TenantComponentRegistrationException(String message) 
+  {
+    super(message);
+  }
+
+  /**
+   * @param message
+   * @param cause
+   */
+  public TenantComponentRegistrationException(String message, Throwable cause) 
+  {
+    super(message, cause);
+  }
+
 }

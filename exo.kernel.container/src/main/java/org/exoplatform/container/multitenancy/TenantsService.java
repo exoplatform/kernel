@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 /**
  * Provides convenient methods to get an information about Current Tenant and provides support for

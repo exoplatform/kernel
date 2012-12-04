@@ -16,21 +16,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 /**
- * A lookup mechanism to find a Current Tenant. This mechanism provides isolation between the
- * Container and actual Multitenant implementation. <br>
- * Implementations of this interface can provide different algorithms for an actual lookup.
+ * Default implementation of Current Tenant lookup. It throws {@link CurrentTenantNotSetException}
+ * always.
  */
-public interface CurrentTenantLookup {
+public class DefaultCurrentTenantLookupImpl implements CurrentTenantLookup {
 
   /**
-   * Return current tenant instance.
-   * 
-   * @throws CurrentTenantNotSetException if current tenant not set.
-   * @return {@link Tenant}
+   * {@inheritDoc}
    */
-  Tenant getCurrentTenant() throws CurrentTenantNotSetException;
+  @Override
+  public Tenant getCurrentTenant() throws CurrentTenantNotSetException {
+    // XXX we could return something dummy (or predefined as default) here, but it is not required on Kernel level.
+    // For non-cloud mode, where JCR used as main CF storage, an another implementation can do this properly using Current Repository.
+    throw new CurrentTenantNotSetException("Current Tenant not set.");
+  }
 
 }

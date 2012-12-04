@@ -24,12 +24,12 @@
 
    <!-- Multitenancy support -->
    <component>
-      <key>org.exoplatform.container.tenant.CurrentTenantLookup</key>
-      <type>org.exoplatform.container.tenant.DefaultCurrentTenantLookupImpl</type>
+      <key>org.exoplatform.container.multitenancy.CurrentTenantLookup</key>
+      <type>org.exoplatform.container.multitenancy.DefaultCurrentTenantLookupImpl</type>
    </component>
    <component>
-      <key>org.exoplatform.container.tenant.TenantsService</key>
-      <type>org.exoplatform.container.tenant.DefaultTenantsServiceImpl</type>
+      <key>org.exoplatform.container.multitenancy.TenantsService</key>
+      <type>org.exoplatform.container.multitenancy.DefaultTenantsServiceImpl</type>
    </component>
 
    <!--

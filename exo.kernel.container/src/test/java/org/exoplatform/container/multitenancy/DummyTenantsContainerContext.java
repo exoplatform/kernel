@@ -1,4 +1,4 @@
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapter;
+import org.exoplatform.container.multitenancy.TenantComponentRegistrationException;
+import org.exoplatform.container.multitenancy.TenantsContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.defaults.InstanceComponentAdapter;

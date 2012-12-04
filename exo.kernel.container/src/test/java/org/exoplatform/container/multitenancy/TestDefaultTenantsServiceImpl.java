@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 import java.security.PrivilegedAction;
 
@@ -27,6 +27,9 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.multitenancy.DefaultTenantsServiceImpl;
+import org.exoplatform.container.multitenancy.Multitenant;
+import org.exoplatform.container.multitenancy.TenantsService;
 
 /**
  * Tests of {@link DefaultTenantsServiceImpl}.
@@ -150,7 +153,7 @@ public class TestDefaultTenantsServiceImpl extends TestCase
     parent = root.getPortalContainer(PortalContainer.DEFAULT_PORTAL_CONTAINER_NAME);
   }
 
-  public void _testMultitenantObject() {
+  public void testMultitenantObject() {
     parent.registerComponentImplementation(SimpleComponent.class, SimpleComponent.class);
     parent.registerComponentImplementation(DummyComponent.class, DummyComponent.class);
     
@@ -170,7 +173,7 @@ public class TestDefaultTenantsServiceImpl extends TestCase
     assertSame(parent.getComponentInstanceOfType(DummyComponent.class), service.dummy.get());
   }
 
-  public void _testMultitenantClass() {
+  public void testMultitenantClass() {
     parent.registerComponentImplementation(SimpleComponent.class, SimpleComponent.class);
     parent.registerComponentImplementation(DummyComponent.class, DummyComponent.class);
     

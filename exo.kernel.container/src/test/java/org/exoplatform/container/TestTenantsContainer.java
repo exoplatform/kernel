@@ -6,7 +6,7 @@ import java.util.List;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapter;
 import org.exoplatform.container.management.ManageableComponentAdapter;
-import org.exoplatform.container.tenant.DummyTenantsContainerContext;
+import org.exoplatform.container.multitenancy.DummyTenantsContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Startable;
 
@@ -38,7 +38,7 @@ public class TestTenantsContainer extends AbstractTestContainer
    */
   public void testTenantContextConfigured()
   {
-    RootContainer root = createRootContainer("test-tenant-container.xml");
+    RootContainer root = createRootContainer("test-tenants-container.xml");
     assertNotNull(root.tenantsContainerContext);
   }
   
@@ -57,7 +57,7 @@ public class TestTenantsContainer extends AbstractTestContainer
    */
   public void testRegisterComponent()
   {
-    final RootContainer root = createRootContainer("test-tenant-container.xml");
+    final RootContainer root = createRootContainer("test-tenants-container.xml");
     
     ManageableComponentAdapter adapter = new ManageableComponentAdapter(root,
                                                                         new MX4JComponentAdapter(C1.class,
@@ -73,7 +73,7 @@ public class TestTenantsContainer extends AbstractTestContainer
    */
   public void testNotRegisterComponentInstance()
   {
-    final RootContainer root = createRootContainer("test-tenant-container.xml");
+    final RootContainer root = createRootContainer("test-tenants-container.xml");
     ComponentAdapter adapter = root.registerComponentInstance(new C2());
     assertNotNull(adapter);
     assertNull(getLastRegisteredKey(root)); //Must not be registered in TenantsContainer
@@ -82,7 +82,7 @@ public class TestTenantsContainer extends AbstractTestContainer
   
   public void testGetComponents()
   {
-    final RootContainer root = createRootContainer("test-tenant-container.xml");
+    final RootContainer root = createRootContainer("test-tenants-container.xml");
     root.registerComponentImplementation(C1.class, C1.class);
     
     assertEquals(C1.class, getLastRegisteredKey(root));

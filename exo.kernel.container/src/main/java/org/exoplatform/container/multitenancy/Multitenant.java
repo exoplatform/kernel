@@ -16,31 +16,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 /**
- * Exception indicating that Current Tenant not set in runtime context.
- *
+ * Provides contextual object holder for multi-tenant capable components. This holder provides
+ * a get method for getting a component from the tenant dependent context.
+ * 
  */
-public class CurrentTenantNotSetException extends Exception 
-{
-
-  private static final long serialVersionUID = 7930133026313794289L;
-
+public interface Multitenant<T> {
+  
   /**
-   * @param message
-   * @param cause
+   * Return component regarding the Current Tenant.
+   * 
+   * @return component instance regarding the Current Tenant
    */
-  public CurrentTenantNotSetException(String message, Throwable cause) 
-  {
-    super(message, cause);
-  }
-
-  /**
-   * @param message
-   */
-  public CurrentTenantNotSetException(String message) 
-  {
-    super(message);
-  }
+  T get();
+  
 }

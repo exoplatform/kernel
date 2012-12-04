@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.tenant;
+package org.exoplatform.container.multitenancy;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -157,7 +157,7 @@ public class DefaultTenantsServiceImpl implements TenantsService
   // ****** internals ******
 
   /**
-   * Find most suitable container. Never return null.
+   * Find most suitable container. 
    * 
    * @return {@link ExoContainer} instance
    */
@@ -170,6 +170,7 @@ public class DefaultTenantsServiceImpl implements TenantsService
     }
     else 
     {
+      // Never return null except of root container configuration errors (rare case).
       return ExoContainerContext.getCurrentContainer();
     }
   }
