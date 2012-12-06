@@ -29,36 +29,34 @@ import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 /**
- * TenantsContainer's goal to separate generally used components from ones what should be instantiated, started 
- * and stopped on per-tenant basis.<br> 
- * It overrides component getters, {@link #registerComponent(ComponentAdapter)} and {@link #unregisterComponent(Object)} 
- * methods to be able to get components taking in account Current Tenant context.<br>
- * The Current Tenant context it's an abstraction what will be set by actual cloud implementation (for versions currently 
- * in production it's based on JCR Current Repository, but this should be transparent for Kernel level). 
+ * TenantsContainer's goal to separate generally used components from ones what should be instantiated,
+ * started and stopped on per-tenant basis.<br>
+ * It overrides component getters, {@link #registerComponent(ComponentAdapter)} and
+ * {@link #unregisterComponent(Object)} methods to be able to get components taking in account Current Tenant
+ * context.<br>
+ * The Current Tenant context it's an abstraction what will be set by actual cloud implementation (for
+ * versions currently in production it's based on JCR Current Repository, but this should be transparent for
+ * Kernel level).
  */
 public class TenantsContainer extends CachingContainer {
 
-  private static final long        serialVersionUID = 1945046643718969920L;
+  private static final long         serialVersionUID = 1945046643718969920L;
 
   protected TenantsContainerContext tenantsContainerContext;
 
-  public TenantsContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent) 
-  {
+  public TenantsContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent) {
     super(componentAdapterFactory, parent);
   }
 
-  public TenantsContainer(PicoContainer parent) 
-  {
+  public TenantsContainer(PicoContainer parent) {
     super(parent);
   }
 
-  public TenantsContainer(ComponentAdapterFactory componentAdapterFactory) 
-  {
+  public TenantsContainer(ComponentAdapterFactory componentAdapterFactory) {
     super(componentAdapterFactory);
   }
 
-  public TenantsContainer() 
-  {
+  public TenantsContainer() {
   }
 
   /**
@@ -66,10 +64,8 @@ public class TenantsContainer extends CachingContainer {
    */
   @SuppressWarnings({ "rawtypes" })
   @Override
-  public ComponentAdapter getComponentAdapterOfType(Class componentType)
-  {
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType))
-    {
+  public ComponentAdapter getComponentAdapterOfType(Class componentType) {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) {
       return tenantsContainerContext.getComponentAdapterOfType(componentType);
     }
     return super.getComponentAdapterOfType(componentType);
@@ -79,10 +75,8 @@ public class TenantsContainer extends CachingContainer {
    * {@inheritDoc}
    */
   @Override
-  public Object getComponentInstance(Object componentKey) throws PicoException 
-  {
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentKey)) 
-    {
+  public Object getComponentInstance(Object componentKey) throws PicoException {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentKey)) {
       return tenantsContainerContext.getComponentInstance(componentKey);
     }
     return super.getComponentInstance(componentKey);
@@ -97,11 +91,9 @@ public class TenantsContainer extends CachingContainer {
     List result = new ArrayList();
     result.addAll(super.getComponentAdaptersOfType(componentType));
 
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) 
-    {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) {
       List adapters = tenantsContainerContext.getComponentAdaptersOfType(componentType);
-      if (adapters != null) 
-      {
+      if (adapters != null) {
         result.addAll(adapters);
       }
     }
@@ -113,17 +105,14 @@ public class TenantsContainer extends CachingContainer {
    */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public List getComponentInstancesOfType(Class componentType) throws PicoException 
-  {
+  public List getComponentInstancesOfType(Class componentType) throws PicoException {
     // XXX: order of components in the list broken as we taking it from two sources
     List result = new ArrayList();
     result.addAll(super.getComponentInstancesOfType(componentType));
 
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) 
-    {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) {
       List instances = tenantsContainerContext.getComponentInstancesOfType(componentType);
-      if (instances != null) 
-      {
+      if (instances != null) {
         result.addAll(instances);
       }
     }
@@ -135,15 +124,13 @@ public class TenantsContainer extends CachingContainer {
    */
   @SuppressWarnings({ "rawtypes" })
   @Override
-  public Object getComponentInstanceOfType(Class componentType) 
-  {
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) 
-    {
+  public Object getComponentInstanceOfType(Class componentType) {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType)) {
       return tenantsContainerContext.getComponentInstanceOfType(componentType);
     }
     return super.getComponentInstanceOfType(componentType);
   }
-  
+
   /**
    * {@inheritDoc}
    */
@@ -152,15 +139,15 @@ public class TenantsContainer extends CachingContainer {
   {
     if (tenantsContainerContext != null && tenantsContainerContext.accept(componentAdapter))
     {
-      ComponentAdapter contextualAdapter = tenantsContainerContext.registerComponent(componentAdapter);
+      ComponentAdapter contextAdapter = tenantsContainerContext.registerComponent(componentAdapter);
       // check if the same adapter returned, if not - register the new in the super also 
-      if (contextualAdapter == componentAdapter) 
+      if (contextAdapter == componentAdapter) 
       {
         return componentAdapter;
       }
       else
       {
-        return super.registerComponent(contextualAdapter);
+        return super.registerComponent(contextAdapter);
       }
     } else {
       return super.registerComponent(componentAdapter);
@@ -173,16 +160,14 @@ public class TenantsContainer extends CachingContainer {
   @Override
   public ComponentAdapter unregisterComponent(Object componentKey) {
     ComponentAdapter adapter = getComponentAdapter(componentKey);
-    if (tenantsContainerContext != null && tenantsContainerContext.accept(adapter))
-    {
+    if (tenantsContainerContext != null && tenantsContainerContext.accept(adapter)) {
       adapter = tenantsContainerContext.unregisterComponent(componentKey);
-      if (adapter != null) 
-      {
+      if (adapter != null) {
         return adapter;
       }
     }
-    
+
     return super.unregisterComponent(componentKey);
   }
-  
+
 }
