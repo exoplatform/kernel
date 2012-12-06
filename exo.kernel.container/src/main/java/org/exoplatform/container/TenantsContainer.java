@@ -152,12 +152,19 @@ public class TenantsContainer extends CachingContainer {
   {
     if (tenantsContainerContext != null && tenantsContainerContext.accept(componentAdapter))
     {
-      if (tenantsContainerContext.registerComponent(componentAdapter)) 
+      ComponentAdapter contextualAdapter = tenantsContainerContext.registerComponent(componentAdapter);
+      // check if the same adapter returned, if not - register the new in the super also 
+      if (contextualAdapter == componentAdapter) 
       {
         return componentAdapter;
       }
+      else
+      {
+        return super.registerComponent(contextualAdapter);
+      }
+    } else {
+      return super.registerComponent(componentAdapter);
     }
-    return super.registerComponent(componentAdapter);
   }
 
   /**

@@ -101,8 +101,7 @@ public interface TenantsContainerContext {
   /**
    * Register component adapter in the context. If this context component itself not yet started by
    * the container it will store given adapter for later new tenants and return <code>false</code>,
-   * otherwise will register it
-   * into current tenant container and return <code>true</code>. <br>
+   * otherwise will register it into current tenant container and return <code>true</code>. <br>
    * If <code>false</code> returned it means that given component should be registered in the
    * container itself also (for use by Default Tenant).<br>
    * Note that {@link #registerComponent(ComponentAdapter)} method doesn't check if the given
@@ -113,12 +112,12 @@ public interface TenantsContainerContext {
    * thrown.
    * 
    * @param component {@link ComponentAdapter}
-   * @return boolean flag, <code>true</code> indicates that component was successfully registered,
+   * @return {@link ComponentAdapter}, Not <code>null</code> indicates that component was successfully registered,
    *         <code>false</code> tells that component also should be registered in the container.
    * @throws TenantComponentRegistrationException if tenant services not ready or Current Tenant
    *           cannot be defined (not set properly in most cases).
    */
-  boolean registerComponent(ComponentAdapter component) throws TenantComponentRegistrationException;
+  ComponentAdapter registerComponent(ComponentAdapter component) throws TenantComponentRegistrationException;
 
   /**
    * Unregister component by key from the context. If this context component itself not yet started

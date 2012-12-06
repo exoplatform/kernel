@@ -106,14 +106,14 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
   }
 
   @Override
-  public boolean registerComponent(ComponentAdapter component) throws TenantComponentRegistrationException 
+  public ComponentAdapter registerComponent(ComponentAdapter component) throws TenantComponentRegistrationException 
   {
     if (!TenantsContainerContext.class.equals(component.getComponentKey())) {
       lastRegisteredKey = component.getComponentKey();
       registeredKeys.add(component.getComponentKey());
-      return true;
+      return component;
     }
-    return false;
+    return new MX4JComponentAdapter(component.getComponentKey(), component.getComponentImplementation()); // dummy stuff to return not null
   }
 
   @Override
