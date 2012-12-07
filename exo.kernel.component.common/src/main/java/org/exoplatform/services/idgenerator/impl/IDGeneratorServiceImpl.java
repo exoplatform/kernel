@@ -25,6 +25,7 @@ import org.exoplatform.services.log.Log;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
@@ -37,10 +38,33 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
     * The logger
     */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.IDGeneratorServiceImpl");
-   
-   private static String hexServerIP_ = null;
 
-   private static final SecureRandom seeder_ = new SecureRandom();
+   private static String hexServerIP_;
+   static
+   {
+      InetAddress localInetAddress = null;
+      try
+      {
+         // get the inet address
+         localInetAddress = InetAddress.getLocalHost();
+         byte serverIP[] = localInetAddress.getAddress();
+         hexServerIP_ = hexFormat(getInt(serverIP), 8);
+      }
+      catch (java.net.UnknownHostException uhe)
+      {
+         LOG.fatal(uhe.getLocalizedMessage(), uhe);
+      }
+   }
+
+   private static final Random seeder_ = new SecureRandom();
+
+   public IDGeneratorServiceImpl()
+   {
+      if (hexServerIP_ == null)
+      {
+         throw new IllegalStateException("The local inet address could not be found");
+      }
+   }
 
    public Serializable generateID(Object o)
    {
@@ -61,39 +85,17 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
 
    public String generateStringID(Object o)
    {
-      StringBuffer tmpBuffer = new StringBuffer(16);
-      if (hexServerIP_ == null)
-      {
-         InetAddress localInetAddress = null;
-         try
-         {
-            // get the inet address
-            localInetAddress = InetAddress.getLocalHost();
-         }
-         catch (java.net.UnknownHostException uhe)
-         {
-            // System .err.println(
-            // "ContentSetUtil: Could not get the local IP address using InetAddress.getLocalHost()!"
-            // );
-            // todo: find better way to get around this...
-            LOG.error(uhe.getLocalizedMessage(), uhe);
-            return null;
-         }
-         byte serverIP[] = localInetAddress.getAddress();
-         hexServerIP_ = hexFormat(getInt(serverIP), 8);
-      }
-      String hashcode = hexFormat(System.identityHashCode(o), 8);
-      tmpBuffer.append(hexServerIP_);
-      tmpBuffer.append(hashcode);
+      return generateStringID(o, System.currentTimeMillis(), hexServerIP_, seeder_.nextInt());
+   }
 
-      long timeNow = System.currentTimeMillis();
+   protected String generateStringID(Object o, long timeNow, String hexServerIP, int node)
+   {
+      StringBuilder guid = new StringBuilder(32);
       int timeLow = (int)timeNow & 0xFFFFFFFF;
-      int node = seeder_.nextInt();
-
-      StringBuffer guid = new StringBuffer(32);
-      guid.append(hexFormat(timeLow, 8));
-      guid.append(tmpBuffer.toString());
-      guid.append(hexFormat(node, 8));
+      addHexFormat(guid, timeLow, 8);
+      guid.append(hexServerIP);
+      addHexFormat(guid, System.identityHashCode(o), 8);
+      addHexFormat(guid, node, 8);
       return guid.toString();
    }
 
@@ -112,20 +114,27 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
 
    private static String hexFormat(int i, int j)
    {
-      String s = Integer.toHexString(i);
-      return padHex(s, j) + s;
+      StringBuilder buffer = new StringBuilder(j);
+      addHexFormat(buffer, i, j);
+      return buffer.toString();
    }
 
-   private static String padHex(String s, int i)
+   private static void addHexFormat(StringBuilder buffer, int i, int j)
    {
-      StringBuffer tmpBuffer = new StringBuffer();
-      if (s.length() < i)
+      String s = Integer.toHexString(i);
+      addPadHex(buffer, s, j);
+      buffer.append(s);
+   }
+
+   private static void addPadHex(StringBuilder buffer, String s, int i)
+   {
+      int length = s.length();
+      if (length < i)
       {
-         for (int j = 0; j < i - s.length(); j++)
+         for (int j = 0; j < i - length; j++)
          {
-            tmpBuffer.append('0');
+            buffer.append('0');
          }
       }
-      return tmpBuffer.toString();
    }
 }
