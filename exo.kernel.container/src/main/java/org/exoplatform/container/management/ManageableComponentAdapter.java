@@ -76,7 +76,8 @@ public class ManageableComponentAdapter implements ComponentAdapter
          if (container.managementContext != null)
          {
             // Registry the instance against the management context
-            LOG.debug("==> add " + instance + " to a mbean server");
+            if (LOG.isDebugEnabled())
+               LOG.debug("==> add " + instance + " to a mbean server");
             container.managementContext.register(instance);
 
             // Register if it is a management provider
