@@ -42,7 +42,6 @@
    <properties>
       <exo.product.name>exo-kernel</exo.product.name>
       <exo.product.specification>2.5</exo.product.specification>
-      <org.exoplatform.framework.junit.version>1.2.2-GA</org.exoplatform.framework.junit.version>
       <forkMode>always</forkMode>
    </properties>
 
