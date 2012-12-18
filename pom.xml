@@ -42,7 +42,6 @@
    <properties>
       <exo.product.name>exo-kernel</exo.product.name>
       <exo.product.specification>2.4</exo.product.specification>
-      <org.exoplatform.framework.junit.version>1.2.3-GA</org.exoplatform.framework.junit.version>
       <forkMode>always</forkMode>
    </properties>
 
@@ -63,16 +62,10 @@
       <module>exo.kernel.component.ext.cache.impl.infinispan.v5</module>
       <module>exo.kernel.component.command</module>
       <module>exo.kernel.mc-integration</module>
-      <module>packaging/module</module>
    </modules>
 
    <dependencyManagement>
       <dependencies>
-         <dependency>
-            <groupId>org.exoplatform.tool</groupId>
-            <artifactId>exo.tool.framework.junit</artifactId>
-            <version>${org.exoplatform.framework.junit.version}</version>
-         </dependency>
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
             <artifactId>exo.kernel.container</artifactId>
@@ -87,7 +80,6 @@
             <groupId>org.exoplatform.kernel</groupId>
             <artifactId>exo.kernel.commons.test</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
          </dependency>
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
@@ -103,11 +95,6 @@
             <groupId>xpp3</groupId>
             <artifactId>xpp3</artifactId>
             <version>1.1.4c</version>
-         </dependency>
-         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
          </dependency>
          <dependency>
             <groupId>commons-beanutils</groupId>
@@ -128,14 +115,17 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.6.1</version>
-            <scope>test</scope>
          </dependency>
          <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.6.1</version>
-            <scope>test</scope>
          </dependency>
+          <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.6.1</version>
+          </dependency>
          <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
@@ -145,12 +135,6 @@
             <groupId>eu.medsea.mimeutil</groupId>
             <artifactId>mime-util</artifactId>
             <version>2.1.3</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>org.slf4j</groupId>
-                  <artifactId>slf4j-log4j12</artifactId>
-               </exclusion>
-            </exclusions>            
          </dependency>
          <dependency>
             <groupId>org.quartz-scheduler</groupId>
@@ -173,11 +157,6 @@
             <version>1.5</version>
          </dependency>
          <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>jta</artifactId>
-            <version>1.1</version>
-         </dependency>
-         <dependency>
             <groupId>picocontainer</groupId>
             <artifactId>picocontainer</artifactId>
             <version>1.1</version>
@@ -186,7 +165,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
-            <scope>provided</scope>
          </dependency>
          <dependency>
             <groupId>org.jgroups</groupId>
@@ -197,12 +175,6 @@
             <groupId>org.jboss.cache</groupId>
             <artifactId>jbosscache-core</artifactId>
             <version>3.2.7.GA</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>jgroups</groupId>
-                  <artifactId>jgroups</artifactId>
-               </exclusion>
-            </exclusions>            
          </dependency>         
          <dependency>
             <groupId>org.infinispan</groupId>
@@ -243,22 +215,11 @@
             <groupId>org.subethamail</groupId>
             <artifactId>subethasmtp</artifactId>
             <version>3.1.7</version>
-            <scope>test</scope>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jbossxb</artifactId>
-            <version>2.0.3.GA</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-reflect</artifactId>
-            <version>2.0.2.GA</version>
          </dependency>
          <dependency>
             <groupId>org.gatein.wci</groupId>
             <artifactId>wci-wci</artifactId>
-            <version>2.3.0.CR03</version>
+            <version>2.3.0.Final</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

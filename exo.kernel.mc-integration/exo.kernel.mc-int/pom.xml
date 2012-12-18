@@ -38,27 +38,7 @@
    <dependencies>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>javax.servlet</groupId>
-         <artifactId>servlet-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>picocontainer</groupId>
-         <artifactId>picocontainer</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.microcontainer</groupId>
-         <artifactId>jboss-kernel</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.mc-int</groupId>
-         <artifactId>jboss-mc-int-common</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jboss.mc-int</groupId>
@@ -67,18 +47,6 @@
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.mc-kernel-extras</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss</groupId>
-         <artifactId>jbossxb</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.microcontainer</groupId>
-         <artifactId>jboss-dependency</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss</groupId>
-         <artifactId>jboss-reflect</artifactId>
       </dependency>
    </dependencies>
 </project>

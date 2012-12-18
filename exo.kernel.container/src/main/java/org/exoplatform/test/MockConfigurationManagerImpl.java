@@ -16,11 +16,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.configuration;
+package org.exoplatform.test;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 
 import java.net.URL;
 import java.security.PrivilegedAction;

@@ -40,7 +40,6 @@
       <!--version.parent>2.2.0-Beta05-SNAPSHOT</version.parent-->
       <version.jboss.mc>2.0.6.GA</version.jboss.mc>
       <version.jboss.mc-int>2.2.0.Alpha2</version.jboss.mc-int>
-      <version.jboss.classloader>2.0.7.GA</version.jboss.classloader>
 
    </properties>
    <modules>
@@ -52,11 +51,6 @@
 
    <dependencyManagement>
       <dependencies>
-        <dependency>
-           <groupId>org.exoplatform.kernel</groupId>
-           <artifactId>exo.kernel.commons</artifactId>
-           <version>${project.version}</version>
-        </dependency>
         <dependency>
            <groupId>org.exoplatform.kernel</groupId>
            <artifactId>exo.kernel.container</artifactId>
@@ -77,35 +71,15 @@
            <artifactId>exo.kernel.mc-kernel-extras</artifactId>
            <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.microcontainer</groupId>
-            <artifactId>jboss-dependency</artifactId>
-            <version>${version.jboss.mc}</version>
-         </dependency>
          <dependency>
             <groupId>org.jboss.microcontainer</groupId>
             <artifactId>jboss-kernel</artifactId>
             <version>${version.jboss.mc}</version>
          </dependency>
          <dependency>
-            <groupId>org.jboss.microcontainer</groupId>
-            <artifactId>jboss-aop-mc-int</artifactId>
-            <version>${version.jboss.mc}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.mc-int</groupId>
-            <artifactId>jboss-mc-int-common</artifactId>
-            <version>${version.jboss.mc-int}</version>
-         </dependency>
-         <dependency>
             <groupId>org.jboss.mc-int</groupId>
             <artifactId>jboss-mc-int-servlet</artifactId>
             <version>${version.jboss.mc-int}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.cl</groupId>
-            <artifactId>jboss-classloader</artifactId>
-            <version>${version.jboss.classloader}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
