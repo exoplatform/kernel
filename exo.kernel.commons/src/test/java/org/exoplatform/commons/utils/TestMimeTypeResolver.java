@@ -116,4 +116,21 @@ public class TestMimeTypeResolver extends TestCase
       // should be returned "dcr" as first occurred
       assertEquals("dcr", resolver.getExtension("application/x-director"));
    }
+
+   public void testGetMimeTypeFromExtensionInUpperCase()
+   {
+      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("FILE.UNKNOWN-FILE-EXTENSION"));
+      assertEquals(resolver.getDefaultMimeType(), resolver.getMimeType("FILE.PDF.UNKNOWN-FILE-EXTENSION"));
+      assertEquals("application/vnd.ms-outlook", resolver.getMimeType("MY.MSG"));
+      assertEquals("application/msword", resolver.getMimeType("MY.DOC"));
+      assertEquals("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+         resolver.getMimeType("MY.DOCX"));
+      assertEquals("application/xls", resolver.getMimeType("MY.XLS"));
+      assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", resolver.getMimeType("MY.XLSX"));
+      assertEquals("application/pdf", resolver.getMimeType("MY.PDF"));
+      assertEquals("image/jpeg", resolver.getMimeType("MY.JPG"));
+      assertEquals("application/vnd.oasis.opendocument.text", resolver.getMimeType("MY.ODT"));
+
+   }
+
 }
