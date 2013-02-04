@@ -182,7 +182,7 @@ public class ListenerService
          }
          catch (Exception e)
          {
-            LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e);
+            LOG.error("Exception on broadcasting events occurs: " + e.getMessage(), e);
          }
       }
    }
@@ -214,7 +214,7 @@ public class ListenerService
          }
          catch (Exception e)
          {
-            LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e);
+            LOG.error("Exception on broadcasting events occurs: " + e.getMessage(), e);
          }
       }
    }
@@ -305,7 +305,7 @@ public class ListenerService
          {
             // Do not throw exception. Event is asynchronous so just report error.
             // Must say that exception will be ignored even in synchronous events.
-            LOG.error("Exception on broadcasting events occures: " + e.getMessage(), e);
+            LOG.error("Exception on broadcasting events occurs: " + e.getMessage(), e);
          }
          finally
          {

@@ -27,7 +27,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>mc-integration-parent</artifactId>
-      <version>2.4.1-GA-SNAPSHOT</version>
+      <version>2.4.3-GA-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.mc-int-tests</artifactId>
@@ -44,35 +44,7 @@
       </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.container</artifactId> 
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons.test</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.mc-int-demo</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.microcontainer</groupId>
-         <artifactId>jboss-dependency</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>javax.servlet</groupId>
-         <artifactId>servlet-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>javax.transaction</groupId>
-         <artifactId>jta</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.microcontainer</groupId>
-         <artifactId>jboss-kernel</artifactId>
       </dependency>
    </dependencies>
 
