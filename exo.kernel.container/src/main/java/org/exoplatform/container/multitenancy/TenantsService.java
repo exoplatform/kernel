@@ -20,10 +20,10 @@ package org.exoplatform.container.multitenancy;
 
 /**
  * Provides convenient methods to get an information about Current Tenant and provides support for
- * multi-tenant capable services. This service used by {@link TenantsContainerContext}
- * implementation.
- * 
+ * multi-tenant capable services. <br>
+ * This service also sjould be used by {@link TenantsContainerContext} implementation.
  */
+@Deprecated
 public interface TenantsService {
 
   /**
@@ -32,14 +32,15 @@ public interface TenantsService {
    * @return {@link String} with name of Current Tenant.
    * @throws RepositoryException if Current Tenant not found or not set.
    */
+  @Deprecated
   String getCurrentTanantName() throws CurrentTenantNotSetException;
 
   /**
-   * Wrap given component instance into multi-tenant context. Doing this an user gets a guaranty
-   * that his component always will relate to the Current Tenant context (component will be taken
-   * from the tenant container).<br>
-   * Implementation of this method will get the component key(s) from given instance and late will
-   * use them in {@link Multitenant#get()} method.
+   * Wrap given component instance into multi-tenant context. Doing this an user gets a guaranty that his
+   * component always will relate to the Current Tenant context (component will be taken from the tenant
+   * container).<br>
+   * Implementation of this method will get the component key(s) from given instance and late will use them in
+   * {@link Multitenant#get()} method.
    * 
    * @param T component instance
    * @return {@link Multitenant} instance
@@ -47,11 +48,11 @@ public interface TenantsService {
   <T> Multitenant<T> asMultitenant(T componnet);
 
   /**
-   * Create a component wrapper using given class as a component key for use in multi-tenant
-   * context. Doing this an user gets a guaranty that his component always will relate to the
-   * Current Tenant context (component will be taken from the tenant container). <br>
-   * Implementation of this method will use given class as a key in the container and late will use
-   * it in {@link Multitenant#get()} method.
+   * Create a component wrapper using given class as a component key for use in multi-tenant context. Doing
+   * this an user gets a guaranty that his component always will relate to the Current Tenant context
+   * (component will be taken from the tenant container). <br>
+   * Implementation of this method will use given class as a key in the container and late will use it in
+   * {@link Multitenant#get()} method.
    * 
    * @param Class componentType
    * @return {@link Multitenant} instance

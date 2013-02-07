@@ -19,8 +19,7 @@
 package org.exoplatform.container.multitenancy;
 
 /**
- * Default implementation of Current Tenant lookup. It throws {@link CurrentTenantNotSetException}
- * always.
+ * Default implementation of Current Tenant lookup. It throws {@link CurrentTenantNotSetException} always.
  */
 public class DefaultCurrentTenantLookupImpl implements CurrentTenantLookup {
 
@@ -29,8 +28,9 @@ public class DefaultCurrentTenantLookupImpl implements CurrentTenantLookup {
    */
   @Override
   public Tenant getCurrentTenant() throws CurrentTenantNotSetException {
-    // XXX we could return something dummy (or predefined as default) here, but it is not required on Kernel level.
-    // For non-cloud mode, where JCR used as main CF storage, an another implementation can do this properly using Current Repository.
+    // XXX we could return something dummy (or predefined as default) here, but it is not required on Kernel
+    // level. For non-cloud mode, where JCR used as main CF storage, an another implementation can do this properly
+    // using Current Repository.
     throw new CurrentTenantNotSetException("Current Tenant not set.");
   }
 

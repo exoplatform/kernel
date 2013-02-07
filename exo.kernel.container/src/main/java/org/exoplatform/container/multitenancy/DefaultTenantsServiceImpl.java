@@ -36,6 +36,7 @@ import org.picocontainer.defaults.AmbiguousComponentResolutionException;
  * {@link CurrentTenantLookup} for discovery of Current Tenant.
  * 
  */
+@Deprecated
 public class DefaultTenantsServiceImpl implements TenantsService 
 {
 

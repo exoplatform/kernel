@@ -25,9 +25,9 @@ import java.util.List;
 
 /**
  * Context for {@link TenantsContainer}. Prescribes general contract between container and
- * multitenancy capable components registration. Container should use
- * {@link #accept(ComponentAdapter)} method during the registration to answer should be some
- * component registered in {@link TenantsContainer} or not. The same way method 
+ * multitenancy capable components registration/unregistration. Container should use
+ * {@link #accept(ComponentAdapter)} method during the registration to answer should a some
+ * component be registered in {@link TenantsContainer} or not. The same way method 
  * {@link #accept(Object)} should be used to choose from where to get a component in getters.<br>
  * Context implementation should apply own "container" for per-tenant managed components and use it
  * for {@link TenantsContainer} methods implementation.

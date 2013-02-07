@@ -23,6 +23,7 @@ package org.exoplatform.container.multitenancy;
  * a get method for getting a component from the tenant dependent context.
  * 
  */
+@Deprecated
 public interface Multitenant<T> {
   
   /**
@@ -30,6 +31,7 @@ public interface Multitenant<T> {
    * 
    * @return component instance regarding the Current Tenant
    */
+  @Deprecated
   T get();
   
 }
