@@ -18,33 +18,29 @@
  */
 package org.exoplatform.container.multitenancy;
 
-import org.exoplatform.container.TenantsContainer;
-import org.picocontainer.PicoRegistrationException;
-
 /**
- * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
- *
+ * Listener for Tenant state events in Multitenancy core.<br>
+ * This listener can be explicitly added to (and later removed from) {@link TenantsService} or its
+ * implementation can be registered in eXo container. In last case to remove the listener unregister
+ * it from the container.
+ * 
+ * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
+ * 
  */
-public class TenantComponentRegistrationException extends PicoRegistrationException 
-{
-
-  private static final long serialVersionUID = 9019837435985415794L;
+public interface TenantsStateListener {
 
   /**
-   * @param message
+   * Action on tenant stop (removal or suspend).
+   * 
+   * @param tenant {@link Tenant}
    */
-  public TenantComponentRegistrationException(String message) 
-  {
-    super(message);
-  }
+  void tenantStopped(Tenant tenant);
 
   /**
-   * @param message
-   * @param cause
+   * Action on tenant start (creation or resuming).
+   * 
+   * @param tenant {@link Tenant}
    */
-  public TenantComponentRegistrationException(String message, Throwable cause) 
-  {
-    super(message, cause);
-  }
+  void tenantStarted(Tenant tenant);
 
 }

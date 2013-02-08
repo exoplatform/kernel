@@ -21,7 +21,7 @@ package org.exoplatform.container;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exoplatform.container.multitenancy.TenantsContainerContext;
+import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
@@ -29,14 +29,16 @@ import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 
 /**
- * TenantsContainer's goal to separate generally used components from ones what should be instantiated,
+ * TenantsContainer separate generally used components from ones what should be instantiated,
  * started and stopped on per-tenant basis.<br>
  * It overrides component getters, {@link #registerComponent(ComponentAdapter)} and
- * {@link #unregisterComponent(Object)} methods to be able to get components taking in account Current Tenant
+ * {@link #unregisterComponent(Object)} methods to get components taking in account Current Tenant
  * context.<br>
- * The Current Tenant context it's an abstraction what will be set by actual cloud implementation (for
+ * The Current Tenant context it's an abstraction what will be set by actual Multitenancy implementation (for
  * versions currently in production it's based on JCR Current Repository, but this should be transparent for
- * Kernel level).
+ * Kernel level and implementation can be changed in future).
+ * 
+ * 
  */
 public class TenantsContainer extends CachingContainer {
 

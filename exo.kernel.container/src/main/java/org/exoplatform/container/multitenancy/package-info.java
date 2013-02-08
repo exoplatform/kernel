@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,22 +16,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.multitenancy;
-
 /**
- * Default implementation of Current Tenant lookup. It throws {@link CurrentTenantNotSetException} always.
+ * API for Multitenancy support in eXo apps.
+ * 
+ * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
+ *
  */
-public class DefaultCurrentTenantLookupImpl implements CurrentTenantLookup {
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Tenant getCurrentTenant() throws CurrentTenantNotSetException {
-    // XXX we could return something dummy (or predefined as default) here, but it is not required on Kernel
-    // level. For non-cloud mode, where JCR used as main CF storage, an another implementation can do this properly
-    // using Current Repository.
-    throw new CurrentTenantNotSetException("Current Tenant not set.");
-  }
-
-}
+package org.exoplatform.container.multitenancy;

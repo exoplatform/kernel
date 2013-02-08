@@ -24,7 +24,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.multitenancy.TenantsContainerContext;
+import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ComponentLifecyclePlugin;
 import org.exoplatform.container.xml.ContainerLifecyclePlugin;

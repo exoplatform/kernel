@@ -18,45 +18,38 @@
  */
 package org.exoplatform.container.multitenancy;
 
+
 /**
  * Provides convenient methods to get an information about Current Tenant and provides support for
  * multi-tenant capable services. <br>
- * This service also sjould be used by {@link TenantsContainerContext} implementation.
+ * 
+ * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
-@Deprecated
 public interface TenantsService {
 
   /**
-   * Return Current Tenant name or throws an exception if no current tenant was set.
+   * Return Current Tenant or throws an exception if no current tenant was set in current thread.
    * 
-   * @return {@link String} with name of Current Tenant.
-   * @throws RepositoryException if Current Tenant not found or not set.
+   * @return {@link Tenant} Current Tenant descriptor.
+   * @throws CurrentTenantNotSetException if Current Tenant not found or not set.
    */
-  @Deprecated
-  String getCurrentTanantName() throws CurrentTenantNotSetException;
+  Tenant getCurrentTanant() throws CurrentTenantNotSetException;
 
   /**
-   * Wrap given component instance into multi-tenant context. Doing this an user gets a guaranty that his
-   * component always will relate to the Current Tenant context (component will be taken from the tenant
-   * container).<br>
-   * Implementation of this method will get the component key(s) from given instance and late will use them in
-   * {@link Multitenant#get()} method.
+   * Add listener for Tenant events in Multitenancy sub-system.
+   * Added listener later can be removed by {@link #removeListener(TenantsStateListener)} method.
    * 
-   * @param T component instance
-   * @return {@link Multitenant} instance
+   * @param listener {@link TenantsStateListener}
    */
-  <T> Multitenant<T> asMultitenant(T componnet);
+  void addListener(TenantsStateListener listener);
 
   /**
-   * Create a component wrapper using given class as a component key for use in multi-tenant context. Doing
-   * this an user gets a guaranty that his component always will relate to the Current Tenant context
-   * (component will be taken from the tenant container). <br>
-   * Implementation of this method will use given class as a key in the container and late will use it in
-   * {@link Multitenant#get()} method.
+   * Remove Tenant events listener from Multitenancy sub-system. <br>
+   * Take in account that it's possible to remove only explicitly added listeners. Listeners
+   * available as components in eXo Container don't affected by this method.
    * 
-   * @param Class componentType
-   * @return {@link Multitenant} instance
+   * @param listener {@link TenantsStateListener}
    */
-  <T> Multitenant<T> asMultitenant(Class<T> componentType);
+  void removeListener(TenantsStateListener listener);
 
 }

@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.multitenancy;
+package org.exoplatform.container.multitenancy.bridge;
 
 import org.exoplatform.container.TenantsContainer;
 import org.picocontainer.ComponentAdapter;
@@ -31,6 +31,8 @@ import java.util.List;
  * {@link #accept(Object)} should be used to choose from where to get a component in getters.<br>
  * Context implementation should apply own "container" for per-tenant managed components and use it
  * for {@link TenantsContainer} methods implementation.
+ * 
+ * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
 public interface TenantsContainerContext {
 

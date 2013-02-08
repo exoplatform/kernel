@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,22 +16,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.multitenancy;
-
 /**
- * Provides contextual object holder for multi-tenant capable components. This holder provides
- * a get method for getting a component from the tenant dependent context.
+ * A bridge abstractions between CF Kernel and eXo Cloud (Cloud Management). <br>
+ * These classes for internal use and should not be used in other apps of eXo or based on eXo APIes.  
  * 
+ * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
+ *
  */
-@Deprecated
-public interface Multitenant<T> {
-  
-  /**
-   * Return component regarding the Current Tenant.
-   * 
-   * @return component instance regarding the Current Tenant
-   */
-  @Deprecated
-  T get();
-  
-}
+package org.exoplatform.container.multitenancy.bridge;

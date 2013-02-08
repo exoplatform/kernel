@@ -16,21 +16,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.multitenancy;
+package org.exoplatform.container.multitenancy.bridge;
+
+import org.exoplatform.container.TenantsContainer;
+import org.picocontainer.PicoRegistrationException;
 
 /**
- * A lookup mechanism to find a Current Tenant. This mechanism provides isolation between the
- * Container and an actual Multitenancy implementation. <br>
- * Implementations of this interface can provide different algorithms for an actual lookup.
+ * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
+ *
+ * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
-public interface CurrentTenantLookup {
+public class TenantComponentRegistrationException extends PicoRegistrationException 
+{
+
+  private static final long serialVersionUID = 9019837435985415794L;
 
   /**
-   * Return Current Tenant descriptor.
-   * 
-   * @throws CurrentTenantNotSetException if current tenant not set.
-   * @return {@link Tenant}
+   * @param message
    */
-  Tenant getCurrentTenant() throws CurrentTenantNotSetException;
+  public TenantComponentRegistrationException(String message) 
+  {
+    super(message);
+  }
+
+  /**
+   * @param message
+   * @param cause
+   */
+  public TenantComponentRegistrationException(String message, Throwable cause) 
+  {
+    super(message, cause);
+  }
 
 }

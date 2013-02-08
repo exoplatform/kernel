@@ -16,29 +16,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.multitenancy;
+package org.exoplatform.container.multitenancy.bridge;
+
+import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
+import org.exoplatform.container.multitenancy.Tenant;
 
 /**
- * Exception indicating that Current Tenant not set in runtime context.
+ * A lookup mechanism to find a Current Tenant. This mechanism provides isolation between the
+ * Container and an actual implementation of Multitenancy. <br>
+ * Implementations of this interface can provide different algorithms for an actual lookup.
  * 
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
- * 
  */
-public class CurrentTenantNotSetException extends Exception {
-  private static final long serialVersionUID = 7930133026313794289L;
+public interface CurrentTenantLookup {
 
   /**
-   * @param message
-   * @param cause
+   * Return Current Tenant descriptor.
+   * 
+   * @throws CurrentTenantNotSetException if current tenant not set.
+   * @return {@link Tenant}
    */
-  public CurrentTenantNotSetException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
+  Tenant getCurrentTenant() throws CurrentTenantNotSetException;
+  
+  
   /**
-   * @param message
+   * Answers if this lookup has Current Tenant set in current thread. 
+   * 
+   * @return boolean, {@code true} if current tenant set, {@code false} otherwise.
    */
-  public CurrentTenantNotSetException(String message) {
-    super(message);
-  }
+  boolean hasCurrentTenant();
+
 }
