@@ -19,6 +19,8 @@
 package org.exoplatform.services.scheduler.impl;
 
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
+import org.exoplatform.container.multitenancy.TenantsService;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -56,7 +58,6 @@ import org.quartz.TriggerListener;
 import org.quartz.impl.matchers.EverythingMatcher;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.matchers.KeyMatcher;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -83,11 +84,14 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final QueueTasks qtasks_;
 
-   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks)
+   private final TenantsService tService;
+
+   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks, TenantsService tService, TenantsService tService1)
    {
-      scheduler_ = quartzSchduler.getQuartzSheduler();
+     scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
+      this.tService = tService;
    }
 
    /**
@@ -101,6 +105,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
+      tService = null;
    }
 
    public void queueTask(Task task)
@@ -591,13 +596,22 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       return scheduler_.getJobDetail(JobKey.jobKey(innerJobInfo.getJobName(), innerJobInfo.getGroupName()));
    }
 
-   private String getGroupName(String initialGroupName)
-   {
-      String gname;
-      if (initialGroupName == null || (initialGroupName = initialGroupName.trim()).isEmpty())
-         gname = containerName_;
-      else
-         gname = containerName_ + ":" + initialGroupName;
-      return gname;
-   }
+   private String getGroupName(String initialGroupName) {
+     StringBuilder gname = new StringBuilder();
+     gname.append(containerName_);
+
+     if (tService != null)
+      try {
+        gname.append(":");
+        gname.append(tService.getCurrentTanant().getName());
+      } catch (CurrentTenantNotSetException e) {
+        LOG.warn("Cannot append current tenant name: current tenant not set in TenantsService.");
+      }
+
+     if (initialGroupName != null && !(initialGroupName = initialGroupName.trim()).isEmpty()) {
+       gname.append(":");
+       gname.append(initialGroupName);
+     }
+     return gname.toString();
+  }
 }
