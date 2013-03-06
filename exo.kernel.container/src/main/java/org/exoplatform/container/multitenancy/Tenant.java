@@ -23,19 +23,20 @@ package org.exoplatform.container.multitenancy;
  * 
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
-public interface Tenant {
+public interface Tenant
+{
 
-  /**
-   * Tenant name.
-   * 
-   * @return {@link String}
-   */
-  String getName();
+   /**
+    * Tenant name.
+    * 
+    * @return {@link String}
+    */
+   String getName();
 
-  /**
-   * Master host name.
-   * 
-   * @return {@link String}
-   */
-  String getMasterhost();
+   /**
+    * Master host name.
+    * 
+    * @return {@link String}
+    */
+   String getMasterhost();
 }

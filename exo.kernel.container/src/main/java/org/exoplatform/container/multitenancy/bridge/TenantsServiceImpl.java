@@ -18,9 +18,6 @@
  */
 package org.exoplatform.container.multitenancy.bridge;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
 import org.exoplatform.container.multitenancy.Tenant;
@@ -29,8 +26,11 @@ import org.exoplatform.container.multitenancy.TenantsStateListener;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * TenantsService implementation based on plugins. Following kinds of plugin supported: <ul>
+ * Implementation of {@link TenantsService} based on plugins. Following kinds of plugin supported: <ul>
  * <li>
  * CurrentTenantLookup
  * </li>
@@ -42,70 +42,106 @@ import org.exoplatform.services.log.Log;
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  * 
  */
-public class TenantsServiceImpl implements TenantsService {
+public class TenantsServiceImpl implements TenantsService
+{
 
-  protected static final Log                LOG       = ExoLogger.getLogger(TenantsServiceImpl.class);
+   protected static final Log LOG = ExoLogger.getLogger(TenantsServiceImpl.class);
 
-  /**
-   * List of registered {@link CurrentTenantLookup} implementations.
-   */
-  protected final List<CurrentTenantLookup> lookups   = new ArrayList<CurrentTenantLookup>();
+   /**
+    * List of registered {@link CurrentTenantLookup} implementations.
+    */
+   protected final List<CurrentTenantLookup> lookups = new ArrayList<CurrentTenantLookup>();
 
-  /**
-   * List of registered {@link TenantStateObserver} implementations.
-   */
-  protected final List<TenantStateObserver> observers = new ArrayList<TenantStateObserver>();
+   /**
+    * List of registered {@link TenantStateObserver} implementations.
+    */
+   protected final List<TenantStateObserver> observers = new ArrayList<TenantStateObserver>();
 
-  /**
-   * Constructor without dependencies.
-   */
-  public TenantsServiceImpl() {
-  }
+   /**
+    * Constructor without dependencies.
+    */
+   public TenantsServiceImpl()
+   {
+   }
 
-  public void addPlugin(ComponentPlugin plugin) {
-    if (plugin instanceof CurrentTenantLookup) {
-      lookups.add((CurrentTenantLookup) plugin);
-      LOG.info("CurrentTenantLookup instance registered: " + plugin.toString());
-    } else if (plugin instanceof TenantStateObserver) {
-      observers.add((TenantStateObserver) plugin);
-      LOG.info("TenantStateObserver instance registered: " + plugin.toString());
-    } else {
-      LOG.warn("Not supported component plugin: " + plugin.getName() + ", type " + plugin.getClass());
-    }
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void addListener(TenantsStateListener listener) {
-    for (TenantStateObserver o : observers) {
-      o.addListener(listener);
-    }
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void removeListener(TenantsStateListener listener) {
-    for (TenantStateObserver o : observers) {
-      o.removeListener(listener);
-    }
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Tenant getCurrentTanant() throws CurrentTenantNotSetException {
-    for (CurrentTenantLookup l : lookups) {
-      if (l.hasCurrentTenant()) {
-        return l.getCurrentTenant();
+   /**
+    * Register component plugin. Used by container during the service instantiation. Not recommended for use in runtime.
+    * 
+    * @param plugin {@link ComponentPlugin}
+    */
+   public void addPlugin(ComponentPlugin plugin)
+   {
+      if (plugin instanceof CurrentTenantLookup)
+      {
+         lookups.add((CurrentTenantLookup)plugin);
+         LOG.info("CurrentTenantLookup instance registered: " + plugin.toString());
       }
-    }
+      else if (plugin instanceof TenantStateObserver)
+      {
+         observers.add((TenantStateObserver)plugin);
+         LOG.info("TenantStateObserver instance registered: " + plugin.toString());
+      }
+      else
+      {
+         LOG.warn("Not supported component plugin: " + plugin.getName() + ", type " + plugin.getClass());
+      }
+   }
 
-    throw new CurrentTenantNotSetException("Current Tenant not set.");
-  }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void addListener(TenantsStateListener listener)
+   {
+      for (TenantStateObserver o : observers)
+      {
+         o.addListener(listener);
+      }
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void removeListener(TenantsStateListener listener)
+   {
+      for (TenantStateObserver o : observers)
+      {
+         o.removeListener(listener);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Tenant getCurrentTanant() throws CurrentTenantNotSetException
+   {
+      for (CurrentTenantLookup l : lookups)
+      {
+         if (l.hasCurrentTenant())
+         {
+            return l.getCurrentTenant();
+         }
+      }
+
+      throw new CurrentTenantNotSetException("Current Tenant not set.");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean hasCurrentTanant()
+   {
+      for (CurrentTenantLookup l : lookups)
+      {
+         if (l.hasCurrentTenant())
+         {
+            return true;
+         }
+      }
+
+      return false;
+   }
 }

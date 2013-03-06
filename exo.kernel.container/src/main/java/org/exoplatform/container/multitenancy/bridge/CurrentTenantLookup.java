@@ -24,26 +24,34 @@ import org.exoplatform.container.multitenancy.Tenant;
 /**
  * A lookup mechanism to find a Current Tenant. This mechanism provides isolation between the
  * Container and an actual implementation of Multitenancy. <br>
- * Implementations of this interface can provide different algorithms for an actual lookup.
+ * Implementations of this interface can provide different algorithms for an actual lookup.<br>
  * 
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
-public interface CurrentTenantLookup {
+public interface CurrentTenantLookup
+{
 
-  /**
-   * Return Current Tenant descriptor.
-   * 
-   * @throws CurrentTenantNotSetException if current tenant not set.
-   * @return {@link Tenant}
-   */
-  Tenant getCurrentTenant() throws CurrentTenantNotSetException;
-  
-  
-  /**
-   * Answers if this lookup has Current Tenant set in current thread. 
-   * 
-   * @return boolean, {@code true} if current tenant set, {@code false} otherwise.
-   */
-  boolean hasCurrentTenant();
+   /**
+    * Return Current Tenant descriptor or throw {@link CurrentTenantNotSetException} if 
+    * Current Tenant not set in current thread.<br>
+    * Current Tenant can be not set in two cases:
+    * <ul>
+    * <li>Thread runs not in a context of multitenant request (e.g. web request). It can be a server startup or some custom thread.</li>
+    * <li>Multitenant request wasn't properly initialized on eXo Cloud level. This might have a place in case of internal errors of the cloud.</li>
+    * </ul>
+    * In both cases an application should not rely on multitenant environment in this thread.   
+    * 
+    * @throws CurrentTenantNotSetException if current tenant not set.
+    * @return {@link Tenant}
+    */
+   Tenant getCurrentTenant() throws CurrentTenantNotSetException;
+
+   /**
+    * Answers if Current Tenant is set in current thread. See {@link #getCurrentTenant()} for details.  
+    * 
+    * @see #getCurrentTenant()
+    * @return boolean, {@code true} if current tenant is set in current thread, {@code false} otherwise.
+    */
+   boolean hasCurrentTenant();
 
 }

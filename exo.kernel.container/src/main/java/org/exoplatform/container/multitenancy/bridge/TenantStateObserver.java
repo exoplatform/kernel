@@ -28,20 +28,21 @@ import org.exoplatform.container.multitenancy.TenantsStateListener;
  * @version $Id: TenantStateObserver.java 00000 Feb 8, 2013 pnedonosko $
  * 
  */
-public interface TenantStateObserver {
+public interface TenantStateObserver
+{
 
-  /**
-   * Add listener to Multitenancy core.
-   * 
-   * @param listener {@link TenantsStateListener}
-   */
-  void addListener(TenantsStateListener listener);
+   /**
+    * Add listener to Multitenancy core.
+    * 
+    * @param listener {@link TenantsStateListener}
+    */
+   void addListener(TenantsStateListener listener);
 
-  /**
-   * Remove listener from Multitenancy core.
-   * 
-   * @param listener {@link TenantsStateListener}
-   */
-  void removeListener(TenantsStateListener listener);
+   /**
+    * Remove listener from Multitenancy core.
+    * 
+    * @param listener {@link TenantsStateListener}
+    */
+   void removeListener(TenantsStateListener listener);
 
 }

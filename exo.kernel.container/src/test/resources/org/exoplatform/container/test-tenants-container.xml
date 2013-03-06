@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
 
-    Copyright (C) 2009 eXo Platform SAS.
+    Copyright (C) 2013 eXo Platform SAS.
 
     This is free software; you can redistribute it and/or modify it
     under the terms of the GNU Lesser General Public License as
@@ -25,8 +25,8 @@
     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd">
     
     <component>
-      <key>org.exoplatform.container.multitenancy.TenantsContainerContext</key>
-      <type>org.exoplatform.container.multitenancy.DummyTenantsContainerContext</type>
+      <key>org.exoplatform.container.multitenancy.bridge.TenantsContainerContext</key>
+      <type>org.exoplatform.container.multitenancy.bridge.DummyTenantsContainerContext</type>
     </component>
 
 </configuration>
