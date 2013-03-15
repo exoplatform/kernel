@@ -25,6 +25,7 @@ import org.exoplatform.container.multitenancy.TenantsService;
 import org.exoplatform.container.multitenancy.TenantsStateListener;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ import java.util.List;
  * TenantStateObserver
  * </li>
  * </ul>
+ * 
+ * NOTE: TenantsServiceImpl can be consumed before the container start (e.g. to add a listener or check current tenant). 
  * 
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  * 

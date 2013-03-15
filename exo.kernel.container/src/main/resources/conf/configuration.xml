@@ -26,6 +26,12 @@
       <type>org.exoplatform.container.monitor.jvm.AddJVMComponentsToRootContainer</type>
    </container-lifecycle-plugin>
 
+   <!-- Multitenancy support. Should be available even for non-cloud environment to let apps work transparently -->
+   <component>
+      <key>org.exoplatform.container.multitenancy.TenantsService</key>
+      <type>org.exoplatform.container.multitenancy.bridge.TenantsServiceImpl</type>
+   </component>
+
    <component>
       <key>org.exoplatform.container.monitor.jvm.OperatingSystemInfo</key>
       <jmx-name>info:type=OperatingSystemInfo</jmx-name>

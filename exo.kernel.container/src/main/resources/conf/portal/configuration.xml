@@ -22,12 +22,6 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
-   <!-- Multitenancy support. Should be available even for non-cloud environment to let apps work transparently -->
-   <component>
-      <key>org.exoplatform.container.multitenancy.TenantsService</key>
-      <type>org.exoplatform.container.multitenancy.bridge.TenantsServiceImpl</type>
-   </component>
-
    <!--
    <component>
       <key>org.exoplatform.container.monitor.PortalMonitor</key>

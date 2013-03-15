@@ -23,6 +23,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.management.ManageableContainer;
+import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
@@ -60,14 +61,14 @@ public class ExoContainer extends ManageableContainer
     * The current list of profiles
     */
    private static volatile String PROFILES;
-   
+
    /**
     * The current set of profiles
     */
    private static Set<String> SET_PROFILES = Collections.unmodifiableSet(new HashSet<String>());
-   
+
    protected final AtomicBoolean stopping = new AtomicBoolean();
-  
+
    /**
     * Returns an unmodifiable set of profiles defined by the value returned by invoking
     * {@link PropertyManager#getProperty(String)} with the {@link org.exoplatform.commons.utils.PropertyManager#RUNTIME_PROFILES}
@@ -88,11 +89,11 @@ public class ExoContainer extends ManageableContainer
                PROFILES = profiles;
             }
          }
-      }      
- 
+      }
+
       return SET_PROFILES;
    }
-   
+
    /**
     * Indicates whether or not a given profile exists
     * @param profileName the name of the profile to check
@@ -102,7 +103,7 @@ public class ExoContainer extends ManageableContainer
    {
       return getProfiles().contains(profileName);
    }
-   
+
    /**
     * Convert the list of profiles into a Set of String
     */
@@ -120,9 +121,9 @@ public class ExoContainer extends ManageableContainer
       }
 
       //
-      return Collections.unmodifiableSet(profiles);      
+      return Collections.unmodifiableSet(profiles);
    }
-   
+
    protected static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
 
    private Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =
@@ -145,7 +146,7 @@ public class ExoContainer extends ManageableContainer
             return null;
          }
       });
-      
+
       this.parent = null;
    }
 
@@ -182,21 +183,21 @@ public class ExoContainer extends ManageableContainer
    protected ExoContainer(PicoContainer parent, boolean initContext)
    {
       super(parent);
-      if (initContext) 
+      if (initContext)
       {
-        context = new ExoContainerContext(this, this.getClass().getSimpleName());
-        SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-        {
-           public Void run()
-           {
-              registerComponentInstance(context);
-              return null;
-           }
-        });
+         context = new ExoContainerContext(this, this.getClass().getSimpleName());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               registerComponentInstance(context);
+               return null;
+            }
+         });
       }
       this.parent = parent;
    }
-   
+
    public ExoContainerContext getContext()
    {
       return context;
@@ -214,23 +215,26 @@ public class ExoContainer extends ManageableContainer
       }
       return name;
    }
-   
+
    /**
     * Explicit calls are not allowed anymore
     */
    @Deprecated
    public void initContainer() throws Exception
-   {      
+   {
    }
-      
+
    private void initContainerInternal()
    {
-      ConfigurationManager manager = (ConfigurationManager) getComponentInstanceOfType(ConfigurationManager.class);
+      ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
+      
+      // Initialize tenants context from configuration
       tenantsContainerContext = ContainerUtil.createTenantsContext(this, manager);
       if (tenantsContainerContext != null)
       {
-         registerComponentInstance(tenantsContainerContext);
+         registerComponentInstance(TenantsContainerContext.class, tenantsContainerContext);
       }
+      
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);
@@ -253,11 +257,11 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeDisposed())
       {
          destroyContainerInternal();
-         super.dispose();         
+         super.dispose();
       }
    }
 
@@ -270,7 +274,7 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (init)
       {
          // Initialize the container first
@@ -278,18 +282,18 @@ public class ExoContainer extends ManageableContainer
       }
       start();
    }
-   
+
    @Override
    public synchronized void start()
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStarted())
       {
          super.start();
-         startContainerInternal();         
+         startContainerInternal();
       }
    }
 
@@ -299,23 +303,23 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStopped())
       {
          stopping.set(true);
          stopContainerInternal();
-         super.stop();         
+         super.stop();
       }
    }
 
    /**
     * Explicit calls are not allowed anymore
     */
-   @Deprecated 
+   @Deprecated
    public void startContainer() throws Exception
-   {      
+   {
    }
-   
+
    private void startContainerInternal()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
@@ -334,9 +338,9 @@ public class ExoContainer extends ManageableContainer
    /**
     * Explicit calls are not allowed anymore
     */
-   @Deprecated 
+   @Deprecated
    public void stopContainer() throws Exception
-   {      
+   {
    }
 
    private void stopContainerInternal()
@@ -357,9 +361,9 @@ public class ExoContainer extends ManageableContainer
    /**
     * Explicit calls are not allowed anymore
     */
-   @Deprecated 
+   @Deprecated
    public void destroyContainer() throws Exception
-   {      
+   {
    }
 
    private void destroyContainerInternal()
@@ -382,7 +386,7 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       List<String> list = plugin.getManageableComponents();
       for (String component : list)
          componentLifecylePlugin_.put(component, plugin);
@@ -393,7 +397,7 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       containerLifecyclePlugin_.add(plugin);
    }
 
@@ -444,7 +448,7 @@ public class ExoContainer extends ManageableContainer
       }
       throw new Exception("Cannot find a satisfying constructor for " + clazz + " with parameter " + unknownParameter);
    }
-   
+
    /**
     * Gets the {@link ConfigurationManager} from the given {@link ExoContainer} if it exists, 
     * then returns the nested {@link Configuration} otherwise it returns <code>null</code>
