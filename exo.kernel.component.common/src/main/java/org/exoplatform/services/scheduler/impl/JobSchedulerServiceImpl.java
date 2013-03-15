@@ -86,7 +86,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final TenantsService tService;
 
-   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks, TenantsService tService, TenantsService tService1)
+   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks, TenantsService tService)
    {
      scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
