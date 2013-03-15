@@ -24,21 +24,24 @@ package org.exoplatform.container.multitenancy;
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  * 
  */
-public class CurrentTenantNotSetException extends Exception {
-  private static final long serialVersionUID = 7930133026313794289L;
+public class CurrentTenantNotSetException extends Exception
+{
+   private static final long serialVersionUID = 7930133026313794289L;
 
-  /**
-   * @param message
-   * @param cause
-   */
-  public CurrentTenantNotSetException(String message, Throwable cause) {
-    super(message, cause);
-  }
+   /**
+    * @param message
+    * @param cause
+    */
+   public CurrentTenantNotSetException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 
-  /**
-   * @param message
-   */
-  public CurrentTenantNotSetException(String message) {
-    super(message);
-  }
+   /**
+    * @param message
+    */
+   public CurrentTenantNotSetException(String message)
+   {
+      super(message);
+   }
 }

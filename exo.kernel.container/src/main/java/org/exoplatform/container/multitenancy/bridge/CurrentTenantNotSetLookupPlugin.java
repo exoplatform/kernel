@@ -24,26 +24,28 @@ import org.exoplatform.container.multitenancy.Tenant;
 
 /**
  * Default implementation of Current Tenant lookup. It has not Current Tenant set and throws
- * {@link CurrentTenantNotSetException} always.
+ * {@link CurrentTenantNotSetException} always. This implementation can be used with tests.
  * 
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
-final class CurrentTenantNotSetLookupPlugin extends BaseComponentPlugin implements CurrentTenantLookup {
+final class CurrentTenantNotSetLookupPlugin extends BaseComponentPlugin implements CurrentTenantLookup
+{
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Tenant getCurrentTenant() throws CurrentTenantNotSetException {
-    // XXX we could return something dummy (or predefined as default) here, but it is not required
-    // on Kernel level.
-    // It relies on {@code currentTenant} attribute set in {@code ConversationState}
-    throw new CurrentTenantNotSetException("Current Tenant not set.");
-  }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Tenant getCurrentTenant() throws CurrentTenantNotSetException
+   {
+      // XXX we could return something predefined here (like 'default'), but it is not required
+      // on Kernel level and will confuse developers in general case.  
+      throw new CurrentTenantNotSetException("Current Tenant not set.");
+   }
 
-  @Override
-  public boolean hasCurrentTenant() {
-    return false;
-  }
+   @Override
+   public boolean hasCurrentTenant()
+   {
+      return false;
+   }
 
 }

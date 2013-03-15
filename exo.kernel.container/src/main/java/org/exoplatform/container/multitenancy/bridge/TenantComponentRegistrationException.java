@@ -22,30 +22,30 @@ import org.exoplatform.container.TenantsContainer;
 import org.picocontainer.PicoRegistrationException;
 
 /**
- * Indicates that some component cannot be registered to a {@link TenantsContainer}. 
+ * Indicates that some component cannot be registered in a {@link TenantsContainer}. 
  *
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  */
-public class TenantComponentRegistrationException extends PicoRegistrationException 
+public class TenantComponentRegistrationException extends PicoRegistrationException
 {
 
-  private static final long serialVersionUID = 9019837435985415794L;
+   private static final long serialVersionUID = 9019837435985415794L;
 
-  /**
-   * @param message
-   */
-  public TenantComponentRegistrationException(String message) 
-  {
-    super(message);
-  }
+   /**
+    * @param message
+    */
+   public TenantComponentRegistrationException(String message)
+   {
+      super(message);
+   }
 
-  /**
-   * @param message
-   * @param cause
-   */
-  public TenantComponentRegistrationException(String message, Throwable cause) 
-  {
-    super(message, cause);
-  }
+   /**
+    * @param message
+    * @param cause
+    */
+   public TenantComponentRegistrationException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 
 }
