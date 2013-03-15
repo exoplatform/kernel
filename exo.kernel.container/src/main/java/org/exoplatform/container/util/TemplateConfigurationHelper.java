@@ -102,7 +102,7 @@ public class TemplateConfigurationHelper
       // parameters filtering
       Map<String, String> preparedParams = prepareParameters(parameters);
       // read stream
-      String configuration = readStream(inputStream);
+      String configuration = Utils.readStream(inputStream);
       for (Entry<String, String> entry : preparedParams.entrySet())
       {
          configuration = configuration.replace(entry.getKey(), entry.getValue());
@@ -238,23 +238,5 @@ public class TemplateConfigurationHelper
          }
       }
       return map;
-   }
-
-   /**
-    * Reads bytes from input stream and builds a string from them
-    * 
-    * @param inputStream
-    * @return
-    * @throws IOException
-    */
-   protected String readStream(InputStream inputStream) throws IOException
-   {
-      StringBuffer out = new StringBuffer();
-      byte[] b = new byte[4096];
-      for (int n; (n = inputStream.read(b)) != -1;)
-      {
-         out.append(new String(b, 0, n));
-      }
-      return out.toString();
    }
 }

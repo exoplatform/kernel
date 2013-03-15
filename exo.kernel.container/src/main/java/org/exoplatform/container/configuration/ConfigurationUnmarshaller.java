@@ -20,6 +20,7 @@ package org.exoplatform.container.configuration;
 
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.util.Utils;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.log.ExoLogger;
@@ -35,7 +36,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -165,7 +165,7 @@ public class ConfigurationUnmarshaller
                Reporter reporter = new Reporter(url);
                builder.setErrorHandler(reporter);
                builder.setEntityResolver(Namespaces.resolver);
-               String content = Deserializer.resolveVariables(readStream(url.openStream()));
+               String content = Deserializer.resolveVariables(Utils.readStream(url.openStream()));
                InputSource is = new InputSource(new StringReader(content));
                builder.parse(is);
                return reporter.valid;
@@ -182,34 +182,6 @@ public class ConfigurationUnmarshaller
             }
          }
       });
-   }
-   
-   private String readStream(InputStream inputStream) throws IOException
-   {
-      try
-      {
-         StringBuilder out = new StringBuilder();
-         byte[] b = new byte[4096];
-         for (int n; (n = inputStream.read(b)) != -1;)
-         {
-            out.append(new String(b, 0, n));
-         }
-         return out.toString();
-      }
-      finally
-      {
-         try
-         {
-            inputStream.close();
-         }
-         catch (Exception e)
-         {
-            if (LOG.isTraceEnabled())
-            {
-               LOG.trace("An exception occurred: " + e.getMessage());
-            }
-         }
-      }
    }
    
    public Configuration unmarshall(final URL url) throws Exception
