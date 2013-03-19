@@ -65,8 +65,8 @@ import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS
- * Author : Hoa  Pham
- *          hoapham@exoplatform.com
+ * Author : Hoa Pham
+ * hoapham@exoplatform.com
  * Oct 5, 2005
  * 
  * @version $Id: JobSchedulerServiceImpl.java 34394 2009-07-23 09:23:31Z dkatayev $
@@ -84,14 +84,15 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final QueueTasks qtasks_;
 
-   private final TenantsService tService;
+   private final TenantsService tenantsService;
 
-   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks, TenantsService tService)
+   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks,
+      TenantsService tService)
    {
-     scheduler_ = quartzSchduler.getQuartzSheduler();
+      scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
-      this.tService = tService;
+      this.tenantsService = tService;
    }
 
    /**
@@ -105,7 +106,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
-      tService = null;
+      tenantsService = null;
    }
 
    public void queueTask(Task task)
@@ -596,22 +597,33 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       return scheduler_.getJobDetail(JobKey.jobKey(innerJobInfo.getJobName(), innerJobInfo.getGroupName()));
    }
 
-   private String getGroupName(String initialGroupName) {
-     StringBuilder gname = new StringBuilder();
-     gname.append(containerName_);
+   private String getGroupName(String initialGroupName)
+   {
+      StringBuilder gname = new StringBuilder();
+      gname.append(containerName_);
 
-     if (tService != null)
-      try {
-        gname.append(":");
-        gname.append(tService.getCurrentTanant().getName());
-      } catch (CurrentTenantNotSetException e) {
-        LOG.warn("Cannot append current tenant name: current tenant not set in TenantsService.");
+      if (tenantsService != null)
+      {
+         try
+         {
+            String tenantName = tenantsService.getCurrentTanant().getName();
+            gname.append(":");
+            gname.append(tenantName);
+         }
+         catch (CurrentTenantNotSetException e)
+         {
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("Cannot append current tenant name: " + e.getMessage());
+            }
+         }
       }
 
-     if (initialGroupName != null && !(initialGroupName = initialGroupName.trim()).isEmpty()) {
-       gname.append(":");
-       gname.append(initialGroupName);
-     }
-     return gname.toString();
-  }
+      if (initialGroupName != null && !(initialGroupName = initialGroupName.trim()).isEmpty())
+      {
+         gname.append(":");
+         gname.append(initialGroupName);
+      }
+      return gname.toString();
+   }
 }
