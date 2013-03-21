@@ -24,10 +24,12 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ComponentLifecyclePlugin;
 import org.exoplatform.container.xml.ContainerLifecyclePlugin;
 import org.exoplatform.container.xml.Deserializer;
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.defaults.ConstructorInjectionComponentAdapter;
@@ -35,6 +37,7 @@ import org.picocontainer.defaults.ConstructorInjectionComponentAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
@@ -221,6 +224,52 @@ public class ContainerUtil
          }
       }
    }
+
+   public static TenantsContainerContext createTenantsContext(ExoContainer container, ConfigurationManager conf)
+   {
+     try
+     {
+       Component component = conf.getComponent(TenantsContainerContext.class.getName());
+       if (component != null)
+       {
+         String key = component.getKey();
+         String type = component.getType();
+         InitParams params = component.getInitParams();
+         try {
+           Class<?> typeClass = ClassLoading.loadClass(type, ContainerUtil.class);
+           Constructor<TenantsContainerContext> constructor = (Constructor<TenantsContainerContext>)typeClass.getConstructor(ExoContainer.class, InitParams.class);
+           return constructor.newInstance(container, params);
+         }
+         catch (ClassNotFoundException e)
+         {
+           LOG.error("Cannot register the component with key '" + key + "' and type '" + type + "'", e);
+         } catch (InstantiationException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (IllegalAccessException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (SecurityException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (NoSuchMethodException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "' constructor with parameter '" + ExoContainer.class.getName() + "' not found", e);
+         } catch (IllegalArgumentException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         } catch (InvocationTargetException e) {
+           LOG.error("Cannot instantiate new instance of '" + type + "'", e);
+         }
+       }
+     }
+     catch(Exception e)
+     {
+       LOG.error("Error getting TenantContainerContext component", e);
+     }
+     finally 
+     {
+       // finally remove context from configurations
+       conf.getConfiguration().removeConfiguration(TenantsContainerContext.class.getName());
+     }
+     return null;
+   }
+
 
    /**
     * Loads the properties file corresponding to the given url

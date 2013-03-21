@@ -36,7 +36,6 @@ import org.picocontainer.defaults.DefaultPicoContainer;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
 import org.picocontainer.defaults.InstanceComponentAdapter;
 import org.picocontainer.defaults.VerifyingVisitor;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,7 +73,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    private final ConcurrentMap<Object, ComponentAdapter> componentKeyToAdapterCache =
       new ConcurrentHashMap<Object, ComponentAdapter>();
 
-   private final ComponentAdapterFactory componentAdapterFactory;
+   protected final ComponentAdapterFactory componentAdapterFactory;
 
    private final PicoContainer parent;
 
@@ -88,7 +87,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    private final AtomicBoolean disposed = new AtomicBoolean();
 
    private final Set<PicoContainer> children = new CopyOnWriteArraySet<PicoContainer>();
-   
+
    /**
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
@@ -228,8 +227,8 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);     
-      
+         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);
+
       Object componentKey = componentAdapter.getComponentKey();
 
       if (componentKeyToAdapterCache.putIfAbsent(componentKey, componentAdapter) != null)
@@ -244,8 +243,8 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);     
-      
+         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);
+
       ComponentAdapter adapter = componentKeyToAdapterCache.remove(componentKey);
       componentAdapters.remove(adapter);
       orderedComponentAdapters.remove(adapter);
@@ -400,11 +399,11 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    }
 
    /**
-    * If no {@link ComponentAdapter} can be found it returns <tt>null</tt> otherwise
-    * it first try to get it from the dependency resolution context if it still cannot
-    * be found we get the instance from the {@link ComponentAdapter}.
-    * @see org.picocontainer.PicoContainer#getComponentInstanceOfType(java.lang.Class)
-    */
+     * If no {@link ComponentAdapter} can be found it returns <tt>null</tt> otherwise
+     * it first try to get it from the dependency resolution context if it still cannot
+     * be found we get the instance from the {@link ComponentAdapter}.
+     * @see org.picocontainer.PicoContainer#getComponentInstanceOfType(java.lang.Class)
+     */
    public Object getComponentInstanceOfType(Class componentType)
    {
       final ComponentAdapter componentAdapter = getComponentAdapterOfType(componentType);
@@ -421,7 +420,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       }
       return getInstance(componentAdapter);
    }
-   
+
    /**
     * Add the component corresponding to the given key, to the dependency resolution
     * context
@@ -438,7 +437,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
       }
       map.put(key, component);
    }
-   
+
    /**
     * Remove the component corresponding to the given key, from the dependency resolution
     * context
@@ -456,7 +455,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
          }
       }
    }
-   
+
    private Object getInstance(ComponentAdapter componentAdapter)
    {
       // check wether this is our adapter
@@ -539,7 +538,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    {
       return !disposed.get();
    }
-   
+
    /**
     * Start the components of this PicoContainer and all its logical child containers.
     * Any component implementing the lifecycle interface {@link org.picocontainer.Startable} will be started.
@@ -596,8 +595,8 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
-      
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+
       return children.add(child);
    }
 
@@ -605,7 +604,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
 
       return children.remove(child);
    }
