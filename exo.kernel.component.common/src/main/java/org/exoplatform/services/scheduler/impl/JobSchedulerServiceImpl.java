@@ -19,8 +19,6 @@
 package org.exoplatform.services.scheduler.impl;
 
 import org.exoplatform.container.component.ComponentPlugin;
-import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
-import org.exoplatform.container.multitenancy.TenantsService;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -58,6 +56,7 @@ import org.quartz.TriggerListener;
 import org.quartz.impl.matchers.EverythingMatcher;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.matchers.KeyMatcher;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -65,8 +64,8 @@ import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS
- * Author : Hoa Pham
- * hoapham@exoplatform.com
+ * Author : Hoa  Pham
+ *          hoapham@exoplatform.com
  * Oct 5, 2005
  * 
  * @version $Id: JobSchedulerServiceImpl.java 34394 2009-07-23 09:23:31Z dkatayev $
@@ -84,15 +83,11 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final QueueTasks qtasks_;
 
-   private final TenantsService tenantsService;
-
-   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks,
-      TenantsService tService)
+   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks)
    {
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
-      this.tenantsService = tService;
    }
 
    /**
@@ -106,7 +101,6 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
-      tenantsService = null;
    }
 
    public void queueTask(Task task)
@@ -599,31 +593,11 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private String getGroupName(String initialGroupName)
    {
-      StringBuilder gname = new StringBuilder();
-      gname.append(containerName_);
-
-      if (tenantsService != null)
-      {
-         try
-         {
-            String tenantName = tenantsService.getCurrentTanant().getName();
-            gname.append(":");
-            gname.append(tenantName);
-         }
-         catch (CurrentTenantNotSetException e)
-         {
-            if (LOG.isDebugEnabled())
-            {
-               LOG.debug("Cannot append current tenant name: " + e.getMessage());
-            }
-         }
-      }
-
-      if (initialGroupName != null && !(initialGroupName = initialGroupName.trim()).isEmpty())
-      {
-         gname.append(":");
-         gname.append(initialGroupName);
-      }
-      return gname.toString();
+      String gname;
+      if (initialGroupName == null || (initialGroupName = initialGroupName.trim()).isEmpty())
+         gname = containerName_;
+      else
+         gname = containerName_ + ":" + initialGroupName;
+      return gname;
    }
 }

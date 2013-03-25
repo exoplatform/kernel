@@ -18,7 +18,7 @@
  */
 package org.exoplatform.container.management;
 
-import org.exoplatform.container.TenantsContainer;
+import org.exoplatform.container.CachingContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.management.ManagementContext;
@@ -53,7 +53,7 @@ import javax.management.ObjectName;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableContainer extends TenantsContainer
+public class ManageableContainer extends CachingContainer
 {
 
    /**
