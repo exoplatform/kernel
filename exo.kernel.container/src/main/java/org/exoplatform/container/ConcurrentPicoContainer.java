@@ -74,7 +74,7 @@ public class ConcurrentPicoContainer implements MutablePicoContainer, Serializab
    private final ConcurrentMap<Object, ComponentAdapter> componentKeyToAdapterCache =
       new ConcurrentHashMap<Object, ComponentAdapter>();
 
-   private final ComponentAdapterFactory componentAdapterFactory;
+   protected final ComponentAdapterFactory componentAdapterFactory;
 
    private final PicoContainer parent;
 
