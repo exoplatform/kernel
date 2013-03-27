@@ -45,7 +45,8 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
    public JVMRuntimeInfoImpl(InitParams params) throws Exception
    {
       mxbean_ = ManagementFactory.getRuntimeMXBean();
-
+      if (params != null)
+      {
       PropertiesParam param = params.getPropertiesParam("add.system.properties");
       if (param != null)
       {
@@ -56,6 +57,7 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
             Map.Entry entry = (Map.Entry)i.next();
             PrivilegedSystemHelper.setProperty((String)entry.getKey(), (String)entry.getValue());
          }
+      }
       }
    }
 
