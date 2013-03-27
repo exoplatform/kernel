@@ -45,18 +45,22 @@ public class JVMRuntimeInfoImpl implements JVMRuntimeInfo, Startable
    public JVMRuntimeInfoImpl(InitParams params) throws Exception
    {
       mxbean_ = ManagementFactory.getRuntimeMXBean();
-
-      PropertiesParam param = params.getPropertiesParam("add.system.properties");
-      if (param != null)
+      if (params != null)
       {
-         ExoProperties props = param.getProperties();
-         Iterator i = props.entrySet().iterator();
-         while (i.hasNext())
+         PropertiesParam param = params.getPropertiesParam("add.system.properties");
+
+         if (param != null)
          {
-            Map.Entry entry = (Map.Entry)i.next();
-            PrivilegedSystemHelper.setProperty((String)entry.getKey(), (String)entry.getValue());
+            ExoProperties props = param.getProperties();
+            Iterator i = props.entrySet().iterator();
+            while (i.hasNext())
+            {
+               Map.Entry entry = (Map.Entry)i.next();
+               PrivilegedSystemHelper.setProperty((String)entry.getKey(), (String)entry.getValue());
+            }
          }
       }
+
    }
 
    public String getName()
