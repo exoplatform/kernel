@@ -227,14 +227,14 @@ public class ExoContainer extends ManageableContainer
    private void initContainerInternal()
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
-      
+
       // Initialize tenants context from configuration
       tenantsContainerContext = ContainerUtil.createTenantsContext(this, manager);
       if (tenantsContainerContext != null)
       {
          registerComponentInstance(TenantsContainerContext.class, tenantsContainerContext);
       }
-      
+
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);

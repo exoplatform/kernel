@@ -85,7 +85,11 @@ public @interface Multitenant {
     *    {@code false} means to skip enhancement. 
     */
    boolean value() default true;
+<<<<<<< HEAD
    
+=======
+
+>>>>>>> feature/multitenancy
    /**
     * If will be set in an annotation of a class, then it will mean to enhance only explicitly 
     * annotated methods of the class. By default all methods will be enhanced to be multitenant capable.
