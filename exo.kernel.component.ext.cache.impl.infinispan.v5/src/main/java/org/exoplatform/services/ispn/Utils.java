@@ -21,8 +21,6 @@ package org.exoplatform.services.ispn;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.util.TemplateConfigurationHelper;
 import org.exoplatform.services.cache.ExoCacheInitException;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
@@ -38,11 +36,6 @@ import java.util.Properties;
  */
 public class Utils
 {
-
-   /**
-    * The logger
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.ext.cache.impl.infinispan.v5.Utils");//NOSONAR
 
    private Utils()
    {
@@ -75,7 +68,8 @@ public class Utils
       try
       {
          // Set the jgroups configuration as XML
-         properties.setProperty(JGroupsTransport.CONFIGURATION_XML, readStream(inputStream));
+         properties.setProperty(JGroupsTransport.CONFIGURATION_XML,
+            org.exoplatform.container.util.Utils.readStream(inputStream));
       }
       catch (IOException e)
       {
@@ -85,37 +79,5 @@ public class Utils
       properties.remove(JGroupsTransport.CONFIGURATION_FILE);
       configBuilder.transport().withProperties(properties);
       return true;
-   }
-
-   /**
-    * Reads bytes from input stream and builds a string from them
-    * 
-    * @param inputStream
-    * @return
-    * @throws IOException
-    */
-   private static String readStream(InputStream inputStream) throws IOException
-   {
-      StringBuilder out = new StringBuilder(4096);
-      byte[] b = new byte[4096];
-      try
-      {
-         for (int length; (length = inputStream.read(b)) != -1;)
-         {
-            out.append(new String(b, 0, length));
-         }
-      }
-      finally
-      {
-         try
-         {
-            inputStream.close();
-         }
-         catch (IOException e)
-         {
-            LOG.debug("Cannot close stream", e);
-         }
-      }
-      return out.toString();
    }
 }

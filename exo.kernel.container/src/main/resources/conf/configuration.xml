@@ -42,12 +42,6 @@
       <key>org.exoplatform.container.monitor.jvm.JVMRuntimeInfo</key>
       <jmx-name>info:type=JVMRuntimeInfo</jmx-name>
       <type>org.exoplatform.container.monitor.jvm.JVMRuntimeInfoImpl</type>
-      <init-params>
-         <properties-param>
-            <name>add.system.properties</name>
-            <property name="org.apache.lucene.maxClauseCount" value="3000" />
-         </properties-param>
-      </init-params>
    </component>
 
 	<component>

@@ -89,18 +89,7 @@ public class TestTemplateConfigurationHelper extends TestCase
       parameters.put("jbosscache-template-variable", "pretty good parameter");
 
       InputStream configStream = helper.fillTemplate(templateStream, parameters);
-      String config = readStream(configStream);
+      String config = Utils.readStream(configStream);
       assertTrue(expectedConfig.equals(config));
-   }
-
-   private String readStream(InputStream inputStream) throws IOException
-   {
-      StringBuffer out = new StringBuffer();
-      byte[] b = new byte[4096];
-      for (int n; (n = inputStream.read(b)) != -1;)
-      {
-         out.append(new String(b, 0, n));
-      }
-      return out.toString();
    }
 }
