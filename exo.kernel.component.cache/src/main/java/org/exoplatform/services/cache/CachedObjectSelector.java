@@ -23,11 +23,20 @@ import java.io.Serializable;
 /**
  * Created by The eXo Platform SAS Author : Thuannd nhudinhthuan@yahoo.com Apr
  * 4, 2006
+ * @LevelAPI Platform
  */
 public interface CachedObjectSelector<K extends Serializable, V>
 {
+   /**
+    * @param key the name of the cache entry
+    * @param ocinfo the cache info instance
+    * @return flag asserts whether key is managed by the Cache or not
+    */
    public boolean select(K key, ObjectCacheInfo<? extends V> ocinfo);
-
+   /**
+    * @param cache the exo cache
+    * @param ocinfo the cache info instance
+    */
    public void onSelect(ExoCache<? extends K, ? extends V> cache, K key, ObjectCacheInfo<? extends V> ocinfo)
       throws Exception;
 }

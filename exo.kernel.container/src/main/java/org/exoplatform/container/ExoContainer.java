@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Date: Jul 18, 2004 Time: 12:15:28 AM
+ * @LevelAPI Platform
  */
 public class ExoContainer extends ManageableContainer
 {

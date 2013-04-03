@@ -31,6 +31,7 @@ import java.util.Set;
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
  * @since Jan 11, 2005
  * @version $Id: ExoContainerContext.java 6677 2006-07-03 10:49:59Z geaz $
+ * @LevelAPI Platform
  */
 @SuppressWarnings("serial")
 public final class ExoContainerContext implements java.io.Serializable
@@ -115,12 +116,17 @@ public final class ExoContainerContext implements java.io.Serializable
       }
       return null;
    }
-   
+   /**
+    * @return returns the container name
+    */
    public String getName()
    {
       return name;
    }
-
+   /**
+    * sets the name of the container name
+    * @param name the container name
+    */
    public void setName(String name)
    {
       SecurityManager security = System.getSecurityManager();
@@ -128,14 +134,19 @@ public final class ExoContainerContext implements java.io.Serializable
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
       this.name = name;
    }
-
+   /**
+    * @return returns the root container
+    */
    public static ExoContainer getTopContainer()
    {
       if (topContainer == null)
          topContainer = RootContainer.getInstance();
       return topContainer;
    }
-
+   /**
+    * Sets the root container
+    * @param cont the root container to set
+    */
    static void setTopContainer(ExoContainer cont)
    {
       SecurityManager security = System.getSecurityManager();
@@ -153,7 +164,9 @@ public final class ExoContainerContext implements java.io.Serializable
       LOG.info("Set the top container in its context");
       topContainer = cont;
    }
-
+   /**
+    * @return returns the current container
+    */
    public static ExoContainer getCurrentContainer()
    {
       WeakReference<ExoContainer> ref = currentContainer.get();
@@ -162,7 +175,9 @@ public final class ExoContainerContext implements java.io.Serializable
          container = getTopContainer();
       return container;
    }
-
+   /**
+    * @return returns the current container if present else return the topContainer
+    */
    public static ExoContainer getCurrentContainerIfPresent()
    {
       WeakReference<ExoContainer> ref = currentContainer.get();
@@ -171,7 +186,9 @@ public final class ExoContainerContext implements java.io.Serializable
          return topContainer;
       return container;
    }
-
+   /**
+    * @param instance the current ExoContainer
+    */
    public static void setCurrentContainer(ExoContainer instance)
    {
       SecurityManager security = System.getSecurityManager();
@@ -179,7 +196,10 @@ public final class ExoContainerContext implements java.io.Serializable
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);      
       currentContainer.set(instance == null ? null : new WeakReference<ExoContainer>(instance));
    }
-
+   /**
+    * @param name the container name
+    * @return the ExoContainer  instance
+    */
    public static ExoContainer getContainerByName(String name)
    {
       ExoContainerContext containerContext = topContainer.getContext();
@@ -188,18 +208,25 @@ public final class ExoContainerContext implements java.io.Serializable
          return topContainer;
       return (ExoContainer)topContainer.getComponentInstance(name);
    }
-
+   /**
+    * @return returns the list of attribute contained in the map
+    */
    public Set<String> getAttributeNames()
    {
       // Gives a safe copy
       return new HashSet<String>(attributes.keySet());
    }
-
+   /**
+    * @return returns the value of the attribute
+    */
    public Object getAttribute(String name)
    {
       return attributes.get(name);
    }
-
+   /**
+    * @param name the name of the attribute to set
+    * @param value the value of the attribute to set
+    */
    public void setAttribute(String name, Object value)
    {
       SecurityManager security = System.getSecurityManager();

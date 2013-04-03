@@ -75,6 +75,7 @@ import javax.servlet.http.HttpSession;
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Date: Jul 21, 2004 Time: 12:15:28 AM
+ * @LevelAPI Platform
  */
 @Managed
 @NameTemplate(@Property(key = "container", value = "root"))
@@ -585,7 +586,10 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
       sessions.removeAll(sessionsToBeRemoved);
    }
-   
+   /**
+    * Create the portal container
+    * @param context the servlet context
+    */
    public synchronized void createPortalContainer(ServletContext context)
    {
       SecurityManager security = System.getSecurityManager();
@@ -702,7 +706,10 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          }
       }
    }
-
+   /**
+    * Removes the portal container
+    * @param servletContext the servlet context
+    */
    synchronized public void removePortalContainer(ServletContext servletContext)
    {
       SecurityManager security = System.getSecurityManager();
@@ -840,7 +847,10 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
       return result;
    }
-
+   /**
+    * Set the unique instance of the root container
+    * @param rcontainer the root container
+    */
    static public void setInstance(RootContainer rcontainer)
    {
       SecurityManager security = System.getSecurityManager();
@@ -849,7 +859,9 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       
       singleton_ = rcontainer;
    }
-
+   /**
+    * @return the configuration of the container in XML format
+    */
    @Managed
    @ManagedDescription("The configuration of the container in XML format.")
    public String getConfigurationXML()
@@ -862,7 +874,9 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
       return config.toXML();
    }
-   
+   /**
+    * Makes the RootContainer reloads itself and all the portal containers
+    */
    @Managed
    @ManagedDescription("Make the RootContainer reloads itself and all the portal containers.")
    public void reload()
@@ -937,7 +951,9 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          LOG.error("Could not reload the containers", e);
       }
    }
-
+   /**
+    * Makes the RootContainer reloads only a given portal container
+    */
    @Managed
    @ManagedDescription("Make the RootContainer reloads only a given portal container.")
    public void reload(String portalContainerName)

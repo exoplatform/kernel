@@ -26,6 +26,7 @@ import java.util.Collection;
  *
  * Created by The eXo Platform SAS. Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Date: Jun 14, 2003 Time: 1:12:22 PM
+ * @LevelAPI Platform
  */
 public interface CacheService
 {

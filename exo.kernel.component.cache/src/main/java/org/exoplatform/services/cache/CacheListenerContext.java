@@ -23,6 +23,7 @@ package org.exoplatform.services.cache;
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
+ * @LevelAPI Platform
  */
 public interface CacheListenerContext
 {

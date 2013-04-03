@@ -26,6 +26,7 @@ import org.exoplatform.container.component.BaseComponentPlugin;
  * Listener service and is invoked when an event with the same name is
  * broadcasted. You can have many listeners with the same name to listen to an
  * event.
+ * @LevelAPI Platform
  */
 public abstract class Listener<S, D> extends BaseComponentPlugin
 {
@@ -33,6 +34,7 @@ public abstract class Listener<S, D> extends BaseComponentPlugin
    /**
     * This method should be invoked when an event with the same name is
     * broadcasted
+    * @param event the event instance
     */
    public abstract void onEvent(Event<S, D> event) throws Exception;
 

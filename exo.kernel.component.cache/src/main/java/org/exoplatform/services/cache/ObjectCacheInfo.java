@@ -24,6 +24,7 @@ package org.exoplatform.services.cache;
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Sep 19, 2005
  * @param <V> the value type
+ * @LevelAPI Platform
  */
 public interface ObjectCacheInfo<V>
 {

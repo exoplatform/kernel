@@ -32,7 +32,7 @@ public interface ExoCacheFactory
     * Creates a new instance of {@link org.exoplatform.services.cache.ExoCache}
     * @param config the cache to create
     * @return the new instance of {@link org.exoplatform.services.cache.ExoCache}
-    * @exception ExoCacheInitException if an exception happens while initializing the cache
+    * @throws ExoCacheInitException if an exception happens while initializing the cache
     */
    public ExoCache createCache(ExoCacheConfig config) throws ExoCacheInitException;
 
