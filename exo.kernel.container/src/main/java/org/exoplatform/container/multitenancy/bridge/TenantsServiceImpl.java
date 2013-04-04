@@ -18,12 +18,6 @@
  */
 package org.exoplatform.container.multitenancy.bridge;
 
-<<<<<<< HEAD
-import java.util.ArrayList;
-import java.util.List;
-
-=======
->>>>>>> feature/multitenancy
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
 import org.exoplatform.container.multitenancy.Tenant;
@@ -32,12 +26,9 @@ import org.exoplatform.container.multitenancy.TenantsStateListener;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-<<<<<<< HEAD
-=======
 import java.util.ArrayList;
 import java.util.List;
 
->>>>>>> feature/multitenancy
 /**
  * Implementation of {@link TenantsService} based on plugins. Following kinds of plugin supported: <ul>
  * <li>
