@@ -28,12 +28,16 @@ import java.io.Serializable;
 public interface CachedObjectSelector<K extends Serializable, V>
 {
    /**
+    * Indicates whether or not a given key must be selected
+    *
     * @param key the name of the cache entry
     * @param ocinfo the cache info instance
-    * @return flag asserts whether key is managed by the Cache or not
+    * @return <code>true</code> if the selector wants to select the given key, <code>false</code> otherwise
     */
    public boolean select(K key, ObjectCacheInfo<? extends V> ocinfo);
    /**
+    * Action to perform on selected keys
+    *
     * @param cache the exo cache
     * @param ocinfo the cache info instance
     */

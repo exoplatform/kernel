@@ -353,7 +353,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       getSessionManager().removeSessionContainer(sessionID);
    }
    /**
-    * @return returns a collection containing all the live session
+    * @return returns a collection containing all the live sessions
     */
    public List<SessionContainer> getLiveSessions()
    {

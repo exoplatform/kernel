@@ -135,7 +135,7 @@ public final class ExoContainerContext implements java.io.Serializable
       this.name = name;
    }
    /**
-    * @return returns the root container
+    * @return returns the top container that will be the root container in portal mode and the standalone container in standalone mode
     */
    public static ExoContainer getTopContainer()
    {
@@ -144,8 +144,8 @@ public final class ExoContainerContext implements java.io.Serializable
       return topContainer;
    }
    /**
-    * Sets the root container
-    * @param cont the root container to set
+    * Sets the top container
+    * @param cont the top container
     */
    static void setTopContainer(ExoContainer cont)
    {
@@ -176,7 +176,7 @@ public final class ExoContainerContext implements java.io.Serializable
       return container;
    }
    /**
-    * @return returns the current container if present else return the topContainer
+    * @return returns the current container if present, otherwise it returns the top container
     */
    public static ExoContainer getCurrentContainerIfPresent()
    {
@@ -187,7 +187,8 @@ public final class ExoContainerContext implements java.io.Serializable
       return container;
    }
    /**
-    * @param instance the current ExoContainer
+    * Sets the current container
+    * @param instance the current container
     */
    public static void setCurrentContainer(ExoContainer instance)
    {
@@ -209,7 +210,7 @@ public final class ExoContainerContext implements java.io.Serializable
       return (ExoContainer)topContainer.getComponentInstance(name);
    }
    /**
-    * @return returns the list of attribute contained in the map
+    * @return returns the list of the name of all the attributes available in the context
     */
    public Set<String> getAttributeNames()
    {

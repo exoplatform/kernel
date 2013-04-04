@@ -110,7 +110,7 @@ public class ExoCacheConfig implements Cloneable
       label = s;
    }
    /**
-    * Returns The maximum numbers of elements in cache
+    * Returns the maximum amount of entries allowed in the cache
     *
     * @return the max size of the cache.
     */
@@ -119,7 +119,7 @@ public class ExoCacheConfig implements Cloneable
       return maxSize;
    }
    /**
-    * Sets the maximum numbers of elements in cache
+    * Sets the maximum amount of entries allowed in the cache
     *
     * @param size the max size of the cache
     */
@@ -128,8 +128,7 @@ public class ExoCacheConfig implements Cloneable
       maxSize = size;
    }
    /**
-    * Returns The amount of time (in seconds) an element is not written or
-    * read before it is evicted.
+    * Returns the time amount of entries allowed in the cache
     *
     * @return the live time
     */
