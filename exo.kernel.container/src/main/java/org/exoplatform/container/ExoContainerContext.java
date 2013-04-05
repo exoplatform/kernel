@@ -135,7 +135,8 @@ public final class ExoContainerContext implements java.io.Serializable
       this.name = name;
    }
    /**
-    * @return returns the top container that will be the root container in portal mode and the standalone container in standalone mode
+    * @return returns the top container that will be the root container
+    *         in portal mode and the standalone container in standalone mode
     */
    public static ExoContainer getTopContainer()
    {

@@ -128,7 +128,8 @@ public class ExoCacheConfig implements Cloneable
       maxSize = size;
    }
    /**
-    * Returns the time amount of entries allowed in the cache
+    * Returns the amount of time (in seconds) a cache entry is not written
+    * or read before it is evicted
     *
     * @return the live time
     */
@@ -137,7 +138,8 @@ public class ExoCacheConfig implements Cloneable
       return liveTime;
    }
    /**
-    * Sets the live time
+    * Sets the amount of time (in seconds) a cache entry is not written
+    * or read before it is evicted
     *
     * @param period the value of the live time
     */
