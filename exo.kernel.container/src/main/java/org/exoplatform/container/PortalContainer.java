@@ -50,7 +50,7 @@ import javax.servlet.ServletContext;
 /**
  * Created by The eXo Platform SAS Author : Mestrallet Benjamin
  * benjmestrallet@users.sourceforge.net Date: Jul 31, 2003 Time: 12:15:28 AM
- * @LevelAPI Platform
+ * @LevelAPI Provisional
  */
 @Managed
 @NamingContext(@Property(key = "portal", value = "{Name}"))

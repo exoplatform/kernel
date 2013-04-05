@@ -49,7 +49,7 @@ import javax.xml.stream.XMLStreamException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: InitialContextInitializer.java 9867 2006-10-30 08:01:12Z geaz $
- * @LevelAPI Platform
+ * @LevelAPI Experimental
  */
 public class InitialContextInitializer
 {

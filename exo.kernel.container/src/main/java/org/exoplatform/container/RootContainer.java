@@ -75,7 +75,7 @@ import javax.servlet.http.HttpSession;
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Date: Jul 21, 2004 Time: 12:15:28 AM
- * @LevelAPI Platform
+ * @LevelAPI Provisional
  */
 @Managed
 @NameTemplate(@Property(key = "container", value = "root"))

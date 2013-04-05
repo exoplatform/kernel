@@ -56,7 +56,7 @@ import java.util.List;
  *          configuration.xml file in the "home" directory. the home directory
  *          it is AS server home in a case of AS env or just current directory
  *          (from where JVM is started) for standalone. See
- *  @LevelAPI Platform
+ *  @LevelAPI Provisional
  */
 @Managed
 @NameTemplate(@Property(key = "container", value = "standalone"))
