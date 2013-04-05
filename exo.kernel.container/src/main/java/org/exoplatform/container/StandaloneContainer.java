@@ -56,6 +56,7 @@ import java.util.List;
  *          configuration.xml file in the "home" directory. the home directory
  *          it is AS server home in a case of AS env or just current directory
  *          (from where JVM is started) for standalone. See
+ *  @LevelAPI Provisional
  */
 @Managed
 @NameTemplate(@Property(key = "container", value = "standalone"))
@@ -269,7 +270,7 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    /**
     * Set configuration path. The configuration should contains all required components configured.  
     *
-    * @param path, path to configuration file  
+    * @param path path to configuration file
     * @throws MalformedURLException if path is wrong
     */
    public static void setConfigurationPath(String path) throws MalformedURLException

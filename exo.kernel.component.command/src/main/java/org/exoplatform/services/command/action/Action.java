@@ -25,6 +25,7 @@ import org.apache.commons.chain.Command;
  * 
  * @author Gennady Azarenkov
  * @version $Id: $
+ * @LevelAPI Platform
  */
 
 public interface Action extends Command

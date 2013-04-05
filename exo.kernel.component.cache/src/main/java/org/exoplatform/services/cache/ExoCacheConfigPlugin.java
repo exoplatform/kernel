@@ -27,6 +27,7 @@ import java.util.List;
 /**
  * Created by The eXo Platform SAS Author : Tuan Nguyen
  * tuan08@users.sourceforge.net Jan 6, 2006
+ *  @LevelAPI Platform
  */
 public class ExoCacheConfigPlugin extends BaseComponentPlugin
 {
@@ -42,7 +43,9 @@ public class ExoCacheConfigPlugin extends BaseComponentPlugin
          configs_.add(config);
       }
    }
-
+   /**
+    * @return the list of ExoCacheConfig
+    */
    public List<ExoCacheConfig> getConfigs()
    {
       return configs_;
