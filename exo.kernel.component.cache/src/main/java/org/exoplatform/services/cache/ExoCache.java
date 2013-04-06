@@ -36,6 +36,7 @@ import java.util.Map;
  *
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of cached values
+ * @LevelAPI Platform
  */
 @Managed
 @NameTemplate({@Property(key = "service", value = "cache"), @Property(key = "name", value = "{Name}")})
@@ -60,8 +61,18 @@ public interface ExoCache<K extends Serializable, V>
     */
    public void setName(String name);
 
+   /**
+    * Returns the cache label
+    *
+    * @return the cache label
+    */
    public String getLabel();
 
+   /**
+    * Sets the cache label
+    *
+    * @param s the cache label
+    */
    public void setLabel(String s);
 
    /**

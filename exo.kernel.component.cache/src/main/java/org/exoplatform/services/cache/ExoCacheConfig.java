@@ -24,6 +24,7 @@ package org.exoplatform.services.cache;
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
  * @since Feb 20, 2005
  * @version $Id: ExoCacheConfig.java 5799 2006-05-28 17:55:42Z geaz $
+ * @LevelAPI Platform
  */
 public class ExoCacheConfig implements Cloneable
 {
@@ -72,72 +73,130 @@ public class ExoCacheConfig implements Cloneable
     * Indicates whether or not the replication of the values should be avoided
     */
    public boolean avoidValueReplication;
-
+   /**
+    * Returns the cache name
+    *
+    * @return the cache name
+    */
    public String getName()
    {
       return name;
    }
-
+   /**
+    * Sets the cache name
+    *
+    * @param s the cache name
+    */
    public void setName(String s)
    {
       name = s;
    }
-
+   /**
+    * Returns the cache label
+    *
+    * @return the cache label
+    */
    public String getLabel()
    {
       return label;
    }
-
+   /**
+    * Sets the cache label
+    *
+    * @param s the cache label
+    */
    public void setLabel(String s)
    {
       label = s;
    }
-
+   /**
+    * Returns the maximum amount of entries allowed in the cache
+    *
+    * @return the max size of the cache.
+    */
    public int getMaxSize()
    {
       return maxSize;
    }
-
+   /**
+    * Sets the maximum amount of entries allowed in the cache
+    *
+    * @param size the max size of the cache
+    */
    public void setMaxSize(int size)
    {
       maxSize = size;
    }
-
+   /**
+    * Returns the amount of time (in seconds) a cache entry is not written
+    * or read before it is evicted
+    *
+    * @return the live time
+    */
    public long getLiveTime()
    {
       return liveTime;
    }
-
+   /**
+    * Sets the amount of time (in seconds) a cache entry is not written
+    * or read before it is evicted
+    *
+    * @param period the value of the live time
+    */
    public void setLiveTime(long period)
    {
       liveTime = period;
    }
-
+   /**
+    * Indicates if the cache is distributed or not.
+    *
+    * @return flag that indicates if the cache is distributed or not.
+    */
    public boolean isDistributed()
    {
       return distributed;
    }
-
+   /**
+    * Sets distributed state
+    *
+    * @param  b flag that indicates if the cache is distributed or not.
+    */
    public void setDistributed(boolean b)
    {
       distributed = b;
    }
-
+   /**
+    * Indicates if the cache is replicated or not.
+    *
+    * @return flag that indicates if the cache is repicated or not.
+    */
    public boolean isRepicated()
    {
       return replicated;
    }
-
+   /**
+    * Sets replicated state
+    *
+    * @param b flag that indicates if the cache is repicated or not.
+    */
    public void setReplicated(boolean b)
    {
       replicated = b;
    }
-
+   /**
+    * Returns the full qualified name of the cache implementation to use.
+    *
+    * @return the full qualified name
+    */
    public String getImplementation()
    {
       return implementation;
    }
-
+   /**
+    * Sets the full qualified name of the cache implementation to use.
+    *
+    * @param  alg the full qualified name of the cache implementation
+    */
    public void setImplementation(String alg)
    {
       implementation = alg;

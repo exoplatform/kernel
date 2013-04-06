@@ -50,6 +50,7 @@ import javax.servlet.ServletContext;
 /**
  * Created by The eXo Platform SAS Author : Mestrallet Benjamin
  * benjmestrallet@users.sourceforge.net Date: Jul 31, 2003 Time: 12:15:28 AM
+ * @LevelAPI Provisional
  */
 @Managed
 @NamingContext(@Property(key = "portal", value = "{Name}"))
@@ -291,14 +292,18 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
          this.webAppContexts = Collections.unmodifiableSet(contexts);
       }
    }
-
+   /**
+    * @return returns the portal container name
+    */
    @Managed
    @ManagedDescription("The portal container name")
    public String getName()
    {
       return name;
    }
-
+   /**
+    * @return returns the configuration of the container in XML format
+    */
    @Managed
    @ManagedDescription("The configuration of the container in XML format.")
    public String getConfigurationXML()
@@ -317,7 +322,10 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       }
       return result.toXML();
    }
-   
+   /**
+    * @param id the session container identifier
+    * @param owner the owner name
+    */
    public SessionContainer createSessionContainer(String id, String owner)
    {
       SecurityManager security = System.getSecurityManager();
@@ -333,7 +341,9 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       SessionContainer.setInstance(scontainer);
       return scontainer;
    }
-
+   /**
+    * @param sessionID the identifier of session to remove
+    */
    public void removeSessionContainer(String sessionID)
    {
       SecurityManager security = System.getSecurityManager();
@@ -342,12 +352,16 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       
       getSessionManager().removeSessionContainer(sessionID);
    }
-
+   /**
+    * @return returns a collection containing all the live sessions
+    */
    public List<SessionContainer> getLiveSessions()
    {
       return getSessionManager().getLiveSessions();
    }
-
+   /**
+    * @return returns session manager
+    */
    public SessionManager getSessionManager()
    {
       if (smanager_ == null)
@@ -400,6 +414,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    /**
     * @see the method isPortalContainerName of {@link PortalContainerConfig}
+    * @param name the portal container name
     */
    public static boolean isPortalContainerName(String name)
    {
@@ -415,6 +430,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    /**
     * @see the method isPortalContainerNameDisabled of {@link PortalContainerConfig}
+    * @param name the portal container name
     */
    public static boolean isPortalContainerNameDisabled(String name)
    {
@@ -432,7 +448,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     * Add an init-task to all the portal container instances related to the given ServletContext
     * 
     * @param context the context from which we extract the context name
-    * @param task the task to execute 
+    * @param task the task to execute
     */
    public static void addInitTask(ServletContext context, PortalContainerInitTask task)
    {
@@ -552,7 +568,8 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
-    * Returns the name of the rest context corresponding to the current portal container 
+    * Returns the name of the rest context corresponding to the current portal container
+    * @return returns the name of the rest context
     */
    public String getRestContextName()
    {
@@ -563,6 +580,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     * Returns the name of the current realm corresponding to the portal container
     * that has been stored into the ThreadLocal. If no value can be found the value of 
     * PortalContainer.DEFAULT_REALM_NAME will be used
+    * @return returns the name of the current realm corresponding to the portal container
     */
    public static String getCurrentRealmName()
    {
@@ -574,6 +592,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     * Returns the name of the realm corresponding to the given portal container name
     * @param portalContainerName the name of the portal container for which we want the
     * name of the realm
+    * @return returns the name of the realm corresponding to the given portal container name
     */
    public static String getRealmName(String portalContainerName)
    {
@@ -585,7 +604,8 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
-    * Returns the name of the realm corresponding to the current portal container 
+    * Returns the name of the realm corresponding to the current portal container
+    * @return returns the name of the realm corresponding to the current portal container
     */
    public String getRealmName()
    {
@@ -597,6 +617,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     * that has been stored into the ThreadLocal. If no value can be found, <code>null</code> will be
     * returned
     * @param settingName the name of the setting wanted
+    * @return returns the current value of the setting corresponding to the portal container
     */
    public static Object getCurrentSetting(String settingName)
    {
@@ -610,6 +631,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
     * @param portalContainerName the name of the portal container for which we want the
     * name of the value of the setting
     * @param settingName the name of the setting wanted
+    * @return returns the value of the setting corresponding to the given portal container name
     */
    public static Object getSetting(String portalContainerName, String settingName)
    {
@@ -623,6 +645,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    /**
     * Returns the value of the setting corresponding to the current portal container 
     * @param settingName the name of the setting wanted
+    * @return returns the value of the setting
     */
    public Object getSetting(String settingName)
    {

@@ -29,6 +29,7 @@ import java.lang.annotation.Target;
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: Asynchronous.java 111 2008-11-11 11:11:11Z serg $
+ * @LevelAPI Platform
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

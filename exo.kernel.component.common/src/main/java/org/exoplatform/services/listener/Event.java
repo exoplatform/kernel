@@ -21,6 +21,7 @@ package org.exoplatform.services.listener;
 /**
  * Created by The eXo Platform SAS Author : Nhu Dinh Thuan
  * nhudinhthuan@exoplatform.com Apr 6, 2007
+ * @LevelAPI Platform
  */
 public class Event<S, D>
 {
@@ -57,7 +58,7 @@ public class Event<S, D>
    }
 
    /**
-    * 
+    * @return The object on which the Event initially occurred.
     */
    public S getSource()
    {
