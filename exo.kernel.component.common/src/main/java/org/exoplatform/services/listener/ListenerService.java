@@ -39,6 +39,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by The eXo Platform SAS Author : Nhu Dinh Thuan
  * nhudinhthuan@exoplatform.com Apr 6, 2007
+ * @LevelAPI Platform
  */
 public class ListenerService
 {
