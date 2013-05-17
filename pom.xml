@@ -33,7 +33,7 @@
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.4.4-GA-SNAPSHOT</version>
+   <version>2.4.4-CLD-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
@@ -53,15 +53,15 @@
 
    <modules>
       <module>exo.kernel.container</module>
-      <module>exo.kernel.commons</module>
       <module>exo.kernel.commons.test</module>
+      <module>exo.kernel.commons</module>
       <module>exo.kernel.component.common</module>
-      <module>exo.kernel.component.ext.rpc.impl.jgroups.v3</module>
+      <!-- module>exo.kernel.component.ext.rpc.impl.jgroups.v3</module>
       <module>exo.kernel.component.cache</module>
       <module>exo.kernel.component.ext.cache.impl.jboss.v3</module>
       <module>exo.kernel.component.ext.cache.impl.infinispan.v5</module>
       <module>exo.kernel.component.command</module>
-      <module>exo.kernel.mc-integration</module>
+      <module>exo.kernel.mc-integration</module -->
    </modules>
 
    <dependencyManagement>
