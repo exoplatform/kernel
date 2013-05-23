@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * The ExoContainerContext helper to invoke a service of a container from any location.
+ *
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
  * @since Jan 11, 2005
  * @version $Id: ExoContainerContext.java 6677 2006-07-03 10:49:59Z geaz $

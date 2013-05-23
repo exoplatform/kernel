@@ -21,10 +21,11 @@ package org.exoplatform.services.command.action;
 import org.apache.commons.chain.Command;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS<br>
+ *
+ * Action interface extends Command interface.
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
  * @LevelAPI Platform
  */
 

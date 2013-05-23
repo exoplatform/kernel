@@ -73,8 +73,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 /**
- * Created by The eXo Platform SAS Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Date: Jul 21, 2004 Time: 12:15:28 AM
+ * Created by The eXo Platform SAS<br>
+ * A base container which plays an important role during the startup. However,
+ * it is recommended that it should not be used directly.
+ *
+ * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>
  * @LevelAPI Provisional
  */
 @Managed

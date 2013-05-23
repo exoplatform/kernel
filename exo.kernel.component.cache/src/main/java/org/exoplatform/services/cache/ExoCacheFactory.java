@@ -22,7 +22,6 @@ package org.exoplatform.services.cache;
  * This class allows you to create a new instance of {@link org.exoplatform.services.cache.ExoCache}
  * 
  * @author <a href="mailto:dmitry.kataev@exoplatform.com">Dmytro Katayev</a>
- * @version $Id$
  *
  */
 public interface ExoCacheFactory
