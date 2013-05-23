@@ -22,10 +22,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Created by The eXo Platform SAS</br>
  * This marker annotation shows that Listener must be executed in asynchronous way. 
  * ListenerService will execute asynchronous-marked listener in dedicated thread.
- * 
- * Created by The eXo Platform SAS.
+ *
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: Asynchronous.java 111 2008-11-11 11:11:11Z serg $

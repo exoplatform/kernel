@@ -46,8 +46,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by The eXo Platform SAS Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Date: Jul 18, 2004 Time: 12:15:28 AM
+ * Created by The eXo Platform SAS</br>
+ * An object which behaves like a class loader that is responsible for loading services/components.
+ * The eXoContainer class is inherited by all the containers, including RootContainer, PortalContainer,
+ * and StandaloneContainer. It itself inherits from a PicoContainer framework which allows eXo to apply
+ * the IoC Inversion of Control principles.
+ *
+ * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>
  * @LevelAPI Provisional
  */
 public class ExoContainer extends ManageableContainer

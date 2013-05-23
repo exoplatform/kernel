@@ -44,18 +44,18 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS .
+ * Created by The eXo Platform SAS</br>
+ * Singleton, context independent Exo Container with one configuration
+ * entry point. The configuration is set as follows: - client calls
+ * setConfigurationURL() or setConfigurationPath method BEFORE
+ * getInstance() - otherwise container in instantiation time looks for
+ * configuration.xml file in the "home" directory. the home directory
+ * it is AS server home in a case of AS env or just current directory
+ * (from where JVM is started) for standalone.
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov
- *         </a>
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: StandaloneContainer.java 7168 2006-07-19 07:36:23Z peterit $
- *          Singleton, context independent Exo Container with one configuration
- *          entry point. The configuration is set as follows: - client calls
- *          setConfigurationURL() or setConfigurationPath method BEFORE
- *          getInstance() - otherwise container in instantiation time looks for
- *          configuration.xml file in the "home" directory. the home directory
- *          it is AS server home in a case of AS env or just current directory
- *          (from where JVM is started) for standalone. See
+ *
  *  @LevelAPI Provisional
  */
 @Managed

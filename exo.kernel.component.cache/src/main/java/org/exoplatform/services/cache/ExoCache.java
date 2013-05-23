@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Created by The eXo Platform SAS</br>
  * A bare cache.
  *
- * Created by The eXo Platform SAS. Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Date: Jun 14, 2003 Time: 1:12:22 PM
+ * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>
  *
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of cached values

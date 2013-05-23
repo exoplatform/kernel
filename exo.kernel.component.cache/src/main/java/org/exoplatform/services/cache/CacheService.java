@@ -22,10 +22,11 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
+ * Created by The eXo Platform SAS</br>
  * The cache service.
  *
- * Created by The eXo Platform SAS. Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Date: Jun 14, 2003 Time: 1:12:22 PM
+ * @author : <a href="tuan08@users.sourceforge.net">Tuan Nguyen</a>.
+ *
  * @LevelAPI Platform
  */
 public interface CacheService

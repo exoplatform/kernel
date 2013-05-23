@@ -21,11 +21,12 @@ package org.exoplatform.services.listener;
 import org.exoplatform.container.component.BaseComponentPlugin;
 
 /**
- * Created by The eXo Platform SAS Author : Nhu Dinh Thuan
- * nhudinhthuan@exoplatform.com Apr 6, 2007 This class is registered with the
- * Listener service and is invoked when an event with the same name is
- * broadcasted. You can have many listeners with the same name to listen to an
+ * Created by The eXo Platform SAS</br>
+ * This class is registered with the Listener service
+ * and is invoked when an event with the same name is broadcasted.
+ * You can have many listeners with the same name to listen to an
  * event.
+ * @author <a href="mailto:nhudinhthuan@exoplatform.com">Nhu Dinh Thuan</a>
  * @LevelAPI Platform
  */
 public abstract class Listener<S, D> extends BaseComponentPlugin

@@ -37,8 +37,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Created by The eXo Platform SAS Author : Nhu Dinh Thuan
- * nhudinhthuan@exoplatform.com Apr 6, 2007
+ * Created by The eXo Platform SAS</br>
+ *
+ * Listener Service  allows to manage {@link Listener}
+ *
+ * @author : <a href="nhudinhthuan@exoplatform.com">Nhu Dinh Thuan</a>.
  * @LevelAPI Platform
  */
 public class ListenerService

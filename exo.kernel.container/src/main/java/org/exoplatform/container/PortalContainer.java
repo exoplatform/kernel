@@ -48,8 +48,12 @@ import java.util.TreeSet;
 import javax.servlet.ServletContext;
 
 /**
- * Created by The eXo Platform SAS Author : Mestrallet Benjamin
- * benjmestrallet@users.sourceforge.net Date: Jul 31, 2003 Time: 12:15:28 AM
+ * Created by The eXo Platform SAS</br>
+ *
+ * The Portal Container is an object which behaves like a class loader that is responsible for loading services/components.
+ *
+ * @author <a href="mailto:benjmestrallet@users.sourceforge.net">Mestrallet Benjamin</a>
+ * Date: Jul 31, 2003 Time: 12:15:28 AM
  * @LevelAPI Provisional
  */
 @Managed

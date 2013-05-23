@@ -19,8 +19,11 @@
 package org.exoplatform.services.listener;
 
 /**
- * Created by The eXo Platform SAS Author : Nhu Dinh Thuan
- * nhudinhthuan@exoplatform.com Apr 6, 2007
+ * Created by The eXo Platform SAS</br>
+ * Event object.
+ *
+ * @author  : @author : <a href="nhudinhthuan@exoplatform.com">Nhu Dinh Thuan</a>.
+ *
  * @LevelAPI Platform
  */
 public class Event<S, D>
