@@ -21,8 +21,11 @@ package org.exoplatform.services.cache;
 import java.io.Serializable;
 
 /**
- * Created by The eXo Platform SAS Author : Thuannd nhudinhthuan@yahoo.com Apr
- * 4, 2006
+ * Created by The eXo Platform SAS<br>
+ *
+ * CachedObjectSelector interface provides a way to perform action on selected keys.
+ *
+ * @author : <a href="Thuannd nhudinhthuan@yahoo.com">Thuannd</a>.
  * @LevelAPI Platform
  */
 public interface CachedObjectSelector<K extends Serializable, V>

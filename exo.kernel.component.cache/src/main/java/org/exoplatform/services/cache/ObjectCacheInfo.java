@@ -19,10 +19,11 @@
 package org.exoplatform.services.cache;
 
 /**
+ * Created by The eXo Platform SAS<br>
  * Wraps a cache entry to provide meta information in addition of the entry value.
  *
- * Created by The eXo Platform SAS Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Sep 19, 2005
+ * @author <a href="tuan08@users.sourceforge.net">Tuan Nguyen</a>.
+ *
  * @param <V> the value type
  * @LevelAPI Platform
  */

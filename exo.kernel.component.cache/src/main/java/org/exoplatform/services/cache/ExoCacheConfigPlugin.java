@@ -25,9 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Jan 6, 2006
- *  @LevelAPI Platform
+ * Created by The eXo Platform SAS<br>
+ *
+ * ExoCacheConfigPlugin is a component-plugin that allows to register a set of ExoCacheConfig to the CacheService
+ *
+ * @author : <a href="tuan08@users.sourceforge.net">Tuan Nguyen</a>.
+ * @LevelAPI Platform
  */
 public class ExoCacheConfigPlugin extends BaseComponentPlugin
 {
