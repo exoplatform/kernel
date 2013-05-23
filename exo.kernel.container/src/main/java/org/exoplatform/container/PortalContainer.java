@@ -48,9 +48,9 @@ import java.util.TreeSet;
 import javax.servlet.ServletContext;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
- * The Portal Container is an object which behaves like a class loader that is responsible for loading services/components.
+ * The Portal Container is an object responsible for loading services/components.
  *
  * @author <a href="mailto:benjmestrallet@users.sourceforge.net">Mestrallet Benjamin</a>
  * Date: Jul 31, 2003 Time: 12:15:28 AM
@@ -417,7 +417,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
-    * @see the method isPortalContainerName of {@link PortalContainerConfig}
+    * @see PortalContainerConfig#isPortalContainerName(String)
     * @param name the portal container name
     */
    public static boolean isPortalContainerName(String name)
@@ -433,7 +433,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    }
 
    /**
-    * @see the method isPortalContainerNameDisabled of {@link PortalContainerConfig}
+    * @see PortalContainerConfig#isPortalContainerNameDisabled(String)
     * @param name the portal container name
     */
    public static boolean isPortalContainerNameDisabled(String name)

@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  * The cache service.
  *
  * @author : <a href="tuan08@users.sourceforge.net">Tuan Nguyen</a>.

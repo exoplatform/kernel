@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  * A bare cache.
  *
  * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>

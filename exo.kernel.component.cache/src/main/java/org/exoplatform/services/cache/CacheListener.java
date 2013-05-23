@@ -21,7 +21,7 @@ package org.exoplatform.services.cache;
 import java.io.Serializable;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  * The cache listener allows to be aware of various events that occurs for a cache. For performance reason
  * a listener must perform short time lived operations or should consider to perform jobs asynchronously.
  *

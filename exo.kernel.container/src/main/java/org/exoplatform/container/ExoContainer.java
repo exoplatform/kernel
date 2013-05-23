@@ -46,11 +46,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by The eXo Platform SAS</br>
- * An object which behaves like a class loader that is responsible for loading services/components.
+ * Created by The eXo Platform SAS<br>
+ * The Exo Container is an object responsible for loading services/components.
  * The eXoContainer class is inherited by all the containers, including RootContainer, PortalContainer,
  * and StandaloneContainer. It itself inherits from a PicoContainer framework which allows eXo to apply
- * the IoC Inversion of Control principles.
+ * the Inversion of Control (also known as IoC) principles.
  *
  * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>
  * @LevelAPI Provisional

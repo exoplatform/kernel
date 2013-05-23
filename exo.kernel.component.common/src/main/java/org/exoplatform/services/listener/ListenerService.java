@@ -37,9 +37,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
- * Listener Service  allows to manage {@link Listener}
+ * Listener Service is reponsible for notifying the {@link Listener}
+ * when a given event is broadcasted.
  *
  * @author : <a href="nhudinhthuan@exoplatform.com">Nhu Dinh Thuan</a>.
  * @LevelAPI Platform

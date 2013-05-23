@@ -44,7 +44,7 @@ import javax.naming.Reference;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Created by The eXo Platform SAS<br/> Initializer for
+ * Created by The eXo Platform SAS<br> Initializer for
  * Context.INITIAL_CONTEXT_FACTORY
  * 
  * @author Gennady Azarenkov

@@ -21,7 +21,7 @@ package org.exoplatform.services.listener;
 import org.exoplatform.container.component.BaseComponentPlugin;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  * This class is registered with the Listener service
  * and is invoked when an event with the same name is broadcasted.
  * You can have many listeners with the same name to listen to an

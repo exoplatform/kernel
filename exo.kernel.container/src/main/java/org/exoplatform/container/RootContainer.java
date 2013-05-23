@@ -73,7 +73,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  * A base container which plays an important role during the startup. However,
  * it is recommended that it should not be used directly.
  *

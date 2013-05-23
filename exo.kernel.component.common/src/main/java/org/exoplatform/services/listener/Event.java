@@ -19,7 +19,7 @@
 package org.exoplatform.services.listener;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  * Event object.
  *
  * @author  : @author : <a href="nhudinhthuan@exoplatform.com">Nhu Dinh Thuan</a>.
