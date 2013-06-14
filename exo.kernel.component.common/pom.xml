@@ -27,7 +27,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>2.4.4-CLD</version>
+      <version>2.4.5-CLD-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.kernel.component.common</artifactId>
