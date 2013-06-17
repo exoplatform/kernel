@@ -43,8 +43,28 @@
 				<set-method>add</set-method>
 				<type>org.exoplatform.container.TestExoContainer$MyClassPlugin</type>
 			</component-plugin>
+			<component-plugin>
+				<name>stackoverflow-test-plugin2</name>
+				<set-method>add</set-method>
+				<type>org.exoplatform.container.TestExoContainer$MyClassPlugin2</type>
+			</component-plugin>
 		</component-plugins>
 	</component>
+	 <component profiles="testStackOverFlowB">
+		<type>org.exoplatform.container.TestExoContainer$MyClassB</type>
+		<component-plugins>
+			<component-plugin>
+				<name>stackoverflow-test-plugin</name>
+				<set-method>add</set-method>
+				<type>org.exoplatform.container.TestExoContainer$MyClassPluginB</type>
+			</component-plugin>
+			<component-plugin>
+				<name>stackoverflow-test-plugin2</name>
+				<set-method>add</set-method>
+				<type>org.exoplatform.container.TestExoContainer$MyClassPlugin2B</type>
+			</component-plugin>
+		</component-plugins>
+	 </component>
 	<component>
 		<type>org.exoplatform.container.TestExoContainer$SOE1</type>
 		<component-plugins>
@@ -57,6 +77,36 @@
 	</component>
 	<component>
 		<type>org.exoplatform.container.TestExoContainer$SOE2</type>
+	</component>
+	<component profiles="testStart">
+		<type>org.exoplatform.container.TestExoContainer$TS1</type>
+	</component>
+	<component profiles="testStart">
+		<type>org.exoplatform.container.TestExoContainer$TS2</type>
+	</component>
+	<component profiles="testStart">
+		<type>org.exoplatform.container.TestExoContainer$TS3</type>
+	</component>
+	<component profiles="testStart">
+		<type>org.exoplatform.container.TestExoContainer$TS4</type>
+	</component>
+	<component>
+		<type>org.exoplatform.container.TestExoContainer$SOE1C</type>
+		<component-plugins>
+			<component-plugin>
+				<name>stackoverflow-test-plugin</name>
+				<set-method>addPlugin</set-method>
+				<type>org.exoplatform.container.TestExoContainer$SOEPluginCR</type>
+			</component-plugin>
+				<component-plugin>
+					<name>stackoverflow-test-plugin2</name>
+					<set-method>addPlugin</set-method>
+					<type>org.exoplatform.container.TestExoContainer$SOEPluginC</type>
+				</component-plugin>
+		</component-plugins>
+	</component>
+	<component>
+		<type>org.exoplatform.container.TestExoContainer$SOE2C</type>
 	</component>
 	<component profiles="testCyclicRef">
 		<type>org.exoplatform.container.TestExoContainer$A</type>
@@ -87,18 +137,46 @@
 	<component profiles="testStartOrder">
 		<type>org.exoplatform.container.TestExoContainer$C2</type>
 	</component>
-   <component profiles="testStackOverflowError">
-      <key>org.exoplatform.container.TestExoContainer$MyService</key>
-      <type>org.exoplatform.container.TestExoContainer$MyServiceImpl</type>
-   </component>
-
-   <external-component-plugins profiles="testStackOverflowError">
-      <target-component>org.exoplatform.container.TestExoContainer$MyService</target-component>
-      <component-plugin>
-         <name>test.plugin</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.container.TestExoContainer$MyPlugin</type>
-         <description>User - Ticket Authenticator</description>
-      </component-plugin>
-   </external-component-plugins>   
+	<component profiles="testStackOverflowError">
+		<key>org.exoplatform.container.TestExoContainer$MyService</key>
+		<type>org.exoplatform.container.TestExoContainer$MyServiceImpl</type>
+	</component>
+	<component profiles="testStates">
+		<type>org.exoplatform.container.TestExoContainer$TSC1</type>
+		<component-plugins>
+			<component-plugin>
+				<name>testStates</name>
+				<set-method>addPlugin</set-method>
+				<type>org.exoplatform.container.TestExoContainer$TSC2Plugin</type>
+			</component-plugin>
+		</component-plugins>
+	</component>
+	<component profiles="testStates">
+		<type>org.exoplatform.container.TestExoContainer$TSC2</type>
+		<component-plugins>
+			<component-plugin>
+				<name>testStates</name>
+				<set-method>addPlugin</set-method>
+				<type>org.exoplatform.container.TestExoContainer$TSC2Plugin</type>
+			</component-plugin>
+		</component-plugins>
+	</component>
+	<component profiles="testContainers">
+		<type>org.exoplatform.container.TestExoContainer$CCTC1</type>
+	</component>
+	<component profiles="testContainers">
+		<type>org.exoplatform.container.TestExoContainer$CCTC2</type>
+	</component>
+	<component profiles="testContainers">
+		<type>org.exoplatform.container.TestExoContainer$CCTC3</type>
+	</component>
+	<external-component-plugins profiles="testStackOverflowError">
+		<target-component>org.exoplatform.container.TestExoContainer$MyService</target-component>
+		<component-plugin>
+			<name>test.plugin</name>
+			<set-method>addPlugin</set-method>
+			<type>org.exoplatform.container.TestExoContainer$MyPlugin</type>
+			<description>User - Ticket Authenticator</description>
+		</component-plugin>
+	</external-component-plugins>
 </configuration>

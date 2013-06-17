@@ -23,6 +23,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
+import org.exoplatform.container.spi.Container;
 import org.exoplatform.management.ManagementAware;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.ManagedBy;
@@ -69,7 +70,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
    final Map<ManagementProvider, Object> managedSet;
 
    /** . */
-   private final ManagementContextImpl parent;
+   final ManagementContextImpl parent;
 
    /** . */
    private final Object resource;
@@ -90,10 +91,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       //
       Object resource = null;
       ManagedTypeMetaData typeMD = null;
-      MetaDataBuilder builder = new MetaDataBuilder(container.getClass());
+      MetaDataBuilder builder = new MetaDataBuilder(container.getHolder().getClass());
       if (builder.isBuildable())
       {
-         resource = container;
+         resource = container.getHolder();
          typeMD = builder.build();
       }
 
@@ -121,10 +122,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       //
       Object resource = null;
       ManagedTypeMetaData typeMD = null;
-      MetaDataBuilder builder = new MetaDataBuilder(container.getClass());
+      MetaDataBuilder builder = new MetaDataBuilder(container.getHolder().getClass());
       if (builder.isBuildable())
       {
-         resource = container;
+         resource = container.getHolder();
          typeMD = builder.build();
       }
 
@@ -214,9 +215,9 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
 
             //
             ManagementContextImpl managementContext;
-            if (resource instanceof ManageableContainer)
+            if (resource instanceof Container)
             {
-               managementContext = ((ManageableContainer)resource).managementContext;
+               managementContext = (ManagementContextImpl)((Container)resource).getManagementContext();
             }
             else
             {
@@ -335,13 +336,13 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       return list;
    }
 
-   public ExoContainer findContainer()
+   public ManageableContainer findContainer()
    {
       for (ManagementContextImpl current = this;true;current = current.parent)
       {
-         if (current.container instanceof ExoContainer)
+         if (current.container instanceof ManageableContainer)
          {
-            return (ExoContainer)current.container;
+            return (ManageableContainer)current.container;
          }
          else if (current.parent == null)
          {
@@ -352,8 +353,8 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
 
    public void beforeInvoke(Object managedResource)
    {
-      final ExoContainer container = findContainer();
-      if (container != null)
+      final ManageableContainer container = findContainer();
+      if (container != null && container.getHolder() != null)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
@@ -364,11 +365,11 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
                {
                   previousContainer.set(oldContainer);
                }
-               ExoContainerContext.setCurrentContainer(container);
+               ExoContainerContext.setCurrentContainer(container.getHolder());
                return null;
             }
          });
-         RequestLifeCycle.begin(container);
+         RequestLifeCycle.begin(container.getHolder());
       }
    }
 

@@ -18,61 +18,61 @@
  */
 package org.exoplatform.container.management;
 
+import org.exoplatform.container.ConcurrentContainer;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.jmx.MX4JComponentAdapter;
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoInitializationException;
-import org.picocontainer.PicoIntrospectionException;
-import org.picocontainer.PicoVisitor;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableComponentAdapter implements ComponentAdapter
+public class ManageableComponentAdapter extends MX4JComponentAdapter
 {
 
    /** . */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ManageableComponentAdapter");
 
    /** . */
-   private ComponentAdapter delegate;
+   private final AtomicBoolean registered = new AtomicBoolean();
 
-   /** . */
-   private final ManageableContainer container;
-
-   /** . */
-   private volatile boolean registered = false;
-
-   public ManageableComponentAdapter(ManageableContainer container, ComponentAdapter delegate)
+   public ManageableComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key,
+      Class<?> implementation)
    {
-      this.delegate = delegate;
-      this.container = container;
+      super(holder, container, key, implementation);
    }
 
-   public Object getComponentKey()
+   public Object getComponentInstance() throws ContainerException
    {
-      return delegate.getComponentKey();
-   }
-
-   public Class getComponentImplementation()
-   {
-      return delegate.getComponentImplementation();
-   }
-
-   public Object getComponentInstance(PicoContainer pico) throws PicoInitializationException,
-      PicoIntrospectionException
-   {
-      Object instance = delegate.getComponentInstance(pico);
+      Object instance = super.getComponentInstance();
 
       //
-      if (!registered)
+      if (instance != null)
       {
-         registered = true;
+         register(exocontainer, instance);
+      }
+      return instance;
+   }
 
-         //
+   protected void register(Container co, Object instance)
+   {
+      do
+      {
+         if (co instanceof ManageableContainer)
+         {
+            break;
+         }
+      }
+      while ((co = co.getSuccessor()) != null);
+      if (co instanceof ManageableContainer && registered.compareAndSet(false, true))
+      {
+         ManageableContainer container = (ManageableContainer)co;
          if (container.managementContext != null)
          {
             // Registry the instance against the management context
@@ -88,16 +88,5 @@ public class ManageableComponentAdapter implements ComponentAdapter
             }
          }
       }
-      return instance;
-   }
-
-   public void verify(PicoContainer container) throws PicoIntrospectionException
-   {
-      delegate.verify(container);
-   }
-
-   public void accept(PicoVisitor visitor)
-   {
-      delegate.accept(visitor);
    }
 }

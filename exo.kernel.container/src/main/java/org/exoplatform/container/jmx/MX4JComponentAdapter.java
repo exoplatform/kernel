@@ -20,17 +20,18 @@ package org.exoplatform.container.jmx;
 
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.AbstractComponentAdapter;
+import org.exoplatform.container.ConcurrentContainer;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.spi.Container;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ExternalComponentPlugins;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.defaults.AbstractComponentAdapter;
 
 import java.lang.reflect.Method;
 import java.security.PrivilegedExceptionAction;
@@ -43,7 +44,6 @@ import java.util.List;
  * @author Benjamin Mestrallet
  * @version $Revision: 1.5 $
  */
-@SuppressWarnings("unchecked")
 public class MX4JComponentAdapter extends AbstractComponentAdapter
 {
    /**
@@ -55,18 +55,25 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
-   public MX4JComponentAdapter(Object key, Class<?> implementation)
+   /** . */
+   protected final ExoContainer exocontainer;
+
+   /** . */
+   protected final ConcurrentContainer container;
+
+   public MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<?> implementation)
    {
       super(key, implementation);
+      this.exocontainer = holder;
+      this.container = container;
    }
 
-   public Object getComponentInstance(PicoContainer container)
+   public Object getComponentInstance()
    {
       if (instance_ != null)
          return instance_;
 
       //
-      ExoContainer exocontainer = (ExoContainer)container;
       Component component = null;
       ConfigurationManager manager;
       String componentKey;
@@ -86,7 +93,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             else
                componentKey = ((Class<?>)key).getName();
             manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
-            component = manager.getComponent(componentKey);
+            component = manager == null ? null : manager.getComponent(componentKey);
             if (component != null)
             {
                params = component.getInitParams();
@@ -101,14 +108,15 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
                // to component plugins
                return instance_;
             }
-            exocontainer.addComponentToCtx(getComponentKey(), instance);
+            container.addComponentToCtx(getComponentKey(), instance);
             if (debug)
                LOG.debug("==> create  component : " + instance_);
             if (component != null && component.getComponentPlugins() != null)
             {
                addComponentPlugin(debug, instance, component.getComponentPlugins(), exocontainer);
             }
-            ExternalComponentPlugins ecplugins = manager.getConfiguration().getExternalComponentPlugins(componentKey);
+            ExternalComponentPlugins ecplugins =
+               manager == null ? null : manager.getConfiguration().getExternalComponentPlugins(componentKey);
             if (ecplugins != null)
             {
                addComponentPlugin(debug, instance, ecplugins.getComponentPlugins(), exocontainer);
@@ -136,7 +144,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       }
       finally
       {
-         exocontainer.removeComponentFromCtx(getComponentKey());
+         container.removeComponentFromCtx(getComponentKey());
       }
       return instance_;
    }
@@ -185,7 +193,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
          {
             LOG.error(
                "Failed to instanciate plugin " + plugin.getName() + " for component " + component + ": "
-               + ex.getMessage(), ex);
+                  + ex.getMessage(), ex);
          }
       }
    }
@@ -237,7 +245,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
    {
       return getClosestMatchDepth(pluginClass, type, 0);
    }
-   
+
    /**
     * Check if the given plugin class is assignable from the given type, if not we recheck with its parent class
     * until we find the closest match.
@@ -254,8 +262,8 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       }
       return getClosestMatchDepth(pluginClass.getSuperclass(), type, depth + 1);
    }
-   
-   public void verify(PicoContainer container)
+
+   public void verify(Container container)
    {
    }
 

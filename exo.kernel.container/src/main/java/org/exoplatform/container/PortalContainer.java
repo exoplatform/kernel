@@ -24,7 +24,6 @@ import org.exoplatform.container.RootContainer.PortalContainerInitTask;
 import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
 import org.exoplatform.container.RootContainer.PortalContainerPreInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
-import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.PortalContainerInfo;
@@ -138,7 +137,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
 
    public PortalContainer(RootContainer parent, final ServletContext portalContext)
    {
-      super(new MX4JComponentAdapterFactory(), parent);
+      super(parent);
       this.name = portalContext.getServletContextName();
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
@@ -696,7 +695,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       ExoContainerContext.setCurrentContainer(instance);
    }
 
-   public static Object getComponent(Class key)
+   public static Object getComponent(Class<?> key)
    {
       PortalContainer pcontainer = getInstanceIfPresent();
       return pcontainer.getComponentInstanceOfType(key);

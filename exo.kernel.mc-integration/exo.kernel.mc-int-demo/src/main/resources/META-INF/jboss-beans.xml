@@ -1,3 +1,0 @@
-<deployment xmlns="urn:jboss:bean-deployer:2.0">
-   <bean name="InjectedBean" class="org.exoplatform.kernel.demos.mc.InjectedBean"/>
-</deployment>

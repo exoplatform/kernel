@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,26 +16,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.jmx;
+package org.exoplatform.container.spi;
 
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
-import org.exoplatform.management.jmx.annotations.NamingContext;
-import org.exoplatform.management.jmx.annotations.Property;
 
 /**
- * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
- * @version $Revision$
+ * Interface realizing a visitor pattern for {@link Container} as described in the GoF.
+ * The visitor should visit the container and its children.
+ * 
+ * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
+ * @version $Id$
+ *
  */
-@Managed
-@NameTemplate(@Property(key = "foo", value = "bar"))
-@NamingContext(@Property(key = "foo", value = "bar"))
-public class ManagedContainer extends ExoContainer
+public interface ContainerVisitor
 {
 
-   public ManagedContainer(ExoContainer parent)
-   {
-      super(parent);
-   }
+   /**
+    * Visit a {@link Container} that has to accept the visitor.
+    * 
+    * @param container the visited container.
+    */
+   void visitContainer(Container container);
 }

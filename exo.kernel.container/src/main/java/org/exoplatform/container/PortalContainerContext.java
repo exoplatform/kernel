@@ -105,8 +105,7 @@ class PortalContainerContext implements ServletContext
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings("unchecked")
-   public Enumeration getAttributeNames()
+   public Enumeration<?> getAttributeNames()
    {
       return getPortalContext().getAttributeNames();
    }
@@ -331,8 +330,8 @@ class PortalContainerContext implements ServletContext
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings({"deprecation", "unchecked"})
-   public Enumeration getServletNames()
+   @SuppressWarnings("deprecation")
+   public Enumeration<?> getServletNames()
    {
       return getPortalContext().getServletNames();
    }
@@ -340,8 +339,8 @@ class PortalContainerContext implements ServletContext
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings({"deprecation", "unchecked"})
-   public Enumeration getServlets()
+   @SuppressWarnings("deprecation")
+   public Enumeration<?> getServlets()
    {
       return getPortalContext().getServlets();
    }

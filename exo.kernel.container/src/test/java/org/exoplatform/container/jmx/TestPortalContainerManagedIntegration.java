@@ -46,7 +46,7 @@ public class TestPortalContainerManagedIntegration extends AbstractTestContainer
       PortalContainer portal = PortalContainer.getInstance();
       ManagementContextImpl portalManagementContext = (ManagementContextImpl)portal.getManagementContext();
       assertSame(root.getManagementContext(), portalManagementContext.getParent());
-      assertSame(portal, portalManagementContext.findContainer());
+      assertNotNull(portalManagementContext.findContainer());
 
       //
       SimpleManagementAware rootManagementAware = (SimpleManagementAware)root.getComponentInstance("RootManagementAware");

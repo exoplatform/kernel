@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,26 +16,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.jmx;
+package org.exoplatform.container;
 
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
-import org.exoplatform.management.jmx.annotations.NamingContext;
-import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.container.spi.ContainerException;
 
 /**
- * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
- * @version $Revision$
+ * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
+ * @version $Id$
+ *
  */
-@Managed
-@NameTemplate(@Property(key = "foo", value = "bar"))
-@NamingContext(@Property(key = "foo", value = "bar"))
-public class ManagedContainer extends ExoContainer
+public class InstanceComponentAdapter extends AbstractComponentAdapter
 {
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 94127189297829247L;
 
-   public ManagedContainer(ExoContainer parent)
+   private final Object componentInstance;
+
+   public InstanceComponentAdapter(Object componentKey, Object componentInstance) throws ContainerException
    {
-      super(parent);
+      super(componentKey, componentInstance.getClass());
+      this.componentInstance = componentInstance;
+   }
+
+   public Object getComponentInstance()
+   {
+      return componentInstance;
    }
 }

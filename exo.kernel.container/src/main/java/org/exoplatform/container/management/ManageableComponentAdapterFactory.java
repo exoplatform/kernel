@@ -18,12 +18,11 @@
  */
 package org.exoplatform.container.management;
 
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoIntrospectionException;
-import org.picocontainer.defaults.AssignabilityRegistrationException;
-import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.NotConcreteRegistrationException;
+import org.exoplatform.container.ConcurrentContainer;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapterFactory;
+import org.exoplatform.container.spi.ContainerException;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -33,21 +32,20 @@ public class ManageableComponentAdapterFactory implements ComponentAdapterFactor
 {
 
    /** . */
-   private ComponentAdapterFactory delegate;
+   private final ExoContainer holder;
 
    /** . */
-   ManageableContainer container;
+   private final ConcurrentContainer container;
 
-   public ManageableComponentAdapterFactory(ComponentAdapterFactory delegate)
+   public ManageableComponentAdapterFactory(ExoContainer holder, ConcurrentContainer container)
    {
-      this.delegate = delegate;
+      this.holder = holder;
+      this.container = container;
    }
 
-   public ComponentAdapter createComponentAdapter(Object componentKey, Class componentImplementation,
-      Parameter[] parameters) throws PicoIntrospectionException, AssignabilityRegistrationException,
-      NotConcreteRegistrationException
+   public ComponentAdapter createComponentAdapter(Object componentKey, Class<?> componentImplementation) 
+            throws ContainerException
    {
-      ComponentAdapter adapter = delegate.createComponentAdapter(componentKey, componentImplementation, parameters);
-      return new ManageableComponentAdapter(container, adapter);
+      return new ManageableComponentAdapter(holder, container, componentKey, componentImplementation);
    }
 }

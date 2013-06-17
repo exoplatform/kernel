@@ -18,24 +18,18 @@
  */
 package org.exoplatform.container.management;
 
-import org.exoplatform.container.CachingContainer;
-import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
+import org.exoplatform.container.AbstractInterceptor;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.management.ManagementContext;
-import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.management.jmx.impl.JMX;
 import org.exoplatform.management.jmx.impl.JMXManagementProvider;
 import org.exoplatform.management.jmx.impl.MBeanScopingData;
 import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoException;
-import org.picocontainer.PicoRegistrationException;
-import org.picocontainer.defaults.ComponentAdapterFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -53,8 +47,13 @@ import javax.management.ObjectName;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableContainer extends CachingContainer
+public class ManageableContainer extends AbstractInterceptor
 {
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 5573000068005815688L;
 
    /**
     * The logger
@@ -68,11 +67,7 @@ public class ManageableContainer extends CachingContainer
    }
 
    /** . */
-   private static final ThreadLocal<ManageableComponentAdapterFactory> hack =
-      new ThreadLocal<ManageableComponentAdapterFactory>();
-
-   /** . */
-   final ManagementContextImpl managementContext;
+   ManagementContextImpl managementContext;
 
    /** . */
    private MBeanServer server;
@@ -84,43 +79,36 @@ public class ManageableContainer extends CachingContainer
    /** . */
    private final Set<ManagementProvider> providers;
 
-   /** . */
-   private final ManageableContainer parent;
-
    public ManageableContainer()
    {
-      this((PicoContainer)null);
+      // The synchronized wrapper, here will not impact runtime performances
+      // so it's fine
+      this.providers = Collections.synchronizedSet(new HashSet<ManagementProvider>());
    }
 
-   public ManageableContainer(PicoContainer parent)
+   public ManageableContainer(ExoContainer holder, ExoContainer parent)
    {
-      this(new MX4JComponentAdapterFactory(), parent);
-   }
-
-   public ManageableContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
-   {
-      super(getComponentAdapterFactory(componentAdapterFactory), parent);
-
-      // Yeah this is not pretty but a necessary evil to make it work
-      ManageableComponentAdapterFactory factory = hack.get();
-      factory.container = this;
-      hack.set(null);
-
       // The synchronized wrapper, here will not impact runtime performances
       // so it's fine
       this.providers = Collections.synchronizedSet(new HashSet<ManagementProvider>());
 
       //
-      ManagementContextImpl parentCtx = null;
-      if (parent instanceof ManageableContainer)
-      {
-         ManageableContainer manageableParent = (ManageableContainer)parent;
-         parentCtx = manageableParent.managementContext;
-      }
+      setHolder(holder);
+      setParent(parent);
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void setParent(ExoContainer parent)
+   {
+      this.parent = parent;
       //
-      this.parent = parent instanceof ManageableContainer ? (ManageableContainer)parent : null;
-
+      ManagementContextImpl parentCtx = null;
+      if (parent != null)
+      {
+         parentCtx = (ManagementContextImpl)parent.getManagementContext();
+      }
       //
       if (parentCtx != null)
       {
@@ -135,40 +123,17 @@ public class ManageableContainer extends CachingContainer
       }
    }
 
-   public ManageableContainer(ComponentAdapterFactory componentAdapterFactory)
-   {
-      this(componentAdapterFactory, null);
-   }
-
-   @Managed
-   @ManagedName("RegisteredComponentNames")
-   @ManagedDescription("Return the list of the registered component names")
-   public Set<String> getRegisteredComponentNames() throws PicoException
-   {
-      Set<String> names = new HashSet<String>();
-      Collection<ComponentAdapter> adapters = getComponentAdapters();
-      for (ComponentAdapter adapter : adapters)
-      {
-         Object key = adapter.getComponentKey();
-         String name = String.valueOf(key);
-         names.add(name);
-      }
-      return names;
-   }
-
-   private static ManageableComponentAdapterFactory getComponentAdapterFactory(
-      ComponentAdapterFactory componentAdapterFactory)
-   {
-      ManageableComponentAdapterFactory factory = new ManageableComponentAdapterFactory(componentAdapterFactory);
-      hack.set(factory);
-      return factory;
-   }
-
+   /**
+    * {@inheritDoc}
+    */
    public ManagementContext getManagementContext()
    {
       return managementContext;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public final MBeanServer getMBeanServer()
    {
       return server;
@@ -214,8 +179,11 @@ public class ManageableContainer extends CachingContainer
       return objectName;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-      throws PicoRegistrationException
+      throws ContainerException
    {
       ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
       if (managementContext != null)
@@ -232,6 +200,9 @@ public class ManageableContainer extends CachingContainer
       return adapter;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public ComponentAdapter unregisterComponent(Object componentKey)
    {
@@ -255,6 +226,9 @@ public class ManageableContainer extends CachingContainer
       return super.unregisterComponent(componentKey);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public void stop()
    {
@@ -282,7 +256,7 @@ public class ManageableContainer extends CachingContainer
    {
       if (parent != null)
       {
-         parent.computeAllProviders(allProviders);
+         managementContext.parent.container.computeAllProviders(allProviders);
       }
 
       //
@@ -305,5 +279,21 @@ public class ManageableContainer extends CachingContainer
 
       //
       return true;
+   }
+
+   /**
+    * @return the holder
+    */
+   public ExoContainer getHolder()
+   {
+      return holder;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getId()
+   {
+      return "Management";
    }
 }

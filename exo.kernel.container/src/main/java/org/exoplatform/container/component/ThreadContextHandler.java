@@ -20,7 +20,6 @@ package org.exoplatform.container.component;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
-import org.picocontainer.PicoContainer;
 
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -48,14 +47,13 @@ public class ThreadContextHandler
     * Stores into memory the current values of all the Thread Local variables
     * of all the registered {@link ThreadContextHolder} of the {@link ExoContainer}
     */
-   @SuppressWarnings("unchecked")
    public void store()
    {
       final List<ThreadContextHolder> components =
          new ArrayList<ThreadContextHolder>(
             (List<ThreadContextHolder>)container.getComponentInstancesOfType(ThreadContextHolder.class));
 
-      for (PicoContainer current = container.getParent(); current != null; current = current.getParent())
+      for (ExoContainer current = container.getParent(); current != null; current = current.getParent())
       {
          components.addAll((List<ThreadContextHolder>)current.getComponentInstancesOfType(ThreadContextHolder.class));
       }

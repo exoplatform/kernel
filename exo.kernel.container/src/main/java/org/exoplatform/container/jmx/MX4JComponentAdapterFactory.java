@@ -18,20 +18,36 @@
  */
 package org.exoplatform.container.jmx;
 
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoIntrospectionException;
-import org.picocontainer.defaults.AssignabilityRegistrationException;
-import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.NotConcreteRegistrationException;
+import org.exoplatform.container.ConcurrentContainer;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapterFactory;
+import org.exoplatform.container.spi.ContainerException;
 
 import java.io.Serializable;
 
 public class MX4JComponentAdapterFactory implements ComponentAdapterFactory, Serializable
 {
-   public ComponentAdapter createComponentAdapter(Object key, Class impl, Parameter[] params)
-      throws PicoIntrospectionException, AssignabilityRegistrationException, NotConcreteRegistrationException
+
+   /** . */
+   private final ExoContainer holder;
+
+   /** . */
+   private final ConcurrentContainer container;
+
+   public MX4JComponentAdapterFactory(ExoContainer holder, ConcurrentContainer container)
    {
-      return new MX4JComponentAdapter(key, impl);
+      this.holder = holder;
+      this.container = container;
+   }
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 1715363032066303387L;
+
+   public ComponentAdapter createComponentAdapter(Object key, Class<?> impl) throws ContainerException
+   {
+      return new MX4JComponentAdapter(holder, container, key, impl);
    }
 }
