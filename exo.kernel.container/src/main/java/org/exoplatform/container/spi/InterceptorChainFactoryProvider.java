@@ -28,8 +28,8 @@ import java.util.ServiceLoader;
  * This class will provide the {@link InterceptorChainFactory} to use. It will try to get it thanks to the {@link ServiceLoader}
  * if none can be found it will provide a default one.
  * 
- * It will try to load the {@link InterceptorChainFactory} from the {@link ClassLoader} of the current 
- * class which is {@link InterceptorChainFactoryProvider}. By default it will use the 
+ * It will try to load the {@link InterceptorChainFactory} using the
+ * current thread's {@linkplain java.lang.Thread#getContextClassLoade context class loader}. By default it will use the 
  * {@link DefaultInterceptorChainFactory}
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -47,8 +47,7 @@ public class InterceptorChainFactoryProvider
    static
    {
       InterceptorChainFactory factory = null;
-      ServiceLoader<InterceptorChainFactory> loader =
-         ServiceLoader.load(InterceptorChainFactory.class, InterceptorChainFactoryProvider.class.getClassLoader());
+      ServiceLoader<InterceptorChainFactory> loader = ServiceLoader.load(InterceptorChainFactory.class);
       Iterator<InterceptorChainFactory> it = loader.iterator();
       if (it.hasNext())
       {
@@ -68,7 +67,9 @@ public class InterceptorChainFactoryProvider
    /**
     * Prevents instantiation
     */
-   private InterceptorChainFactoryProvider() {}
+   private InterceptorChainFactoryProvider()
+   {
+   }
 
    /**
     * Gives the {@link InterceptorChainFactory} that must be used to create all the {@link Interceptor} chains 

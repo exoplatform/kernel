@@ -67,12 +67,26 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
                List<Interceptor> interceptors = resolve(staticInts, dynamicInts);
                Interceptor result = null;
                List<Class<? extends Interceptor>> chain = new LinkedList<Class<? extends Interceptor>>();
+               StringBuilder sb = null;
+               boolean isDevelopping = PropertyManager.isDevelopping();
+               if (isDevelopping)
+               {
+                  sb = new StringBuilder();
+               }
                for (int i = 0, length = interceptors.size(); i < length; i++)
                {
                   Interceptor it = interceptors.get(i);
                   it.setSuccessor(result);
                   chain.add(it.getClass());
+                  if (isDevelopping)
+                  {
+                     sb.insert(0, "-> " + it.getClass().getName() + " ");
+                  }
                   result = it;
+               }
+               if (isDevelopping)
+               {
+                  System.out.println("The interceptor chain used is " + sb); //NOSONAR
                }
                this.chain = chain;
                return result;
@@ -118,8 +132,7 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
    protected List<Interceptor> getDynamicInterceptors(ExoContainer holder, ExoContainer parent)
    {
       List<Interceptor> list = new ArrayList<Interceptor>();
-      ServiceLoader<Interceptor> loader =
-         ServiceLoader.load(Interceptor.class, DefaultInterceptorChainFactory.class.getClassLoader());
+      ServiceLoader<Interceptor> loader = ServiceLoader.load(Interceptor.class);
       for (Iterator<Interceptor> it = loader.iterator(); it.hasNext();)
       {
          Interceptor interceptor = it.next();

@@ -19,12 +19,12 @@
 package org.exoplatform.container.configuration;
 
 import junit.framework.TestCase;
+
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ContainerBuilder;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.xml.Configuration;
 
-import java.io.File;
 import java.net.URL;
 
 /**
@@ -35,17 +35,14 @@ public abstract class AbstractProfileTest extends TestCase
 {
    protected final Configuration getConfiguration(String configName, String... profiles) throws Exception
    {
-      String basedir = System.getProperty("basedir");
-      File f = new File(basedir + "/src/test/resources/org/exoplatform/container/configuration/" + configName);
       ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller(Tools.<String>set(profiles));
-      URL url = f.toURI().toURL();
+      URL url = AbstractProfileTest.class.getResource(configName);
       return unmarshaller.unmarshall(url);
    }
 
    protected final RootContainer getKernel(String configName, String... profiles) throws Exception
    {
-      String basedir = System.getProperty("basedir");
-      File f = new File(basedir + "/src/test/resources/org/exoplatform/container/configuration/" + configName);
-      return ContainerBuilder.bootstrap(f.toURI().toURL(), profiles);
+      URL url = AbstractProfileTest.class.getResource(configName);
+      return ContainerBuilder.bootstrap(url, profiles);
    }
 }

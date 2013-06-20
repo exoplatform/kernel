@@ -36,6 +36,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ManageableComponentAdapter extends MX4JComponentAdapter
 {
 
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 8922696628680586728L;
+
    /** . */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ManageableComponentAdapter");
 

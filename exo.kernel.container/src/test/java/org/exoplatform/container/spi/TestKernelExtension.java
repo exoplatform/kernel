@@ -159,9 +159,12 @@ public class TestKernelExtension extends TestCase
       Test0 t0I = new Test0();
       Test1 t1I = new Test1();
       Test2 t2I = new Test2();
+      Test3 t3I = new Test3();
       holder.registerComponentInstance(Test0.class, t0I);
       holder.registerComponentInstance(Test1.class, t1I);
       holder.registerComponentInstance(Test2.class, t2I);
+      holder.registerComponentInstance(Test3.class, t3I);
+      holder.registerComponentImplementation(Test5.class);
       assertSame(t0I, holder.getComponentInstanceOfType(Test0.class));
       Test1 t1FC = holder.getComponentInstanceOfType(Test1.class);
       assertNotSame(t1I, t1FC);
@@ -171,6 +174,13 @@ public class TestKernelExtension extends TestCase
       assertNotSame(t2I, t2FC);
       // It comes from the cache so it must be the same than before
       assertSame(t2FC, holder.getComponentInstanceOfType(Test2.class));
+      Test3 t3FC = holder.getComponentInstanceOfType(Test3.class);
+      assertSame(MockInterceptor1.TEST, t3FC);
+      Test5 t4FC = holder.getComponentInstanceOfType(Test5.class);
+      assertSame(t0I, t4FC.t0);
+      assertNotSame(t1I, t4FC.t1);
+      assertNotSame(t2I, t4FC.t2);
+      assertSame(t3FC, t4FC.t3);
    }
 
    public static class MockInterceptorChainFactory implements InterceptorChainFactory
@@ -203,6 +213,8 @@ public class TestKernelExtension extends TestCase
    @Before(value = "Cache")
    public static class MockInterceptor1 extends AbstractInterceptor
    {
+      public static final Test3 TEST = new Test3();
+
       ExoContainer getParent()
       {
          return parent;
@@ -219,6 +231,14 @@ public class TestKernelExtension extends TestCase
          if (componentType.equals(Test1.class))
          {
             return componentType.cast(new Test1());
+         }
+         else if (componentType.equals(Test3.class))
+         {
+            return componentType.cast(TEST);
+         }
+         else if (componentType.equals(Test4.class))
+         {
+            return componentType.cast(new Test4());
          }
          return super.getComponentInstanceOfType(componentType);
       }
@@ -373,5 +393,31 @@ public class TestKernelExtension extends TestCase
 
    private static class Test2
    {
+   };
+
+   private static class Test3
+   {
+   };
+
+   private static class Test4
+   {
+   };
+
+   public static class Test5
+   {
+      public Test0 t0;
+      public Test1 t1;
+      public Test2 t2;
+      public Test3 t3;
+      public Test4 t4;
+
+      public Test5(Test0 t0, Test1 t1, Test2 t2, Test3 t3, Test4 t4)
+      {
+         this.t0 = t0;
+         this.t1 = t1;
+         this.t2 = t2;
+         this.t3 = t3;
+         this.t4 = t4;
+      }
    };
 }

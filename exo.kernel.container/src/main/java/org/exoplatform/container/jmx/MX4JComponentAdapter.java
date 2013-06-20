@@ -26,7 +26,6 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.spi.Container;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ExternalComponentPlugins;
 import org.exoplatform.container.xml.InitParams;
@@ -262,9 +261,4 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
       }
       return getClosestMatchDepth(pluginClass.getSuperclass(), type, depth + 1);
    }
-
-   public void verify(Container container)
-   {
-   }
-
 }

@@ -38,8 +38,8 @@ public class TestXSD_1_0 extends TestCase
    public void testValidation() throws Exception
    {
       ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller();
-      String baseDirPath = System.getProperty("basedir");
-      File baseDir = new File(baseDirPath + "/src/test/resources/xsd_1_0");
+      URL urlSampleConfig = getClass().getResource("../../../../xsd_1_0/sample-configuration-01.xml");
+      File baseDir = new File(urlSampleConfig.toURI()).getParentFile();
       int count = 0;
       for (File f : baseDir.listFiles(new FileFilter()
       {
@@ -75,9 +75,7 @@ public class TestXSD_1_0 extends TestCase
    
    public void testInitParams() throws Exception
    {
-      String baseDirPath = System.getProperty("basedir");
-      File file = new File(baseDirPath + "/src/test/resources/xsd_1_0/test-validation.xml");
-      URL url = file.toURI().toURL();
+      URL url = getClass().getResource("../../../../xsd_1_0/test-validation.xml");
       assertNotNull(url);
       RootContainer container = new ContainerBuilder().withRoot(url).build();
       container.getComponentInstanceOfType(TestValidation.class);

@@ -20,7 +20,6 @@ package org.exoplatform.container.configuration;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.monitor.jvm.JVMRuntimeInfo;
 import org.exoplatform.container.xml.Configuration;
@@ -30,7 +29,6 @@ import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
 
@@ -43,25 +41,16 @@ import java.net.URL;
  */
 public class TestConfigurationService extends TestCase
 {
-   private ConfigurationManager service_;
 
    public TestConfigurationService(String name)
    {
       super(name);
    }
 
-   public void setUp() throws Exception
-   {
-      PortalContainer manager = PortalContainer.getInstance();
-      service_ = (ConfigurationManager)manager.getComponentInstanceOfType(ConfigurationManager.class);
-   }
-
    public void testXSDBadSchema() throws Exception
    {
-      String basedir = System.getProperty("basedir");
-      File f = new File(basedir + "/src/test/resources/configuration-bad-schema.xml");
       ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller();
-      URL url = f.toURI().toURL();
+      URL url = TestConfigurationService.class.getResource("../../../../configuration-bad-schema.xml");
       try
       {
          unmarshaller.unmarshall(url);
@@ -75,10 +64,8 @@ public class TestConfigurationService extends TestCase
 
    public void testXSDNoSchema() throws Exception
    {
-      String basedir = System.getProperty("basedir");
-      File f = new File(basedir + "/src/test/resources/configuration-no-schema.xml");
       ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller();
-      URL url = f.toURI().toURL();
+      URL url = TestConfigurationService.class.getResource("../../../../configuration-no-schema.xml");
       Configuration conf = unmarshaller.unmarshall(url);
       assertNotNull(conf);
    }
@@ -89,9 +76,9 @@ public class TestConfigurationService extends TestCase
 
       ConfigurationUnmarshaller unmarshaller = new ConfigurationUnmarshaller();
 
-      File f = new File(basedir + "/src/test/resources/configuration.xml");
+      URL url = TestConfigurationService.class.getResource("../../../../configuration.xml");
 
-      Object obj = unmarshaller.unmarshall(f.toURI().toURL());
+      Object obj = unmarshaller.unmarshall(url);
 
       IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
       IMarshallingContext mctx = bfact.createMarshallingContext();

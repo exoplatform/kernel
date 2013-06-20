@@ -130,7 +130,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </target>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -144,6 +144,31 @@
                   <version>1.5.3-1</version>
                </dependency>
             </dependencies>
+         </plugin>
+         <!--
+         Configure maven-source-plugin to add test sources packed
+         in jar files to maven artifact
+         -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <configuration>
+               <excludes>
+                  <exclude>META-INF/services/*</exclude>
+                  <exclude>org/exoplatform/container/spi/*.java</exclude>
+                  <exclude>test.policy</exclude>
+                  <exclude>tsm-excludes.properties</exclude>
+               </excludes>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>attach-sources</id>
+                  <phase>generate-sources</phase>
+                  <goals>
+                     <goal>test-jar-no-fork</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

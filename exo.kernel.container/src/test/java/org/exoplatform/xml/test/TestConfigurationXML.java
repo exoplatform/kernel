@@ -37,8 +37,8 @@ import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -163,12 +163,11 @@ public class TestConfigurationXML extends TestCase
       System.setProperty("double_value", "172.5");
 
       //
-      String projectdir = System.getProperty("basedir");
       IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
+      URL url = TestConfigurationXML.class.getResource("../../../../test-resolved-property.xml");
       Configuration conf =
-         (Configuration)uctx.unmarshalDocument(new FileInputStream(projectdir
-            + "/src/test/resources/test-resolved-property.xml"), null);
+         (Configuration)uctx.unmarshalDocument(url.openStream(), null);
 
       assertNotNull(conf);
 

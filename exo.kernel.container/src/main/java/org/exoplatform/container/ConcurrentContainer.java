@@ -66,17 +66,17 @@ public class ConcurrentContainer extends AbstractInterceptor
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ConcurrentContainer");
 
-   private final ConcurrentMap<Object, ComponentAdapter> componentKeyToAdapterCache =
+   protected final ConcurrentMap<Object, ComponentAdapter> componentKeyToAdapterCache =
       new ConcurrentHashMap<Object, ComponentAdapter>();
 
    private ComponentAdapterFactory componentAdapterFactory;
 
-   private final Set<ComponentAdapter> componentAdapters = new CopyOnWriteArraySet<ComponentAdapter>();
+   protected final Set<ComponentAdapter> componentAdapters = new CopyOnWriteArraySet<ComponentAdapter>();
 
    // Keeps track of instantiation order.
-   private final CopyOnWriteArrayList<ComponentAdapter> orderedComponentAdapters = new CopyOnWriteArrayList<ComponentAdapter>();
+   protected final CopyOnWriteArrayList<ComponentAdapter> orderedComponentAdapters = new CopyOnWriteArrayList<ComponentAdapter>();
 
-   private final Set<ExoContainer> children = new CopyOnWriteArraySet<ExoContainer>();
+   protected final Set<ExoContainer> children = new CopyOnWriteArraySet<ExoContainer>();
 
    /**
     * Context used to keep in memory the components that are currently being created.
@@ -119,7 +119,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       return new ManageableComponentAdapterFactory(holder, this);
    }
 
-   public final ComponentAdapter getComponentAdapter(Object componentKey) throws ContainerException
+   public ComponentAdapter getComponentAdapter(Object componentKey) throws ContainerException
    {
       ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
       if (adapter == null && parent != null)
@@ -167,12 +167,11 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
    }
 
-   @SuppressWarnings("unchecked")
    public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
    {
       if (componentType == null)
       {
-         return Collections.EMPTY_LIST;
+         return Collections.emptyList();
       }
       List<ComponentAdapter> found = new ArrayList<ComponentAdapter>();
       for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
@@ -278,7 +277,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       return componentAdapter;
    }
 
-   private void addOrderedComponentAdapter(ComponentAdapter componentAdapter)
+   protected void addOrderedComponentAdapter(ComponentAdapter componentAdapter)
    {
       orderedComponentAdapters.addIfAbsent(componentAdapter);
    }
@@ -523,7 +522,7 @@ public class ConcurrentContainer extends AbstractInterceptor
             }
             else
             {
-               args[i] = getComponentInstanceOfType(parameters[i]);
+               args[i] = holder.getComponentInstanceOfType(parameters[i]);
                if (args[i] == null)
                {
                   satisfied = false;
