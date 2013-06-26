@@ -185,7 +185,7 @@ public class ContainerUtil
             {
                if (component.isMultiInstance())
                {
-                  throw new UnsupportedOperationException("Multi-instance is not more allowed");
+                  throw new UnsupportedOperationException("Multi-instance isn't allowed anymore");
                }
                else
                {
@@ -199,7 +199,7 @@ public class ContainerUtil
                   Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
                   if (component.isMultiInstance())
                   {
-                     throw new UnsupportedOperationException("Multi-instance is not more allowed");
+                     throw new UnsupportedOperationException("Multi-instance isn't allowed anymore");
                   }
                   else
                   {

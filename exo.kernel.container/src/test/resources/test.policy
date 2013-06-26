@@ -10,6 +10,10 @@ grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "manageContainer";
    permission java.lang.RuntimePermission "manageComponent";
    permission java.lang.RuntimePermission "manageThreadLocal";
+   // Permissions needed for ContainerBuilder
+   permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+   permission java.lang.RuntimePermission "createClassLoader";
+   permission java.lang.RuntimePermission "setContextClassLoader";
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{

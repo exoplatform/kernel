@@ -145,10 +145,7 @@
                </dependency>
             </dependencies>
          </plugin>
-         <!--
-         Configure maven-source-plugin to add test sources packed
-         in jar files to maven artifact
-         -->
+         <!-- Configure maven-source-plugin to publish the sources of the unit tests -->
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
@@ -166,6 +163,18 @@
                   <phase>generate-sources</phase>
                   <goals>
                      <goal>test-jar-no-fork</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <!-- Configure maven-jar-plugin to publish the classes of the unit tests -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>test-jar</goal>
                   </goals>
                </execution>
             </executions>
