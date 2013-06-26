@@ -23,6 +23,8 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.component.ComponentRequestLifecycle;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
@@ -36,6 +38,8 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 public class JobEnvironmentConfigListener implements JobListener, ComponentPlugin
 {
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.JobEnvironmentConfigListener");
+   
    static final String NAME = "JobContextConfigListener";
 
    public void jobToBeExecuted(JobExecutionContext context)
@@ -57,11 +61,14 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
       if (container != null)
       {
          ExoContainerContext.setCurrentContainer(container);            
-         List<ComponentRequestLifecycle> components =
-            container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
+         List<ComponentRequestLifecycle> components = container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
          for (ComponentRequestLifecycle component : components)
          {
-            component.startRequest(container);
+            try {
+               component.startRequest(container);
+            } catch(Throwable e) {
+               LOG.warn("Error starting request of " + component, e);
+            }
          }
       }
    }
@@ -89,11 +96,14 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
       }
       if (container != null)
       {
-         List<ComponentRequestLifecycle> components =
-            container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
+         List<ComponentRequestLifecycle> components = container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
          for (ComponentRequestLifecycle component : components)
          {
-            component.endRequest(container);
+            try {
+               component.endRequest(container);
+            } catch(Throwable e) {
+               LOG.warn("Error ending request of " + component, e);
+            }
          }
          ExoContainerContext.setCurrentContainer(null);            
       }
