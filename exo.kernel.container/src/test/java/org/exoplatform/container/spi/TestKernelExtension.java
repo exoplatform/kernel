@@ -210,7 +210,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @Before(value = "Cache")
+   @Before("Cache")
    public static class MockInterceptor1 extends AbstractInterceptor
    {
       public static final Test3 TEST = new Test3();
@@ -284,7 +284,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @After(value = "Fake")
+   @After("Fake")
    public static class MockInterceptor4 extends AbstractInterceptor
    {
       ExoContainer getParent()
@@ -299,7 +299,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @Before(value = "Fake")
+   @Before("Fake")
    public static class MockInterceptor5 extends AbstractInterceptor
    {
       ExoContainer getParent()
@@ -314,7 +314,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @After(value = "")
+   @After("")
    public static class MockInterceptor6 extends AbstractInterceptor
    {
       ExoContainer getParent()
@@ -329,7 +329,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @Before(value = "")
+   @Before("")
    public static class MockInterceptor7 extends AbstractInterceptor
    {
       ExoContainer getParent()
@@ -344,7 +344,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @After(value = "ConcurrentContainer")
+   @After("ConcurrentContainer")
    public static class MockInterceptor8 extends AbstractInterceptor
    {
       ExoContainer getParent()
@@ -359,7 +359,7 @@ public class TestKernelExtension extends TestCase
    }
 
    @SuppressWarnings("serial")
-   @Before(value = "MockInterceptor5")
+   @Before("MockInterceptor5")
    public static class MockInterceptor9 extends AbstractInterceptor
    {
       ExoContainer getParent()
