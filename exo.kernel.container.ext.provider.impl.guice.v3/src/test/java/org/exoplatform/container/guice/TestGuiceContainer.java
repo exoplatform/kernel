@@ -18,17 +18,13 @@
  */
 package org.exoplatform.container.guice;
 
-import com.google.inject.BindingAnnotation;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -96,6 +92,8 @@ public class TestGuiceContainer extends AbstractTestContainer
       assertSame(e, f.e);
       G g = container.getComponentInstanceOfType(G.class);
       assertNotNull(g);
+      assertSame(g, container.getComponentInstanceOfType(G.class));
+      assertSame(g, adapterG.getComponentInstance());
    }
 
    public static class A
@@ -142,13 +140,8 @@ public class TestGuiceContainer extends AbstractTestContainer
    }
 
    @Singleton
-   @MyClassG
+   @Named("MyClassG")
    public static class G
    {
-   }
-
-   @Retention(RetentionPolicy.RUNTIME)
-   @BindingAnnotation
-   @interface MyClassG {
    }
 }

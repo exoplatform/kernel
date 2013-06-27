@@ -122,8 +122,7 @@ public class GuiceContainer extends AbstractInterceptor
       ComponentAdapter result = super.getComponentAdapter(componentKey);
       if (result == null && componentKey instanceof Class<?>)
       {
-         Class<?> type = (Class<?>)componentKey;
-         result = getComponentAdapter(type);
+         result = getComponentAdapter((Class<?>)componentKey);
       }
       return result;
    }
