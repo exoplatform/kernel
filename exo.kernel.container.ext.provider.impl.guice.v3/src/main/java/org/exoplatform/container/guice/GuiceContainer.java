@@ -21,13 +21,12 @@ package org.exoplatform.container.guice;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
 import com.google.inject.Binding;
-import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.name.Names;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.AbstractComponentAdapter;
 import org.exoplatform.container.AbstractInterceptor;
 import org.exoplatform.container.spi.ComponentAdapter;
@@ -36,11 +35,12 @@ import org.exoplatform.container.spi.Interceptor;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
- * The implementation of an {@link Interceptor} allowing eXo Kernel to interact with a google guice container
+ * The implementation of an {@link Interceptor} allowing eXo Kernel to interact with a Google Guice container
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
@@ -60,13 +60,14 @@ public class GuiceContainer extends AbstractInterceptor
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ext.provider.impl.guice.v3.GuiceContainer");
 
    /**
-    * The google guice injector
+    * The Google Guice injector
     */
    private Injector injector;
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public Object getComponentInstance(Object componentKey)
    {
       Object result = super.getComponentInstance(componentKey);
@@ -79,31 +80,22 @@ public class GuiceContainer extends AbstractInterceptor
 
    protected <T> T getComponentInstance(final Class<T> componentType)
    {
-      PrivilegedAction<T> action = new PrivilegedAction<T>()
+      if (injector == null)
       {
-         public T run()
-         {
-            try
-            {
-               Binding<?> binding = injector.getBinding(componentType);
-               if (!(binding.getProvider() instanceof ComponentAdapterProvider))
-               {
-                  return componentType.cast(binding.getProvider().get());
-               }
-            }
-            catch (ConfigurationException e)
-            {
-               LOG.debug("Could not find a binding for " + componentType, e);
-            }
-            return null;
-         }
-      };
-      return SecurityHelper.doPrivilegedAction(action);
+         return null;
+      }
+      Binding<?> binding = injector.getExistingBinding(Key.get(componentType));
+      if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+      {
+         return null;
+      }
+      return componentType.cast(binding.getProvider().get());
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
       T result = super.getComponentInstanceOfType(componentType);
@@ -117,6 +109,7 @@ public class GuiceContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @Override
    public ComponentAdapter getComponentAdapter(Object componentKey)
    {
       ComponentAdapter result = super.getComponentAdapter(componentKey);
@@ -129,45 +122,94 @@ public class GuiceContainer extends AbstractInterceptor
 
    protected ComponentAdapter getComponentAdapter(final Class<?> type)
    {
-      PrivilegedAction<ComponentAdapter> action = new PrivilegedAction<ComponentAdapter>()
+      if (injector == null)
       {
-         public ComponentAdapter run()
-         {
-            try
-            {
-               final Binding<?> binding = injector.getBinding(type);
-               return new AbstractComponentAdapter(type, type)
-               {
-                  /**
-                   * The serial UID
-                   */
-                  private static final long serialVersionUID = 4241559622835718141L;
+         return null;
+      }
+      final Binding<?> binding = injector.getExistingBinding(Key.get(type));
+      if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+      {
+         return null;
+      }
+      return createComponentAdapter(type, binding);
+   }
 
-                  public Object getComponentInstance() throws ContainerException
-                  {
-                     return binding.getProvider().get();
-                  }
-               };
-            }
-            catch (ConfigurationException e)
-            {
-               LOG.debug("Could not find a binding for " + type, e);
-            }
-            return null;
+   private ComponentAdapter createComponentAdapter(final Class<?> type, final Binding<?> binding)
+   {
+      return new AbstractComponentAdapter(type, type)
+      {
+         /**
+          * The serial UID
+          */
+         private static final long serialVersionUID = 4241559622835718141L;
+
+         public Object getComponentInstance() throws ContainerException
+         {
+            return binding.getProvider().get();
          }
       };
-      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
    {
-      ComponentAdapter result = super.getComponentAdapter(componentType);
+      ComponentAdapter result = super.getComponentAdapterOfType(componentType);
       if (result == null)
       {
          result = getComponentAdapter(componentType);
+      }
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
+   {
+      List<ComponentAdapter> result = super.getComponentAdaptersOfType(componentType);
+      if (injector != null)
+      {
+         result = new ArrayList<ComponentAdapter>(result);
+         for (Binding<?> b : injector.getAllBindings().values())
+         {
+            if (b.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+            {
+               continue;
+            }
+            else if (componentType.isAssignableFrom(b.getKey().getTypeLiteral().getRawType()))
+            {
+               result.add(createComponentAdapter(b.getKey().getTypeLiteral().getRawType(), b));
+            }
+         }
+      }
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public <T> List<T> getComponentInstancesOfType(Class<T> componentType) throws ContainerException
+   {
+      List<T> result = super.getComponentInstancesOfType(componentType);
+      if (injector != null)
+      {
+         result = new ArrayList<T>(result);
+         for (Binding<?> b : injector.getAllBindings().values())
+         {
+            if (b.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+            {
+               continue;
+            }
+            else if (componentType.isAssignableFrom(b.getKey().getTypeLiteral().getRawType()))
+            {
+               result.add(componentType.cast(b.getProvider().get()));
+            }
+         }
       }
       return result;
    }
@@ -179,43 +221,53 @@ public class GuiceContainer extends AbstractInterceptor
    {
       if (injector == null)
       {
-         injector = Guice.createInjector(new AbstractModule()
+         ComponentAdapter adapter = super.getComponentAdapterOfType(ModuleProvider.class);
+         if (adapter == null)
          {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            @Override
-            protected void configure()
+            LOG.error("No ModuleProvider has been defined, thus the GuiceContainer will be disabled."
+               + " To enable the Guice Integration please define a ModuleProvider");
+         }
+         else
+         {
+            ModuleProvider provider = (ModuleProvider)adapter.getComponentInstance();
+            injector = Guice.createInjector(provider.getModule(), new AbstractModule()
             {
-               Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
-               Binder binder = binder();
-               for (ComponentAdapter adapter : adapters)
+               @SuppressWarnings({"unchecked", "rawtypes"})
+               @Override
+               protected void configure()
                {
-                  Object key = adapter.getComponentKey();
-                  Class<?> type;
-                  String name = null;
-                  if (key instanceof Class<?>)
+                  Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
+                  Binder binder = binder();
+                  for (ComponentAdapter adapter : adapters)
                   {
-                     type = (Class<?>)key;
-                  }
-                  else
-                  {
-                     if (key instanceof String)
+                     Object key = adapter.getComponentKey();
+                     Class<?> type;
+                     String name = null;
+                     if (key instanceof Class<?>)
                      {
-                        name = (String)key;
+                        type = (Class<?>)key;
                      }
-                     type = adapter.getComponentImplementation();
-                  }
-                  if (name == null)
-                  {
-                     binder.bind(type).toProvider(new ComponentAdapterProvider(type, adapter));
-                  }
-                  else
-                  {
-                     binder.bind(type).annotatedWith(Names.named(name))
-                        .toProvider(new ComponentAdapterProvider(type, adapter));
+                     else
+                     {
+                        if (key instanceof String)
+                        {
+                           name = (String)key;
+                        }
+                        type = adapter.getComponentImplementation();
+                     }
+                     if (name == null)
+                     {
+                        binder.bind(type).toProvider(new ComponentAdapterProvider(type, adapter));
+                     }
+                     else
+                     {
+                        binder.bind(type).annotatedWith(Names.named(name))
+                           .toProvider(new ComponentAdapterProvider(type, adapter));
+                     }
                   }
                }
-            }
-         });
+            });
+         }
       }
       super.start();
    }

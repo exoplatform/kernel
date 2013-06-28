@@ -18,9 +18,14 @@
  */
 package org.exoplatform.container.guice;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -94,6 +99,30 @@ public class TestGuiceContainer extends AbstractTestContainer
       assertNotNull(g);
       assertSame(g, container.getComponentInstanceOfType(G.class));
       assertSame(g, adapterG.getComponentInstance());
+      List<ComponentAdapter> adapters = container.getComponentAdaptersOfType(Marker.class);
+      assertNotNull(adapters);
+      assertEquals(2, adapters.size());
+      boolean foundE = false, foundF = false;
+      for (ComponentAdapter adapter : adapters)
+      {
+         if (adapter.getComponentImplementation().equals(E.class))
+         {
+            foundE = true;
+            assertSame(e, adapter.getComponentInstance());
+         }
+         else if (adapter.getComponentImplementation().equals(F.class))
+         {
+            foundF = true;
+            assertSame(f, adapter.getComponentInstance());
+         }
+      }
+      assertTrue(foundE);
+      assertTrue(foundF);
+      List<Marker> markers = container.getComponentInstancesOfType(Marker.class);
+      assertNotNull(markers);
+      assertEquals(2, markers.size());
+      assertTrue(markers.contains(e));
+      assertTrue(markers.contains(f));
    }
 
    public static class A
@@ -127,12 +156,12 @@ public class TestGuiceContainer extends AbstractTestContainer
       }
    }
 
-   public static class E
+   public static class E implements Marker
    {
    }
 
    @Singleton
-   public static class F
+   public static class F implements Marker
    {
       @Inject
       @Named("MyClassE")
@@ -144,4 +173,23 @@ public class TestGuiceContainer extends AbstractTestContainer
    public static class G
    {
    }
+
+   public static class MyModuleProvider implements ModuleProvider
+   {
+      public Module getModule()
+      {
+         return new AbstractModule()
+         {
+            @Override
+            protected void configure()
+            {
+               bind(B.class);
+               bind(C.class);
+               bind(F.class);
+               bind(G.class);
+            }
+         };
+      }
+   }
+   public static interface Marker {}
 }
