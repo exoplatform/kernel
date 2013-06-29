@@ -20,9 +20,11 @@ package org.exoplatform.container.spring;
 
 import org.exoplatform.container.AbstractComponentAdapter;
 import org.exoplatform.container.AbstractInterceptor;
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.spi.Interceptor;
+import org.exoplatform.container.xml.Component;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.springframework.beans.factory.DisposableBean;
@@ -195,11 +197,28 @@ public class SpringContainer extends AbstractInterceptor
    @SuppressWarnings({"rawtypes", "unchecked"})
    public void start()
    {
-      ComponentAdapter adapterAP = super.getComponentAdapterOfType(ApplicationContextProvider.class);
-      if (adapterAP == null)
+      ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class);
+      Component component = null;;
+      try
       {
-         LOG.error("No ApplicationContextProvider has been defined, thus the SpringContainer will be disabled."
-            + " To enable the Spring Integration please define a ApplicationContextProvider");
+         // We check if the component has been defined in the configuration of the current container
+         // The goal is to enable the SpringContainer only if it is needed
+         component = cm.getComponent(ApplicationContextProvider.class);
+      }
+      catch (Exception e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Could not check if an ApplicationContextProvider has been defined: " + e.getMessage());
+         }
+      }
+      if (component == null)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("No ApplicationContextProvider has been defined, thus the SpringContainer will be disabled."
+               + " To enable the Spring Integration please define an ApplicationContextProvider");
+         }
       }
       else
       {
@@ -222,13 +241,13 @@ public class SpringContainer extends AbstractInterceptor
          }
          GenericApplicationContext parentContext = new GenericApplicationContext(bf);
          parentContext.refresh();
-         ApplicationContextProvider provider = (ApplicationContextProvider)adapterAP.getComponentInstance();
+         ApplicationContextProvider provider = super.getComponentInstanceOfType(ApplicationContextProvider.class);
          ctx = provider.getApplicationContext(parentContext);
+         LOG.info("A SpringContainer has been enabled using the ApplicationContextProvider " + provider.getClass());
       }
       super.start();
    }
 
-   
    /**
     * {@inheritDoc}
     */
