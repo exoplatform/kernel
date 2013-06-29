@@ -29,9 +29,11 @@ import com.google.inject.name.Names;
 
 import org.exoplatform.container.AbstractComponentAdapter;
 import org.exoplatform.container.AbstractInterceptor;
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.spi.Interceptor;
+import org.exoplatform.container.xml.Component;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -217,59 +219,85 @@ public class GuiceContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @Override
    public void start()
    {
-      if (injector == null)
+      ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class);
+      Component component = null;
+      try
       {
-         ComponentAdapter adapter = super.getComponentAdapterOfType(ModuleProvider.class);
-         if (adapter == null)
+         // We check if the component has been defined in the configuration of the current container
+         // The goal is to enable the GuicegContainer only if it is needed
+         component = cm.getComponent(ModuleProvider.class);
+      }
+      catch (Exception e)
+      {
+         if (LOG.isDebugEnabled())
          {
-            LOG.error("No ModuleProvider has been defined, thus the GuiceContainer will be disabled."
-               + " To enable the Guice Integration please define a ModuleProvider");
-         }
-         else
-         {
-            ModuleProvider provider = (ModuleProvider)adapter.getComponentInstance();
-            injector = Guice.createInjector(provider.getModule(), new AbstractModule()
-            {
-               @SuppressWarnings({"unchecked", "rawtypes"})
-               @Override
-               protected void configure()
-               {
-                  Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
-                  Binder binder = binder();
-                  for (ComponentAdapter adapter : adapters)
-                  {
-                     Object key = adapter.getComponentKey();
-                     Class<?> type;
-                     String name = null;
-                     if (key instanceof Class<?>)
-                     {
-                        type = (Class<?>)key;
-                     }
-                     else
-                     {
-                        if (key instanceof String)
-                        {
-                           name = (String)key;
-                        }
-                        type = adapter.getComponentImplementation();
-                     }
-                     if (name == null)
-                     {
-                        binder.bind(type).toProvider(new ComponentAdapterProvider(type, adapter));
-                     }
-                     else
-                     {
-                        binder.bind(type).annotatedWith(Names.named(name))
-                           .toProvider(new ComponentAdapterProvider(type, adapter));
-                     }
-                  }
-               }
-            });
+            LOG.debug("Could not check if a ModuleProvider has been defined: " + e.getMessage());
          }
       }
+      if (component == null)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("No ModuleProvider has been defined, thus the GuiceContainer will be disabled."
+                     + " To enable the Guice Integration please define a ModuleProvider");
+         }
+      }
+      else
+      {
+         ModuleProvider provider = super.getComponentInstanceOfType(ModuleProvider.class);
+         injector = Guice.createInjector(provider.getModule(), new AbstractModule()
+         {
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Override
+            protected void configure()
+            {
+               Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
+               Binder binder = binder();
+               for (ComponentAdapter adapter : adapters)
+               {
+                  Object key = adapter.getComponentKey();
+                  Class<?> type;
+                  String name = null;
+                  if (key instanceof Class<?>)
+                  {
+                     type = (Class<?>)key;
+                  }
+                  else
+                  {
+                     if (key instanceof String)
+                     {
+                        name = (String)key;
+                     }
+                     type = adapter.getComponentImplementation();
+                  }
+                  if (name == null)
+                  {
+                     binder.bind(type).toProvider(new ComponentAdapterProvider(type, adapter));
+                  }
+                  else
+                  {
+                     binder.bind(type).annotatedWith(Names.named(name))
+                        .toProvider(new ComponentAdapterProvider(type, adapter));
+                  }
+               }
+            }
+         });
+         LOG.info("A GuiceContainer has been enabled using the ModuleProvider " + provider.getClass());
+      }
       super.start();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void stop()
+   {
+      super.stop();
+      injector = null;
    }
 
    /**

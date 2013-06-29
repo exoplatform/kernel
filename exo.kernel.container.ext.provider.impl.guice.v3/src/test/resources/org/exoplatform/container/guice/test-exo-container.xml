@@ -11,6 +11,7 @@
    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
 
    <component>
+      <key>org.exoplatform.container.guice.ModuleProvider</key>
       <type>org.exoplatform.container.guice.TestGuiceContainer$MyModuleProvider</type>
    </component>
    <component>
