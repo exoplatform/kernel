@@ -198,7 +198,7 @@ public class SpringContainer extends AbstractInterceptor
    public void start()
    {
       ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class);
-      Component component = null;;
+      Component component = null;
       try
       {
          // We check if the component has been defined in the configuration of the current container
