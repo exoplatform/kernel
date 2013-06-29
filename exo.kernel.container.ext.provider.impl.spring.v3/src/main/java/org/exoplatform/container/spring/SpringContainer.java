@@ -25,6 +25,7 @@ import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.spi.Interceptor;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -194,40 +195,62 @@ public class SpringContainer extends AbstractInterceptor
    @SuppressWarnings({"rawtypes", "unchecked"})
    public void start()
    {
-      if (ctx == null)
+      ComponentAdapter adapterAP = super.getComponentAdapterOfType(ApplicationContextProvider.class);
+      if (adapterAP == null)
       {
-         ComponentAdapter adapterAP = super.getComponentAdapterOfType(ApplicationContextProvider.class);
-         if (adapterAP == null)
+         LOG.error("No ApplicationContextProvider has been defined, thus the SpringContainer will be disabled."
+            + " To enable the Spring Integration please define a ApplicationContextProvider");
+      }
+      else
+      {
+         DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
+         Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
+         for (ComponentAdapter adapter : adapters)
          {
-            LOG.error("No ApplicationContextProvider has been defined, thus the SpringContainer will be disabled."
-               + " To enable the Spring Integration please define a ApplicationContextProvider");
-         }
-         else
-         {
-            DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
-            Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
-            for (ComponentAdapter adapter : adapters)
+            Object key = adapter.getComponentKey();
+            Class<?> type;
+            String name = keyToBeanName(key);
+            if (key instanceof Class<?>)
             {
-               Object key = adapter.getComponentKey();
-               Class<?> type;
-               String name = keyToBeanName(key);
-               if (key instanceof Class<?>)
-               {
-                  type = (Class<?>)key;
-               }
-               else
-               {
-                  type = adapter.getComponentImplementation();
-               }
-               bf.registerSingleton(name, new ComponentAdapterFactoryBean(type, adapter));
+               type = (Class<?>)key;
             }
-            GenericApplicationContext parentContext = new GenericApplicationContext(bf);
-            parentContext.refresh();
-            ApplicationContextProvider provider = (ApplicationContextProvider)adapterAP.getComponentInstance();
-            ctx = provider.getApplicationContext(parentContext);
+            else
+            {
+               type = adapter.getComponentImplementation();
+            }
+            bf.registerSingleton(name, new ComponentAdapterFactoryBean(type, adapter));
          }
+         GenericApplicationContext parentContext = new GenericApplicationContext(bf);
+         parentContext.refresh();
+         ApplicationContextProvider provider = (ApplicationContextProvider)adapterAP.getComponentInstance();
+         ctx = provider.getApplicationContext(parentContext);
       }
       super.start();
+   }
+
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void stop()
+   {
+      super.stop();
+      if (ctx instanceof DisposableBean)
+      {
+         try
+         {
+            ((DisposableBean)ctx).destroy();
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not destroy the container: " + e.getMessage());
+         }
+         finally
+         {
+            ctx = null;
+         }
+      }
    }
 
    private static String classToBeanName(Class<?> type)
