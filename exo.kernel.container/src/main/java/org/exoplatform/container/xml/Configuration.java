@@ -64,8 +64,6 @@ public class Configuration implements Cloneable
 
    private ArrayList<String> removeConfiguration_;
 
-   private String currentXML;
-
    private int currentSize;
    
    private int currentHash;
@@ -95,7 +93,7 @@ public class Configuration implements Cloneable
       return containerLifecyclePlugin_.size() > 0;
    }
 
-   public Collection getComponentLifecyclePlugins()
+   public Collection<ComponentLifecyclePlugin> getComponentLifecyclePlugins()
    {
       return componentLifecyclePlugin_.values();
    }
@@ -107,7 +105,7 @@ public class Configuration implements Cloneable
       componentLifecyclePlugin_.put(key, plugin);
    }
 
-   public Iterator getComponentLifecyclePluginIterator()
+   public Iterator<ComponentLifecyclePlugin> getComponentLifecyclePluginIterator()
    {
       return componentLifecyclePlugin_.values().iterator();
    }
@@ -134,12 +132,12 @@ public class Configuration implements Cloneable
       component_.put(key, comp);
    }
 
-   public Collection getComponents()
+   public Collection<Component> getComponents()
    {
       return component_.values();
    }
 
-   public Iterator getComponentIterator()
+   public Iterator<Component> getComponentIterator()
    {
       return component_.values().iterator();
    }
@@ -179,7 +177,7 @@ public class Configuration implements Cloneable
       }
    }
 
-   public Iterator getExternalComponentPluginsIterator()
+   public Iterator<ExternalComponentPlugins> getExternalComponentPluginsIterator()
    {
       return externalComponentPlugins_.values().iterator();
    }
@@ -196,7 +194,7 @@ public class Configuration implements Cloneable
       imports_.add(url);
    }
 
-   public List getImports()
+   public List<String> getImports()
    {
       return imports_;
    }
@@ -208,7 +206,7 @@ public class Configuration implements Cloneable
       removeConfiguration_.add(type);
    }
 
-   public List getRemoveConfiguration()
+   public List<String> getRemoveConfiguration()
    {
       return removeConfiguration_;
    }
@@ -228,7 +226,7 @@ public class Configuration implements Cloneable
       containerLifecyclePlugin_.putAll(other.containerLifecyclePlugin_);
 
       // merge the external plugins
-      Iterator i = other.externalComponentPlugins_.values().iterator();
+      Iterator<ExternalComponentPlugins> i = other.externalComponentPlugins_.values().iterator();
       while (i.hasNext())
       {
          addExternalComponentPlugins(i.next());
@@ -370,7 +368,6 @@ public class Configuration implements Cloneable
       String xml = toXML();
       if (xml != null)
       {
-         this.currentXML = xml;
          this.currentSize = xml.length();
          this.currentHash = xml.hashCode();
       }
