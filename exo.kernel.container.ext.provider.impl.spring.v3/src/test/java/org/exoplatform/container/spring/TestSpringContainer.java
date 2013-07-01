@@ -53,26 +53,27 @@ public class TestSpringContainer extends AbstractTestContainer
       testIntegration(container);
    }
 
+   @SuppressWarnings("unchecked")
    private void testIntegration(RootContainer container)
    {
-      ComponentAdapter adapterA = container.getComponentAdapterOfType(A.class);
+      ComponentAdapter<A> adapterA = container.getComponentAdapterOfType(A.class);
       assertNotNull(adapterA);
       assertSame(adapterA, container.getComponentAdapterOfType(A.class));
-      ComponentAdapter adapterB = container.getComponentAdapterOfType(B.class);
+      ComponentAdapter<B> adapterB = container.getComponentAdapterOfType(B.class);
       assertNotNull(adapterB);
-      ComponentAdapter adapterC = container.getComponentAdapterOfType(C.class);
+      ComponentAdapter<C> adapterC = container.getComponentAdapterOfType(C.class);
       assertNotNull(adapterC);
-      ComponentAdapter adapterD = container.getComponentAdapterOfType(D.class);
+      ComponentAdapter<D> adapterD = container.getComponentAdapterOfType(D.class);
       assertNotNull(adapterD);
       assertSame(adapterD, container.getComponentAdapterOfType(D.class));
-      ComponentAdapter adapterE = container.getComponentAdapterOfType(E.class);
+      ComponentAdapter<E> adapterE = container.getComponentAdapterOfType(E.class);
       assertNotNull(adapterE);
-      adapterE = container.getComponentAdapter("MyClassE");
+      adapterE = (ComponentAdapter<E>)container.getComponentAdapter("MyClassE");
       assertNotNull(adapterE);
       assertSame(adapterE, container.getComponentAdapter("MyClassE"));
-      ComponentAdapter adapterF = container.getComponentAdapterOfType(F.class);
+      ComponentAdapter<F> adapterF = container.getComponentAdapterOfType(F.class);
       assertNotNull(adapterF);
-      ComponentAdapter adapterG = container.getComponentAdapterOfType(G.class);
+      ComponentAdapter<G> adapterG = container.getComponentAdapterOfType(G.class);
       assertNotNull(adapterG);
       A a = container.getComponentInstanceOfType(A.class);
       assertNotNull(a);
@@ -111,11 +112,11 @@ public class TestSpringContainer extends AbstractTestContainer
       assertNotNull(g);
       assertSame(g, container.getComponentInstanceOfType(G.class));
       assertSame(g, adapterG.getComponentInstance());
-      List<ComponentAdapter> adapters = container.getComponentAdaptersOfType(Marker.class);
+      List<ComponentAdapter<Marker>> adapters = container.getComponentAdaptersOfType(Marker.class);
       assertNotNull(adapters);
       assertEquals(2, adapters.size());
       boolean foundE = false, foundF = false;
-      for (ComponentAdapter adapter : adapters)
+      for (ComponentAdapter<Marker> adapter : adapters)
       {
          if (adapter.getComponentImplementation().equals(E.class))
          {

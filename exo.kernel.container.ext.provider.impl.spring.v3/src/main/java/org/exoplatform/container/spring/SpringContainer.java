@@ -50,7 +50,7 @@ public class SpringContainer extends AbstractInterceptor
    /**
     * The serial version UID
     */
-   private static final long serialVersionUID = -6662420267945445921L;
+   private static final long serialVersionUID = -4841328894117928913L;
 
    /**
     * The logger
@@ -103,9 +103,9 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public ComponentAdapter getComponentAdapter(Object componentKey)
+   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
    {
-      ComponentAdapter result = super.getComponentAdapter(componentKey);
+      ComponentAdapter<?> result = super.getComponentAdapter(componentKey);
       if (ctx != null && result == null)
       {
          String name = keyToBeanName(componentKey);
@@ -122,9 +122,9 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
-      ComponentAdapter result = super.getComponentAdapterOfType(componentType);
+      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
       if (ctx != null && result == null)
       {
          String[] names = ctx.getBeanNamesForType(componentType);
@@ -136,18 +136,18 @@ public class SpringContainer extends AbstractInterceptor
       return result;
    }
 
-   private ComponentAdapter createComponentAdapter(final Class<?> type, final String name)
+   private <T> ComponentAdapter<T> createComponentAdapter(final Class<T> type, final String name)
    {
-      return new AbstractComponentAdapter(type, type)
+      return new AbstractComponentAdapter<T>(type, type)
       {
          /**
           * The serial UID
           */
          private static final long serialVersionUID = -4625398501079851570L;
 
-         public Object getComponentInstance() throws ContainerException
+         public T getComponentInstance() throws ContainerException
          {
-            return ctx.getBean(name);
+            return type.cast(ctx.getBean(name));
          }
       };
    }
@@ -155,20 +155,21 @@ public class SpringContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    @Override
-   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
-      List<ComponentAdapter> result = super.getComponentAdaptersOfType(componentType);
+      List<ComponentAdapter<T>> result = super.getComponentAdaptersOfType(componentType);
       if (ctx != null)
       {
-         result = new ArrayList<ComponentAdapter>(result);
+         result = new ArrayList<ComponentAdapter<T>>(result);
          String[] names = ctx.getBeanNamesForType(componentType);
          if (names != null)
          {
             for (int i = 0, length = names.length; i < length; i++)
             {
                String name = names[i];
-               result.add(createComponentAdapter(ctx.getType(name), name));
+               result.add((ComponentAdapter<T>)createComponentAdapter(ctx.getType(name), name));
             }
          }
       }
@@ -212,8 +213,8 @@ public class SpringContainer extends AbstractInterceptor
       else
       {
          DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
-         Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
-         for (ComponentAdapter adapter : adapters)
+         Collection<ComponentAdapter<?>> adapters = delegate.getComponentAdapters();
+         for (ComponentAdapter<?> adapter : adapters)
          {
             Object key = adapter.getComponentKey();
             Class<?> type;
@@ -297,9 +298,9 @@ public class SpringContainer extends AbstractInterceptor
    {
       private final Class<T> type;
 
-      private final ComponentAdapter adapter;
+      private final ComponentAdapter<T> adapter;
 
-      private ComponentAdapterFactoryBean(Class<T> type, ComponentAdapter adapter)
+      private ComponentAdapterFactoryBean(Class<T> type, ComponentAdapter<T> adapter)
       {
          this.type = type;
          this.adapter = adapter;
