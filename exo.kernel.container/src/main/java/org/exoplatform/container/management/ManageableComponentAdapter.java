@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableComponentAdapter extends MX4JComponentAdapter
+public class ManageableComponentAdapter<T> extends MX4JComponentAdapter<T>
 {
 
    /**
@@ -48,14 +48,14 @@ public class ManageableComponentAdapter extends MX4JComponentAdapter
    private final AtomicBoolean registered = new AtomicBoolean();
 
    public ManageableComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key,
-      Class<?> implementation)
+      Class<T> implementation)
    {
       super(holder, container, key, implementation);
    }
 
-   public Object getComponentInstance() throws ContainerException
+   public T getComponentInstance() throws ContainerException
    {
-      Object instance = super.getComponentInstance();
+      T instance = super.getComponentInstance();
 
       //
       if (instance != null)

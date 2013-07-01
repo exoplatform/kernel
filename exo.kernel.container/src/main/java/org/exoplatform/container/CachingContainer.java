@@ -39,21 +39,22 @@ public class CachingContainer extends AbstractInterceptor
     */
    private static final long serialVersionUID = 316388590860241305L;
 
-   private final ConcurrentMap<Class<?>, ComponentAdapter> adapterByType =
-      new ConcurrentHashMap<Class<?>, ComponentAdapter>();
+   private final ConcurrentMap<Class<?>, ComponentAdapter<?>> adapterByType =
+      new ConcurrentHashMap<Class<?>, ComponentAdapter<?>>();
 
    private final ConcurrentMap<Class<?>, Object> instanceByType = new ConcurrentHashMap<Class<?>, Object>();
 
    private final ConcurrentMap<Object, Object> instanceByKey = new ConcurrentHashMap<Object, Object>();
 
-   private final ConcurrentMap<Class<?>, List<ComponentAdapter>> adaptersByType =
-      new ConcurrentHashMap<Class<?>, List<ComponentAdapter>>();
+   private final ConcurrentMap<Class<?>, Object> adaptersByType =
+      new ConcurrentHashMap<Class<?>, Object>();
 
    private final ConcurrentMap<Class<?>, List<?>> instancesByType = new ConcurrentHashMap<Class<?>, List<?>>();
 
-   public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
+   @SuppressWarnings("unchecked")
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
-      ComponentAdapter adapter = adapterByType.get(componentType);
+      ComponentAdapter<T> adapter = (ComponentAdapter<T>)adapterByType.get(componentType);
       if (adapter == null)
       {
          adapter = super.getComponentAdapterOfType(componentType);
@@ -65,9 +66,10 @@ public class CachingContainer extends AbstractInterceptor
       return adapter;
    }
 
-   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
-      List<ComponentAdapter> adapters = adaptersByType.get(componentType);
+      @SuppressWarnings("unchecked")
+      List<ComponentAdapter<T>> adapters = (List<ComponentAdapter<T>>)adaptersByType.get(componentType);
       if (adapters == null)
       {
          adapters = super.getComponentAdaptersOfType(componentType);
@@ -148,25 +150,25 @@ public class CachingContainer extends AbstractInterceptor
       accept(invalidator);
    }
 
-   public ComponentAdapter unregisterComponent(Object componentKey)
+   public ComponentAdapter<?> unregisterComponent(Object componentKey)
    {
-      ComponentAdapter adapter = super.unregisterComponent(componentKey);
+      ComponentAdapter<?> adapter = super.unregisterComponent(componentKey);
       invalidate();
       return adapter;
    }
 
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+   public <T> ComponentAdapter<T> registerComponentInstance(Object componentKey, T componentInstance)
       throws ContainerException
    {
-      ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
+      ComponentAdapter<T> adapter = super.registerComponentInstance(componentKey, componentInstance);
       invalidate();
       return adapter;
    }
 
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class<?> componentImplementation)
+   public <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
       throws ContainerException
    {
-      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation);
+      ComponentAdapter<T> adapter = super.registerComponentImplementation(componentKey, componentImplementation);
       invalidate();
       return adapter;
    }

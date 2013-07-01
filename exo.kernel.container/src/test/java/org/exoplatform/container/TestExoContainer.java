@@ -336,7 +336,7 @@ public class TestExoContainer extends AbstractTestContainer
 
       RootContainer container = RootContainer.getInstance();
       Object value =  new MyClass();
-      ComponentAdapter ca = container.registerComponentInstance("MyKey",value);
+      ComponentAdapter<?> ca = container.registerComponentInstance("MyKey",value);
       PortalContainer pcontainer = PortalContainer.getInstance();
       assertSame(ca, container.getComponentAdapter("MyKey"));
       assertSame(ca, pcontainer.getComponentAdapter("MyKey"));
@@ -429,7 +429,7 @@ public class TestExoContainer extends AbstractTestContainer
             assertEquals(currentMyClass.get(), container.getComponentInstanceOfType(MyMTClass.class));
          }
       });
-      final AtomicReference<ComponentAdapter> ar = new AtomicReference<ComponentAdapter>();
+      final AtomicReference<ComponentAdapter<?>> ar = new AtomicReference<ComponentAdapter<?>>();
       testMultiThreading(new Task()
       {
          public void execute()
@@ -869,7 +869,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
-   private class DummyAdapter implements ComponentAdapter
+   private class DummyAdapter implements ComponentAdapter<DummyClass>
    {
 
       public Object getComponentKey()
@@ -877,14 +877,14 @@ public class TestExoContainer extends AbstractTestContainer
          return "testKey";
       }
 
-      public Object getComponentInstance()
+      public DummyClass getComponentInstance()
       {
          // Used to check a situation when RunTimeException occurs while retrieving an instance.
          // This reproduces usecase from JCR-1565
          throw new RuntimeException();
       }
 
-      public Class<?> getComponentImplementation()
+      public Class<DummyClass> getComponentImplementation()
       {
          return DummyClass.class;
       }
