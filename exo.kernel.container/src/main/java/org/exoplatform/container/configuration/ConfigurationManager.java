@@ -27,8 +27,25 @@ import java.net.URL;
 import java.util.Collection;
 
 /**
- * Jul 19, 2004
- * 
+ * The {@link ConfigurationManager} is the component allowing to access to the configuration of a given
+ * eXo container. We have one instance of {@link ConfigurationManager} per eXo container.
+ * All the url provided in String format can use the next prefixes:
+ * <ul>
+ * <li><i>war:</i> try to find the file using the Servlet Context of your portal.war or any web applications defined
+ *  as PortalContainerConfigOwner, so for example in case of the portal.war if the URL is 
+ *  war:/conf/common/portlet-container-configuration.xml it will try to get the file from 
+ *  portal.war/WEB-INF/conf/common/portlet-container-configuration.xml.</li>
+ * <li><i>jar or classpath:</i> you can use this prefix to find a file that is accessible using the ClassLoader. 
+ * For example jar:/conf/my-file.xml will be understood as try to find conf/my-file.xml from 
+ * the ClassLoader.</li>
+ * <li><i>file:</i> this prefix will indicate the configuration manager that it needs to interpret the URL as 
+ * an absolute path. For example file:///path/to/my/file.xml will be understood as an absolute path.</li>
+ * <li><i>Without prefixes:</i> it will be understood as a relative path from the parent directory of the 
+ * last processed configuration file. For example, if the configuration manager is processing the 
+ * file corresponding to the URL file:///path/to/my/configuration.xml and in this file you import 
+ * dir/to/foo.xml, the configuration manager will try to get the file from file:///path/to/my/dir/to/foo.xml. 
+ * Please note that it works also for other prefixes</li>
+ * </ul>
  * @author: Tuan Nguyen
  * @email: tuan08@users.sourceforge.net
  * @version: $Id: ConfigurationManager.java 5799 2006-05-28 17:55:42Z geaz $
@@ -46,30 +63,90 @@ public interface ConfigurationManager
     * must be in debug more or not.
     */
    public static final boolean LOG_DEBUG = PrivilegedSystemHelper.getProperty(LOG_DEBUG_PROPERTY) != null;
-   
-   public Configuration getConfiguration();
 
-   public Component getComponent(String service);
+   /**
+    * Gives the entire configuration
+    */
+   Configuration getConfiguration();
 
-   public Component getComponent(Class clazz) throws Exception;
+   /**
+    * Gives the component configuration of a given service
+    * @param service the FQN of the service for which we want the configuration
+    */
+   Component getComponent(String service);
 
-   public Collection getComponents();
+   /**
+    * Gives the component configuration of a given service
+    * @param clazz the {@link Class} of the service for which we want the configuration
+    */
+   Component getComponent(Class<?> clazz);
 
-   public void addConfiguration(String url) throws Exception;
+   /**
+    * Gives the configuration of all the registered components
+    */
+   Collection<Component> getComponents();
 
-   public void addConfiguration(Collection urls) throws Exception;
+   /**
+    * Adds a new location of a configuration file
+    * @param url the url of the configuration to add, that we want to resolve
+    * @throws Exception if the configuration could not be found
+    * or the url in String format could not be resolved
+    */
+   void addConfiguration(String url) throws Exception;
 
-   public void addConfiguration(URL url) throws Exception;
+   /**
+    * Adds a collection {@link URL} corresponding to the location of the
+    * configuration files to add 
+    * @param urls the URLs of configuration files to add
+    */
+   void addConfiguration(Collection<URL> urls);
 
-   public URL getResource(String url, String defaultURL) throws Exception;
+   /**
+    * Adds a new location of a configuration file
+    * @param url the url of the configuration to add
+    */
+   void addConfiguration(URL url);
 
-   public URL getResource(String url) throws Exception;
+   /**
+    * Gives the {@link URL} of the resource file corresponding to the url provided in
+    * String format
+    * @param url the url to resolve
+    * @param defaultURL The default URL to use in case the parameter <code>url</code> is null.
+    * @return The {@link URL} representing the String url to resolve
+    * @throws Exception if the String url could not be resolved
+    */
+   URL getResource(String url, String defaultURL) throws Exception;
 
-   public InputStream getInputStream(String url, String defaultURL) throws Exception;
+   /**
+    * Gives the {@link URL} of the resource file corresponding to the url provided in
+    * String format
+    * @param url the url to resolve
+    * @return The {@link URL} representing the String url to resolve
+    * @throws Exception if the String url could not be resolved
+    */
+   URL getResource(String url) throws Exception;
 
-   public InputStream getInputStream(String url) throws Exception;
+   /**
+    * Gives the {@link InputStream} of the resource file corresponding to the url provided in
+    * String format
+    * @param url the url to resolve
+    * @param defaultURL The default URL to use in case the parameter <code>url</code> is null.
+    * @return The {@link InputStream} of the resource file
+    * @throws Exception if the String url could not be resolved
+    */
+   InputStream getInputStream(String url, String defaultURL) throws Exception;
 
-   public boolean isDefault(String value);
+   /**
+    * Gives the {@link InputStream} of the resource file corresponding to the url provided in
+    * String format
+    * @param url the url to resolve
+    * @return The {@link InputStream} of the resource file
+    * @throws Exception if the String url could not be resolved
+    */
+   InputStream getInputStream(String url) throws Exception;
 
-   public URL getURL(String uri) throws Exception;
+   /**
+    * This method is equivalent to {@link #getResource(String)}
+    */
+   URL getURL(String uri) throws Exception;
 }
