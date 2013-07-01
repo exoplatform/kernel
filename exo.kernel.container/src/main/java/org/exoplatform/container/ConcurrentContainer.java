@@ -66,15 +66,16 @@ public class ConcurrentContainer extends AbstractInterceptor
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ConcurrentContainer");
 
-   protected final ConcurrentMap<Object, ComponentAdapter> componentKeyToAdapterCache =
-      new ConcurrentHashMap<Object, ComponentAdapter>();
+   protected final ConcurrentMap<Object, ComponentAdapter<?>> componentKeyToAdapterCache =
+      new ConcurrentHashMap<Object, ComponentAdapter<?>>();
 
    private ComponentAdapterFactory componentAdapterFactory;
 
-   protected final Set<ComponentAdapter> componentAdapters = new CopyOnWriteArraySet<ComponentAdapter>();
+   protected final Set<ComponentAdapter<?>> componentAdapters = new CopyOnWriteArraySet<ComponentAdapter<?>>();
 
    // Keeps track of instantiation order.
-   protected final CopyOnWriteArrayList<ComponentAdapter> orderedComponentAdapters = new CopyOnWriteArrayList<ComponentAdapter>();
+   protected final CopyOnWriteArrayList<ComponentAdapter<?>> orderedComponentAdapters =
+      new CopyOnWriteArrayList<ComponentAdapter<?>>();
 
    protected final Set<ExoContainer> children = new CopyOnWriteArraySet<ExoContainer>();
 
@@ -103,7 +104,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       setHolder(holder);
    }
 
-   public Collection<ComponentAdapter> getComponentAdapters()
+   public Collection<ComponentAdapter<?>> getComponentAdapters()
    {
       return Collections.unmodifiableSet(componentAdapters);
    }
@@ -119,9 +120,9 @@ public class ConcurrentContainer extends AbstractInterceptor
       return new ManageableComponentAdapterFactory(holder, this);
    }
 
-   public ComponentAdapter getComponentAdapter(Object componentKey) throws ContainerException
+   public ComponentAdapter<?> getComponentAdapter(Object componentKey) throws ContainerException
    {
-      ComponentAdapter adapter = componentKeyToAdapterCache.get(componentKey);
+      ComponentAdapter<?> adapter = componentKeyToAdapterCache.get(componentKey);
       if (adapter == null && parent != null)
       {
          adapter = parent.getComponentAdapter(componentKey);
@@ -129,16 +130,17 @@ public class ConcurrentContainer extends AbstractInterceptor
       return adapter;
    }
 
-   public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
       // See http://jira.codehaus.org/secure/ViewIssue.jspa?key=PICO-115
-      ComponentAdapter adapterByKey = getComponentAdapter(componentType);
+      @SuppressWarnings("unchecked")
+      ComponentAdapter<T> adapterByKey = (ComponentAdapter<T>)getComponentAdapter(componentType);
       if (adapterByKey != null)
       {
          return adapterByKey;
       }
 
-      List<ComponentAdapter> found = getComponentAdaptersOfType(componentType);
+      List<ComponentAdapter<T>> found = getComponentAdaptersOfType(componentType);
 
       if (found.size() == 1)
       {
@@ -160,27 +162,28 @@ public class ConcurrentContainer extends AbstractInterceptor
          Class<?>[] foundClasses = new Class<?>[found.size()];
          for (int i = 0; i < foundClasses.length; i++)
          {
-            ComponentAdapter componentAdapter = (ComponentAdapter)found.get(i);
+            ComponentAdapter<T> componentAdapter = found.get(i);
             foundClasses[i] = componentAdapter.getComponentImplementation();
          }
          throw new ContainerException("Several ComponentAdapter found for " + componentType);
       }
    }
 
-   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
+   @SuppressWarnings("unchecked")
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
       if (componentType == null)
       {
          return Collections.emptyList();
       }
-      List<ComponentAdapter> found = new ArrayList<ComponentAdapter>();
-      for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
+      List<ComponentAdapter<T>> found = new ArrayList<ComponentAdapter<T>>();
+      for (Iterator<ComponentAdapter<?>> iterator = componentAdapters.iterator(); iterator.hasNext();)
       {
-         ComponentAdapter componentAdapter = iterator.next();
+         ComponentAdapter<?> componentAdapter = iterator.next();
 
          if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
          {
-            found.add(componentAdapter);
+            found.add((ComponentAdapter<T>)componentAdapter);
          }
       }
       return found;
@@ -194,13 +197,12 @@ public class ConcurrentContainer extends AbstractInterceptor
     * @return the same adapter that was passed as an argument.
     * @throws ContainerException if registration fails.
     */
-   protected ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
-      throws ContainerException
+   protected ComponentAdapter<?> registerComponent(ComponentAdapter<?> componentAdapter) throws ContainerException
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);
-      
+
       Object componentKey = componentAdapter.getComponentKey();
 
       if (componentKeyToAdapterCache.putIfAbsent(componentKey, componentAdapter) != null)
@@ -211,13 +213,13 @@ public class ConcurrentContainer extends AbstractInterceptor
       return componentAdapter;
    }
 
-   public ComponentAdapter unregisterComponent(Object componentKey)
+   public ComponentAdapter<?> unregisterComponent(Object componentKey)
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);
-      
-      ComponentAdapter adapter = componentKeyToAdapterCache.remove(componentKey);
+
+      ComponentAdapter<?> adapter = componentKeyToAdapterCache.remove(componentKey);
       if (adapter instanceof InstanceComponentAdapter)
       {
          Object value = adapter.getComponentInstance();
@@ -235,7 +237,7 @@ public class ConcurrentContainer extends AbstractInterceptor
     * {@inheritDoc}
     * The returned ComponentAdapter will be an {@link InstanceComponentAdapter}.
     */
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+   public <T> ComponentAdapter<T> registerComponentInstance(Object componentKey, T componentInstance)
       throws ContainerException
    {
       if (componentInstance instanceof ExoContainer)
@@ -258,7 +260,7 @@ public class ConcurrentContainer extends AbstractInterceptor
          }
          children.add(pc);
       }
-      ComponentAdapter componentAdapter = new InstanceComponentAdapter(componentKey, componentInstance);
+      ComponentAdapter<T> componentAdapter = new InstanceComponentAdapter<T>(componentKey, componentInstance);
       registerComponent(componentAdapter);
       return componentAdapter;
    }
@@ -268,16 +270,16 @@ public class ConcurrentContainer extends AbstractInterceptor
     * The returned ComponentAdapter will be instantiated by the {@link ComponentAdapterFactory}
     * passed to the container's constructor.
     */
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class<?> componentImplementation)
+   public <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
       throws ContainerException
    {
-      ComponentAdapter componentAdapter =
+      ComponentAdapter<T> componentAdapter =
          componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation);
       registerComponent(componentAdapter);
       return componentAdapter;
    }
 
-   protected void addOrderedComponentAdapter(ComponentAdapter componentAdapter)
+   protected void addOrderedComponentAdapter(ComponentAdapter<?> componentAdapter)
    {
       orderedComponentAdapters.addIfAbsent(componentAdapter);
    }
@@ -287,6 +289,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       return getComponentInstancesOfType(Object.class);
    }
 
+   @SuppressWarnings("unchecked")
    public <T> List<T> getComponentInstancesOfType(Class<T> componentType) throws ContainerException
    {
       if (componentType == null)
@@ -294,14 +297,14 @@ public class ConcurrentContainer extends AbstractInterceptor
          return Collections.emptyList();
       }
 
-      Map<ComponentAdapter, Object> adapterToInstanceMap = new HashMap<ComponentAdapter, Object>();
-      for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
+      Map<ComponentAdapter<T>, Object> adapterToInstanceMap = new HashMap<ComponentAdapter<T>, Object>();
+      for (Iterator<ComponentAdapter<?>> iterator = componentAdapters.iterator(); iterator.hasNext();)
       {
-         ComponentAdapter componentAdapter = iterator.next();
+         ComponentAdapter<?> componentAdapter = iterator.next();
          if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
          {
             Object componentInstance = getInstance(componentAdapter);
-            adapterToInstanceMap.put(componentAdapter, componentInstance);
+            adapterToInstanceMap.put((ComponentAdapter<T>)componentAdapter, componentInstance);
 
             // This is to ensure all are added. (Indirect dependencies will be added
             // from InstantiatingComponentAdapter).
@@ -309,7 +312,7 @@ public class ConcurrentContainer extends AbstractInterceptor
          }
       }
       List<T> result = new ArrayList<T>();
-      for (Iterator<ComponentAdapter> iterator = orderedComponentAdapters.iterator(); iterator.hasNext();)
+      for (Iterator<ComponentAdapter<?>> iterator = orderedComponentAdapters.iterator(); iterator.hasNext();)
       {
          Object componentAdapter = iterator.next();
          final Object componentInstance = adapterToInstanceMap.get(componentAdapter);
@@ -325,7 +328,7 @@ public class ConcurrentContainer extends AbstractInterceptor
 
    public Object getComponentInstance(Object componentKey) throws ContainerException
    {
-      ComponentAdapter componentAdapter = getComponentAdapter(componentKey);
+      ComponentAdapter<?> componentAdapter = getComponentAdapter(componentKey);
       if (componentAdapter != null)
       {
          return getInstance(componentAdapter);
@@ -344,7 +347,7 @@ public class ConcurrentContainer extends AbstractInterceptor
     */
    public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
-      final ComponentAdapter componentAdapter = getComponentAdapterOfType(componentType);
+      final ComponentAdapter<T> componentAdapter = getComponentAdapterOfType(componentType);
       if (componentAdapter == null)
          return null;
       Map<Object, Object> map = depResolutionCtx.get();
@@ -356,7 +359,7 @@ public class ConcurrentContainer extends AbstractInterceptor
             return componentType.cast(result);
          }
       }
-      return componentType.cast(getInstance(componentAdapter));
+      return getInstance(componentAdapter);
    }
 
    /**
@@ -394,7 +397,8 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
    }
 
-   private Object getInstance(ComponentAdapter componentAdapter)
+   @SuppressWarnings("unchecked")
+   private <T> T getInstance(ComponentAdapter<T> componentAdapter)
    {
       // check wether this is our adapter
       // we need to check this to ensure up-down dependencies cannot be followed
@@ -402,7 +406,7 @@ public class ConcurrentContainer extends AbstractInterceptor
 
       if (isLocal)
       {
-         Object instance = componentAdapter.getComponentInstance();
+         T instance = componentAdapter.getComponentInstance();
 
          addOrderedComponentAdapter(componentAdapter);
 
@@ -410,7 +414,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
       else if (parent != null)
       {
-         return parent.getComponentInstance(componentAdapter.getComponentKey());
+         return (T)parent.getComponentInstance(componentAdapter.getComponentKey());
       }
 
       return null;
