@@ -69,7 +69,7 @@ public class ExoContainer extends AbstractContainer
     * The current list of profiles
     */
    private static volatile String PROFILES;
-   
+
    /**
     * The current set of profiles
     */
@@ -78,7 +78,9 @@ public class ExoContainer extends AbstractContainer
    protected final AtomicBoolean stopping = new AtomicBoolean();
 
    private final AtomicBoolean started = new AtomicBoolean();
+
    private final AtomicBoolean disposed = new AtomicBoolean();
+
    private final AtomicBoolean initialized = new AtomicBoolean();
 
    /**
@@ -206,7 +208,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeDisposed())
       {
          destroyContainerInternal();
@@ -233,7 +235,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeInitialized())
       {
          // Initialize the successors
@@ -249,7 +251,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStarted())
       {
          super.start();
@@ -263,7 +265,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStopped())
       {
          stopping.set(true);
@@ -323,7 +325,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       List<String> list = plugin.getManageableComponents();
       for (String component : list)
          componentLifecylePlugin_.put(component, plugin);
@@ -334,7 +336,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       containerLifecyclePlugin_.add(plugin);
    }
 
@@ -353,8 +355,8 @@ public class ExoContainer extends AbstractContainer
     */
    protected void unregisterAllComponents()
    {
-      Collection<ComponentAdapter> adapters = getComponentAdapters();
-      for (ComponentAdapter adapter : adapters)
+      Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
+      for (ComponentAdapter<?> adapter : adapters)
       {
          unregisterComponent(adapter.getComponentKey());
       }
@@ -370,7 +372,8 @@ public class ExoContainer extends AbstractContainer
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
     * @throws ContainerException if registration fails.
     */
-   public ComponentAdapter registerComponentImplementation(Class<?> componentImplementation) throws ContainerException
+   public <T> ComponentAdapter<T> registerComponentImplementation(Class<T> componentImplementation)
+      throws ContainerException
    {
       return registerComponentImplementation(componentImplementation, componentImplementation);
    }
@@ -385,7 +388,7 @@ public class ExoContainer extends AbstractContainer
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
     * @throws ContainerException if registration fails.
     */
-   public ComponentAdapter registerComponentInstance(Object componentInstance) throws ContainerException
+   public <T> ComponentAdapter<T> registerComponentInstance(T componentInstance) throws ContainerException
    {
       return registerComponentInstance(componentInstance.getClass(), componentInstance);
    }
@@ -409,8 +412,8 @@ public class ExoContainer extends AbstractContainer
    public Set<String> getRegisteredComponentNames() throws ContainerException
    {
       Set<String> names = new HashSet<String>();
-      Collection<ComponentAdapter> adapters = getComponentAdapters();
-      for (ComponentAdapter adapter : adapters)
+      Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
+      for (ComponentAdapter<?> adapter : adapters)
       {
          Object key = adapter.getComponentKey();
          String name = String.valueOf(key);

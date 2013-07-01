@@ -83,7 +83,7 @@ public interface Container extends Startable, Disposable, Serializable
     * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
     *         for the specified key.
     */
-   ComponentAdapter getComponentAdapter(Object componentKey);
+   ComponentAdapter<?> getComponentAdapter(Object componentKey);
 
    /**
     * Find a component adapter associated with the specified type. If a component adapter cannot be found in this
@@ -93,7 +93,7 @@ public interface Container extends Startable, Disposable, Serializable
     * @return the component adapter associated with this class, or <code>null</code> if no component has been
     *         registered for the specified key.
     */
-   ComponentAdapter getComponentAdapterOfType(Class<?> componentType);
+   <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType);
 
    /**
     * Retrieve all the component adapters inside this container. The component adapters from the parent container are
@@ -104,7 +104,7 @@ public interface Container extends Startable, Disposable, Serializable
     * @see #getComponentAdaptersOfType(Class) a variant of this method which returns the component adapters inside this
     *      container that are associated with the specified type.
     */
-   Collection<ComponentAdapter> getComponentAdapters();
+   Collection<ComponentAdapter<?>> getComponentAdapters();
 
    /**
     * Retrieve all component adapters inside this container that are associated with the specified type. The component
@@ -114,7 +114,7 @@ public interface Container extends Startable, Disposable, Serializable
     * @return a collection containing all the {@link ComponentAdapter}s inside this container that are associated with
     *         the specified type. Changes to this collection will not be reflected in the container itself.
     */
-   List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType);
+   <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType);
 
    /**
     * Returns a List of components of a certain componentType. The list is ordered by instantiation order,
@@ -143,7 +143,8 @@ public interface Container extends Startable, Disposable, Serializable
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
     * @throws ContainerExceptio if registration of the component fails.
     */
-   ComponentAdapter registerComponentImplementation(Object componentKey, Class<?> componentImplementation) throws ContainerException;
+   <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
+      throws ContainerException;
 
    /**
     * Register an arbitrary object as a component in the container. This is handy when other components in the same
@@ -161,7 +162,8 @@ public interface Container extends Startable, Disposable, Serializable
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
     * @throws ContainerException if registration fails.
     */
-   ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance) throws ContainerException;
+   <T> ComponentAdapter<T> registerComponentInstance(Object componentKey, T componentInstance)
+      throws ContainerException;
 
    /**
     * Unregister a component by key.
@@ -169,7 +171,7 @@ public interface Container extends Startable, Disposable, Serializable
     * @param componentKey key of the component to unregister.
     * @return the ComponentAdapter that was associated with this component.
     */
-   ComponentAdapter unregisterComponent(Object componentKey);
+   ComponentAdapter<?> unregisterComponent(Object componentKey);
 
    /**
     * Gives the corresponding {@link ManagementContext}

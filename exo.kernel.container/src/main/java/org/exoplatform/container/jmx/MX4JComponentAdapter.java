@@ -43,14 +43,14 @@ import java.util.List;
  * @author Benjamin Mestrallet
  * @version $Revision: 1.5 $
  */
-public class MX4JComponentAdapter extends AbstractComponentAdapter
+public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
 {
    /**
     * Serial Version ID
     */
    private static final long serialVersionUID = -9001193588034229411L;
 
-   private volatile Object instance_;
+   private volatile T instance_;
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
@@ -60,14 +60,14 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
    /** . */
    protected final ConcurrentContainer container;
 
-   public MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<?> implementation)
+   public MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<T> implementation)
    {
       super(key, implementation);
       this.exocontainer = holder;
       this.container = container;
    }
 
-   public Object getComponentInstance()
+   public T getComponentInstance()
    {
       if (instance_ != null)
          return instance_;
@@ -100,7 +100,7 @@ public class MX4JComponentAdapter extends AbstractComponentAdapter
             }
             // Please note that we cannot fully initialize the Object "instance_" before releasing other
             // threads because it could cause StackOverflowError due to recursive calls
-            Object instance = exocontainer.createComponent(getComponentImplementation(), params);
+            T instance = exocontainer.createComponent(getComponentImplementation(), params);
             if (instance_ != null)
             {
                // Avoid instantiating twice the same component in case of a cyclic reference due

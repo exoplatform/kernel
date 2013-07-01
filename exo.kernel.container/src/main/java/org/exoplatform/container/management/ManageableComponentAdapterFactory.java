@@ -43,9 +43,9 @@ public class ManageableComponentAdapterFactory implements ComponentAdapterFactor
       this.container = container;
    }
 
-   public ComponentAdapter createComponentAdapter(Object componentKey, Class<?> componentImplementation) 
+   public <T> ComponentAdapter<T> createComponentAdapter(Object componentKey, Class<T> componentImplementation) 
             throws ContainerException
    {
-      return new ManageableComponentAdapter(holder, container, componentKey, componentImplementation);
+      return new ManageableComponentAdapter<T>(holder, container, componentKey, componentImplementation);
    }
 }

@@ -42,6 +42,6 @@ public interface ComponentAdapterFactory
     * @throws ContainerException if the creation of the component adapter results in a
     *                                    {@link ContainerException}.
     */
-   ComponentAdapter createComponentAdapter(Object componentKey, Class<?> componentImplementation)
+   <T> ComponentAdapter<T> createComponentAdapter(Object componentKey, Class<T> componentImplementation)
       throws ContainerException;
 }

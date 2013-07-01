@@ -25,22 +25,23 @@ import org.exoplatform.container.spi.ContainerException;
  * @version $Id$
  *
  */
-public class InstanceComponentAdapter extends AbstractComponentAdapter
+public class InstanceComponentAdapter<T> extends AbstractComponentAdapter<T>
 {
    /**
     * The serial version UID
     */
    private static final long serialVersionUID = 94127189297829247L;
 
-   private final Object componentInstance;
+   private final T componentInstance;
 
-   public InstanceComponentAdapter(Object componentKey, Object componentInstance) throws ContainerException
+   @SuppressWarnings("unchecked")
+   public InstanceComponentAdapter(Object componentKey, T componentInstance) throws ContainerException
    {
-      super(componentKey, componentInstance.getClass());
+      super(componentKey, (Class<T>)componentInstance.getClass());
       this.componentInstance = componentInstance;
    }
 
-   public Object getComponentInstance()
+   public T getComponentInstance()
    {
       return componentInstance;
    }
