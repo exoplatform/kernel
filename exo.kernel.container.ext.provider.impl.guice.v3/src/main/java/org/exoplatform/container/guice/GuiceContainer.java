@@ -223,20 +223,9 @@ public class GuiceContainer extends AbstractInterceptor
    public void start()
    {
       ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class);
-      Component component = null;
-      try
-      {
-         // We check if the component has been defined in the configuration of the current container
-         // The goal is to enable the GuicegContainer only if it is needed
-         component = cm.getComponent(ModuleProvider.class);
-      }
-      catch (Exception e)
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("Could not check if a ModuleProvider has been defined: " + e.getMessage());
-         }
-      }
+      // We check if the component has been defined in the configuration of the current container
+      // The goal is to enable the GuicegContainer only if it is needed
+      Component component = cm.getComponent(ModuleProvider.class);
       if (component == null)
       {
          if (LOG.isDebugEnabled())
