@@ -112,9 +112,9 @@ public class GuiceContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public ComponentAdapter getComponentAdapter(Object componentKey)
+   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
    {
-      ComponentAdapter result = super.getComponentAdapter(componentKey);
+      ComponentAdapter<?> result = super.getComponentAdapter(componentKey);
       if (result == null && componentKey instanceof Class<?>)
       {
          result = getComponentAdapter((Class<?>)componentKey);
@@ -122,7 +122,7 @@ public class GuiceContainer extends AbstractInterceptor
       return result;
    }
 
-   protected ComponentAdapter getComponentAdapter(final Class<?> type)
+   protected <T> ComponentAdapter<T> getComponentAdapter(final Class<T> type)
    {
       if (injector == null)
       {
@@ -136,18 +136,18 @@ public class GuiceContainer extends AbstractInterceptor
       return createComponentAdapter(type, binding);
    }
 
-   private ComponentAdapter createComponentAdapter(final Class<?> type, final Binding<?> binding)
+   private <T> ComponentAdapter<T> createComponentAdapter(final Class<T> type, final Binding<?> binding)
    {
-      return new AbstractComponentAdapter(type, type)
+      return new AbstractComponentAdapter<T>(type, type)
       {
          /**
           * The serial UID
           */
          private static final long serialVersionUID = 4241559622835718141L;
 
-         public Object getComponentInstance() throws ContainerException
+         public T getComponentInstance() throws ContainerException
          {
-            return binding.getProvider().get();
+            return type.cast(binding.getProvider().get());
          }
       };
    }
@@ -156,9 +156,9 @@ public class GuiceContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
-      ComponentAdapter result = super.getComponentAdapterOfType(componentType);
+      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
       if (result == null)
       {
          result = getComponentAdapter(componentType);
@@ -169,13 +169,14 @@ public class GuiceContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    @Override
-   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
-      List<ComponentAdapter> result = super.getComponentAdaptersOfType(componentType);
+      List<ComponentAdapter<T>> result = super.getComponentAdaptersOfType(componentType);
       if (injector != null)
       {
-         result = new ArrayList<ComponentAdapter>(result);
+         result = new ArrayList<ComponentAdapter<T>>(result);
          for (Binding<?> b : injector.getAllBindings().values())
          {
             if (b.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
@@ -184,7 +185,7 @@ public class GuiceContainer extends AbstractInterceptor
             }
             else if (componentType.isAssignableFrom(b.getKey().getTypeLiteral().getRawType()))
             {
-               result.add(createComponentAdapter(b.getKey().getTypeLiteral().getRawType(), b));
+               result.add((ComponentAdapter<T>)createComponentAdapter(b.getKey().getTypeLiteral().getRawType(), b));
             }
          }
       }
@@ -231,7 +232,7 @@ public class GuiceContainer extends AbstractInterceptor
          if (LOG.isDebugEnabled())
          {
             LOG.debug("No ModuleProvider has been defined, thus the GuiceContainer will be disabled."
-                     + " To enable the Guice Integration please define a ModuleProvider");
+               + " To enable the Guice Integration please define a ModuleProvider");
          }
       }
       else
@@ -243,9 +244,9 @@ public class GuiceContainer extends AbstractInterceptor
             @Override
             protected void configure()
             {
-               Collection<ComponentAdapter> adapters = delegate.getComponentAdapters();
+               Collection<ComponentAdapter<?>> adapters = delegate.getComponentAdapters();
                Binder binder = binder();
-               for (ComponentAdapter adapter : adapters)
+               for (ComponentAdapter<?> adapter : adapters)
                {
                   Object key = adapter.getComponentKey();
                   Class<?> type;
@@ -302,9 +303,9 @@ public class GuiceContainer extends AbstractInterceptor
 
       private final Class<T> type;
 
-      private final ComponentAdapter adapter;
+      private final ComponentAdapter<T> adapter;
 
-      private ComponentAdapterProvider(Class<T> type, ComponentAdapter adapter)
+      private ComponentAdapterProvider(Class<T> type, ComponentAdapter<T> adapter)
       {
          this.type = type;
          this.adapter = adapter;
