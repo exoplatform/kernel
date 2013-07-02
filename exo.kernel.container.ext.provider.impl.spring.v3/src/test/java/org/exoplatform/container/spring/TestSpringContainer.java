@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.spring;
 
+import org.exoplatform.container.ContainerBuilder;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.URL;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -41,21 +44,32 @@ public class TestSpringContainer extends AbstractTestContainer
 
    public void testIntegrationClass()
    {
-      RootContainer container = createRootContainer("test-exo-container.xml", "class");
-      assertNotNull(container);
-      testIntegration(container);
+      URL rootURL = getClass().getResource("test-exo-container.xml");
+      URL portalURL = getClass().getResource("test-exo-container2.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      //
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("class").build();
+      RootContainer root = RootContainer.getInstance();
+      testIntegration(root);
    }
 
    public void testIntegrationFile()
    {
-      RootContainer container = createRootContainer("test-exo-container.xml", "file");
-      assertNotNull(container);
-      testIntegration(container);
+      URL rootURL = getClass().getResource("test-exo-container.xml");
+      URL portalURL = getClass().getResource("test-exo-container2.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      //
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("file").build();
+      RootContainer root = RootContainer.getInstance();
+      testIntegration(root);
    }
 
    @SuppressWarnings("unchecked")
    private void testIntegration(RootContainer container)
    {
+      assertNotNull(container);
       ComponentAdapter<A> adapterA = container.getComponentAdapterOfType(A.class);
       assertNotNull(adapterA);
       assertSame(adapterA, container.getComponentAdapterOfType(A.class));
@@ -136,6 +150,29 @@ public class TestSpringContainer extends AbstractTestContainer
       assertEquals(2, markers.size());
       assertTrue(markers.contains(e));
       assertTrue(markers.contains(f));
+      ComponentAdapter<H> adapterH = container.getComponentAdapterOfType(H.class);
+      assertNull(adapterH);
+      PortalContainer portal = PortalContainer.getInstance();
+      adapterH = portal.getComponentAdapterOfType(H.class);
+      assertNotNull(adapterH);
+      H h = container.getComponentInstanceOfType(H.class);
+      assertNull(h);
+      h = portal.getComponentInstanceOfType(H.class);
+      assertNotNull(h);
+      assertSame(h, portal.getComponentInstanceOfType(H.class));
+      assertSame(h, adapterH.getComponentInstance());
+      List<ComponentAdapter<H>> adaptersH = container.getComponentAdaptersOfType(H.class);
+      assertTrue(adaptersH == null || adaptersH.isEmpty());
+      adaptersH = portal.getComponentAdaptersOfType(H.class);
+      assertNotNull(adaptersH);
+      assertEquals(1, adaptersH.size());
+      assertSame(h, adaptersH.get(0).getComponentInstance());
+      List<H> allH = container.getComponentInstancesOfType(H.class);
+      assertTrue(allH == null || allH.isEmpty());
+      allH = portal.getComponentInstancesOfType(H.class);
+      assertNotNull(allH);
+      assertEquals(1, allH.size());
+      assertSame(h, allH.get(0));
    }
 
    public static class A
@@ -187,23 +224,36 @@ public class TestSpringContainer extends AbstractTestContainer
    {
    }
 
-   public static interface Marker {}
+   @Singleton
+   public static class H
+   {
+   }
+
+   public static interface Marker
+   {
+   }
 
    @Configuration
    public static class Config
    {
-      @Autowired A a;
-      @Autowired B b;
-      @Autowired @Named("MyClassE") E e;
+      @Autowired
+      A a;
+
+      @Autowired
+      B b;
+
+      @Autowired
+      @Named("MyClassE")
+      E e;
 
       @Bean
-      public B b() 
+      public B b()
       {
          return new B();
       }
 
       @Bean
-      public C c() 
+      public C c()
       {
          C c = new C();
          c.a = a;
@@ -212,7 +262,7 @@ public class TestSpringContainer extends AbstractTestContainer
       }
 
       @Bean
-      public F f() 
+      public F f()
       {
          F f = new F();
          f.e = e;
@@ -220,9 +270,19 @@ public class TestSpringContainer extends AbstractTestContainer
       }
 
       @Bean
-      public G g() 
+      public G g()
       {
          return new G();
+      }
+   }
+
+   @Configuration
+   public static class Config2
+   {
+      @Bean
+      public H h()
+      {
+         return new H();
       }
    }
 }
