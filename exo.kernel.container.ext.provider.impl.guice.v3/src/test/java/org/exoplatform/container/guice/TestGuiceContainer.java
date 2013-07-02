@@ -21,10 +21,13 @@ package org.exoplatform.container.guice;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 
+import org.exoplatform.container.ContainerBuilder;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
 
+import java.net.URL;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -39,10 +42,44 @@ import javax.inject.Singleton;
 public class TestGuiceContainer extends AbstractTestContainer
 {
 
-   @SuppressWarnings("unchecked")
    public void testIntegration()
    {
-      RootContainer container = createRootContainer("test-exo-container.xml");
+      URL rootURL = getClass().getResource("test-exo-container.xml");
+      URL portalURL = getClass().getResource("test-exo-container2.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      //
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
+      RootContainer root = RootContainer.getInstance();
+      testIntegration(root);
+      ComponentAdapter<H> adapterH = root.getComponentAdapterOfType(H.class);
+      assertNull(adapterH);
+      PortalContainer portal = PortalContainer.getInstance();
+      adapterH = portal.getComponentAdapterOfType(H.class);
+      assertNotNull(adapterH);
+      H h = root.getComponentInstanceOfType(H.class);
+      assertNull(h);
+      h = portal.getComponentInstanceOfType(H.class);
+      assertNotNull(h);
+      assertSame(h, portal.getComponentInstanceOfType(H.class));
+      assertSame(h, adapterH.getComponentInstance());
+      List<ComponentAdapter<H>> adapters = root.getComponentAdaptersOfType(H.class);
+      assertTrue(adapters == null || adapters.isEmpty());
+      adapters = portal.getComponentAdaptersOfType(H.class);
+      assertNotNull(adapters);
+      assertEquals(1, adapters.size());
+      assertSame(h, adapters.get(0).getComponentInstance());
+      List<H> allH = root.getComponentInstancesOfType(H.class);
+      assertTrue(allH == null || allH.isEmpty());
+      allH = portal.getComponentInstancesOfType(H.class);
+      assertNotNull(allH);
+      assertEquals(1, allH.size());
+      assertSame(h, allH.get(0));
+   }
+ 
+   @SuppressWarnings("unchecked")
+   private void testIntegration(RootContainer container)
+   {
       assertNotNull(container);
       ComponentAdapter<A> adapterA = container.getComponentAdapterOfType(A.class);
       assertNotNull(adapterA);
@@ -175,6 +212,11 @@ public class TestGuiceContainer extends AbstractTestContainer
    {
    }
 
+   @Singleton
+   public static class H
+   {
+   }
+
    public static class MyModuleProvider implements ModuleProvider
    {
       public Module getModule()
@@ -188,6 +230,22 @@ public class TestGuiceContainer extends AbstractTestContainer
                bind(C.class);
                bind(F.class);
                bind(G.class);
+            }
+         };
+      }
+   }
+
+
+   public static class MyModuleProvider2 implements ModuleProvider
+   {
+      public Module getModule()
+      {
+         return new AbstractModule()
+         {
+            @Override
+            protected void configure()
+            {
+               bind(H.class);
             }
          };
       }
