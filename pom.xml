@@ -54,6 +54,7 @@
    <modules>
       <module>exo.kernel.container</module>
       <module>exo.kernel.container.ext.provider.impl.guice.v3</module>
+      <module>exo.kernel.container.ext.provider.impl.spring.v3</module>
       <module>exo.kernel.commons</module>
       <module>exo.kernel.commons.test</module>
       <module>exo.kernel.component.common</module>
@@ -226,6 +227,16 @@
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>3.0</version>
+         </dependency>
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>3.2.3.RELEASE</version>
+         </dependency>
+         <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
          </dependency>         
       </dependencies>
    </dependencyManagement>
