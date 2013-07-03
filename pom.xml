@@ -55,6 +55,7 @@
       <module>exo.kernel.container</module>
       <module>exo.kernel.container.ext.provider.impl.guice.v3</module>
       <module>exo.kernel.container.ext.provider.impl.spring.v3</module>
+      <module>exo.kernel.container.ext.provider.impl.weld.v2</module>
       <module>exo.kernel.commons</module>
       <module>exo.kernel.commons.test</module>
       <module>exo.kernel.component.common</module>
@@ -238,6 +239,11 @@
             <artifactId>javax.inject</artifactId>
             <version>1</version>
          </dependency>         
+         <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se</artifactId>
+            <version>2.0.1.Final</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
