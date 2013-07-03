@@ -9,7 +9,7 @@
    <bean id="b" class="org.exoplatform.container.spring.TestSpringContainer$B">
    </bean>
 
-   <bean id="c" class="org.exoplatform.container.spring.TestSpringContainer$C">
+   <bean id="c" class="org.exoplatform.container.spring.TestSpringContainer$C" scope="prototype">
    </bean>
 
    <bean id="f" class="org.exoplatform.container.spring.TestSpringContainer$F">

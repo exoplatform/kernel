@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container.spring;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.AbstractComponentAdapter;
 import org.exoplatform.container.AbstractInterceptor;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -85,16 +87,24 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   public <T> T getComponentInstanceOfType(final Class<T> componentType)
    {
       T result = super.getComponentInstanceOfType(componentType);
       if (ctx != null && result == null)
       {
-         String[] names = ctx.getBeanNamesForType(componentType);
-         if (names != null && names.length > 0)
+         PrivilegedAction<T> action = new PrivilegedAction<T>()
          {
-            result = componentType.cast(ctx.getBean(names[0]));
-         }
+            public T run()
+            {
+               String[] names = ctx.getBeanNamesForType(componentType);
+               if (names != null && names.length > 0)
+               {
+                  return componentType.cast(ctx.getBean(names[0]));
+               }
+               return null;
+            }
+         };
+         result = SecurityHelper.doPrivilegedAction(action);
       }
       return result;
    }

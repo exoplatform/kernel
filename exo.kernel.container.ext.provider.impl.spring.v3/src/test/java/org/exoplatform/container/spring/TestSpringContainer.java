@@ -26,6 +26,7 @@ import org.exoplatform.container.spi.ComponentAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 import java.net.URL;
 import java.util.List;
@@ -99,8 +100,8 @@ public class TestSpringContainer extends AbstractTestContainer
       assertSame(b, adapterB.getComponentInstance());
       C c = container.getComponentInstanceOfType(C.class);
       assertNotNull(c);
-      assertSame(c, container.getComponentInstanceOfType(C.class));
-      assertSame(c, adapterC.getComponentInstance());
+      assertNotSame(c, container.getComponentInstanceOfType(C.class));
+      assertNotSame(c, adapterC.getComponentInstance());
       assertSame(a, c.a);
       assertSame(b, c.b);
       assertSame(a, ((C)adapterC.getComponentInstance()).a);
@@ -253,6 +254,7 @@ public class TestSpringContainer extends AbstractTestContainer
       }
 
       @Bean
+      @Scope("prototype")
       public C c()
       {
          C c = new C();
