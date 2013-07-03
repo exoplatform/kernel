@@ -1,0 +1,9 @@
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor1
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor2
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor3
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor4
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor5
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor6
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor7
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor8
+org.exoplatform.container.spi.TestKernelExtension$MockInterceptor9

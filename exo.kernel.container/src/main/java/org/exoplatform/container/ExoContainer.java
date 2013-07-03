@@ -22,18 +22,20 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.management.ManageableContainer;
 import org.exoplatform.container.security.ContainerPermissions;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.spi.InterceptorChainFactoryProvider;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.defaults.ComponentAdapterFactory;
 
-import java.lang.reflect.Constructor;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,13 +51,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by The eXo Platform SAS<br>
  * The Exo Container is an object responsible for loading services/components.
  * The eXoContainer class is inherited by all the containers, including RootContainer, PortalContainer,
- * and StandaloneContainer. It itself inherits from a PicoContainer framework which allows eXo to apply
+ * and StandaloneContainer. It itself inherits from a {@link Container} which allows eXo to apply
  * the Inversion of Control (also known as IoC) principles.
  *
  * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>
  * @LevelAPI Provisional
  */
-public class ExoContainer extends ManageableContainer
+public class ExoContainer extends AbstractContainer
 {
 
    /**
@@ -67,14 +69,20 @@ public class ExoContainer extends ManageableContainer
     * The current list of profiles
     */
    private static volatile String PROFILES;
-   
+
    /**
     * The current set of profiles
     */
    private static Set<String> SET_PROFILES = Collections.unmodifiableSet(new HashSet<String>());
-   
+
    protected final AtomicBoolean stopping = new AtomicBoolean();
-  
+
+   private final AtomicBoolean started = new AtomicBoolean();
+
+   private final AtomicBoolean disposed = new AtomicBoolean();
+
+   private final AtomicBoolean initialized = new AtomicBoolean();
+
    /**
     * Returns an unmodifiable set of profiles defined by the value returned by invoking
     * {@link PropertyManager#getProperty(String)} with the {@link org.exoplatform.commons.utils.PropertyManager#RUNTIME_PROFILES}
@@ -95,11 +103,10 @@ public class ExoContainer extends ManageableContainer
                PROFILES = profiles;
             }
          }
-      }      
- 
+      }
       return SET_PROFILES;
    }
-   
+
    /**
     * Indicates whether or not a given profile exists
     * @param profileName the name of the profile to check
@@ -109,7 +116,7 @@ public class ExoContainer extends ManageableContainer
    {
       return getProfiles().contains(profileName);
    }
-   
+
    /**
     * Convert the list of profiles into a Set of String
     */
@@ -125,41 +132,30 @@ public class ExoContainer extends ManageableContainer
             profiles.add(profile.trim());
          }
       }
-
-      //
-      return Collections.unmodifiableSet(profiles);      
+      return Collections.unmodifiableSet(profiles);
    }
-   
+
    protected static final Log LOG = ExoLogger.getLogger("exo.kernel.container.ExoContainer");
 
-   private Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =
+   private final Map<String, ComponentLifecyclePlugin> componentLifecylePlugin_ =
       new HashMap<String, ComponentLifecyclePlugin>();
 
-   private List<ContainerLifecyclePlugin> containerLifecyclePlugin_ = new ArrayList<ContainerLifecyclePlugin>();
+   private final List<ContainerLifecyclePlugin> containerLifecyclePlugin_ = new ArrayList<ContainerLifecyclePlugin>();
 
-   protected ExoContainerContext context;
+   protected final ExoContainerContext context;
 
-   protected PicoContainer parent;
+   protected final ExoContainer parent;
 
    public ExoContainer()
    {
-      context = new ExoContainerContext(this, this.getClass().getSimpleName());
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            registerComponentInstance(context);
-            return null;
-         }
-      });
-      
-      this.parent = null;
+      this(null);
    }
 
-   public ExoContainer(PicoContainer parent)
+   public ExoContainer(ExoContainer parent)
    {
-      super(parent);
-      context = new ExoContainerContext(this, this.getClass().getSimpleName());
+      this.context = new ExoContainerContext(this, this.getClass().getSimpleName());
+      this.parent = parent;
+      this.delegate = InterceptorChainFactoryProvider.getInterceptorChainFactory().getInterceptorChain(this, parent);
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
@@ -168,22 +164,6 @@ public class ExoContainer extends ManageableContainer
             return null;
          }
       });
-      this.parent = parent;
-   }
-
-   public ExoContainer(ComponentAdapterFactory factory, PicoContainer parent)
-   {
-      super(factory, parent);
-      context = new ExoContainerContext(this, this.getClass().getSimpleName());
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            registerComponentInstance(context);
-            return null;
-         }
-      });
-      this.parent = parent;
    }
 
    public ExoContainerContext getContext()
@@ -203,15 +183,7 @@ public class ExoContainer extends ManageableContainer
       }
       return name;
    }
-   
-   /**
-    * Explicit calls are not allowed anymore
-    */
-   @Deprecated
-   public void initContainer() throws Exception
-   {      
-   }
-      
+
    private void initContainerInternal()
    {
       ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
@@ -231,17 +203,17 @@ public class ExoContainer extends ManageableContainer
       }
    }
 
-   @Override
    public synchronized void dispose()
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeDisposed())
       {
          destroyContainerInternal();
-         super.dispose();         
+         super.dispose();
+         disposed.set(true);
       }
    }
 
@@ -251,55 +223,58 @@ public class ExoContainer extends ManageableContainer
     */
    public synchronized void start(boolean init)
    {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
       if (init)
       {
-         // Initialize the container first
-         initContainerInternal();
+         initialize();
       }
       start();
    }
-   
-   @Override
+
+   public synchronized void initialize()
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
+
+      if (canBeInitialized())
+      {
+         // Initialize the successors
+         super.initialize();
+         // Initialize the container
+         initContainerInternal();
+         initialized.set(true);
+      }
+   }
+
    public synchronized void start()
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStarted())
       {
          super.start();
-         startContainerInternal();         
+         startContainerInternal();
+         started.set(true);
       }
    }
 
-   @Override
    public synchronized void stop()
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStopped())
       {
          stopping.set(true);
          stopContainerInternal();
-         super.stop();         
+         super.stop();
+         started.set(false);
       }
    }
 
-   /**
-    * Explicit calls are not allowed anymore
-    */
-   @Deprecated 
-   public void startContainer() throws Exception
-   {      
-   }
-   
    private void startContainerInternal()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
@@ -315,14 +290,6 @@ public class ExoContainer extends ManageableContainer
       }
    }
 
-   /**
-    * Explicit calls are not allowed anymore
-    */
-   @Deprecated 
-   public void stopContainer() throws Exception
-   {      
-   }
-
    private void stopContainerInternal()
    {
       for (ContainerLifecyclePlugin plugin : containerLifecyclePlugin_)
@@ -336,14 +303,6 @@ public class ExoContainer extends ManageableContainer
             LOG.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
          }
       }
-   }
-
-   /**
-    * Explicit calls are not allowed anymore
-    */
-   @Deprecated 
-   public void destroyContainer() throws Exception
-   {      
    }
 
    private void destroyContainerInternal()
@@ -366,7 +325,7 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       List<String> list = plugin.getManageableComponents();
       for (String component : list)
          componentLifecylePlugin_.put(component, plugin);
@@ -377,58 +336,10 @@ public class ExoContainer extends ManageableContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       containerLifecyclePlugin_.add(plugin);
    }
 
-   public <T> T createComponent(Class<T> clazz) throws Exception
-   {
-      return createComponent(clazz, null);
-   }
-
-   public <T> T createComponent(Class<T> clazz, InitParams params) throws Exception
-   {
-      if (LOG.isDebugEnabled())
-         LOG.debug(clazz.getName() + " " + ((params != null) ? params : "") + " added to " + getContext().getName());
-      Constructor<?>[] constructors = new Constructor<?>[0];
-      try
-      {
-         constructors = ContainerUtil.getSortedConstructors(clazz);
-      }
-      catch (NoClassDefFoundError err)
-      {
-         throw new Exception("Cannot resolve constructor for class " + clazz.getName(), err);
-      }
-      Class<?> unknownParameter = null;
-      for (int k = 0; k < constructors.length; k++)
-      {
-         Constructor<?> constructor = constructors[k];
-         Class<?>[] parameters = constructor.getParameterTypes();
-         Object[] args = new Object[parameters.length];
-         boolean satisfied = true;
-         for (int i = 0; i < args.length; i++)
-         {
-            if (parameters[i].equals(InitParams.class))
-            {
-               args[i] = params;
-            }
-            else
-            {
-               args[i] = getComponentInstanceOfType(parameters[i]);
-               if (args[i] == null)
-               {
-                  satisfied = false;
-                  unknownParameter = parameters[i];
-                  break;
-               }
-            }
-         }
-         if (satisfied)
-            return clazz.cast(constructor.newInstance(args));
-      }
-      throw new Exception("Cannot find a satisfying constructor for " + clazz + " with parameter " + unknownParameter);
-   }
-   
    /**
     * Gets the {@link ConfigurationManager} from the given {@link ExoContainer} if it exists, 
     * then returns the nested {@link Configuration} otherwise it returns <code>null</code>
@@ -444,10 +355,116 @@ public class ExoContainer extends ManageableContainer
     */
    protected void unregisterAllComponents()
    {
-      Collection<ComponentAdapter> adapters = getComponentAdapters();
-      for (ComponentAdapter adapter : adapters)
+      Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
+      for (ComponentAdapter<?> adapter : adapters)
       {
          unregisterComponent(adapter.getComponentKey());
       }
+   }
+
+   /**
+    * Register a component using the componentImplementation as key. Calling this method is equivalent to calling
+    * <code>registerComponentImplementation(componentImplementation, componentImplementation)</code>.
+    *
+    * @param componentImplementation the concrete component class.
+    * @return the ComponentAdapter that has been associated with this component. In the majority of cases, this return
+    *         value can be safely ignored, as one of the <code>getXXX()</code> methods of the
+    *         {@link Container} interface can be used to retrieve a reference to the component later on.
+    * @throws ContainerException if registration fails.
+    */
+   public <T> ComponentAdapter<T> registerComponentImplementation(Class<T> componentImplementation)
+      throws ContainerException
+   {
+      return registerComponentImplementation(componentImplementation, componentImplementation);
+   }
+
+   /**
+    * Register an arbitrary object. The class of the object will be used as a key. Calling this method is equivalent to
+    * calling     * <code>registerComponentImplementation(componentImplementation, componentImplementation)</code>.
+    *
+    * @param componentInstance
+    * @return the ComponentAdapter that has been associated with this component. In the majority of cases, this return
+    *         value can be safely ignored, as one of the <code>getXXX()</code> methods of the
+    *         {@link Container} interface can be used to retrieve a reference to the component later on.
+    * @throws ContainerException if registration fails.
+    */
+   public <T> ComponentAdapter<T> registerComponentInstance(T componentInstance) throws ContainerException
+   {
+      return registerComponentInstance(componentInstance.getClass(), componentInstance);
+   }
+
+   /**
+    * Creates a component corresponding to the given {@link Class} with no parameters
+    * This is equivalent to call {@link #createComponent(Class, InitParams)} with
+    * <code>null</code> as {@link InitParams}
+    * @param clazz the Class of the object to create
+    * @return an instance of the component
+    * @throws Exception if any issue occurs while creating the component.
+    */
+   public <T> T createComponent(Class<T> clazz) throws Exception
+   {
+      return createComponent(clazz, null);
+   }
+
+   @Managed
+   @ManagedName("RegisteredComponentNames")
+   @ManagedDescription("Return the list of the registered component names")
+   public Set<String> getRegisteredComponentNames() throws ContainerException
+   {
+      Set<String> names = new HashSet<String>();
+      Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
+      for (ComponentAdapter<?> adapter : adapters)
+      {
+         Object key = adapter.getComponentKey();
+         String name = String.valueOf(key);
+         names.add(name);
+      }
+      return names;
+   }
+
+   /**
+    * Gives the parent container of this container.
+    * 
+    * @return a {@link ExoContainer} instance, or <code>null</code> if this container does not have a parent.
+    */
+   public ExoContainer getParent()
+   {
+      return parent;
+   }
+
+   /**
+    * Indicates whether or not the container can be started
+    * @return <code>true</code> if it can be started, <code>false</code> otherwise.
+    */
+   public boolean canBeStarted()
+   {
+      return !disposed.get() && !started.get();
+   }
+
+   /**
+    * Indicates whether or not the container can be stopped
+    * @return <code>true</code> if it can be stopped, <code>false</code> otherwise.
+    */
+   public boolean canBeStopped()
+   {
+      return !disposed.get() && started.get();
+   }
+
+   /**
+    * Indicates whether or not the container can be disposed
+    * @return <code>true</code> if it can be disposed, <code>false</code> otherwise.
+    */
+   public boolean canBeDisposed()
+   {
+      return !disposed.get();
+   }
+
+   /**
+    * Indicates whether or not the container can be initialized
+    * @return <code>true</code> if it can be initialized, <code>false</code> otherwise.
+    */
+   protected boolean canBeInitialized()
+   {
+      return !initialized.get();
    }
 }

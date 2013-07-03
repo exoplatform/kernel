@@ -59,7 +59,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    private ClassLoader scontextClassLoader_;
 
-   private String contextPath = null;
+   private String contextPath;
 
    private boolean validateSchema = true;
    
@@ -127,22 +127,22 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       addConfiguration(getURL(url));
    }
 
-   public void addConfiguration(Collection urls) throws Exception
+   public void addConfiguration(Collection<URL> urls)
    {
-      Iterator i = urls.iterator();
+      Iterator<URL> i = urls.iterator();
       while (i.hasNext())
       {
-         URL url = (URL)i.next();
+         URL url = i.next();
          addConfiguration(url);
       }
    }
 
-   public void addConfiguration(URL url) throws Exception
+   public void addConfiguration(URL url)
    {
       addConfiguration(scontext_, url);
    }
 
-   private void addConfiguration(ServletContext context, URL url) throws Exception
+   private void addConfiguration(ServletContext context, URL url)
    {
       if (logEnabled && LOG_DEBUG)
          LOG.info("Add configuration " + url);
@@ -212,7 +212,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
     */
    private void importConf(ConfigurationUnmarshaller unmarshaller, Configuration conf, int depth) throws Exception
    {
-      List urls = conf.getImports();
+      List<String> urls = conf.getImports();
       if (urls != null)
       {
          StringBuilder prefix = new StringBuilder(depth);
@@ -246,7 +246,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
    {
       if (configurations_ == null)
          return;
-      List list = configurations_.getRemoveConfiguration();
+      List<String> list = configurations_.getRemoveConfiguration();
       if (list != null)
       {
          for (int i = 0; i < list.size(); i++)
@@ -262,12 +262,12 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       return configurations_.getComponent(service);
    }
 
-   public Component getComponent(Class clazz) throws Exception
+   public Component getComponent(Class<?> clazz)
    {
       return configurations_.getComponent(clazz.getName());
    }
 
-   public Collection getComponents()
+   public Collection<Component> getComponents()
    {
       if (configurations_ == null)
          return null;
@@ -436,15 +436,10 @@ public class ConfigurationManagerImpl implements ConfigurationManager
          else
          {
             // The url is of type file:, so three '/' are missing
-            url = "file:///" + url.substring(5);               
+            url = "file:///" + url.substring(5);
          }
       }
       return url;
-   }
-
-   public boolean isDefault(String value)
-   {
-      return value == null || value.length() == 0 || "default".equals(value);
    }
 
    protected String removePrefix(String prefix, String url)

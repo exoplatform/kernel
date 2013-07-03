@@ -29,6 +29,7 @@ import org.exoplatform.container.definition.PortalContainerDefinition;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.monitor.jvm.OperatingSystemInfo;
 import org.exoplatform.container.security.ContainerPermissions;
+import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.management.annotations.Managed;
@@ -46,10 +47,10 @@ import org.gatein.wci.WebAppLifeCycleEvent;
 import org.gatein.wci.WebAppListener;
 import org.gatein.wci.authentication.AuthenticationEvent;
 import org.gatein.wci.authentication.AuthenticationListener;
-import org.picocontainer.PicoException;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -227,7 +228,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
     * {@inheritDoc}
     */
    @Override
-   public Object getComponentInstance(Object componentKey) throws PicoException
+   public Object getComponentInstance(Object componentKey) throws ContainerException
    {
       if (reloading.get())
       {
@@ -634,7 +635,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          {
             uri = "conf/portal/generic-configuration.xml";
          }
-         Collection envConf = ContainerUtil.getConfigurationURL(uri);
+         Collection<URL> envConf = ContainerUtil.getConfigurationURL(uri);
          try
          {
             cService.addConfiguration(envConf);
@@ -722,7 +723,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       this.unregisterComponent(servletContext.getServletContextName());
    }
 
-   public static Object getComponent(Class key)
+   public static Object getComponent(Class<?> key)
    {
       return getInstance().getComponentInstanceOfType(key);
    }
@@ -753,8 +754,6 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       catch (Exception e)
       {
          LOG.error("Could not build root container", e);
-         // The logger is not necessary configured so we have to use the standard
-         // output stream
          LOG.error(e.getLocalizedMessage(), e);
          return null;
       }

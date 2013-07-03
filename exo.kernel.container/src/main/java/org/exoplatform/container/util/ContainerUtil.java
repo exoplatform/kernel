@@ -30,7 +30,6 @@ import org.exoplatform.container.xml.ContainerLifecyclePlugin;
 import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.picocontainer.defaults.ConstructorInjectionComponentAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +48,7 @@ import java.util.Map;
  * @since Oct 28, 2004
  * @version $Id: ContainerUtil.java 9894 2006-10-31 02:52:41Z tuan08 $
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class ContainerUtil
 {
    /** The logger. */
@@ -186,8 +185,7 @@ public class ContainerUtil
             {
                if (component.isMultiInstance())
                {
-                  container.registerComponent(new ConstructorInjectionComponentAdapter(classType, classType));
-                  LOG.debug("===>>> Thread local component " + classType.getName() + " registered.");
+                  throw new UnsupportedOperationException("Multi-instance isn't allowed anymore");
                }
                else
                {
@@ -201,8 +199,7 @@ public class ContainerUtil
                   Class<?> keyType = ClassLoading.loadClass(key, ContainerUtil.class);
                   if (component.isMultiInstance())
                   {
-                     container.registerComponent(new ConstructorInjectionComponentAdapter(keyType, classType));
-                     LOG.debug("===>>> Thread local component " + classType.getName() + " registered.");
+                     throw new UnsupportedOperationException("Multi-instance isn't allowed anymore");
                   }
                   else
                   {
@@ -313,5 +310,5 @@ public class ContainerUtil
          }
       }
       return props;
-   }   
+   }
 }

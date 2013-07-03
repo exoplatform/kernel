@@ -18,15 +18,13 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.spi.ContainerVisitor;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.picocontainer.ComponentAdapter;
 import org.picocontainer.Disposable;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoIntrospectionException;
 import org.picocontainer.Startable;
-import org.picocontainer.defaults.AbstractPicoVisitor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,7 +37,7 @@ import java.util.List;
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  */
-public class LifecycleVisitor extends AbstractPicoVisitor
+public class LifecycleVisitor implements ContainerVisitor
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.LifecycleVisitor");
@@ -69,7 +67,7 @@ public class LifecycleVisitor extends AbstractPicoVisitor
 
    private final boolean visitInInstantiationOrder;
 
-   private final List componentInstances;
+   private final List<Object> componentInstances;
 
    private final boolean ignoreError;
 
@@ -78,21 +76,21 @@ public class LifecycleVisitor extends AbstractPicoVisitor
       this.method = method;
       this.type = ofType;
       this.visitInInstantiationOrder = visitInInstantiationOrder;
-      this.componentInstances = new ArrayList();
+      this.componentInstances = new ArrayList<Object>();
       this.ignoreError = ignoreError;
    }
 
-   public Object traverse(Object node)
+   private Object traverse(Container container)
    {
       componentInstances.clear();
       try
       {
-         super.traverse(node);
+         visitContainer(container);
          if (!visitInInstantiationOrder)
          {
             Collections.reverse(componentInstances);
          }
-         for (Iterator iterator = componentInstances.iterator(); iterator.hasNext();)
+         for (Iterator<?> iterator = componentInstances.iterator(); iterator.hasNext();)
          {
             Object o = iterator.next();
             try
@@ -109,7 +107,7 @@ public class LifecycleVisitor extends AbstractPicoVisitor
                   }
                   continue;
                }
-               throw new PicoIntrospectionException("Can't call " + method.getName() + " on " + o, e);
+               throw new ContainerException("Can't call " + method.getName() + " on " + o, e);
             }
             catch (IllegalAccessException e)
             {
@@ -121,7 +119,7 @@ public class LifecycleVisitor extends AbstractPicoVisitor
                   }
                   continue;
                }
-               throw new PicoIntrospectionException("Can't call " + method.getName() + " on " + o, e);
+               throw new ContainerException("Can't call " + method.getName() + " on " + o, e);
             }
             catch (InvocationTargetException e)
             {
@@ -133,7 +131,7 @@ public class LifecycleVisitor extends AbstractPicoVisitor
                   }
                   continue;
                }
-               throw new PicoIntrospectionException("Failed when calling " + method.getName() + " on " + o,
+               throw new ContainerException("Failed when calling " + method.getName() + " on " + o,
                   e.getTargetException());
             }
          }
@@ -145,47 +143,36 @@ public class LifecycleVisitor extends AbstractPicoVisitor
       return Void.TYPE;
    }
 
-   public void visitContainer(PicoContainer pico)
+   public void visitContainer(Container container)
    {
-      checkTraversal();
-      componentInstances.addAll(pico.getComponentInstancesOfType(type));
-   }
-
-   public void visitComponentAdapter(ComponentAdapter componentAdapter)
-   {
-      checkTraversal();
-   }
-
-   public void visitParameter(Parameter parameter)
-   {
-      checkTraversal();
+      componentInstances.addAll(container.getComponentInstancesOfType(type));
    }
 
    /**
-    * Invoke the standard PicoContainer lifecycle for {@link Startable#start()}.
+    * Invoke the standard Container lifecycle for {@link Startable#start()}.
     * @param node The node to start the traversal.
     */
-   public static void start(Object node)
+   public static void start(Container container)
    {
-      new LifecycleVisitor(START, Startable.class, true, false).traverse(node);;
+      new LifecycleVisitor(START, Startable.class, true, false).traverse(container);
    }
 
    /**
-    * Invoke the standard PicoContainer lifecycle for {@link Startable#stop()}.
+    * Invoke the standard Container lifecycle for {@link Startable#stop()}.
     * @param node The node to start the traversal.
     */
-   public static void stop(Object node)
+   public static void stop(Container container)
    {
-      new LifecycleVisitor(STOP, Startable.class, false, true).traverse(node);;
+      new LifecycleVisitor(STOP, Startable.class, false, true).traverse(container);
    }
 
    /**
-    * Invoke the standard PicoContainer lifecycle for {@link Disposable#dispose()}.
+    * Invoke the standard Container lifecycle for {@link Disposable#dispose()}.
     * @param node The node to start the traversal.
     */
-   public static void dispose(Object node)
+   public static void dispose(Container container)
    {
-      new LifecycleVisitor(DISPOSE, Disposable.class, false, true).traverse(node);;
+      new LifecycleVisitor(DISPOSE, Disposable.class, false, true).traverse(container);
    }
 
 }

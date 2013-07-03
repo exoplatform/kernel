@@ -23,8 +23,6 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.defaults.ComponentAdapterFactory;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -36,13 +34,8 @@ import org.picocontainer.defaults.ComponentAdapterFactory;
 public class ManagedContainer extends ExoContainer
 {
 
-   public ManagedContainer(PicoContainer parent)
+   public ManagedContainer(ExoContainer parent)
    {
       super(parent);
-   }
-
-   public ManagedContainer(ComponentAdapterFactory factory, PicoContainer parent)
-   {
-      super(factory, parent);
    }
 }

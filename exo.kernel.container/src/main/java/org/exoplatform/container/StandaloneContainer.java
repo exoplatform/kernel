@@ -23,7 +23,6 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
-import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
@@ -88,8 +87,6 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
     */
    private StandaloneContainer(ClassLoader configClassLoader)
    {
-      super(new MX4JComponentAdapterFactory(), null);
-
       //
       configurationManager = new ConfigurationManagerImpl(configClassLoader, ExoContainer.getProfiles());
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()

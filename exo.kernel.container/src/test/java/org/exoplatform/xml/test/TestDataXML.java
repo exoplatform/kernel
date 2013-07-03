@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -50,7 +51,8 @@ public class TestDataXML extends TestCase
       String projectdir = System.getProperty("basedir");
       IBindingFactory bfact = BindingDirectory.getFactory(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
-      Object obj = uctx.unmarshalDocument(new FileInputStream(projectdir + "/src/test/resources/object.xml"), null);
+      URL url = TestDataXML.class.getResource("../../../../object.xml");
+      Object obj = uctx.unmarshalDocument(url.openStream(), null);
 
       IMarshallingContext mctx = bfact.createMarshallingContext();
       mctx.setIndent(2);

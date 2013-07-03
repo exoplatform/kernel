@@ -19,7 +19,6 @@
 package org.exoplatform.container.component;
 
 import org.exoplatform.container.ExoContainer;
-import org.picocontainer.PicoContainer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +69,7 @@ class RequestLifeCycleStack
       //
       if (!local)
       {
-         for (PicoContainer current = container.getParent(); current != null; current = current.getParent())
+         for (ExoContainer current = container.getParent(); current != null; current = current.getParent())
          {
             components.addAll((List<ComponentRequestLifecycle>) current
                      .getComponentInstancesOfType(ComponentRequestLifecycle.class));

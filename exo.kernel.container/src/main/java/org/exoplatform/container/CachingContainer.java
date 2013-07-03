@@ -18,15 +18,10 @@
  */
 package org.exoplatform.container;
 
-import org.exoplatform.container.mc.MCIntegrationContainer;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoException;
-import org.picocontainer.PicoRegistrationException;
-import org.picocontainer.PicoVisitor;
-import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.spi.ContainerVisitor;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,8 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-@SuppressWarnings("unchecked")
-public class CachingContainer extends MCIntegrationContainer
+public class CachingContainer extends AbstractInterceptor
 {
 
    /**
@@ -45,39 +39,22 @@ public class CachingContainer extends MCIntegrationContainer
     */
    private static final long serialVersionUID = 316388590860241305L;
 
-   private final ConcurrentMap<Class, ComponentAdapter> adapterByType =
-      new ConcurrentHashMap<Class, ComponentAdapter>();
+   private final ConcurrentMap<Class<?>, ComponentAdapter<?>> adapterByType =
+      new ConcurrentHashMap<Class<?>, ComponentAdapter<?>>();
 
-   private final ConcurrentMap<Class, Object> instanceByType = new ConcurrentHashMap<Class, Object>();
+   private final ConcurrentMap<Class<?>, Object> instanceByType = new ConcurrentHashMap<Class<?>, Object>();
 
    private final ConcurrentMap<Object, Object> instanceByKey = new ConcurrentHashMap<Object, Object>();
 
-   private final ConcurrentMap<Class, List> adaptersByType = new ConcurrentHashMap<Class, List>();
+   private final ConcurrentMap<Class<?>, Object> adaptersByType =
+      new ConcurrentHashMap<Class<?>, Object>();
 
-   private final ConcurrentMap<Class, List> instancesByType = new ConcurrentHashMap<Class, List>();
+   private final ConcurrentMap<Class<?>, List<?>> instancesByType = new ConcurrentHashMap<Class<?>, List<?>>();
 
-   public CachingContainer(ComponentAdapterFactory componentAdapterFactory, PicoContainer parent)
+   @SuppressWarnings("unchecked")
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
-      super(componentAdapterFactory, parent);
-   }
-
-   public CachingContainer(PicoContainer parent)
-   {
-      super(parent);
-   }
-
-   public CachingContainer(ComponentAdapterFactory componentAdapterFactory)
-   {
-      super(componentAdapterFactory);
-   }
-
-   public CachingContainer()
-   {
-   }
-
-   public ComponentAdapter getComponentAdapterOfType(Class componentType)
-   {
-      ComponentAdapter adapter = adapterByType.get(componentType);
+      ComponentAdapter<T> adapter = (ComponentAdapter<T>)adapterByType.get(componentType);
       if (adapter == null)
       {
          adapter = super.getComponentAdapterOfType(componentType);
@@ -89,9 +66,10 @@ public class CachingContainer extends MCIntegrationContainer
       return adapter;
    }
 
-   public List getComponentAdaptersOfType(Class componentType)
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
-      List adapters = adaptersByType.get(componentType);
+      @SuppressWarnings("unchecked")
+      List<ComponentAdapter<T>> adapters = (List<ComponentAdapter<T>>)adaptersByType.get(componentType);
       if (adapters == null)
       {
          adapters = super.getComponentAdaptersOfType(componentType);
@@ -103,9 +81,10 @@ public class CachingContainer extends MCIntegrationContainer
       return adapters;
    }
 
-   public List getComponentInstancesOfType(Class componentType) throws PicoException
+   @SuppressWarnings("unchecked")
+   public <T> List<T> getComponentInstancesOfType(Class<T> componentType) throws ContainerException
    {
-      List instances = instancesByType.get(componentType);
+      List<?> instances = instancesByType.get(componentType);
       if (instances == null)
       {
          instances = super.getComponentInstancesOfType(componentType);
@@ -114,10 +93,10 @@ public class CachingContainer extends MCIntegrationContainer
             instancesByType.put(componentType, instances);
          }
       }
-      return instances;
+      return (List<T>)instances;
    }
 
-   public Object getComponentInstance(Object componentKey) throws PicoException
+   public Object getComponentInstance(Object componentKey) throws ContainerException
    {
       Object instance = instanceByKey.get(componentKey);
       if (instance == null)
@@ -131,7 +110,7 @@ public class CachingContainer extends MCIntegrationContainer
       return instance;
    }
 
-   public Object getComponentInstanceOfType(Class componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
       Object instance = instanceByType.get(componentType);
       if (instance == null)
@@ -142,22 +121,27 @@ public class CachingContainer extends MCIntegrationContainer
             instanceByType.put(componentType, instance);
          }
       }
-      return instance;
+      return componentType.cast(instance);
    }
 
-   private static final PicoVisitor invalidator = new ContainerVisitor()
+   private static final ContainerVisitor invalidator = new ContainerVisitor()
    {
-      public void visitContainer(PicoContainer pico)
+      public void visitContainer(Container container)
       {
-         if (pico instanceof CachingContainer)
+         do
          {
-            CachingContainer caching = (CachingContainer)pico;
-            caching.adapterByType.clear();
-            caching.adaptersByType.clear();
-            caching.instanceByKey.clear();
-            caching.instanceByType.clear();
-            caching.instancesByType.clear();
+            if (container instanceof CachingContainer)
+            {
+               CachingContainer caching = (CachingContainer)container;
+               caching.adapterByType.clear();
+               caching.adaptersByType.clear();
+               caching.instanceByKey.clear();
+               caching.instanceByType.clear();
+               caching.instancesByType.clear();
+               break;
+            }
          }
+         while ((container = container.getSuccessor()) != null);
       }
    };
 
@@ -166,67 +150,34 @@ public class CachingContainer extends MCIntegrationContainer
       accept(invalidator);
    }
 
-   //
-
-   public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
-      throws DuplicateComponentKeyRegistrationException
+   public ComponentAdapter<?> unregisterComponent(Object componentKey)
    {
-      ComponentAdapter adapter = super.registerComponent(componentAdapter);
+      ComponentAdapter<?> adapter = super.unregisterComponent(componentKey);
       invalidate();
       return adapter;
    }
 
-   public ComponentAdapter unregisterComponent(Object componentKey)
+   public <T> ComponentAdapter<T> registerComponentInstance(Object componentKey, T componentInstance)
+      throws ContainerException
    {
-      ComponentAdapter adapter = super.unregisterComponent(componentKey);
+      ComponentAdapter<T> adapter = super.registerComponentInstance(componentKey, componentInstance);
       invalidate();
       return adapter;
    }
 
-   public ComponentAdapter registerComponentInstance(Object component) throws PicoRegistrationException
+   public <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
+      throws ContainerException
    {
-      ComponentAdapter adapter = super.registerComponentInstance(component);
+      ComponentAdapter<T> adapter = super.registerComponentImplementation(componentKey, componentImplementation);
       invalidate();
       return adapter;
    }
 
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-      throws PicoRegistrationException
+   /**
+    * {@inheritDoc}
+    */
+   public String getId()
    {
-      ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
-      invalidate();
-      return adapter;
-   }
-
-   public ComponentAdapter registerComponentImplementation(Class componentImplementation)
-      throws PicoRegistrationException
-   {
-      ComponentAdapter adapter = super.registerComponentImplementation(componentImplementation);
-      invalidate();
-      return adapter;
-   }
-
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation)
-      throws PicoRegistrationException
-   {
-      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation);
-      invalidate();
-      return adapter;
-   }
-
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
-      Parameter[] parameters) throws PicoRegistrationException
-   {
-      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
-      invalidate();
-      return adapter;
-   }
-
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class componentImplementation,
-      List parameters) throws PicoRegistrationException
-   {
-      ComponentAdapter adapter = super.registerComponentImplementation(componentKey, componentImplementation, parameters);
-      invalidate();
-      return adapter;
+      return "Cache";
    }
 }

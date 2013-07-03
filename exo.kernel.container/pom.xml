@@ -45,24 +45,6 @@
          <artifactId>servlet-api</artifactId>
       </dependency>
       <dependency>
-         <groupId>picocontainer</groupId>
-         <artifactId>picocontainer</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>jmock</groupId>
-               <artifactId>jmock</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>xstream</groupId>
-                <artifactId>xstream</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>xpp3</groupId>
-                <artifactId>xpp3</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
          <groupId>commons-beanutils</groupId>
          <artifactId>commons-beanutils</artifactId>
           <exclusions>
@@ -148,7 +130,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </target>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -162,6 +144,40 @@
                   <version>1.5.3-1</version>
                </dependency>
             </dependencies>
+         </plugin>
+         <!-- Configure maven-source-plugin to publish the sources of the unit tests -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <configuration>
+               <excludes>
+                  <exclude>META-INF/services/*</exclude>
+                  <exclude>org/exoplatform/container/spi/*.java</exclude>
+                  <exclude>test.policy</exclude>
+                  <exclude>tsm-excludes.properties</exclude>
+               </excludes>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>attach-sources</id>
+                  <phase>generate-sources</phase>
+                  <goals>
+                     <goal>test-jar-no-fork</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <!-- Configure maven-jar-plugin to publish the classes of the unit tests -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>test-jar</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
