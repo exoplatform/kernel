@@ -53,6 +53,7 @@
 
    <modules>
       <module>exo.kernel.container</module>
+      <module>exo.kernel.container.ext.provider.impl.weld.v2</module>
       <module>exo.kernel.commons</module>
       <module>exo.kernel.commons.test</module>
       <module>exo.kernel.component.common</module>
@@ -68,6 +69,12 @@
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
             <artifactId>exo.kernel.container</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.exoplatform.kernel</groupId>
+            <artifactId>exo.kernel.container</artifactId>
+            <type>test-jar</type>
             <version>${project.version}</version>
          </dependency>
          <dependency>
@@ -214,6 +221,11 @@
             <groupId>org.gatein.wci</groupId>
             <artifactId>wci-wci</artifactId>
             <version>2.3.0.Final</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se</artifactId>
+            <version>2.0.1.Final</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
