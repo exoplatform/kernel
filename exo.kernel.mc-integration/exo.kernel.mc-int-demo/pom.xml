@@ -27,7 +27,11 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>mc-integration-parent</artifactId>
+<<<<<<< HEAD
       <version>2.4.4-GA</version>
+=======
+      <version>2.4.5-GA-SNAPSHOT</version>
+>>>>>>> stable/2.4.x
    </parent>
 
    <artifactId>exo.kernel.mc-int-demo</artifactId>
