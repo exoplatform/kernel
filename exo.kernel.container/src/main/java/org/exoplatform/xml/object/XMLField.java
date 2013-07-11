@@ -32,7 +32,7 @@ public class XMLField extends XMLBaseObject
    {
    }
 
-   public XMLField(String fieldName, Class type, Object val) throws Exception
+   public XMLField(String fieldName, Class<?> type, Object val) throws Exception
    {
       super(type, val);
       this.name = fieldName;

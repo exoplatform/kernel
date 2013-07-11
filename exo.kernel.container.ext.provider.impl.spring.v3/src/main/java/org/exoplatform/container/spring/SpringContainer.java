@@ -29,15 +29,22 @@ import org.exoplatform.container.xml.Component;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
+import java.lang.annotation.Annotation;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.inject.Named;
 
 /**
  * The implementation of an {@link Interceptor} allowing eXo Kernel to interact with a spring container
@@ -69,15 +76,48 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public Object getComponentInstance(Object componentKey)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
    {
-      Object result = super.getComponentInstance(componentKey);
+      T result = super.getComponentInstance(componentKey, bindType);
       if (ctx != null && result == null)
       {
-         String name = keyToBeanName(componentKey);
-         if (ctx.containsBean(name))
+         if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
          {
-            result = ctx.getBean(name);
+            return bindType.cast(getInstanceOfType((Class<?>)componentKey));
+         }
+         else if (!(componentKey instanceof String) && !(componentKey instanceof Class<?>))
+         {
+            return null;
+         }
+         String beanName = keyToBeanName(componentKey);
+         if (ctx.containsBean(beanName) && bindType.isAssignableFrom(ctx.getType(beanName)))
+         {
+            return bindType.cast(ctx.getBean(beanName));
+         }
+         String[] names = ctx.getBeanNamesForType(bindType);
+         if (names != null && names.length > 0)
+         {
+            for (int i = 0, length = names.length; i < length; i++)
+            {
+               String name = names[i];
+               if (componentKey instanceof String)
+               {
+                  Named n = ctx.findAnnotationOnBean(name, Named.class);
+                  if (n != null && componentKey.equals(n.value()))
+                  {
+                     return bindType.cast(ctx.getBean(name));
+                  }
+               }
+               else
+               {
+                  @SuppressWarnings("unchecked")
+                  Annotation a = ctx.findAnnotationOnBean(name, (Class<? extends Annotation>)componentKey);
+                  if (a != null)
+                  {
+                     return bindType.cast(ctx.getBean(name));
+                  }
+               }
+            }
          }
       }
       return result;
@@ -92,40 +132,84 @@ public class SpringContainer extends AbstractInterceptor
       T result = super.getComponentInstanceOfType(componentType);
       if (ctx != null && result == null)
       {
-         PrivilegedAction<T> action = new PrivilegedAction<T>()
-         {
-            public T run()
-            {
-               String[] names = ctx.getBeanNamesForType(componentType);
-               if (names != null && names.length > 0)
-               {
-                  return componentType.cast(ctx.getBean(names[0]));
-               }
-               return null;
-            }
-         };
-         result = SecurityHelper.doPrivilegedAction(action);
+         result = getInstanceOfType(componentType);
       }
+      return result;
+   }
+
+   private <T> T getInstanceOfType(final Class<T> componentType)
+   {
+      T result;
+      PrivilegedAction<T> action = new PrivilegedAction<T>()
+      {
+         public T run()
+         {
+            String name = classToBeanName(componentType);
+            if (ctx.containsBean(name) && componentType.isAssignableFrom(ctx.getType(name)))
+            {
+               return componentType.cast(ctx.getBean(name));
+            }
+            String[] names = ctx.getBeanNamesForType(componentType);
+            if (names != null && names.length > 0)
+            {
+               return componentType.cast(ctx.getBean(names[0]));
+            }
+            return null;
+         }
+      };
+      result = SecurityHelper.doPrivilegedAction(action);
       return result;
    }
 
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    @Override
-   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
    {
-      ComponentAdapter<?> result = super.getComponentAdapter(componentKey);
+      ComponentAdapter<?> result = super.getComponentAdapter(componentKey, bindType);
       if (ctx != null && result == null)
       {
-         String name = keyToBeanName(componentKey);
-         if (ctx.containsBean(name))
+         if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
          {
-            result =
-               createComponentAdapter(componentKey instanceof Class<?> ? (Class<?>)componentKey : Object.class, name);
+            return getAdapterOfType(bindType);
+         }
+         else if (!(componentKey instanceof String) && !(componentKey instanceof Class<?>))
+         {
+            return null;
+         }
+         String beanName = keyToBeanName(componentKey);
+         if (ctx.containsBean(beanName) && bindType.isAssignableFrom(ctx.getType(beanName)))
+         {
+            return createComponentAdapter(bindType, beanName);
+         }
+         String[] names = ctx.getBeanNamesForType(bindType);
+         if (names != null && names.length > 0)
+         {
+            for (int i = 0, length = names.length; i < length; i++)
+            {
+               String name = names[i];
+               if (componentKey instanceof String)
+               {
+                  Named n = ctx.findAnnotationOnBean(name, Named.class);
+                  if (n != null && componentKey.equals(n.value()))
+                  {
+                     return createComponentAdapter(bindType, name);
+                  }
+               }
+               else
+               {
+                  Annotation a = ctx.findAnnotationOnBean(name, (Class<? extends Annotation>)componentKey);
+                  if (a != null)
+                  {
+                     return createComponentAdapter(bindType, name);
+                  }
+               }
+            }
          }
       }
-      return result;
+      return (ComponentAdapter<T>)result;
    }
 
    /**
@@ -137,13 +221,24 @@ public class SpringContainer extends AbstractInterceptor
       ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
       if (ctx != null && result == null)
       {
-         String[] names = ctx.getBeanNamesForType(componentType);
-         if (names != null && names.length > 0)
-         {
-            result = createComponentAdapter(componentType, names[0]);
-         }
+         result = getAdapterOfType(componentType);
       }
       return result;
+   }
+
+   private <T> ComponentAdapter<T> getAdapterOfType(Class<T> componentType)
+   {
+      String name = classToBeanName(componentType);
+      if (ctx.containsBean(name) && componentType.isAssignableFrom(ctx.getType(name)))
+      {
+         return createComponentAdapter(componentType, name);
+      }
+      String[] names = ctx.getBeanNamesForType(componentType);
+      if (names != null && names.length > 0)
+      {
+         return createComponentAdapter(componentType, names[0]);
+      }
+      return null;
    }
 
    private <T> ComponentAdapter<T> createComponentAdapter(final Class<T> type, final String name)
@@ -158,6 +253,11 @@ public class SpringContainer extends AbstractInterceptor
          public T getComponentInstance() throws ContainerException
          {
             return type.cast(ctx.getBean(name));
+         }
+
+         public boolean isSingleton()
+         {
+            return ctx.isSingleton(name);
          }
       };
    }
@@ -223,21 +323,34 @@ public class SpringContainer extends AbstractInterceptor
       else
       {
          DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
+         bf.setAutowireCandidateResolver(new QualifierAnnotationAutowireCandidateResolver());
          Collection<ComponentAdapter<?>> adapters = delegate.getComponentAdapters();
          for (ComponentAdapter<?> adapter : adapters)
          {
             Object key = adapter.getComponentKey();
-            Class<?> type;
             String name = keyToBeanName(key);
-            if (key instanceof Class<?>)
+            String factoryName = name + "#factory";
+            RootBeanDefinition def =
+               new RootBeanDefinition(adapter.getComponentImplementation(), AbstractBeanDefinition.AUTOWIRE_NO, false);
+            def.setScope(BeanDefinition.SCOPE_PROTOTYPE);
+            def.setFactoryBeanName(factoryName);
+            def.setFactoryMethodName("getInstance");
+            def.setLazyInit(true);
+            def.setTargetType(adapter.getComponentImplementation());
+            if (key instanceof String)
             {
-               type = (Class<?>)key;
+               def.addQualifier(new AutowireCandidateQualifier(Named.class, key));
+            }
+            else if (key instanceof Class<?> && ((Class<?>)key).isAnnotation())
+            {
+               def.addQualifier(new AutowireCandidateQualifier((Class<?>)key));
             }
             else
             {
-               type = adapter.getComponentImplementation();
+               def.setPrimary(true);
             }
-            bf.registerSingleton(name, new ComponentAdapterFactoryBean(type, adapter));
+            bf.registerBeanDefinition(name, def);
+            bf.registerSingleton(factoryName, new ComponentAdapterFactoryBean(adapter));
          }
          GenericApplicationContext parentContext = new GenericApplicationContext(bf);
          parentContext.refresh();
@@ -304,40 +417,18 @@ public class SpringContainer extends AbstractInterceptor
       return "SpringIntegration";
    }
 
-   private static class ComponentAdapterFactoryBean<T> implements FactoryBean<T>
+   static class ComponentAdapterFactoryBean<T>
    {
-      private final Class<T> type;
-
       private final ComponentAdapter<T> adapter;
 
-      private ComponentAdapterFactoryBean(Class<T> type, ComponentAdapter<T> adapter)
+      private ComponentAdapterFactoryBean(ComponentAdapter<T> adapter)
       {
-         this.type = type;
          this.adapter = adapter;
       }
 
-      /**
-       * {@inheritDoc}
-       */
-      public T getObject() throws Exception
+      public T getInstance() throws Exception
       {
-         return type.cast(adapter.getComponentInstance());
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public Class<?> getObjectType()
-      {
-         return type;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public boolean isSingleton()
-      {
-         return true;
+         return adapter.getComponentInstance();
       }
    }
 }

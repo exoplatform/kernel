@@ -240,7 +240,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
 
    public PortalContainer getPortalContainer(final String name)
    {
-      PortalContainer pcontainer = (PortalContainer)this.getComponentInstance(name);
+      PortalContainer pcontainer = getComponentInstance(name, PortalContainer.class);
       if (pcontainer == null)
       {
          J2EEServerInfo senv = getServerEnvironment();

@@ -60,9 +60,9 @@ public class Configuration implements Cloneable
    private Map<String, ExternalComponentPlugins> externalComponentPlugins_ =
       new HashMap<String, ExternalComponentPlugins>();
 
-   private ArrayList<String> imports_;
+   private List<String> imports_;
 
-   private ArrayList<String> removeConfiguration_;
+   private List<String> removeConfiguration_;
 
    private int currentSize;
    
@@ -76,9 +76,8 @@ public class Configuration implements Cloneable
       return plugins;
    }
 
-   public void addContainerLifecyclePlugin(Object object)
+   public void addContainerLifecyclePlugin(ContainerLifecyclePlugin plugin)
    {
-      ContainerLifecyclePlugin plugin = (ContainerLifecyclePlugin)object;
       String key = plugin.getType();
       containerLifecyclePlugin_.put(key, plugin);
    }
@@ -120,9 +119,8 @@ public class Configuration implements Cloneable
       return component_.get(s);
    }
 
-   public void addComponent(Object object)
+   public void addComponent(Component comp)
    {
-      Component comp = (Component)object;
       String key = comp.getKey();
       if (key == null)
       {
@@ -152,28 +150,23 @@ public class Configuration implements Cloneable
       return externalComponentPlugins_.get(s);
    }
 
-   public void addExternalComponentPlugins(Object o)
+   public void addExternalComponentPlugins(ExternalComponentPlugins eps)
    {
-      if (o instanceof ExternalComponentPlugins)
+      // Retrieve potential existing external component
+      // plugins with same target component.
+      String targetComponent = eps.getTargetComponent();
+      ExternalComponentPlugins foundExternalComponentPlugins =
+         (ExternalComponentPlugins)externalComponentPlugins_.get(targetComponent);
+
+      if (foundExternalComponentPlugins == null)
       {
-         ExternalComponentPlugins eps = (ExternalComponentPlugins)o;
-
-         // Retrieve potential existing external component
-         // plugins with same target component.
-         String targetComponent = eps.getTargetComponent();
-         ExternalComponentPlugins foundExternalComponentPlugins =
-            (ExternalComponentPlugins)externalComponentPlugins_.get(targetComponent);
-
-         if (foundExternalComponentPlugins == null)
-         {
-            // No external component plugins found. Create a new entry.
-            externalComponentPlugins_.put(targetComponent, eps);
-         }
-         else
-         {
-            // Found external component plugins. Add the specified one.
-            foundExternalComponentPlugins.merge(eps);
-         }
+         // No external component plugins found. Create a new entry.
+         externalComponentPlugins_.put(targetComponent, eps);
+      }
+      else
+      {
+         // Found external component plugins. Add the specified one.
+         foundExternalComponentPlugins.merge(eps);
       }
    }
 
@@ -295,11 +288,11 @@ public class Configuration implements Cloneable
                .clone();
          if (imports_ != null)
          {
-            conf.imports_ = (ArrayList<String>)imports_.clone();
+            conf.imports_ = (List<String>)((ArrayList<String>)imports_).clone();
          }
          if (removeConfiguration_ != null)
          {
-            conf.removeConfiguration_ = (ArrayList<String>)removeConfiguration_.clone();
+            conf.removeConfiguration_ =  (List<String>)((ArrayList<String>)removeConfiguration_).clone();
          }
          return conf;
       }

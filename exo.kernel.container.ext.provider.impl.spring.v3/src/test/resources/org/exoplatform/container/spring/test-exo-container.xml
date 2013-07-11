@@ -14,10 +14,20 @@
       <type>org.exoplatform.container.spring.TestSpringContainer$A</type>
    </component>
    <component>
+      <type>org.exoplatform.container.spring.TestSpringContainer$A2</type>
+   </component>
+   <component>
       <type>org.exoplatform.container.spring.TestSpringContainer$D</type>
    </component>
    <component>
       <key>MyClassE</key>
+      <type>org.exoplatform.container.spring.TestSpringContainer$E1</type>
+   </component>
+   <component>
+      <key>org.exoplatform.container.spring.TestSpringContainer$QE2</key>
+      <type>org.exoplatform.container.spring.TestSpringContainer$E2</type>
+   </component>
+   <component>
       <type>org.exoplatform.container.spring.TestSpringContainer$E</type>
    </component>
    <component profiles="class">

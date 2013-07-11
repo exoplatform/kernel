@@ -34,6 +34,9 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
@@ -42,6 +45,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
@@ -54,25 +60,121 @@ public class ContainerUtil
    /** The logger. */
    private static final Log LOG = ExoLogger.getExoLogger(ContainerUtil.class);
 
-   static public Constructor<?>[] getSortedConstructors(Class<?> clazz) throws NoClassDefFoundError
+   public static Constructor<?>[] getSortedConstructors(Class<?> clazz) throws NoClassDefFoundError
    {
-      Constructor<?>[] constructors = clazz.getConstructors();
+      Constructor<?>[] constructors = clazz.getDeclaredConstructors();
       for (int i = 0; i < constructors.length; i++)
       {
+         Constructor<?> c = constructors[i];
+         if (c.isAnnotationPresent(Inject.class))
+         {
+            // This constructor has the annotation Inject so we will use it
+            return new Constructor<?>[]{c};
+         }
+      }
+      constructors = clazz.getConstructors();
+      for (int i = 0; i < constructors.length; i++)
+      {
+         Constructor<?> tmp = constructors[i];
          for (int j = i + 1; j < constructors.length; j++)
          {
             if (constructors[i].getParameterTypes().length < constructors[j].getParameterTypes().length)
             {
-               Constructor<?> tmp = constructors[i];
                constructors[i] = constructors[j];
                constructors[j] = tmp;
             }
          }
       }
+
       return constructors;
    }
 
-   static public Collection<URL> getConfigurationURL(final String configuration) throws Exception
+   /**
+    * Indicates whether or not the given Class has a constructor annotated with Inject
+    */
+   public static boolean hasInjectableConstructor(Class<?> clazz)
+   {
+      Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+      for (int i = 0; i < constructors.length; i++)
+      {
+         Constructor<?> c = constructors[i];
+         if (c.isAnnotationPresent(Inject.class))
+         {
+            // There is a constructor annotated with Inject
+            return true;
+         }
+      }
+      return false;
+   }
+
+   /**
+    * Indicates whether or not the given Class has only a public non argument constructor
+    */
+   public static boolean hasOnlyEmptyPublicConstructor(Class<?> clazz)
+   {
+      Constructor<?>[] constructors = clazz.getConstructors();
+      // No constructor annotated with Inject but we have only a no-argument public constructor
+      // In that case it is optional according to the JSR 330
+      return (constructors.length == 1 && constructors[0].getParameterTypes().length == 0 && Modifier
+         .isPublic(constructors[0].getModifiers()));
+   }
+
+   /**
+    * Indicates whether or not this class or one of its super class has at least one 
+    * Inject annotation on a field or a method
+    */
+   public static boolean hasFieldOrMethodWithInject(Class<?> clazz)
+   {
+      if (clazz == null || clazz.equals(Object.class))
+      {
+         return false;
+      }
+      Field[] fields = clazz.getDeclaredFields();
+      for (int i = 0; i < fields.length; i++)
+      {
+         if (fields[i].isAnnotationPresent(Inject.class))
+         {
+            return true;
+         }
+      }
+      Method[] methods = clazz.getDeclaredMethods();
+      for (int i = 0; i < methods.length; i++)
+      {
+         if (methods[i].isAnnotationPresent(Inject.class))
+         {
+            return true;
+         }
+      }
+      return hasFieldOrMethodWithInject(clazz.getSuperclass());
+   }
+
+   /**
+    * Indicates whether or not the given Class is a singleton 
+    */
+   public static boolean isSingleton(Class<?> clazz)
+   {
+      boolean hasInjectableConstructor = hasInjectableConstructor(clazz);
+      boolean hasOnlyEmptyPublicConstructor = hasOnlyEmptyPublicConstructor(clazz);
+      if (!hasInjectableConstructor && !hasOnlyEmptyPublicConstructor)
+      {
+         // There is no constructor JSR 330 compliant so it is the old mode
+         return true;
+      }
+      else if (hasInjectableConstructor)
+      {
+         // There is at least one constructor annotated with Inject so we know that we expect the new mode
+         return clazz.isAnnotationPresent(Singleton.class);
+      }
+      // We have only one public non argument constructor which is compliant with both modes
+      if (hasFieldOrMethodWithInject(clazz))
+      {
+         // There is at least one field or a method annotated with Inject so we expect the new mode
+         return clazz.isAnnotationPresent(Singleton.class);
+      }
+      return true;
+   }
+
+   public static Collection<URL> getConfigurationURL(final String configuration) throws Exception
    {
       final ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
@@ -118,7 +220,7 @@ public class ContainerUtil
       return map.values();
    }
 
-   static public void addContainerLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
+   public static void addContainerLifecyclePlugin(ExoContainer container, ConfigurationManager conf)
    {
       Iterator i = conf.getConfiguration().getContainerLifecyclePluginIterator();
       while (i.hasNext())
@@ -127,7 +229,7 @@ public class ContainerUtil
          addContainerLifecyclePlugin(container, plugin);
       }
    }
-      
+
    private static void addContainerLifecyclePlugin(ExoContainer container, ContainerLifecyclePlugin plugin)
    {
       try
@@ -214,7 +316,8 @@ public class ContainerUtil
          }
          catch (ClassNotFoundException ex)
          {
-            LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'", ex);
+            LOG.error("Cannot register the component corresponding to key = '" + key + "' and type = '" + type + "'",
+               ex);
          }
       }
    }

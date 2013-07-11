@@ -36,7 +36,7 @@ public class ExternalComponentPlugins
     */
    private boolean dirty;
    
-   private ArrayList<ComponentPlugin> componentPlugins;
+   private List<ComponentPlugin> componentPlugins;
 
    public String getTargetComponent()
    {
@@ -59,7 +59,7 @@ public class ExternalComponentPlugins
       return componentPlugins;
    }
 
-   public void setComponentPlugins(ArrayList<ComponentPlugin> list)
+   public void setComponentPlugins(List<ComponentPlugin> list)
    {
       componentPlugins = list;
       dirty = true;

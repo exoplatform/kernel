@@ -58,7 +58,7 @@ public class ManageableComponentAdapter<T> extends MX4JComponentAdapter<T>
       T instance = super.getComponentInstance();
 
       //
-      if (instance != null)
+      if (instance != null && isSingleton)
       {
          register(exocontainer, instance);
       }
@@ -67,29 +67,32 @@ public class ManageableComponentAdapter<T> extends MX4JComponentAdapter<T>
 
    protected void register(Container co, Object instance)
    {
-      do
+      if (registered.compareAndSet(false, true))
       {
+         do
+         {
+            if (co instanceof ManageableContainer)
+            {
+               break;
+            }
+         }
+         while ((co = co.getSuccessor()) != null);
          if (co instanceof ManageableContainer)
          {
-            break;
-         }
-      }
-      while ((co = co.getSuccessor()) != null);
-      if (co instanceof ManageableContainer && registered.compareAndSet(false, true))
-      {
-         ManageableContainer container = (ManageableContainer)co;
-         if (container.managementContext != null)
-         {
-            // Registry the instance against the management context
-            if (LOG.isDebugEnabled())
-               LOG.debug("==> add " + instance + " to a mbean server");
-            container.managementContext.register(instance);
-
-            // Register if it is a management provider
-            if (instance instanceof ManagementProvider)
+            ManageableContainer container = (ManageableContainer)co;
+            if (container.managementContext != null)
             {
-               ManagementProvider provider = (ManagementProvider)instance;
-               container.addProvider(provider);
+               // Registry the instance against the management context
+               if (LOG.isDebugEnabled())
+                  LOG.debug("==> add " + instance + " to a mbean server");
+               container.managementContext.register(instance);
+
+               // Register if it is a management provider
+               if (instance instanceof ManagementProvider)
+               {
+                  ManagementProvider provider = (ManagementProvider)instance;
+                  container.addProvider(provider);
+               }
             }
          }
       }

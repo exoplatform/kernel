@@ -18,12 +18,13 @@
  */
 package org.exoplatform.container.xml;
 
+
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
  * @since Oct 20, 2004
  * @version $Id: Parameter.java 5799 2006-05-28 17:55:42Z geaz $
  */
-abstract public class Parameter
+public abstract class Parameter
 {
    private String name;
 

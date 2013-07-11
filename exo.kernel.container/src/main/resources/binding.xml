@@ -19,207 +19,170 @@
 
 -->
 <binding>
-  <!-- the default deserializer to use for String -->
-  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
- 
-  <!-- xml object mapping -->
-  <mapping class="org.exoplatform.xml.object.XMLBaseObject" abstract="true">
-    <value name="string" usage="optional" get-method="getString" set-method="setString" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
-    <value name="int"  usage="optional" get-method="getInt" set-method="setInt" deserializer="org.exoplatform.container.xml.Deserializer.resolveInteger"/>
-    <value name="long"  usage="optional" get-method="getLong" set-method="setLong" deserializer="org.exoplatform.container.xml.Deserializer.resolveLong"/>
-    <value name="double"  usage="optional" get-method="getDouble" set-method="setDouble" deserializer="org.exoplatform.container.xml.Deserializer.resolveDouble"/>
-    <value name="boolean"  usage="optional" get-method="getBoolean" set-method="setBoolean" deserializer="org.exoplatform.container.xml.Deserializer.resolveBoolean"/>
-    <value name="date"  usage="optional" get-method="getDate" set-method="setDate"/>
-    <structure map-as="org.exoplatform.xml.object.XMLMap" usage="optional"
-               get-method="getMap" set-method="setMap"/>
-    <structure map-as="org.exoplatform.xml.object.XMLCollection" usage="optional"
-               get-method="getCollection" set-method="setCollection"/>
-    <structure map-as="org.exoplatform.xml.object.XMLNativeArray" usage="optional"
-               get-method="getNativeArray" set-method="setNativeArray"/>
-    <structure map-as="org.exoplatform.xml.object.XMLObject" usage="optional"
-               get-method="getObject" set-method="setObject"/>
-  </mapping>
+   <!-- the default deserializer to use for String -->
+   <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString" />
 
-  <mapping name="value" 
-           class="org.exoplatform.xml.object.XMLValue" 
-           extends="org.exoplatform.xml.object.XMLBaseObject">
-    <structure map-as="org.exoplatform.xml.object.XMLBaseObject"/>
-  </mapping>
+   <!-- xml object mapping -->
+   <mapping class="org.exoplatform.xml.object.XMLBaseObject" abstract="true">
+      <value name="string" usage="optional" get-method="getString" set-method="setString" deserializer="org.exoplatform.container.xml.Deserializer.resolveString" />
+      <value name="int" usage="optional" get-method="getInt" set-method="setInt" deserializer="org.exoplatform.container.xml.Deserializer.resolveInteger" />
+      <value name="long" usage="optional" get-method="getLong" set-method="setLong" deserializer="org.exoplatform.container.xml.Deserializer.resolveLong" />
+      <value name="double" usage="optional" get-method="getDouble" set-method="setDouble" deserializer="org.exoplatform.container.xml.Deserializer.resolveDouble" />
+      <value name="boolean" usage="optional" get-method="getBoolean" set-method="setBoolean" deserializer="org.exoplatform.container.xml.Deserializer.resolveBoolean" />
+      <value name="date" usage="optional" get-method="getDate" set-method="setDate" />
+      <structure map-as="org.exoplatform.xml.object.XMLMap" usage="optional" get-method="getMap" set-method="setMap" />
+      <structure map-as="org.exoplatform.xml.object.XMLCollection" usage="optional" get-method="getCollection" set-method="setCollection" />
+      <structure map-as="org.exoplatform.xml.object.XMLNativeArray" usage="optional" get-method="getNativeArray" set-method="setNativeArray" />
+      <structure map-as="org.exoplatform.xml.object.XMLObject" usage="optional" get-method="getObject" set-method="setObject" />
+   </mapping>
 
-  <mapping name="key" 
-           class="org.exoplatform.xml.object.XMLKey" 
-           extends="org.exoplatform.xml.object.XMLBaseObject">
-    <structure map-as="org.exoplatform.xml.object.XMLBaseObject"/>
-  </mapping>
+   <mapping name="value" class="org.exoplatform.xml.object.XMLValue" extends="org.exoplatform.xml.object.XMLBaseObject">
+      <structure map-as="org.exoplatform.xml.object.XMLBaseObject" />
+   </mapping>
 
-  <mapping name="entry" class="org.exoplatform.xml.object.XMLEntry">
-    <structure get-method="getKey" set-method="setKey" field="key_" map-as="org.exoplatform.xml.object.XMLKey"/>
-    <structure get-method="getValue" set-method="setValue" field="value_" map-as="org.exoplatform.xml.object.XMLValue"/>
-  </mapping>
+   <mapping name="key" class="org.exoplatform.xml.object.XMLKey" extends="org.exoplatform.xml.object.XMLBaseObject">
+      <structure map-as="org.exoplatform.xml.object.XMLBaseObject" />
+   </mapping>
+
+   <mapping name="entry" class="org.exoplatform.xml.object.XMLEntry">
+      <structure get-method="getKey" set-method="setKey" field="key_" map-as="org.exoplatform.xml.object.XMLKey" />
+      <structure get-method="getValue" set-method="setValue" field="value_" map-as="org.exoplatform.xml.object.XMLValue" />
+   </mapping>
 
 
-  <mapping name="map" class="org.exoplatform.xml.object.XMLMap">
-    <value name="type"  get-method="getType" set-method="setType" style="attribute"/>
-    <collection item-type="org.exoplatform.xml.object.XMLEntry" field="listmap"/>
-  </mapping>
-  
-  <mapping name="collection" class="org.exoplatform.xml.object.XMLCollection">
-    <value name="type"  get-method="getType" set-method="setType" style="attribute"/>
-    <collection item-type="org.exoplatform.xml.object.XMLValue" field="list_"/>
-  </mapping>
+   <mapping name="map" class="org.exoplatform.xml.object.XMLMap">
+      <value name="type" get-method="getType" set-method="setType" style="attribute" />
+      <collection item-type="org.exoplatform.xml.object.XMLEntry" field="listmap" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList"/>
+   </mapping>
 
-  <mapping name="native-array"
-           class="org.exoplatform.xml.object.XMLNativeArray" 
-           extends="org.exoplatform.xml.object.XMLBaseObject">
-    <value name="type" field="type" style="attribute"/>
-    <value name="array"  usage="optional" style="element"
-           get-method="getArray" set-method="setArray"/>
-  </mapping>
+   <mapping name="collection" class="org.exoplatform.xml.object.XMLCollection">
+      <value name="type" get-method="getType" set-method="setType" style="attribute" />
+      <collection item-type="org.exoplatform.xml.object.XMLValue" field="list_" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList"/>
+   </mapping>
 
-  <mapping name="field" 
-           class="org.exoplatform.xml.object.XMLField" 
-           extends="org.exoplatform.xml.object.XMLBaseObject">
-    <value name="name" field="name" style="attribute"/>
-    <structure map-as="org.exoplatform.xml.object.XMLBaseObject"/>
-  </mapping>
+   <mapping name="native-array" class="org.exoplatform.xml.object.XMLNativeArray" extends="org.exoplatform.xml.object.XMLBaseObject">
+      <value name="type" field="type" style="attribute" />
+      <value name="array" usage="optional" style="element" get-method="getArray" set-method="setArray" />
+   </mapping>
 
-  <mapping name="object" class="org.exoplatform.xml.object.XMLObject">
-    <value name="type" field="type" style="attribute"/>
-    <collection  add-method="addField" iter-method="getFieldIterator"/>
-  </mapping>
-	
- <!-- old container configuration mapping , This configuration will be removed in version 2.0-->
-  <mapping name="property" class="org.exoplatform.container.xml.Property">
-    <value name="name" style="attribute" field="name" />
-    <value name="value" style="attribute" field="value" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
-  </mapping>
+   <mapping name="field" class="org.exoplatform.xml.object.XMLField" extends="org.exoplatform.xml.object.XMLBaseObject">
+      <value name="name" field="name" style="attribute" />
+      <structure map-as="org.exoplatform.xml.object.XMLBaseObject" />
+   </mapping>
 
-  <mapping class="org.exoplatform.container.xml.Parameter" abstract="true">
-    <value name="name"  field="name"/>
-    <value name="description"  field="description" usage="optional"/>
-  </mapping>
+   <mapping name="object" class="org.exoplatform.xml.object.XMLObject">
+      <value name="type" field="type" style="attribute" />
+      <collection add-method="addField" iter-method="getFieldIterator" />
+   </mapping>
 
-  <mapping name="value-param" 
-           class="org.exoplatform.container.xml.ValueParam" 
-           extends="org.exoplatform.container.xml.Parameter">
-    <structure map-as="org.exoplatform.container.xml.Parameter"/>
-    <value name="value"  field="value" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
-  </mapping>
+   <!-- old container configuration mapping , This configuration will be removed in version 2.0 -->
+   <mapping name="property" class="org.exoplatform.container.xml.Property">
+      <value name="name" style="attribute" field="name" />
+      <value name="value" style="attribute" field="value" deserializer="org.exoplatform.container.xml.Deserializer.resolveString" />
+   </mapping>
 
-  <mapping name="values-param" 
-           class="org.exoplatform.container.xml.ValuesParam" 
-           extends="org.exoplatform.container.xml.Parameter">
-    <structure map-as="org.exoplatform.container.xml.Parameter"/>
-    <collection item-type="java.lang.String" field="values">
-      <value name="value" style="element"/>
-    </collection>
-  </mapping>
+   <mapping class="org.exoplatform.container.xml.Parameter" abstract="true">
+      <value name="name" field="name" />
+      <value name="description" field="description" usage="optional" />
+   </mapping>
 
-  <mapping name="properties-param" 
-           class="org.exoplatform.container.xml.PropertiesParam" 
-           extends="org.exoplatform.container.xml.Parameter">
-    <structure map-as="org.exoplatform.container.xml.Parameter"/>
-    <collection item-type="org.exoplatform.container.xml.Property" 
-                add-method="addProperty" iter-method="getPropertyIterator"/>
-  </mapping>
+   <mapping name="value-param" class="org.exoplatform.container.xml.ValueParam" extends="org.exoplatform.container.xml.Parameter">
+      <structure map-as="org.exoplatform.container.xml.Parameter" />
+      <value name="value" field="value" deserializer="org.exoplatform.container.xml.Deserializer.resolveString" />
+   </mapping>
 
-  <!-- new container configuration mapping -->
-  <mapping name="object-param" 
-           class="org.exoplatform.container.xml.ObjectParameter" 
-           extends="org.exoplatform.container.xml.Parameter">
-    <structure map-as="org.exoplatform.container.xml.Parameter"/>
-    <structure map-as="org.exoplatform.xml.object.XMLObject"
-               get-method="getXMLObject" set-method="setXMLObject"/>
-  </mapping>
+   <mapping name="values-param" class="org.exoplatform.container.xml.ValuesParam" extends="org.exoplatform.container.xml.Parameter">
+      <structure map-as="org.exoplatform.container.xml.Parameter" />
+      <collection item-type="java.lang.String" field="values" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList">
+         <value name="value" style="element" />
+      </collection>
+   </mapping>
 
-  <mapping name="init-params" class="org.exoplatform.container.xml.InitParams">
-    <collection item-type="org.exoplatform.container.xml.ValueParam" 
-                add-method="addParam" iter-method="getValueParamIterator"/>
-    <collection item-type="org.exoplatform.container.xml.ValuesParam" 
-                add-method="addParam" iter-method="getValuesParamIterator"/>
-    <collection item-type="org.exoplatform.container.xml.PropertiesParam" 
-                add-method="addParam" iter-method="getPropertiesParamIterator"/>
-    <collection item-type="org.exoplatform.container.xml.ObjectParameter" 
-                add-method="addParam" iter-method="getObjectParamIterator"/>
-  </mapping>
+   <mapping name="properties-param" class="org.exoplatform.container.xml.PropertiesParam" extends="org.exoplatform.container.xml.Parameter">
+      <structure map-as="org.exoplatform.container.xml.Parameter" />
+      <collection item-type="org.exoplatform.container.xml.Property" add-method="addProperty" iter-method="getPropertyIterator" />
+   </mapping>
 
-  <mapping name="component-plugin" class="org.exoplatform.container.xml.ComponentPlugin" pre-get="preGet">
-    <value name="name"  field="name" />
-    <value name="set-method"  field="setMethod" />
-    <value name="type"  field="type" />
-    <value name="description" field="description" usage="optional" />
-    <value name="priority" field="priority"  usage="optional" />
-    <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" 
-               get-method="getInitParams" set-method="setInitParams"/>
-  </mapping>
+   <!-- new container configuration mapping -->
+   <mapping name="object-param" class="org.exoplatform.container.xml.ObjectParameter" extends="org.exoplatform.container.xml.Parameter">
+      <structure map-as="org.exoplatform.container.xml.Parameter" />
+      <structure map-as="org.exoplatform.xml.object.XMLObject" get-method="getXMLObject" set-method="setXMLObject" />
+   </mapping>
 
-  <mapping name="external-component-plugins" class="org.exoplatform.container.xml.ExternalComponentPlugins">
-    <value name="target-component"  field="targetComponent" />
-    <collection item-type="org.exoplatform.container.xml.ComponentPlugin" field="componentPlugins"/>
-  </mapping>
+   <mapping name="init-params" class="org.exoplatform.container.xml.InitParams">
+      <collection item-type="org.exoplatform.container.xml.ValueParam" add-method="addParam" iter-method="getValueParamIterator" />
+      <collection item-type="org.exoplatform.container.xml.ValuesParam" add-method="addParam" iter-method="getValuesParamIterator" />
+      <collection item-type="org.exoplatform.container.xml.PropertiesParam" add-method="addParam" iter-method="getPropertiesParamIterator" />
+      <collection item-type="org.exoplatform.container.xml.ObjectParameter" add-method="addParam" iter-method="getObjectParamIterator" />
+   </mapping>
 
-  <mapping name="container-lifecycle-plugin" class="org.exoplatform.container.xml.ContainerLifecyclePlugin" pre-get="preGet">
-    <value name="name"  field="name" usage="optional" />
-    <value name="type"  field="type" />
-    <value name="description" field="description" usage="optional" />
-    <value name="priority" field="priority"  usage="optional" />
-    <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" 
-               get-method="getInitParams" set-method="setInitParams"/>
-  </mapping>
+   <mapping name="component-plugin" class="org.exoplatform.container.xml.ComponentPlugin" pre-get="preGet">
+      <value name="name" field="name" />
+      <value name="set-method" field="setMethod" />
+      <value name="type" field="type" />
+      <value name="description" field="description" usage="optional" />
+      <value name="priority" field="priority" usage="optional" />
+      <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" get-method="getInitParams" set-method="setInitParams" />
+   </mapping>
 
-  <mapping name="manageable-components"
-           class="org.exoplatform.container.xml.ManageableComponents">
-    <collection item-type="java.lang.String"  field="componentsType">
-      <value name="component-type" style="element"/>
-    </collection>
-  </mapping>
+   <mapping name="external-component-plugins" class="org.exoplatform.container.xml.ExternalComponentPlugins">
+      <value name="target-component" field="targetComponent" />
+      <collection item-type="org.exoplatform.container.xml.ComponentPlugin" field="componentPlugins" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList"/>
+   </mapping>
 
-  <mapping name="component-lifecycle-plugin" class="org.exoplatform.container.xml.ComponentLifecyclePlugin" pre-get="preGet">
-    <value name="type"  field="type" />
-    <structure map-as="org.exoplatform.container.xml.ManageableComponents"
-               get-method="getManageableComponents" set-method="setManageableComponents"/>
-    <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" 
-               get-method="getInitParams" set-method="setInitParams"/>
-  </mapping>
+   <mapping name="container-lifecycle-plugin" class="org.exoplatform.container.xml.ContainerLifecyclePlugin" pre-get="preGet">
+      <value name="name" field="name" usage="optional" />
+      <value name="type" field="type" />
+      <value name="description" field="description" usage="optional" />
+      <value name="priority" field="priority" usage="optional" />
+      <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" get-method="getInitParams" set-method="setInitParams" />
+   </mapping>
 
-  <mapping name="component" class="org.exoplatform.container.xml.Component" pre-get="preGet">
-    <value name="key"  field="key" usage="optional" />
-    <value name="jmx-name"  field="jmxName" usage="optional" />
-    <value name="type"  field="type" />
-    <value name="description" field="description" usage="optional" />
-    <value name="show-deploy-info" field="showDeployInfo" usage="optional" />
-    <!-- threadlocal components -->
-    <value name="multi-instance" field="multiInstance" usage="optional"/>
+   <mapping name="manageable-components" class="org.exoplatform.container.xml.ManageableComponents">
+      <collection item-type="java.lang.String" field="componentsType" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList">
+         <value name="component-type" style="element" />
+      </collection>
+   </mapping>
 
-    <collection name="component-plugins" field="componentPlugins" usage="optional"
-                item-type="org.exoplatform.container.xml.ComponentPlugin" />
-    <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" 
-               get-method="getInitParams" set-method="setInitParams"/>
-  </mapping>
+   <mapping name="component-lifecycle-plugin" class="org.exoplatform.container.xml.ComponentLifecyclePlugin" pre-get="preGet">
+      <value name="type" field="type" />
+      <structure map-as="org.exoplatform.container.xml.ManageableComponents" get-method="getManageableComponents" set-method="setManageableComponents" />
+      <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" get-method="getInitParams" set-method="setInitParams" />
+   </mapping>
 
-  <!-- configuration object mapping -->
-  <mapping name="configuration" class="org.exoplatform.container.xml.Configuration">
-    <collection item-type="org.exoplatform.container.xml.ContainerLifecyclePlugin" usage="optional"
-                add-method="addContainerLifecyclePlugin" iter-method="getContainerLifecyclePluginIterator"
-                test-method="hasContainerLifecyclePlugin"/>
+   <mapping name="component" class="org.exoplatform.container.xml.Component" pre-get="preGet">
+      <value name="key" field="key" usage="optional" />
+      <value name="jmx-name" field="jmxName" usage="optional" />
+      <value name="type" field="type" />
+      <value name="description" field="description" usage="optional" />
+      <value name="show-deploy-info" field="showDeployInfo" usage="optional" />
+      <!-- threadlocal components -->
+      <value name="multi-instance" field="multiInstance" usage="optional" />
 
-    <collection item-type="org.exoplatform.container.xml.ComponentLifecyclePlugin" usage="optional"
-                add-method="addComponentLifecyclePlugin" iter-method="getComponentLifecyclePluginIterator"
-                test-method="hasComponentLifecyclePlugin"/>
+      <collection name="component-plugins" field="componentPlugins" usage="optional" item-type="org.exoplatform.container.xml.ComponentPlugin"
+         factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList" />
+      <structure map-as="org.exoplatform.container.xml.InitParams" usage="optional" get-method="getInitParams" set-method="setInitParams" />
+   </mapping>
 
-    <collection item-type="org.exoplatform.container.xml.Component" usage="optional"
-                add-method="addComponent" iter-method="getComponentIterator"
-                test-method="hasComponent"/>
+   <!-- configuration object mapping -->
+   <mapping name="configuration" class="org.exoplatform.container.xml.Configuration">
+      <collection item-type="org.exoplatform.container.xml.ContainerLifecyclePlugin" usage="optional" add-method="addContainerLifecyclePlugin"
+         iter-method="getContainerLifecyclePluginIterator" test-method="hasContainerLifecyclePlugin" />
 
-    <collection item-type="org.exoplatform.container.xml.ExternalComponentPlugins" usage="optional"
-                add-method="addExternalComponentPlugins" iter-method="getExternalComponentPluginsIterator"
-                test-method="hasExternalComponentPlugins"/>
-    <collection item-type="java.lang.String" field="imports_" usage="optional">
-      <value name="import" style="element"/>
-    </collection>
+      <collection item-type="org.exoplatform.container.xml.ComponentLifecyclePlugin" usage="optional" add-method="addComponentLifecyclePlugin"
+         iter-method="getComponentLifecyclePluginIterator" test-method="hasComponentLifecyclePlugin" />
 
-    <collection item-type="java.lang.String"  field="removeConfiguration_" usage="optional">
-      <value name="remove-configuration" style="element"/>
-    </collection>
-  </mapping> 
+      <collection item-type="org.exoplatform.container.xml.Component" usage="optional" add-method="addComponent" iter-method="getComponentIterator"
+         test-method="hasComponent" />
+
+      <collection item-type="org.exoplatform.container.xml.ExternalComponentPlugins" usage="optional" add-method="addExternalComponentPlugins"
+         iter-method="getExternalComponentPluginsIterator" test-method="hasExternalComponentPlugins" />
+      <collection item-type="java.lang.String" field="imports_" usage="optional" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList">
+         <value name="import" style="element" />
+      </collection>
+
+      <collection item-type="java.lang.String" field="removeConfiguration_" usage="optional" factory="org.exoplatform.container.xml.ConfigurationMarshallerUtil.createList">
+         <value name="remove-configuration" style="element" />
+      </collection>
+   </mapping>
 </binding>

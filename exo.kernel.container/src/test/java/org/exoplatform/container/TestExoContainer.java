@@ -23,10 +23,13 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.Disposable;
 import org.picocontainer.Startable;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +37,12 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Qualifier;
+import javax.inject.Singleton;
 
 /**
  * Created by The eXo Platform SAS
@@ -221,13 +230,13 @@ public class TestExoContainer extends AbstractTestContainer
       final ExoContainer container = PortalContainer.getInstance();
       SOE1B soe1 = (SOE1B)container.getComponentInstanceOfType(SOE1B.class);
       assertNotNull(soe1);
-//      assertEquals(1, soe1.startOrder);
+      //      assertEquals(1, soe1.startOrder);
       assertTrue(soe1.startOrder >= 1);
       assertEquals(1, soe1.plugins.size());
       SOEPluginB soe1Plugin = soe1.plugins.get(0);
       assertNotNull(soe1Plugin);
       assertNotNull(soe1Plugin.soe2);
-//      assertEquals(2, soe1Plugin.soe2.startOrder);
+      //      assertEquals(2, soe1Plugin.soe2.startOrder);
       assertTrue(soe1Plugin.soe2.startOrder >= 1);
       assertSame(soe1, soe1Plugin.soe2.soe1);
       assertSame(container.getComponentInstanceOfType(SOE2B.class), soe1Plugin.soe2);
@@ -244,7 +253,7 @@ public class TestExoContainer extends AbstractTestContainer
       final ExoContainer container = PortalContainer.getInstance();
       SOE2B soe2 = (SOE2B)container.getComponentInstanceOfType(SOE2B.class);
       assertNotNull(soe2);
-//      assertEquals(2, soe2.startOrder);
+      //      assertEquals(2, soe2.startOrder);
       assertTrue(soe2.startOrder >= 1);
       assertNotNull(soe2.soe1);
       assertEquals(1, soe2.soe1.plugins.size());
@@ -252,7 +261,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(soe1Plugin);
       assertNotNull(soe1Plugin.soe2);
       assertSame(soe2.soe1, soe1Plugin.soe2.soe1);
-//      assertEquals(1, soe2.soe1.startOrder);
+      //      assertEquals(1, soe2.soe1.startOrder);
       assertTrue(soe2.soe1.startOrder >= 1);
       assertSame(container.getComponentInstanceOfType(SOE1B.class), soe2.soe1);
    }
@@ -293,7 +302,7 @@ public class TestExoContainer extends AbstractTestContainer
       MyServiceImpl msi = (MyServiceImpl)ms;
       assertNotNull(msi.componentPlugin);
       assertTrue(msi.componentPlugin instanceof MyPlugin);
-      MyPlugin mp = (MyPlugin) msi.componentPlugin;
+      MyPlugin mp = (MyPlugin)msi.componentPlugin;
       assertSame(mp.svc, ms);
    }
 
@@ -313,15 +322,15 @@ public class TestExoContainer extends AbstractTestContainer
       final RootContainer container = createRootContainer("test-exo-container.xml", "testStartOrder");
       C0 c0 = (C0)container.getComponentInstanceOfType(C0.class);
       assertNotNull(c0);
-//      assertEquals(3, c0.startOrder);
+      //      assertEquals(3, c0.startOrder);
       assertTrue(c0.startOrder > 0);
       C1 c1 = (C1)container.getComponentInstanceOfType(C1.class);
       assertNotNull(c1);
-//      assertEquals(2, c1.startOrder);
+      //      assertEquals(2, c1.startOrder);
       assertTrue(c1.startOrder > 0);
       C2 c2 = (C2)container.getComponentInstanceOfType(C2.class);
       assertNotNull(c2);
-//      assertEquals(1, c2.startOrder);
+      //      assertEquals(1, c2.startOrder);
       assertTrue(c2.startOrder > 0);
    }
 
@@ -335,18 +344,66 @@ public class TestExoContainer extends AbstractTestContainer
       new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
 
       RootContainer container = RootContainer.getInstance();
-      Object value =  new MyClass();
-      ComponentAdapter<?> ca = container.registerComponentInstance("MyKey",value);
+      Object value = new MyClass();
+      ComponentAdapter<?> ca = container.registerComponentInstance("MyKey", value);
       PortalContainer pcontainer = PortalContainer.getInstance();
       assertSame(ca, container.getComponentAdapter("MyKey"));
       assertSame(ca, pcontainer.getComponentAdapter("MyKey"));
+      assertSame(ca, container.getComponentAdapter("MyKey", MyClass.class));
+      assertSame(ca, pcontainer.getComponentAdapter("MyKey", MyClass.class));
+      try
+      {
+         container.getComponentAdapter("MyKey", String.class);
+         fail("A ClassCastException was expected");
+      }
+      catch (ClassCastException e)
+      {
+         // ok
+      }
+      try
+      {
+         pcontainer.getComponentAdapter("MyKey", String.class);
+         fail("A ClassCastException was expected");
+      }
+      catch (ClassCastException e)
+      {
+         // ok
+      }
       assertSame(value, container.getComponentInstance("MyKey"));
       assertSame(value, pcontainer.getComponentInstance("MyKey"));
+      assertSame(value, container.getComponentInstance("MyKey", MyClass.class));
+      assertSame(value, pcontainer.getComponentInstance("MyKey", MyClass.class));
+      try
+      {
+         container.getComponentInstance("MyKey", String.class);
+         fail("A ClassCastException was expected");
+      }
+      catch (ClassCastException e)
+      {
+         // ok
+      }
+      try
+      {
+         pcontainer.getComponentInstance("MyKey", String.class);
+         fail("A ClassCastException was expected");
+      }
+      catch (ClassCastException e)
+      {
+         // ok
+      }
       container.unregisterComponent("MyKey");
       assertNull(container.getComponentAdapter("MyKey"));
       assertNull(pcontainer.getComponentAdapter("MyKey"));
+      assertNull(container.getComponentAdapter("MyKey", MyClass.class));
+      assertNull(pcontainer.getComponentAdapter("MyKey", MyClass.class));
+      assertNull(container.getComponentAdapter("MyKey", String.class));
+      assertNull(pcontainer.getComponentAdapter("MyKey", String.class));
       assertNull(container.getComponentInstance("MyKey"));
       assertNull(pcontainer.getComponentInstance("MyKey"));
+      assertNull(container.getComponentInstance("MyKey", MyClass.class));
+      assertNull(pcontainer.getComponentInstance("MyKey", MyClass.class));
+      assertNull(container.getComponentInstance("MyKey", String.class));
+      assertNull(pcontainer.getComponentInstance("MyKey", String.class));
    }
 
    public void testStart()
@@ -388,7 +445,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(1, ts3pc.stopped);
       TS4 ts4rc = container.getComponentInstanceOfType(TS4.class);
       TS4 ts4pc = pcontainer.getComponentInstanceOfType(TS4.class);
-      assertNotSame(ts4rc,ts4pc);
+      assertNotSame(ts4rc, ts4pc);
       assertEquals(1, ts4rc.disposed);
       assertEquals(1, ts4pc.disposed);
    }
@@ -537,6 +594,7 @@ public class TestExoContainer extends AbstractTestContainer
    public static class MyClass
    {
       public MyClassPlugin plugin_;
+
       public MyClassPlugin2 plugin2_;
 
       public void add(MyClassPlugin plugin)
@@ -888,9 +946,16 @@ public class TestExoContainer extends AbstractTestContainer
       {
          return DummyClass.class;
       }
+
+      public boolean isSingleton()
+      {
+         return true;
+      }
    }
 
-   public static class DummyClass {}
+   public static class DummyClass
+   {
+   }
 
    public static AtomicInteger COUNTER;
 
@@ -1276,25 +1341,26 @@ public class TestExoContainer extends AbstractTestContainer
    public static class MyPlugin extends BaseComponentPlugin
    {
       MySpecialService svc;
-      
+
       public MyPlugin(MySpecialService svc)
       {
          this.svc = svc;
       }
    }
-   
+
    public static interface MyService
    {
       public void addPlugin(ComponentPlugin componentPlugin);
    }
-   
+
    public static interface MySpecialService extends MyService
    {
    }
-   
+
    public static class MyServiceImpl implements MySpecialService, Startable
    {
       ComponentPlugin componentPlugin;
+
       public MyServiceImpl()
       {
       }
@@ -1525,5 +1591,506 @@ public class TestExoContainer extends AbstractTestContainer
       {
          this.container = ExoContainerContext.getCurrentContainer();
       }
+   }
+
+   public void testJSR330() throws Exception
+   {
+      RootContainer container = createRootContainer("empty-config.xml");
+      container.registerComponentImplementation(JSR330_A.class);
+      container.registerComponentImplementation(JSR330_B.class);
+      container.registerComponentImplementation(JSR330_C.class);
+      container.registerComponentImplementation(JSR330_C2.class);
+      container.registerComponentImplementation(JSR330_C3.class);
+      container.registerComponentImplementation(JSR330_C4.class);
+      container.registerComponentImplementation(JSR330_C5.class);
+      container.registerComponentImplementation(JSR330_C6.class);
+      container.registerComponentImplementation(JSR330_D.class);
+      container.registerComponentImplementation(JSR330_P1.class);
+      container.registerComponentImplementation(JSR330_P2.class);
+      container.registerComponentImplementation(JSR330_P3.class);
+      container.registerComponentImplementation(JSR330_P4.class);
+      container.registerComponentImplementation(N1.class, JSR330_N1.class);
+      container.registerComponentImplementation("n2", JSR330_N2.class);
+      JSR330_A a = container.getComponentInstanceOfType(JSR330_A.class);
+      assertNotNull(a);
+      JSR330_P1 p1 = container.getComponentInstanceOfType(JSR330_P1.class);
+      assertNotNull(p1);
+      JSR330_P2 p2 = container.getComponentInstanceOfType(JSR330_P2.class);
+      assertNotNull(p2);
+      JSR330_B b = container.getComponentInstanceOfType(JSR330_B.class);
+      assertNotNull(b);
+      assertSame(a, b.a);
+      assertSame(a, b.a2);
+      assertSame(a, b.a3);
+      assertSame(a, b.a4);
+      assertSame(a, b.getA5());
+      assertNull(b.a6);
+      assertNull(JSR330_B.a7);
+      assertNotNull(b.p1);
+      assertNotNull(b.n);
+      assertTrue(b.n instanceof JSR330_N2);
+      assertNotNull(b.n2);
+      assertTrue(b.n2 instanceof JSR330_N1);
+      assertSame(container.getComponentInstanceOfType(JSR330_P1.class), b.p1.get());
+      JSR330_C c = container.getComponentInstanceOfType(JSR330_C.class);
+      assertNotNull(c);
+      assertNotSame(c, container.getComponentInstanceOfType(JSR330_C.class));
+      assertSame(a, c.a);
+      assertNotNull(c.p2);
+      assertNotNull(c.n);
+      assertTrue(c.n instanceof JSR330_N2);
+      assertNotNull(c.n2);
+      assertTrue(c.n2 instanceof JSR330_N1);
+      assertNotSame(container.getComponentInstanceOfType(JSR330_P2.class), c.p2.get());
+      JSR330_C2 c2 = container.getComponentInstanceOfType(JSR330_C2.class);
+      assertNotNull(c2);
+      assertSame(a, c2.a);
+      JSR330_C3 c3 = container.getComponentInstanceOfType(JSR330_C3.class);
+      assertNotNull(c3);
+      assertSame(a, c3.a);
+      JSR330_C4 c4 = container.getComponentInstanceOfType(JSR330_C4.class);
+      assertNotNull(c4);
+      assertSame(a, c4.a);
+      try
+      {
+         container.getComponentInstanceOfType(JSR330_C5.class);
+         fail("A Runtime Exception was expected");
+      }
+      catch (RuntimeException e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(JSR330_C6.class);
+         fail("A Runtime Exception was expected");
+      }
+      catch (RuntimeException e)
+      {
+         // OK
+      }
+      JSR330_D d = container.getComponentInstanceOfType(JSR330_D.class);
+      assertNotNull(d);
+      assertSame(a, d.a);
+      assertSame(a, d.a2);
+      assertSame(a, d.a3);
+      assertSame(a, d.a4);
+      assertSame(a, d.a5);
+      assertEquals(1, d.calledInit);
+      assertEquals(2, d.calledInit2);
+      assertNotNull(d.p3);
+      assertNotNull(d.n);
+      assertTrue(d.n instanceof JSR330_N2);
+      assertNotNull(d.n2);
+      assertTrue(d.n2 instanceof JSR330_N1);
+      assertSame(container.getComponentInstanceOfType(JSR330_P3.class), d.p3.get());
+      assertNotNull(d.p4);
+      try
+      {
+         d.p4.get();
+         fail("A Runtime Exception was expected");
+      }
+      catch (RuntimeException e)
+      {
+         // ok
+      }
+      JSR330_N2 n2 = container.getComponentInstanceOfType(JSR330_N2.class);
+      assertNotNull(n2);
+      assertNotSame(n2, container.getComponentInstanceOfType(JSR330_N2.class));
+      JSR330_N2 n2_2 = container.getComponentInstance("n2", JSR330_N2.class);
+      assertNotNull(n2_2);
+      assertNotSame(n2_2, n2);
+      assertNotSame(n2_2, container.getComponentInstance("n2", JSR330_N2.class));
+      List<JSR330_N2> allN2 = container.getComponentInstancesOfType(JSR330_N2.class);
+      assertNotNull(allN2);
+      assertEquals(1, allN2.size());
+      JSR330_N2 n2_3 = allN2.get(0);
+      assertNotSame(n2_3, n2);
+      assertNotSame(n2_3, n2_2);
+      allN2 = container.getComponentInstancesOfType(JSR330_N2.class);
+      assertNotNull(allN2);
+      assertEquals(1, allN2.size());
+      assertNotSame(n2_3, allN2.get(0));
+      assertTrue(ContainerUtil.isSingleton(JSR330_A.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_P3.class));
+      assertFalse(ContainerUtil.isSingleton(JSR330_N2.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N2_2.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N2_3.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N2_4.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N2_5.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N2_6.class));
+      assertFalse(ContainerUtil.isSingleton(JSR330_N7.class));
+      assertFalse(ContainerUtil.isSingleton(JSR330_N7_2.class));
+      assertFalse(ContainerUtil.isSingleton(JSR330_N8.class));
+      assertFalse(ContainerUtil.isSingleton(JSR330_N8_2.class));
+      assertTrue(ContainerUtil.isSingleton(JSR330_N8_3.class));
+   }
+
+   public static class JSR330_A
+   {
+
+   }
+
+   public static class JSR330_B extends JSR330_B1
+   {
+      @Inject
+      private JSR330_A a;
+
+      @Inject
+      protected JSR330_A a2;
+
+      @Inject
+      public JSR330_A a3;
+
+      @Inject
+      JSR330_A a4;
+
+      @Inject
+      private final JSR330_A a6 = null;
+
+      @Inject
+      private static JSR330_A a7;
+
+      @Inject
+      private Provider<JSR330_P1> p1;
+
+      @Inject
+      private int value;
+
+      @Inject
+      @Named("n2")
+      private JSR330_N n;
+
+      @Inject
+      @N1
+      private JSR330_N n2;
+   }
+
+   public static class JSR330_B1
+   {
+      @Inject
+      private JSR330_A a5;
+
+      protected JSR330_A getA5()
+      {
+         return a5;
+      }
+   }
+
+   public static class JSR330_C
+   {
+      private final JSR330_A a;
+
+      private final Provider<JSR330_P2> p2;
+
+      private final JSR330_N n;
+
+      private final JSR330_N n2;
+
+      @Inject
+      public JSR330_C(JSR330_A a, Provider<JSR330_P2> p2, @Named("n2") JSR330_N n, @N1 JSR330_N n2)
+      {
+         this.a = a;
+         this.p2 = p2;
+         this.n = n;
+         this.n2 = n2;
+      }
+
+      /**
+       * Bad constructor
+       */
+      public JSR330_C(JSR330_A a, JSR330_B b, Provider<JSR330_P2> p2, JSR330_N n, JSR330_N n2)
+      {
+         this.a = null;
+         this.p2 = null;
+         this.n = null;
+         this.n2 = null;
+      }
+   }
+
+   public static class JSR330_C2
+   {
+      private final JSR330_A a;
+
+      @Inject
+      protected JSR330_C2(JSR330_A a)
+      {
+         this.a = a;
+      }
+   }
+
+   public static class JSR330_C3
+   {
+      private final JSR330_A a;
+
+      @Inject
+      private JSR330_C3(JSR330_A a)
+      {
+         this.a = a;
+      }
+   }
+
+   public static class JSR330_C4
+   {
+      private final JSR330_A a;
+
+      @Inject
+      JSR330_C4(JSR330_A a)
+      {
+         this.a = a;
+      }
+   }
+
+   public static class JSR330_C5
+   {
+      @Inject
+      JSR330_C5(int value)
+      {
+      }
+   }
+
+   public static class JSR330_C6
+   {
+      JSR330_C6()
+      {
+      }
+   }
+
+   public static class JSR330_D extends JSR330_D1
+   {
+      private JSR330_A a;
+
+      private JSR330_A a2;
+
+      private JSR330_A a3;
+
+      private JSR330_A a4;
+
+      private Provider<JSR330_P3> p3;
+
+      @Inject
+      private Provider<JSR330_P4> p4;
+
+      private int value;
+
+      private int calledInit;
+
+      private JSR330_N n;
+
+      private JSR330_N n2;
+
+      @Inject
+      public void setA(JSR330_A a)
+      {
+         this.a = a;
+      }
+
+      @Inject
+      private void setA2(JSR330_A a)
+      {
+         this.a2 = a;
+      }
+
+      @Inject
+      protected void setA3(JSR330_A a)
+      {
+         this.a3 = a;
+      }
+
+      @Inject
+      void setA4(JSR330_A a)
+      {
+         this.a4 = a;
+      }
+
+      @Inject
+      void setP3(Provider<JSR330_P3> p3)
+      {
+         this.p3 = p3;
+      }
+
+      @Inject
+      void setValue(int value)
+      {
+         this.value = value;
+      }
+
+      @Inject
+      void setN(@Named("n2") JSR330_N n)
+      {
+         this.n = n;
+      }
+
+      @Inject
+      void setN2(@N1 JSR330_N n2)
+      {
+         this.n2 = n2;
+      }
+
+      @Inject
+      public void init()
+      {
+         calledInit++;
+      }
+
+      @Inject
+      public void init2()
+      {
+         super.init2();
+      }
+
+      @Inject
+      public void init2(JSR330_A a)
+      {
+         super.init2();
+      }
+   }
+
+   public abstract static class JSR330_D1
+   {
+      protected JSR330_A a5;
+
+      protected int calledInit2;
+
+      @Inject
+      private void setA5(JSR330_A a)
+      {
+         this.a5 = a;
+      }
+
+      @Inject
+      public abstract void init();
+
+      @Inject
+      public void init2()
+      {
+         calledInit2++;
+      }
+
+      @Inject
+      public void init2(JSR330_A a)
+      {
+         init2();
+      }
+   }
+
+   @Singleton
+   public static class JSR330_P1
+   {
+      @Inject
+      JSR330_A a;
+   }
+
+   public static class JSR330_P2
+   {
+      private final JSR330_A a;
+
+      @Inject
+      public JSR330_P2(JSR330_A a)
+      {
+         this.a = a;
+      }
+
+      /**
+       * Bad constructor
+       */
+      public JSR330_P2(JSR330_A a, JSR330_B b)
+      {
+         this.a = null;
+      }
+   }
+
+   @Singleton
+   public static class JSR330_P3
+   {
+      private JSR330_A a;
+
+      @Inject
+      public void setA(JSR330_A a)
+      {
+         this.a = a;
+      }
+   }
+
+   public static class JSR330_P4
+   {
+      @Inject
+      public JSR330_P4(int value)
+      {
+      }
+   }
+
+   public static class JSR330_N
+   {
+   }
+
+   public static class JSR330_N1 extends JSR330_N
+   {
+   }
+
+   public static class JSR330_N2 extends JSR330_N
+   {
+      // Create a constructor with the inject annotation to indicate clearly that it is a component
+      // JSR 330 aware
+      @Inject
+      public JSR330_N2() {}
+   }
+
+   public static class JSR330_N2_2 extends JSR330_N2
+   {
+      public JSR330_N2_2() {}
+      public JSR330_N2_2(JSR330_N n) {}
+   }
+
+   public static class JSR330_N2_3 extends JSR330_N2
+   {
+      JSR330_N2_3() {}
+   }
+
+   public static class JSR330_N2_4 extends JSR330_N2
+   {
+      private JSR330_N2_4() {}
+   }
+
+   public static class JSR330_N2_5 extends JSR330_N2
+   {
+      protected JSR330_N2_5() {}
+   }
+
+   public static class JSR330_N2_6 extends JSR330_N2
+   {
+   }
+
+   public static class JSR330_N7
+   {
+      @Inject
+      public JSR330_N2 n;
+   }
+
+   public static class JSR330_N7_2 extends JSR330_N7
+   {
+   }
+
+   public static class JSR330_N8
+   {
+      @Inject
+      public void setJSR330_N2(JSR330_N2 n)
+      {}
+   }
+
+   public static class JSR330_N8_2 extends JSR330_N8
+   {
+   }
+
+   @Singleton
+   public static class JSR330_N8_3 extends JSR330_N8
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface N1 
+   {
    }
 }

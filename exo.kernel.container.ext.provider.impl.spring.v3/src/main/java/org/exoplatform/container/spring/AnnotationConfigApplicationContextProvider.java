@@ -71,9 +71,9 @@ public class AnnotationConfigApplicationContextProvider implements ApplicationCo
       {
          AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
          ctx.setParent(parent);
-         for (Object value : params.getValues())
+         for (String value : params.getValues())
          {
-            Class<?> clazz = ClassLoading.forName((String)value, AnnotationConfigApplicationContextProvider.class);
+            Class<?> clazz = ClassLoading.forName(value, AnnotationConfigApplicationContextProvider.class);
             ctx.register(clazz);
          }
          ctx.refresh();

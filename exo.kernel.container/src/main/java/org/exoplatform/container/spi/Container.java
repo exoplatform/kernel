@@ -55,10 +55,11 @@ public interface Container extends Startable, Disposable, Serializable
     * the parent container (if one exists) will be searched.
     * 
     * @param componentKey the key that the component was registered with.
+    * @param bindType the expected type of the instance if one can be found.
     * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
     *         key.
     */
-   Object getComponentInstance(Object componentKey);
+   <T> T getComponentInstance(Object componentKey, Class<T> bindType);
 
    /**
     * Find a component instance matching the specified type.
@@ -80,10 +81,11 @@ public interface Container extends Startable, Disposable, Serializable
     * container, the parent container (if one exists) will be searched.
     * 
     * @param componentKey the key that the component was registered with.
+    * @param bindType the expected raw type of the adapter if one can be found.
     * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
     *         for the specified key.
     */
-   ComponentAdapter<?> getComponentAdapter(Object componentKey);
+   <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType);
 
    /**
     * Find a component adapter associated with the specified type. If a component adapter cannot be found in this

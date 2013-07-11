@@ -35,17 +35,17 @@ import java.util.List;
 public abstract class AddTriggerListenerComponentPlugin extends BaseComponentPlugin implements TriggerListener
 {
    private List<JobKey> keys;
-   
+
    public AddTriggerListenerComponentPlugin()
    {
    }
-   
+
    public AddTriggerListenerComponentPlugin(InitParams params)
    {
       if (params != null)
       {
          keys = new ArrayList<JobKey>();
-         for (Iterator<JobKey> it = params.getObjectParamIterator(); it.hasNext(); )
+         for (Iterator<JobKey> it = params.getObjectParamValues(JobKey.class).iterator(); it.hasNext();)
          {
             JobKey key = it.next();
             keys.add(key);

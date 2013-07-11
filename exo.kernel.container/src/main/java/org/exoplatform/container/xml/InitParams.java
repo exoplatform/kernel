@@ -30,8 +30,13 @@ import java.util.List;
  * @email: tuan08@users.sourceforge.net
  * @version: $Id: InitParams.java 5799 2006-05-28 17:55:42Z geaz $
  */
-public class InitParams extends HashMap<String, Object>
+public class InitParams extends HashMap<String, Parameter>
 {
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 5377748844130285300L;
 
    public InitParams()
    {
@@ -78,7 +83,7 @@ public class InitParams extends HashMap<String, Object>
 
    public Parameter getParameter(String name)
    {
-      return (Parameter)get(name);
+      return get(name);
    }
 
    public void addParameter(Parameter param)
@@ -88,7 +93,7 @@ public class InitParams extends HashMap<String, Object>
 
    public Parameter removeParameter(String name)
    {
-      return (Parameter)remove(name);
+      return remove(name);
    }
 
    // --------------xml binding---------------------------------
@@ -109,12 +114,12 @@ public class InitParams extends HashMap<String, Object>
       return getValueIterator(ValuesParam.class);
    }
 
-   public Iterator getPropertiesParamIterator()
+   public Iterator<PropertiesParam> getPropertiesParamIterator()
    {
       return getValueIterator(PropertiesParam.class);
    }
 
-   public Iterator getObjectParamIterator()
+   public Iterator<ObjectParameter> getObjectParamIterator()
    {
       return getValueIterator(ObjectParameter.class);
    }

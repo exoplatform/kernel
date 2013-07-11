@@ -20,6 +20,7 @@ package org.exoplatform.container.guice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
+import com.google.inject.name.Names;
 
 import org.exoplatform.container.ContainerBuilder;
 import org.exoplatform.container.PortalContainer;
@@ -27,11 +28,15 @@ import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Qualifier;
 import javax.inject.Singleton;
 
 /**
@@ -118,12 +123,20 @@ public class TestGuiceContainer extends AbstractTestContainer
       assertSame(b, ((C)adapterC.getComponentInstance()).b);
       assertSame(a, container.getComponentInstanceOfType(C.class).a);
       assertSame(b, container.getComponentInstanceOfType(C.class).b);
+      assertNotNull(c.a2);
+      assertNotNull(c.a2_2);
+      assertNotSame(c.a2, c.a2_2);
+      assertNotNull(c.d);
+      assertSame(c.d, c.d2);
       D d = container.getComponentInstanceOfType(D.class);
       assertNotNull(d);
       assertSame(d, container.getComponentInstanceOfType(D.class));
       assertSame(d, adapterD.getComponentInstance());
       assertSame(a, d.a);
       assertSame(b, d.b);
+      assertTrue(d.g instanceof G1);
+      assertTrue(d.g2 instanceof G2);
+      assertTrue(d.g3.get() instanceof G3);
       E e = (E)container.getComponentInstance("MyClassE");
       assertNotNull(a);
       assertSame(e, container.getComponentInstance("MyClassE"));
@@ -133,20 +146,37 @@ public class TestGuiceContainer extends AbstractTestContainer
       assertSame(f, container.getComponentInstanceOfType(F.class));
       assertSame(f, adapterF.getComponentInstance());
       assertSame(e, f.e);
+      assertTrue(f.e instanceof E1);
+      assertTrue(f.m instanceof E1);
+      assertTrue(f.e2 instanceof E2);
+      assertNotNull(f.e3.get());
+      assertTrue(f.e3.get() instanceof E);
+      assertFalse(f.e3.get() instanceof E1);
+      assertFalse(f.e3.get() instanceof E2);
       G g = container.getComponentInstanceOfType(G.class);
       assertNotNull(g);
       assertSame(g, container.getComponentInstanceOfType(G.class));
       assertSame(g, adapterG.getComponentInstance());
       List<ComponentAdapter<Marker>> adapters = container.getComponentAdaptersOfType(Marker.class);
       assertNotNull(adapters);
-      assertEquals(2, adapters.size());
-      boolean foundE = false, foundF = false;
+      assertEquals(4, adapters.size());
+      boolean foundE = false, foundF = false, foundE1 = false, foundE2 = false;
       for (ComponentAdapter<Marker> adapter : adapters)
       {
-         if (adapter.getComponentImplementation().equals(E.class))
+         if (adapter.getComponentImplementation().equals(E1.class))
+         {
+            foundE1 = true;
+            assertSame(e, adapter.getComponentInstance());
+         }
+         else if (adapter.getComponentImplementation().equals(E2.class))
+         {
+            foundE2 = true;
+            assertSame(f.e2, adapter.getComponentInstance());
+         }
+         else if (adapter.getComponentImplementation().equals(E.class))
          {
             foundE = true;
-            assertSame(e, adapter.getComponentInstance());
+            assertSame(f.e3.get(), adapter.getComponentInstance());
          }
          else if (adapter.getComponentImplementation().equals(F.class))
          {
@@ -155,16 +185,26 @@ public class TestGuiceContainer extends AbstractTestContainer
          }
       }
       assertTrue(foundE);
+      assertTrue(foundE1);
+      assertTrue(foundE2);
       assertTrue(foundF);
       List<Marker> markers = container.getComponentInstancesOfType(Marker.class);
       assertNotNull(markers);
-      assertEquals(2, markers.size());
+      assertEquals(4, markers.size());
       assertTrue(markers.contains(e));
+      assertTrue(markers.contains(f.e));
+      assertTrue(markers.contains(f.e2));
       assertTrue(markers.contains(f));
    }
 
    public static class A
    {
+   }
+
+   public static class A2
+   {
+      @Inject
+      public A2() {}
    }
 
    @Singleton
@@ -178,15 +218,40 @@ public class TestGuiceContainer extends AbstractTestContainer
       A a;
 
       @Inject
+      A2 a2;
+
+      @Inject
+      A2 a2_2;
+
+      @Inject
       B b;
+
+      @Inject
+      D d;
+
+      @Inject
+      D d2;
    }
 
+   @Singleton
    public static class D
    {
       A a;
 
       B b;
 
+      @Inject
+      @Named("MyClassG")
+      G g;
+
+      @Inject
+      @QG2
+      G g2;
+
+      @Inject
+      Provider<G> g3;
+
+      @Inject
       public D(A a, B b)
       {
          this.a = a;
@@ -198,17 +263,49 @@ public class TestGuiceContainer extends AbstractTestContainer
    {
    }
 
+   public static class E1 extends E
+   {
+   }
+
+   public static class E2 extends E
+   {
+   }
+
    @Singleton
    public static class F implements Marker
    {
       @Inject
       @Named("MyClassE")
       E e;
+
+      @Inject
+      @Named("MyClassE")
+      Marker m;
+
+      @Inject
+      @QE2
+      E e2;
+
+      @Inject
+      Provider<E> e3;
+   }
+
+   public abstract static class G
+   {
    }
 
    @Singleton
-   @Named("MyClassG")
-   public static class G
+   public static class G1 extends G
+   {
+   }
+
+   @Singleton
+   public static class G2 extends G
+   {
+   }
+
+   @Singleton
+   public static class G3 extends G
    {
    }
 
@@ -229,7 +326,9 @@ public class TestGuiceContainer extends AbstractTestContainer
                bind(B.class);
                bind(C.class);
                bind(F.class);
-               bind(G.class);
+               bind(G.class).annotatedWith(Names.named("MyClassG")).to(G1.class);
+               bind(G.class).annotatedWith(QG2.class).to(G2.class);
+               bind(G.class).to(G3.class);
             }
          };
       }
@@ -251,4 +350,16 @@ public class TestGuiceContainer extends AbstractTestContainer
       }
    }
    public static interface Marker {}
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface QE2 
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface QG2 
+   {
+   }
 }

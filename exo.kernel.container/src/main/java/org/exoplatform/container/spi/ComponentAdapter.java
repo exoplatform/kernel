@@ -45,7 +45,7 @@ public interface ComponentAdapter<T>
     * @return the component's implementation class. Should normally be a concrete class (ie, a class that can be
     *         instantiated).
     */
-   Class<T> getComponentImplementation();
+   Class<? extends T> getComponentImplementation();
 
    /**
     * Retrieve the component instance. This method will usually create a new instance each time it is called, but that
@@ -56,4 +56,9 @@ public interface ComponentAdapter<T>
     *                   instantiation of the component lead to an ambiguous situation within the container.
     */
    T getComponentInstance() throws ContainerException;
+
+   /**
+    * Indicates whether or not this adapter is a singleton
+    */
+   boolean isSingleton();
 }

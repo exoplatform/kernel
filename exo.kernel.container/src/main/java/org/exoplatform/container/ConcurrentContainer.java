@@ -29,12 +29,20 @@ import org.exoplatform.management.ManagementContext;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +51,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Qualifier;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -78,6 +90,8 @@ public class ConcurrentContainer extends AbstractInterceptor
       new CopyOnWriteArrayList<ComponentAdapter<?>>();
 
    protected final Set<ExoContainer> children = new CopyOnWriteArraySet<ExoContainer>();
+
+   private volatile CachingContainer cache;
 
    /**
     * Context used to keep in memory the components that are currently being created.
@@ -120,21 +134,26 @@ public class ConcurrentContainer extends AbstractInterceptor
       return new ManageableComponentAdapterFactory(holder, this);
    }
 
-   public ComponentAdapter<?> getComponentAdapter(Object componentKey) throws ContainerException
+   @SuppressWarnings("unchecked")
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType) throws ContainerException
    {
       ComponentAdapter<?> adapter = componentKeyToAdapterCache.get(componentKey);
       if (adapter == null && parent != null)
       {
-         adapter = parent.getComponentAdapter(componentKey);
+         adapter = parent.getComponentAdapter(componentKey, bindType);
       }
-      return adapter;
+      if (adapter != null && !bindType.isAssignableFrom(adapter.getComponentImplementation()))
+      {
+         throw new ClassCastException("The adpater found is not of the expected type which was " + bindType.getName()
+            + " and the implementation type is " + adapter.getComponentImplementation().getName());
+      }
+      return (ComponentAdapter<T>)adapter;
    }
 
    public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
       // See http://jira.codehaus.org/secure/ViewIssue.jspa?key=PICO-115
-      @SuppressWarnings("unchecked")
-      ComponentAdapter<T> adapterByKey = (ComponentAdapter<T>)getComponentAdapter(componentType);
+      ComponentAdapter<T> adapterByKey = (ComponentAdapter<T>)getComponentAdapter(componentType, componentType);
       if (adapterByKey != null)
       {
          return adapterByKey;
@@ -204,7 +223,6 @@ public class ConcurrentContainer extends AbstractInterceptor
          security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);
 
       Object componentKey = componentAdapter.getComponentKey();
-
       if (componentKeyToAdapterCache.putIfAbsent(componentKey, componentAdapter) != null)
       {
          throw new ContainerException("Key " + componentKey + " duplicated");
@@ -248,7 +266,7 @@ public class ConcurrentContainer extends AbstractInterceptor
          pc.registerComponentInstance(contrivedKey, contrivedComp);
          try
          {
-            if (this.getComponentInstance(contrivedKey) != null)
+            if (getComponentInstance(contrivedKey, Object.class) != null)
             {
                throw new ContainerException(
                   "Cannot register a container to itself. The container is already implicitly registered.");
@@ -303,7 +321,7 @@ public class ConcurrentContainer extends AbstractInterceptor
          ComponentAdapter<?> componentAdapter = iterator.next();
          if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
          {
-            Object componentInstance = getInstance(componentAdapter);
+            T componentInstance = getInstance((ComponentAdapter<T>)componentAdapter, componentType);
             adapterToInstanceMap.put((ComponentAdapter<T>)componentAdapter, componentInstance);
 
             // This is to ensure all are added. (Indirect dependencies will be added
@@ -326,12 +344,12 @@ public class ConcurrentContainer extends AbstractInterceptor
       return result;
    }
 
-   public Object getComponentInstance(Object componentKey) throws ContainerException
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
    {
-      ComponentAdapter<?> componentAdapter = getComponentAdapter(componentKey);
+      ComponentAdapter<T> componentAdapter = getComponentAdapter(componentKey, bindType);
       if (componentAdapter != null)
       {
-         return getInstance(componentAdapter);
+         return getInstance(componentAdapter, bindType);
       }
       else
       {
@@ -356,10 +374,12 @@ public class ConcurrentContainer extends AbstractInterceptor
          Object result = map.get(componentAdapter.getComponentKey());
          if (result != null)
          {
+            // Don't keep in cache a component that has not been created yet
+            getCache().disable();
             return componentType.cast(result);
          }
       }
-      return getInstance(componentAdapter);
+      return getInstance(componentAdapter, componentType);
    }
 
    /**
@@ -397,10 +417,9 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
    }
 
-   @SuppressWarnings("unchecked")
-   private <T> T getInstance(ComponentAdapter<T> componentAdapter)
+   private <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type)
    {
-      // check wether this is our adapter
+      // check whether this is our adapter
       // we need to check this to ensure up-down dependencies cannot be followed
       final boolean isLocal = componentAdapters.contains(componentAdapter);
 
@@ -410,11 +429,17 @@ public class ConcurrentContainer extends AbstractInterceptor
 
          addOrderedComponentAdapter(componentAdapter);
 
+         if (!componentAdapter.isSingleton())
+         {
+            // Don't keep in cache a component that is not a singleton
+            getCache().disable();
+         }
+
          return instance;
       }
       else if (parent != null)
       {
-         return (T)parent.getComponentInstance(componentAdapter.getComponentKey());
+         return parent.getComponentInstance(componentAdapter.getComponentKey(), type);
       }
 
       return null;
@@ -517,7 +542,20 @@ public class ConcurrentContainer extends AbstractInterceptor
          Constructor<?> constructor = constructors[k];
          Class<?>[] parameters = constructor.getParameterTypes();
          Object[] args = new Object[parameters.length];
+         boolean constructorWithInject = constructors.length == 1 && constructor.isAnnotationPresent(Inject.class);
          boolean satisfied = true;
+         String logMessagePrefix = null;
+         Type[] genericTypes = null;
+         Annotation[][] parameterAnnotations = null;
+         if (constructorWithInject)
+         {
+            genericTypes = constructor.getGenericParameterTypes();
+            parameterAnnotations = constructor.getParameterAnnotations();
+         }
+         if (LOG.isDebugEnabled() && constructorWithInject)
+         {
+            logMessagePrefix = "Could not call the constructor of the class " + clazz.getName();
+         }
          for (int i = 0; i < args.length; i++)
          {
             if (parameters[i].equals(InitParams.class))
@@ -526,7 +564,19 @@ public class ConcurrentContainer extends AbstractInterceptor
             }
             else
             {
-               args[i] = holder.getComponentInstanceOfType(parameters[i]);
+               if (constructorWithInject)
+               {
+                  Object result =
+                     resolveType(parameters[i], genericTypes[i], parameterAnnotations[i], logMessagePrefix);
+                  if (!(result instanceof Integer))
+                  {
+                     args[i] = result;
+                  }
+               }
+               else
+               {
+                  args[i] = holder.getComponentInstanceOfType(parameters[i]);
+               }
                if (args[i] == null)
                {
                   satisfied = false;
@@ -536,9 +586,336 @@ public class ConcurrentContainer extends AbstractInterceptor
             }
          }
          if (satisfied)
+         {
+            if ((!Modifier.isPublic(constructor.getModifiers()) || !Modifier.isPublic(constructor.getDeclaringClass()
+               .getModifiers())) && !constructor.isAccessible())
+               constructor.setAccessible(true);
             return clazz.cast(constructor.newInstance(args));
+         }
       }
-      throw new Exception("Cannot find a satisfying constructor for " + clazz + " with parameter " + unknownParameter);
+      throw new Exception("Cannot find a satisfying constructor for " + clazz.getName() + " with parameter "
+         + unknownParameter);
+   }
+
+   /**
+    * Initializes the instance by injecting objects into fields and the methods with the
+    * annotation {@link Inject}
+    * @return <code>true</code> if at least Inject annotation has been found, <code>false</code> otherwise
+    */
+   public <T> boolean initializeComponent(T instance)
+   {
+      LinkedList<Class<?>> hierarchy = new LinkedList<Class<?>>();
+      Class<?> clazz = instance.getClass();
+      do
+      {
+         hierarchy.addFirst(clazz);
+      }
+      while (!(clazz = clazz.getSuperclass()).equals(Object.class));
+      // Fields and methods in superclasses are injected before those in subclasses. 
+      Map<String, Method> methodAlreadyRegistered = new HashMap<String, Method>();
+      Map<Class<?>, Collection<Method>> methodsPerClass = new HashMap<Class<?>, Collection<Method>>();
+      for (Class<?> c : hierarchy)
+      {
+         addMethods(c, methodAlreadyRegistered, methodsPerClass);
+      }
+      boolean isInjectPresent = !methodAlreadyRegistered.isEmpty();
+      for (Class<?> c : hierarchy)
+      {
+         if (initializeFields(instance, c))
+         {
+            isInjectPresent = true;
+         }
+         initializeMethods(instance, methodsPerClass.get(c));
+      }
+      return isInjectPresent;
+   }
+
+   private void addMethods(Class<?> c, Map<String, Method> methodAlreadyRegistered,
+      Map<Class<?>, Collection<Method>> methodsPerClass)
+   {
+      Method[] methods = c.getDeclaredMethods();
+      for (int i = 0, length = methods.length; i < length; i++)
+      {
+         Method m = methods[i];
+         boolean addMethod = false;
+         Method methodToRemove = null;
+         if (m.isAnnotationPresent(Inject.class))
+         {
+            addMethod = true;
+            methodToRemove = methodAlreadyRegistered.put(getMethodId(m), m);
+         }
+         else if (!methodAlreadyRegistered.isEmpty())
+         {
+            String id = getMethodId(m);
+            if (methodAlreadyRegistered.containsKey(id))
+            {
+               addMethod = true;
+               methodToRemove = methodAlreadyRegistered.put(id, m);
+            }
+         }
+         if (addMethod)
+         {
+            Collection<Method> cMethods = methodsPerClass.get(c);
+            if (cMethods == null)
+            {
+               cMethods = new HashSet<Method>();
+               methodsPerClass.put(c, cMethods);
+            }
+            cMethods.add(m);
+         }
+         if (methodToRemove != null)
+         {
+            Collection<Method> cMethods = methodsPerClass.get(methodToRemove.getDeclaringClass());
+            if (cMethods != null)
+            {
+               cMethods.remove(methodToRemove);
+            }
+         }
+      }
+   }
+
+   /**
+    * Initializes the instance by calling all the methods with the
+    * annotation {@link Inject}
+    */
+   private <T> void initializeMethods(T instance, Collection<Method> methods)
+   {
+      if (methods == null)
+      {
+         return;
+      }
+      main : for (Method m : methods)
+      {
+         if (m.isAnnotationPresent(Inject.class))
+         {
+            if (Modifier.isAbstract(m.getModifiers()))
+            {
+               LOG.warn("Could not call the method " + m.getName() + " of the class " + instance.getClass().getName()
+                  + ": The method cannot be abstract");
+               continue;
+            }
+            else if (Modifier.isStatic(m.getModifiers()))
+            {
+               LOG.warn("Could not call the method " + m.getName() + " of the class " + instance.getClass().getName()
+                  + ": The method cannot be static");
+               continue;
+            }
+            // The method is annotated with Inject and is not abstract and has not been called yet
+            Class<?>[] paramTypes = m.getParameterTypes();
+            Object[] params = new Object[paramTypes.length];
+            Type[] genericTypes = m.getGenericParameterTypes();
+            Annotation[][] parameterAnnotations = m.getParameterAnnotations();
+            String logMessagePrefix = null;
+            if (LOG.isDebugEnabled())
+            {
+               logMessagePrefix =
+                  "Could not call the method " + m.getName() + " of the class " + instance.getClass().getName();
+            }
+            for (int j = 0, l = paramTypes.length; j < l; j++)
+            {
+               Object result = resolveType(paramTypes[j], genericTypes[j], parameterAnnotations[j], logMessagePrefix);
+               if (result instanceof Integer)
+               {
+                  int r = (Integer)result;
+                  if (r == 1 || r == 2)
+                  {
+                     continue main;
+                  }
+                  params[j] = null;
+                  continue;
+               }
+               else
+               {
+                  params[j] = result;
+               }
+            }
+            try
+            {
+               if ((!Modifier.isPublic(m.getModifiers()) || !Modifier.isPublic(m.getDeclaringClass().getModifiers()))
+                  && !m.isAccessible())
+                  m.setAccessible(true);
+               m.invoke(instance, params);
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Could not call the method " + m.getName() + " of the class "
+                  + instance.getClass().getName() + ": " + e.getMessage(), e);
+            }
+         }
+      }
+   }
+
+   /**
+    * Gives an id to a method to be able to identify if a given method has already been called from the parent class@return
+    */
+   private static String getMethodId(Method m)
+   {
+      StringBuilder sb = new StringBuilder();
+      int modifier = m.getModifiers();
+      if (Modifier.isPrivate(modifier))
+      {
+         sb.append(m.getDeclaringClass().getName());
+      }
+      else if (!Modifier.isPublic(modifier) && !Modifier.isProtected(modifier))
+      {
+         sb.append(m.getDeclaringClass().getPackage().getName());
+      }
+      sb.append(m.getName());
+      sb.append('(');
+      Class<?>[] paramTypes = m.getParameterTypes();
+      for (int i = 0, l = paramTypes.length; i < l; i++)
+      {
+         sb.append(paramTypes[i].getName());
+         if (i < i - 1)
+            sb.append(',');
+      }
+      sb.append(')');
+      return sb.toString();
+   }
+
+   /**
+    * Initializes the fields of the instance by injecting objects into fields with the
+    * annotation {@link Inject} for a given class
+    */
+   private <T> boolean initializeFields(T instance, Class<?> clazz)
+   {
+      boolean isInjectPresent = false;
+      Field[] fields = clazz.getDeclaredFields();
+      for (int i = 0, length = fields.length; i < length; i++)
+      {
+         Field f = fields[i];
+         if (f.isAnnotationPresent(Inject.class))
+         {
+            isInjectPresent = true;
+            if (Modifier.isFinal(f.getModifiers()))
+            {
+               LOG.warn("Could not set a value to the field " + f.getName() + " of the class "
+                  + instance.getClass().getName() + ": The field cannot be final");
+               continue;
+            }
+            else if (Modifier.isStatic(f.getModifiers()))
+            {
+               LOG.warn("Could not set a value to the field " + f.getName() + " of the class "
+                  + instance.getClass().getName() + ": The field cannot be static");
+               continue;
+            }
+            // The field is annotated with Inject and is not final and/or static
+            try
+            {
+               if ((!Modifier.isPublic(f.getModifiers()) || !Modifier.isPublic(f.getDeclaringClass().getModifiers()))
+                  && !f.isAccessible())
+                  f.setAccessible(true);
+               String logMessagePrefix = null;
+               if (LOG.isDebugEnabled())
+               {
+                  logMessagePrefix =
+                     "Could not set a value to the field " + f.getName() + " of the class "
+                        + instance.getClass().getName();
+               }
+               Object result = resolveType(f.getType(), f.getGenericType(), f.getAnnotations(), logMessagePrefix);
+               if (result instanceof Integer)
+               {
+                  continue;
+               }
+               f.set(instance, result);
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Could not set a value to the field " + f.getName() + " of the class "
+                  + instance.getClass().getName() + ": " + e.getMessage(), e);
+            }
+         }
+      }
+      return isInjectPresent;
+   }
+
+   /**
+    * Resolves the given type and generic type
+    */
+   private Object resolveType(Class<?> type, Type genericType, Annotation[] annotations, String logMessagePrefix)
+   {
+      if (type.isPrimitive())
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug(logMessagePrefix + ": Primitive types are not supported");
+         }
+         return 1;
+      }
+      Named named = null;
+      Class<?> qualifier = null;
+      for (int i = 0, length = annotations.length; i < length; i++)
+      {
+         Annotation a = annotations[i];
+         if (a instanceof Named)
+         {
+            named = (Named)a;
+            break;
+         }
+         else if (a.annotationType().isAnnotationPresent(Qualifier.class))
+         {
+            qualifier = a.annotationType();
+            break;
+         }
+      }
+      if (type.isInterface() && type.equals(Provider.class))
+      {
+         if (!(genericType instanceof ParameterizedType))
+         {
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug(logMessagePrefix + ": The generic type is not of type ParameterizedType");
+            }
+            return 2;
+         }
+         ParameterizedType aType = (ParameterizedType)genericType;
+         Type[] typeVars = aType.getActualTypeArguments();
+         Class<?> expectedType = (Class<?>)typeVars[0];
+         final ComponentAdapter<?> adapter;
+         if (named != null)
+         {
+            adapter = holder.getComponentAdapter(named.value(), expectedType);
+         }
+         else if (qualifier != null)
+         {
+            adapter = holder.getComponentAdapter(qualifier, expectedType);
+         }
+         else
+         {
+            adapter = holder.getComponentAdapterOfType(expectedType);
+         }
+
+         if (adapter == null)
+         {
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug(logMessagePrefix + ": We have no value to set so we skip it");
+            }
+            return 3;
+         }
+         return new Provider<Object>()
+         {
+            public Object get()
+            {
+               return adapter.getComponentInstance();
+            }
+         };
+      }
+      else
+      {
+         if (named != null)
+         {
+            return holder.getComponentInstance(named.value(), type);
+         }
+         else if (qualifier != null)
+         {
+            return holder.getComponentInstance(qualifier, type);
+         }
+         else
+         {
+            return holder.getComponentInstanceOfType(type);
+         }
+      }
    }
 
    /**
@@ -546,5 +923,24 @@ public class ConcurrentContainer extends AbstractInterceptor
     */
    public void initialize()
    {
+   }
+
+   /**
+    * Gives the cache if already found otherwise it will get it from the interceptor chain
+    */
+   protected CachingContainer getCache()
+   {
+      if (cache != null)
+         return cache;
+      Container co = holder;
+      do
+      {
+         if (co instanceof CachingContainer)
+         {
+            cache = (CachingContainer)co;
+         }
+      }
+      while ((co = co.getSuccessor()) != null);
+      return cache;
    }
 }
