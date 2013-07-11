@@ -41,8 +41,19 @@ public class InstanceComponentAdapter<T> extends AbstractComponentAdapter<T>
       this.componentInstance = componentInstance;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public T getComponentInstance()
    {
       return componentInstance;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSingleton()
+   {
+      return true;
    }
 }

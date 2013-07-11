@@ -51,6 +51,8 @@ public class CachingContainer extends AbstractInterceptor
 
    private final ConcurrentMap<Class<?>, List<?>> instancesByType = new ConcurrentHashMap<Class<?>, List<?>>();
 
+   private final ThreadLocal<Boolean> enabled = new ThreadLocal<Boolean>();
+
    @SuppressWarnings("unchecked")
    public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
@@ -90,24 +92,48 @@ public class CachingContainer extends AbstractInterceptor
          instances = super.getComponentInstancesOfType(componentType);
          if (instances != null)
          {
-            instancesByType.put(componentType, instances);
+            Boolean cacheEnabled = enabled.get();
+            try
+            {
+               if (cacheEnabled == null || cacheEnabled.booleanValue())
+               {
+                  instancesByType.put(componentType, instances);
+               }
+            }
+            finally
+            {
+               if (cacheEnabled != null)
+                  enabled.remove();
+            }
          }
       }
       return (List<T>)instances;
    }
 
-   public Object getComponentInstance(Object componentKey) throws ContainerException
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
    {
       Object instance = instanceByKey.get(componentKey);
       if (instance == null)
       {
-         instance = super.getComponentInstance(componentKey);
+         instance = super.getComponentInstance(componentKey, bindType);
          if (instance != null)
          {
-            instanceByKey.put(componentKey, instance);
+            Boolean cacheEnabled = enabled.get();
+            try
+            {
+               if (cacheEnabled == null || cacheEnabled.booleanValue())
+               {
+                  instanceByKey.put(componentKey, instance);
+               }
+            }
+            finally
+            {
+               if (cacheEnabled != null)
+                  enabled.remove();
+            }
          }
       }
-      return instance;
+      return bindType.cast(instance);
    }
 
    public <T> T getComponentInstanceOfType(Class<T> componentType)
@@ -118,7 +144,19 @@ public class CachingContainer extends AbstractInterceptor
          instance = super.getComponentInstanceOfType(componentType);
          if (instance != null)
          {
-            instanceByType.put(componentType, instance);
+            Boolean cacheEnabled = enabled.get();
+            try
+            {
+               if (cacheEnabled == null || cacheEnabled.booleanValue())
+               {
+                  instanceByType.put(componentType, instance);
+               }
+            }
+            finally
+            {
+               if (cacheEnabled != null)
+                  enabled.remove();
+            }
          }
       }
       return componentType.cast(instance);
@@ -179,5 +217,10 @@ public class CachingContainer extends AbstractInterceptor
    public String getId()
    {
       return "Cache";
+   }
+
+   void disable()
+   {
+      enabled.set(Boolean.FALSE);
    }
 }

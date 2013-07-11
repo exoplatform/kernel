@@ -14,10 +14,20 @@
       <type>org.exoplatform.container.weld.TestWeldContainer$A</type>
    </component>
    <component>
+      <type>org.exoplatform.container.weld.TestWeldContainer$A2</type>
+   </component>
+   <component>
       <type>org.exoplatform.container.weld.TestWeldContainer$D</type>
    </component>
    <component>
       <key>MyClassE</key>
+      <type>org.exoplatform.container.weld.TestWeldContainer$E1</type>
+   </component>
+   <component>
+      <key>org.exoplatform.container.weld.TestWeldContainer$QE2</key>
+      <type>org.exoplatform.container.weld.TestWeldContainer$E2</type>
+   </component>
+   <component>
       <type>org.exoplatform.container.weld.TestWeldContainer$E</type>
    </component>
    <component>

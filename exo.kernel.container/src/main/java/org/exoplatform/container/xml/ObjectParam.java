@@ -48,7 +48,7 @@ public class ObjectParam extends Parameter
 
    private Object object_;
 
-   private ArrayList properties_ = new ArrayList();
+   private List<Property> properties_ = new ArrayList<Property>();
 
    public String getType()
    {
@@ -88,7 +88,7 @@ public class ObjectParam extends Parameter
          object_ = clazz.newInstance();
          for (int i = 0; i < properties_.size(); i++)
          {
-            prop = (Property)properties_.get(i);
+            prop = properties_.get(i);
             if (prop.name.endsWith("]"))
             {
                // arrary or list
@@ -103,11 +103,6 @@ public class ObjectParam extends Parameter
       }
       catch (Exception ex)
       {
-         // if(prop != null) {
-         // S ystem.out.println("Exception when try setting the prop.name " +
-         // prop.name_ +
-         // ", value prop.value " + prop.value_) ;
-         // }
          LOG.error(ex.getLocalizedMessage(), ex);
       }
    }
@@ -120,7 +115,8 @@ public class ObjectParam extends Parameter
       Object arrayBean = PropertyUtils.getProperty(bean, arrayBeanName);
       if (arrayBean instanceof List)
       {
-         List list = (List)arrayBean;
+         @SuppressWarnings("unchecked")
+         List<Object> list = (List<Object>)arrayBean;
          Object valueBean = getValue(value);
          if (list.size() == index)
          {
@@ -133,7 +129,8 @@ public class ObjectParam extends Parameter
       }
       else if (arrayBean instanceof Collection)
       {
-         Collection c = (Collection)arrayBean;
+         @SuppressWarnings("unchecked")
+         Collection<Object> c = (Collection<Object>)arrayBean;
          Object valueBean = getValue(value);
          c.add(valueBean);
       }
@@ -158,7 +155,7 @@ public class ObjectParam extends Parameter
             fullName.append(".");
             fullName.append(className);
 
-            Class clazz = ClassLoading.forName(fullName.toString(), this);
+            Class<?> clazz = ClassLoading.forName(fullName.toString(), this);
             return clazz.newInstance();
          }
       }
@@ -185,10 +182,10 @@ public class ObjectParam extends Parameter
 
    public void addProperty(Object value)
    {
-      properties_.add(value);
+      properties_.add((Property)value);
    }
 
-   public Iterator getPropertyIterator()
+   public Iterator<Property> getPropertyIterator()
    {
       return properties_.iterator();
    }

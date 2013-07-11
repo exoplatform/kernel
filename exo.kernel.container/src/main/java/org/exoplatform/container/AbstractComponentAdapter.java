@@ -79,10 +79,10 @@ public abstract class AbstractComponentAdapter<T> implements ComponentAdapter<T>
 
    protected void checkTypeCompatibility() throws ContainerException
    {
-      if (componentKey instanceof Class)
+      if (componentKey instanceof Class<?>)
       {
          Class<?> componentType = (Class<?>)componentKey;
-         if (!componentType.isAssignableFrom(componentImplementation))
+         if (!componentType.isAnnotation() && !componentType.isAssignableFrom(componentImplementation))
          {
             throw new ContainerException("The type:" + componentType.getName() + "  was not assignable from the class "
                + componentImplementation.getName());

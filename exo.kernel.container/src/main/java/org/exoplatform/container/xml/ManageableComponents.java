@@ -19,6 +19,7 @@
 package org.exoplatform.container.xml;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Jul 19, 2004
@@ -30,14 +31,14 @@ import java.util.ArrayList;
 public class ManageableComponents
 {
 
-   private ArrayList componentsType = new ArrayList(3);
+   private List<String> componentsType = new ArrayList<String>(3);
 
-   public ArrayList getComponentsType()
+   public List<String> getComponentsType()
    {
       return componentsType;
    }
 
-   public void setComponentsType(ArrayList values)
+   public void setComponentsType(List<String> values)
    {
       this.componentsType = values;
    }

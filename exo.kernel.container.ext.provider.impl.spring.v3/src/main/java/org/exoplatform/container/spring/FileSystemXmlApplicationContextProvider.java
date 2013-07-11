@@ -83,9 +83,9 @@ public class FileSystemXmlApplicationContextProvider implements ApplicationConte
       {
          String[] paths = new String[params.getValues().size()];
          int i = 0;
-         for (Object value : params.getValues())
+         for (String value : params.getValues())
          {
-            URL url = cm.getResource((String)value);
+            URL url = cm.getResource(value);
             paths[i++] = url.toURI().toString();
          }
          return new FileSystemXmlApplicationContext(paths, true, parent);

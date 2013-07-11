@@ -30,6 +30,9 @@ import org.exoplatform.services.log.Log;
 import org.jboss.weld.environment.se.Weld;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
@@ -102,19 +106,34 @@ public class WeldContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    @Override
-   public Object getComponentInstance(Object componentKey)
+   public <T> T getComponentInstance(final Object componentKey, Class<T> bindType)
    {
-      Object result = super.getComponentInstance(componentKey);
-      if (weld != null && result == null && componentKey instanceof Class<?>)
+      T result = super.getComponentInstance(componentKey, bindType);
+      if (weld != null && result == null)
       {
-         Class<?> type = (Class<?>)componentKey;
-         if (helper.isIncluded(type))
+         if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
          {
-            Instance<?> instance = container.instance().select(type);
-            if (instance != null)
+            return getInstanceOfType((Class<T>)componentKey);
+         }
+         else if (componentKey instanceof String)
+         {
+            Set<Bean<?>> beans = container.getBeanManager().getBeans(bindType, createNamed((String)componentKey));
+            if (beans != null && !beans.isEmpty())
             {
-               result = instance.get();
+               return bindType.cast(container.instance().select(beans.iterator().next().getBeanClass()).get());
+            }
+         }
+         else if (componentKey instanceof Class<?>)
+         {
+            final Class<? extends Annotation> annotationType = (Class<? extends Annotation>)componentKey;
+            Annotation annotation = createAnnotation(annotationType);
+
+            Set<Bean<?>> beans = container.getBeanManager().getBeans(bindType, annotation);
+            if (beans != null && !beans.isEmpty())
+            {
+               return bindType.cast(container.instance().select(beans.iterator().next().getBeanClass()).get());
             }
          }
       }
@@ -128,15 +147,37 @@ public class WeldContainer extends AbstractInterceptor
    public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
       T result = super.getComponentInstanceOfType(componentType);
-      if (weld != null && result == null && helper.isIncluded(componentType))
+      if (weld != null && result == null)
+      {
+         result = getInstanceOfType(componentType);
+      }
+      return result;
+   }
+
+   @SuppressWarnings("unchecked")
+   private <T> T getInstanceOfType(Class<T> componentType)
+   {
+      if (helper.isIncluded(componentType))
       {
          Instance<T> instance = container.instance().select(componentType);
          if (instance != null)
          {
-            result = instance.get();
+            if (instance.isAmbiguous())
+            {
+               Set<Bean<?>> beans = container.getBeanManager().getBeans(componentType);
+               for (Bean<?> b : beans)
+               {
+                  if (b.getBeanClass().isAnnotationPresent(Default.class))
+                  {
+                     instance = (Instance<T>)container.instance().select(b.getBeanClass());
+                     break;
+                  }
+               }
+            }
+            return instance.get();
          }
       }
-      return result;
+      return null;
    }
 
    /**
@@ -144,19 +185,33 @@ public class WeldContainer extends AbstractInterceptor
     */
    @SuppressWarnings("unchecked")
    @Override
-   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
+   public <T> ComponentAdapter<T> getComponentAdapter(final Object componentKey, Class<T> bindType)
    {
-      ComponentAdapter<?> result = super.getComponentAdapter(componentKey);
-      if (weld != null && result == null && componentKey instanceof Class<?>)
+      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType);
+      if (weld != null && result == null)
       {
-         Class<?> type = (Class<?>)componentKey;
-         if (helper.isIncluded(type))
+         if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
          {
-            @SuppressWarnings("rawtypes")
-            Instance instance = container.instance().select(type);
-            if (instance != null)
+            return getAdapterOfType((Class<T>)componentKey);
+         }
+         else if (componentKey instanceof String)
+         {
+            Set<Bean<?>> beans = container.getBeanManager().getBeans(bindType, createNamed((String)componentKey));
+            if (beans != null && !beans.isEmpty())
             {
-               result = createComponentAdapter(type, instance);
+               return createComponentAdapter(bindType,
+                  (Instance<T>)container.instance().select(beans.iterator().next().getBeanClass()));
+            }
+         }
+         else if (componentKey instanceof Class<?>)
+         {
+            final Class<? extends Annotation> annotationType = (Class<? extends Annotation>)componentKey;
+            Annotation annotation = createAnnotation(annotationType);
+            Set<Bean<?>> beans = container.getBeanManager().getBeans(bindType, annotation);
+            if (beans != null && !beans.isEmpty())
+            {
+               return createComponentAdapter(bindType,
+                  (Instance<T>)container.instance().select(beans.iterator().next().getBeanClass()));
             }
          }
       }
@@ -170,15 +225,37 @@ public class WeldContainer extends AbstractInterceptor
    public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
       ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
-      if (weld != null && result == null && helper.isIncluded(componentType))
+      if (weld != null && result == null)
+      {
+         result = getAdapterOfType(componentType);
+      }
+      return result;
+   }
+
+   @SuppressWarnings("unchecked")
+   private <T> ComponentAdapter<T> getAdapterOfType(Class<T> componentType)
+   {
+      if (helper.isIncluded(componentType))
       {
          Instance<T> instance = container.instance().select(componentType);
          if (instance != null)
          {
-            result = createComponentAdapter(componentType, instance);
+            if (instance.isAmbiguous())
+            {
+               Set<Bean<?>> beans = container.getBeanManager().getBeans(componentType);
+               for (Bean<?> b : beans)
+               {
+                  if (b.getBeanClass().isAnnotationPresent(Default.class))
+                  {
+                     instance = (Instance<T>)container.instance().select(b.getBeanClass());
+                     break;
+                  }
+               }
+            }
+            return createComponentAdapter(componentType, instance);
          }
       }
-      return result;
+      return null;
    }
 
    private <T> ComponentAdapter<T> createComponentAdapter(final Class<T> type, final Instance<T> instance)
@@ -193,6 +270,11 @@ public class WeldContainer extends AbstractInterceptor
          public T getComponentInstance() throws ContainerException
          {
             return instance.get();
+         }
+
+         public boolean isSingleton()
+         {
+            return false;
          }
       };
    }
@@ -210,6 +292,11 @@ public class WeldContainer extends AbstractInterceptor
          public T getComponentInstance() throws ContainerException
          {
             return type.cast(container.instance().select(b.getBeanClass()).get());
+         }
+
+         public boolean isSingleton()
+         {
+            return Singleton.class.equals(b.getScope());
          }
       };
    }
@@ -335,6 +422,48 @@ public class WeldContainer extends AbstractInterceptor
       }
    }
 
+   private static Annotation createAnnotation(final Class<? extends Annotation> annotationType)
+   {
+      return (Annotation)Proxy.newProxyInstance(annotationType.getClassLoader(), annotationType.getInterfaces(),
+         new InvocationHandler()
+         {
+            public Object invoke(Object proxy, Method method, Object[] args)
+            {
+               if ("hashCode".equals(method.getName()))
+               {
+                  return annotationType.getName().hashCode();
+               }
+               else if ("equals".equals(method.getName()))
+               {
+                  return args[0].hashCode() == annotationType.getName().hashCode()
+                     && args[0].toString().equals(annotationType.getName());
+               }
+               else if ("toString".equals(method.getName()))
+               {
+                  return annotationType.getName();
+               }
+
+               return annotationType;
+            }
+         });
+   }
+
+   private static Named createNamed(final String name)
+   {
+      return new Named()
+      {
+         public Class<? extends Annotation> annotationType()
+         {
+            return Named.class;
+         }
+
+         public String value()
+         {
+            return name;
+         }
+      };
+   }
+
    /**
     * {@inheritDoc}
     */
@@ -368,9 +497,23 @@ public class WeldContainer extends AbstractInterceptor
       }
    }
 
+   private static void bindAll(Class<?> clazz, Set<Type> types)
+   {
+      if (clazz == null || clazz.equals(Object.class))
+         return;
+      types.add(clazz);
+      for (Class<?> c : clazz.getInterfaces())
+      {
+         bindAll(c, types);
+      }
+      bindAll(clazz.getSuperclass(), types);
+   }
+
    private static class ComponentAdapterBean<T> implements Bean<T>
    {
       private final ComponentAdapter<T> adapter;
+      private Set<Type> types;
+      private Set<Annotation> qualifiers;
 
       public ComponentAdapterBean(ComponentAdapter<T> adapter)
       {
@@ -398,45 +541,54 @@ public class WeldContainer extends AbstractInterceptor
        */
       public Set<Type> getTypes()
       {
+         if (types != null)
+         {
+            return types;
+         }
          Set<Type> types = new HashSet<Type>();
-         types.add(adapter.getComponentImplementation());
-         if (adapter.getComponentKey() instanceof Class<?>)
+         if (adapter.getComponentKey() instanceof Class<?> && !((Class<?>)adapter.getComponentKey()).isAnnotation())
          {
             types.add((Class<?>)adapter.getComponentKey());
+            types.add(adapter.getComponentImplementation());
+         }
+         else
+         {
+            bindAll(adapter.getComponentImplementation(), types);
          }
          types.add(Object.class);
-         return types;
+         return this.types = types;
       }
 
       /**
        * {@inheritDoc}
        */
-      @SuppressWarnings("serial")
+      @SuppressWarnings({"serial", "unchecked"})
       public Set<Annotation> getQualifiers()
       {
+         if (qualifiers != null)
+         {
+            return qualifiers;
+         }
          Set<Annotation> qualifiers = new HashSet<Annotation>();
-         qualifiers.add(new AnnotationLiteral<Default>()
-         {
-         });
-         qualifiers.add(new AnnotationLiteral<Any>()
-         {
-         });
          if (adapter.getComponentKey() instanceof String)
          {
-            qualifiers.add(new Named()
-            {
-               public String value()
-               {
-                  return (String)adapter.getComponentKey();
-               }
-
-               public Class<? extends Annotation> annotationType()
-               {
-                  return Named.class;
-               }
-            });
+            qualifiers.add(createNamed((String)adapter.getComponentKey()));
          }
-         return qualifiers;
+         else if (adapter.getComponentKey() instanceof Class<?> && ((Class<?>)adapter.getComponentKey()).isAnnotation())
+         {
+            qualifiers.add(createAnnotation((Class<? extends Annotation>)adapter.getComponentKey()));
+         }
+         else
+         {
+            qualifiers.add(new AnnotationLiteral<Default>()
+            {
+            });
+            qualifiers.add(new AnnotationLiteral<Any>()
+            {
+            });
+
+         }
+         return this.qualifiers = qualifiers;
       }
 
       /**
@@ -444,7 +596,7 @@ public class WeldContainer extends AbstractInterceptor
        */
       public Class<? extends Annotation> getScope()
       {
-         return Singleton.class;
+         return adapter.isSingleton() ? Singleton.class : Dependent.class;
       }
 
       /**

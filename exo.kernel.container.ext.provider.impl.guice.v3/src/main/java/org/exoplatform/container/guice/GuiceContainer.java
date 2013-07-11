@@ -37,6 +37,7 @@ import org.exoplatform.container.xml.Component;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -69,29 +70,40 @@ public class GuiceContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    @Override
-   public Object getComponentInstance(Object componentKey)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
    {
-      Object result = super.getComponentInstance(componentKey);
-      if (result == null && componentKey instanceof Class<?>)
+      T result = super.getComponentInstance(componentKey, bindType);
+      if (result == null && injector != null)
       {
-         result = getComponentInstance((Class<?>)componentKey);
+         final Binding<?> binding;
+         if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
+         {
+            binding = injector.getExistingBinding(Key.get((Class<?>)componentKey));
+         }
+         else
+         {
+            if (componentKey instanceof String)
+            {
+               binding = injector.getExistingBinding(Key.get(bindType, Names.named((String)componentKey)));
+            }
+            else if (componentKey instanceof Class<?>)
+            {
+               binding = injector.getExistingBinding(Key.get(bindType, (Class<? extends Annotation>)componentKey));
+            }
+            else
+            {
+               return null;
+            }
+         }
+         if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+         {
+            return null;
+         }
+         result = bindType.cast(binding.getProvider().get());
       }
       return result;
-   }
-
-   protected <T> T getComponentInstance(final Class<T> componentType)
-   {
-      if (injector == null)
-      {
-         return null;
-      }
-      Binding<?> binding = injector.getExistingBinding(Key.get(componentType));
-      if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
-      {
-         return null;
-      }
-      return componentType.cast(binding.getProvider().get());
    }
 
    /**
@@ -101,9 +113,14 @@ public class GuiceContainer extends AbstractInterceptor
    public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
       T result = super.getComponentInstanceOfType(componentType);
-      if (result == null)
+      if (result == null && injector != null)
       {
-         result = getComponentInstance(componentType);
+         Binding<?> binding = injector.getExistingBinding(Key.get(componentType));
+         if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+         {
+            return null;
+         }
+         result = componentType.cast(binding.getProvider().get());
       }
       return result;
    }
@@ -111,29 +128,40 @@ public class GuiceContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings("unchecked")
    @Override
-   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
    {
-      ComponentAdapter<?> result = super.getComponentAdapter(componentKey);
-      if (result == null && componentKey instanceof Class<?>)
+      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType);
+      if (result == null && injector != null)
       {
-         result = getComponentAdapter((Class<?>)componentKey);
+         final Binding<?> binding;
+         if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
+         {
+            binding = injector.getExistingBinding(Key.get((Class<?>)componentKey));
+         }
+         else
+         {
+            if (componentKey instanceof String)
+            {
+               binding = injector.getExistingBinding(Key.get(bindType, Names.named((String)componentKey)));
+            }
+            else if (componentKey instanceof Class<?>)
+            {
+               binding = injector.getExistingBinding(Key.get(bindType, (Class<? extends Annotation>)componentKey));
+            }
+            else
+            {
+               return null;
+            }
+         }
+         if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+         {
+            return null;
+         }
+         result = createComponentAdapter(bindType, binding);
       }
       return result;
-   }
-
-   protected <T> ComponentAdapter<T> getComponentAdapter(final Class<T> type)
-   {
-      if (injector == null)
-      {
-         return null;
-      }
-      final Binding<?> binding = injector.getExistingBinding(Key.get(type));
-      if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
-      {
-         return null;
-      }
-      return createComponentAdapter(type, binding);
    }
 
    private <T> ComponentAdapter<T> createComponentAdapter(final Class<T> type, final Binding<?> binding)
@@ -149,6 +177,11 @@ public class GuiceContainer extends AbstractInterceptor
          {
             return type.cast(binding.getProvider().get());
          }
+
+         public boolean isSingleton()
+         {
+            return false;
+         }
       };
    }
 
@@ -159,9 +192,14 @@ public class GuiceContainer extends AbstractInterceptor
    public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
       ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
-      if (result == null)
+      if (result == null && injector != null)
       {
-         result = getComponentAdapter(componentType);
+         final Binding<?> binding = injector.getExistingBinding(Key.get(componentType));
+         if (binding == null || binding.getProvider().toString().startsWith(ComponentAdapterProvider.class.getName()))
+         {
+            return null;
+         }
+         result = createComponentAdapter(componentType, binding);
       }
       return result;
    }
@@ -250,8 +288,9 @@ public class GuiceContainer extends AbstractInterceptor
                {
                   Object key = adapter.getComponentKey();
                   Class<?> type;
-                  String name = null;
-                  if (key instanceof Class<?>)
+                  Annotation annotation = null;
+                  Class<? extends Annotation> annotationType = null;
+                  if (key instanceof Class<?> && !((Class<?>)key).isAnnotation())
                   {
                      type = (Class<?>)key;
                   }
@@ -259,18 +298,23 @@ public class GuiceContainer extends AbstractInterceptor
                   {
                      if (key instanceof String)
                      {
-                        name = (String)key;
+                        annotation = Names.named((String)key);
+                     }
+                     else if (key instanceof Class<?>)
+                     {
+                        annotationType = (Class<? extends Annotation>)key;
                      }
                      type = adapter.getComponentImplementation();
                   }
-                  if (name == null)
+                  if (annotation == null && annotationType == null)
                   {
                      binder.bind(type).toProvider(new ComponentAdapterProvider(type, adapter));
                   }
                   else
                   {
-                     binder.bind(type).annotatedWith(Names.named(name))
-                        .toProvider(new ComponentAdapterProvider(type, adapter));
+                     // As we don't know the type, we will bind it for each super classes and interfaces too
+                     ComponentAdapterProvider provider = new ComponentAdapterProvider(type, adapter);
+                     bindAll(binder, type, provider, annotation, annotationType);
                   }
                }
             }
@@ -278,6 +322,27 @@ public class GuiceContainer extends AbstractInterceptor
          LOG.info("A GuiceContainer has been enabled using the ModuleProvider " + provider.getClass());
       }
       super.start();
+   }
+
+   @SuppressWarnings({"rawtypes", "unchecked"})
+   private static void bindAll(Binder binder, Class<?> clazz, ComponentAdapterProvider provider, Annotation annotation,
+      Class<? extends Annotation> annotationType)
+   {
+      if (clazz == null || clazz.equals(Object.class))
+         return;
+      if (annotation == null)
+      {
+         binder.bind(clazz).annotatedWith(annotationType).toProvider(provider);
+      }
+      else
+      {
+         binder.bind(clazz).annotatedWith(annotation).toProvider(provider);
+      }
+      for (Class<?> c : clazz.getInterfaces())
+      {
+         bindAll(binder, c, provider, annotation, annotationType);
+      }
+      bindAll(binder, clazz.getSuperclass(), provider, annotation, annotationType);
    }
 
    /**

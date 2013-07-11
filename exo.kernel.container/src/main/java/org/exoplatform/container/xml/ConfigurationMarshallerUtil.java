@@ -22,6 +22,8 @@ import org.jibx.runtime.IMarshallingContext;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -55,4 +57,8 @@ public class ConfigurationMarshallerUtil
       }
    }
 
+   public static List<?> createList()
+   {
+      return new ArrayList<Object>();
+   }
 }

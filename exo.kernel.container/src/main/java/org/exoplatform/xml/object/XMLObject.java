@@ -55,11 +55,9 @@ public class XMLObject
    
    public static String CURRENT_VERSION = "1.0";
 
-   static Map cacheFields_ = new HashMap();
+   static Map<Class<?>, Map<String, Field>> cacheFields_ = new HashMap<Class<?>, Map<String, Field>>();
 
-   // private static String encoding = "UTF-8";
-
-   private Map fields_ = new HashMap();
+   private Map<String, XMLField> fields_ = new HashMap<String, XMLField>();
 
    private String type;
 
@@ -69,13 +67,13 @@ public class XMLObject
 
    public XMLObject(Object obj) throws Exception
    {
-      Class clazz = obj.getClass();
-      Map fields = getFields(clazz);
+      Class<?> clazz = obj.getClass();
+      Map<String, Field> fields = getFields(clazz);
       setType(obj.getClass().getName());
-      Iterator i = fields.values().iterator();
+      Iterator<Field> i = fields.values().iterator();
       while (i.hasNext())
       {
-         Field field = (Field)i.next();
+         Field field = i.next();
          Object value = field.get(obj);
          addField(new XMLField(field.getName(), field.getType(), value));
       }
@@ -93,7 +91,7 @@ public class XMLObject
 
    public XMLField getField(String name)
    {
-      return (XMLField)fields_.get(name);
+      return fields_.get(name);
    }
 
    public void addField(Object o)
@@ -107,34 +105,34 @@ public class XMLObject
       fields_.put(field.getName(), field);
    }
 
-   public Iterator getFieldIterator()
+   public Iterator<XMLField> getFieldIterator()
    {
       return fields_.values().iterator();
    }
 
-   public Collection getFields()
+   public Collection<XMLField> getFields()
    {
       return fields_.values();
    }
 
-   public void setFields(Collection fields)
+   public void setFields(Collection<XMLField> fields)
    {
-      Iterator i = fields.iterator();
+      Iterator<XMLField> i = fields.iterator();
       while (i.hasNext())
       {
-         XMLField field = (XMLField)i.next();
+         XMLField field = i.next();
          fields_.put(field.getName(), field);
       }
    }
 
-   public void setFields(Map fields)
+   public void setFields(Map<String, XMLField> fields)
    {
       fields_.putAll(fields);
    }
 
    public Object getFieldValue(String fieldName) throws Exception
    {
-      XMLField field = (XMLField)fields_.get(fieldName);
+      XMLField field = fields_.get(fieldName);
       if (field != null)
          return field.getObjectValue();
       return null;
@@ -142,7 +140,7 @@ public class XMLObject
 
    public void renameField(String oldName, String newName)
    {
-      XMLField field = (XMLField)fields_.remove(oldName);
+      XMLField field = fields_.remove(oldName);
       field.setName(newName);
       fields_.put(newName, field);
    }
@@ -152,7 +150,7 @@ public class XMLObject
       fields_.remove(name);
    }
 
-   public void addField(String name, Class fieldType, Object obj) throws Exception
+   public void addField(String name, Class<?> fieldType, Object obj) throws Exception
    {
       addField(new XMLField(name, fieldType, obj));
    }
@@ -162,10 +160,10 @@ public class XMLObject
    {
       StringBuffer b = new StringBuffer();
       b.append("type: ").append(type).append("\n");
-      Iterator i = fields_.values().iterator();
+      Iterator<XMLField> i = fields_.values().iterator();
       while (i.hasNext())
       {
-         XMLField field = (XMLField)i.next();
+         XMLField field = i.next();
          b.append(field.toString()).append("\n");
       }
       return b.toString();
@@ -174,16 +172,16 @@ public class XMLObject
    public Object toObject() throws Exception
    {
       Class<?> clazz = ClassLoading.forName(type, this);
-      Map fields = getFields(clazz);
+      Map<String, Field> fields = getFields(clazz);
       Object instance = clazz.newInstance();
-      Iterator i = fields_.values().iterator();
+      Iterator<XMLField> i = fields_.values().iterator();
       while (i.hasNext())
       {
-         XMLField xmlfield = (XMLField)i.next();
+         XMLField xmlfield = i.next();
          try
          {
             Object value = xmlfield.getObjectValue();
-            Field field = (Field)fields.get(xmlfield.getName());
+            Field field = fields.get(xmlfield.getName());
             field.set(instance, value);
          }
          catch (Exception ex)
@@ -220,7 +218,7 @@ public class XMLObject
       return os.toByteArray();
    }
 
-   static public XMLObject getXMLObject(InputStream is) throws Exception
+   public static XMLObject getXMLObject(InputStream is) throws Exception
    {
       IBindingFactory bfact = getBindingFactoryInPriviledgedMode(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
@@ -228,26 +226,26 @@ public class XMLObject
       return xmlobject;
    }
 
-   static public Object getObject(InputStream is) throws Exception
+   public static Object getObject(InputStream is) throws Exception
    {
       return getXMLObject(is).toObject();
    }
 
-   static Map getFields(Class clazz)
+   static Map<String, Field> getFields(Class<?> clazz)
    {
-      Map fields = (Map)cacheFields_.get(clazz);
+      Map<String, Field> fields = (Map<String, Field>)cacheFields_.get(clazz);
       if (fields != null)
          return fields;
       synchronized (cacheFields_)
       {
-         fields = new HashMap();
+         fields = new HashMap<String, Field>();
          findFields(fields, clazz);
          cacheFields_.put(clazz, fields);
       }
       return fields;
    }
 
-   static void findFields(Map fields, Class clazz)
+   static void findFields(Map<String, Field> fields, Class<?> clazz)
    {
       if (clazz.getName().startsWith("java.lang"))
          return;
@@ -274,7 +272,7 @@ public class XMLObject
       }
    }
 
-   static protected IBindingFactory getBindingFactoryInPriviledgedMode(final Class clazz) throws JiBXException
+   protected static IBindingFactory getBindingFactoryInPriviledgedMode(final Class<?> clazz) throws JiBXException
    {
       try
       {

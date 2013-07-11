@@ -18,10 +18,20 @@
       <type>org.exoplatform.container.guice.TestGuiceContainer$A</type>
    </component>
    <component>
+      <type>org.exoplatform.container.guice.TestGuiceContainer$A2</type>
+   </component>
+   <component>
       <type>org.exoplatform.container.guice.TestGuiceContainer$D</type>
    </component>
    <component>
       <key>MyClassE</key>
+      <type>org.exoplatform.container.guice.TestGuiceContainer$E1</type>
+   </component>
+   <component>
+      <key>org.exoplatform.container.guice.TestGuiceContainer$QE2</key>
+      <type>org.exoplatform.container.guice.TestGuiceContainer$E2</type>
+   </component>
+   <component>
       <type>org.exoplatform.container.guice.TestGuiceContainer$E</type>
    </component>
 </configuration>

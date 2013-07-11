@@ -94,7 +94,7 @@ public class XMLNativeArray
          array = decodeDoubleArray(text);
    }
 
-   static public int[] decodeIntArray(String text)
+   public static int[] decodeIntArray(String text)
    {
       String temp[] = text.split(",");
       int[] iarray = new int[temp.length];
@@ -106,7 +106,7 @@ public class XMLNativeArray
       return iarray;
    }
 
-   static public String encodeIntArray(int[] array)
+   public static String encodeIntArray(int[] array)
    {
       StringBuffer b = new StringBuffer();
       for (int i = 0; i < array.length; i++)
@@ -118,7 +118,7 @@ public class XMLNativeArray
       return b.toString();
    }
 
-   static public long[] decodeLongArray(String text)
+   public static long[] decodeLongArray(String text)
    {
       String temp[] = text.split(",");
       long[] array = new long[temp.length];
@@ -130,7 +130,7 @@ public class XMLNativeArray
       return array;
    }
 
-   static public String encodeLongArray(long[] array)
+   public static String encodeLongArray(long[] array)
    {
       StringBuffer b = new StringBuffer();
       for (int i = 0; i < array.length; i++)
@@ -142,7 +142,7 @@ public class XMLNativeArray
       return b.toString();
    }
 
-   static public double[] decodeDoubleArray(String text)
+   public static double[] decodeDoubleArray(String text)
    {
       String temp[] = text.split(",");
       double[] array = new double[temp.length];
@@ -154,7 +154,7 @@ public class XMLNativeArray
       return array;
    }
 
-   static public String encodeDoubleArray(double[] array)
+   public static String encodeDoubleArray(double[] array)
    {
       StringBuffer b = new StringBuffer();
       for (int i = 0; i < array.length; i++)
@@ -166,7 +166,7 @@ public class XMLNativeArray
       return b.toString();
    }
 
-   static public boolean isNativeArray(Object o)
+   public static boolean isNativeArray(Object o)
    {
       if (o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
          || o instanceof boolean[])
@@ -174,7 +174,7 @@ public class XMLNativeArray
       return false;
    }
 
-   static public boolean isNativeArray(Class clazz)
+   public static boolean isNativeArray(Class<?> clazz)
    {
       if (clazz.equals(int[].class) || clazz.equals(long[].class) || clazz.equals(float[].class)
          || clazz.equals(double[].class) || clazz.equals(boolean[].class))

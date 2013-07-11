@@ -22,7 +22,6 @@ import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.jibx.runtime.IMarshallingContext;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,11 +43,7 @@ public class Component
 
    String description;
 
-   ArrayList plugins;
-
-   private ArrayList<ComponentPlugin> componentPlugins;
-
-   ArrayList listeners;
+   private List<ComponentPlugin> componentPlugins;
 
    InitParams initParams;
 
@@ -106,22 +101,12 @@ public class Component
       description = s;
    }
 
-   public List getPlugins()
-   {
-      return plugins;
-   }
-
-   public void setPlugins(ArrayList list)
-   {
-      plugins = list;
-   }
-
    public List<ComponentPlugin> getComponentPlugins()
    {
       return componentPlugins;
    }
 
-   public void setComponentPlugins(ArrayList<ComponentPlugin> list)
+   public void setComponentPlugins(List<ComponentPlugin> list)
    {
       if (list != null)
       {
@@ -129,16 +114,6 @@ public class Component
          Collections.sort(list);
       }
       componentPlugins = list;
-   }
-
-   public List getListeners()
-   {
-      return listeners;
-   }
-
-   public void setListeners(ArrayList list)
-   {
-      listeners = list;
    }
 
    public InitParams getInitParams()

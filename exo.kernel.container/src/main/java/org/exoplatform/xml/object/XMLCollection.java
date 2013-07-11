@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
@@ -37,7 +38,7 @@ import java.util.Iterator;
 public class XMLCollection
 {
 
-   private ArrayList list_ = new ArrayList();
+   private List<XMLValue> list_ = new ArrayList<XMLValue>();
 
    private String type_;
 
@@ -45,9 +46,9 @@ public class XMLCollection
    {
    }
 
-   public XMLCollection(Collection list) throws Exception
+   public XMLCollection(Collection<?> list) throws Exception
    {
-      Iterator i = list.iterator();
+      Iterator<?> i = list.iterator();
       while (i.hasNext())
       {
          Object value = i.next();
@@ -69,19 +70,20 @@ public class XMLCollection
       type_ = s;
    }
 
-   public Collection getCollection() throws Exception
+   public Collection<Object> getCollection() throws Exception
    {
       Class<?> clazz = ClassLoading.forName(type_, this);
-      Collection collection = (Collection)clazz.newInstance();
+      @SuppressWarnings("unchecked")
+      Collection<Object> collection = (Collection<Object>)clazz.newInstance();
       for (int i = 0; i < list_.size(); i++)
       {
-         XMLValue value = (XMLValue)list_.get(i);
+         XMLValue value = list_.get(i);
          collection.add(value.getObjectValue());
       }
       return collection;
    }
 
-   public Iterator getIterator()
+   public Iterator<XMLValue> getIterator()
    {
       return list_.iterator();
    }
@@ -101,14 +103,14 @@ public class XMLCollection
       return os.toByteArray();
    }
 
-   static public XMLCollection getXMLCollection(InputStream is) throws Exception
+   public static XMLCollection getXMLCollection(InputStream is) throws Exception
    {
       IBindingFactory bfact = XMLObject.getBindingFactoryInPriviledgedMode(XMLObject.class);
       IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
       return (XMLCollection)uctx.unmarshalDocument(is, null);
    }
 
-   static public Collection getCollection(InputStream is) throws Exception
+   public static Collection<Object> getCollection(InputStream is) throws Exception
    {
       return getXMLCollection(is).getCollection();
    }

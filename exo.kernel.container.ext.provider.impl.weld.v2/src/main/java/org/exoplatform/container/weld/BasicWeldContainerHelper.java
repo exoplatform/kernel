@@ -71,9 +71,9 @@ public class BasicWeldContainerHelper implements WeldContainerHelper
       {
          includes = new String[params.getValues().size()];
          int i = 0;
-         for (Object value : params.getValues())
+         for (String value : params.getValues())
          {
-            includes[i++] = (String)value;
+            includes[i++] = value;
          }
       }
       else
@@ -85,9 +85,9 @@ public class BasicWeldContainerHelper implements WeldContainerHelper
       {
          excludes = new String[params.getValues().size()];
          int i = 0;
-         for (Object value : params.getValues())
+         for (String value : params.getValues())
          {
-            excludes[i++] = (String)value;
+            excludes[i++] = value;
          }
       }
       else

@@ -86,9 +86,9 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public Object getComponentInstance(Object componentKey)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
    {
-      return delegate.getComponentInstance(componentKey);
+      return delegate.getComponentInstance(componentKey, bindType);
    }
 
    /**
@@ -110,9 +110,9 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
    {
-      return delegate.getComponentAdapter(componentKey);
+      return delegate.getComponentAdapter(componentKey, bindType);
    }
 
    /**

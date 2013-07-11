@@ -209,7 +209,7 @@ public class ManageableContainer extends AbstractInterceptor
       Object componentInstance;
       try
       {
-         componentInstance = getComponentInstance(componentKey);
+         componentInstance = getComponentInstance(componentKey, Object.class);
 
          if (managementContext != null && componentInstance != null)
          {

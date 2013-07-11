@@ -406,6 +406,32 @@ public class ExoContainer extends AbstractContainer
       return createComponent(clazz, null);
    }
 
+   /**
+    * Find a component adapter associated with the specified key. If a component adapter cannot be found in this
+    * container, the parent container (if one exists) will be searched.
+    * 
+    * @param componentKey the key that the component was registered with.
+    * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
+    *         for the specified key.
+    */
+   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
+   {
+      return getComponentAdapter(componentKey, Object.class);
+   }
+
+   /**
+    * Retrieve a component instance registered with a specific key. If a component cannot be found in this container,
+    * the parent container (if one exists) will be searched.
+    * 
+    * @param componentKey the key that the component was registered with.
+    * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
+    *         key.
+    */
+   public Object getComponentInstance(Object componentKey)
+   {
+      return getComponentInstance(componentKey, Object.class);
+   }
+
    @Managed
    @ManagedName("RegisteredComponentNames")
    @ManagedDescription("Return the list of the registered component names")

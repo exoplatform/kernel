@@ -26,6 +26,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ExternalComponentPlugins;
 import org.exoplatform.container.xml.InitParams;
@@ -33,8 +34,13 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.lang.reflect.Method;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.inject.Singleton;
 
 /**
  * @author James Strachan
@@ -51,6 +57,15 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
    private static final long serialVersionUID = -9001193588034229411L;
 
    private volatile T instance_;
+
+   private final Lock lock = new ReentrantLock();
+
+   /**
+    * Indicates whether or not it should be managed as a singleton
+    */
+   protected volatile boolean isSingleton = true;
+
+   private volatile boolean isInitialized;
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
@@ -73,62 +88,36 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
          return instance_;
 
       //
+      T instance = null;
       Component component = null;
       ConfigurationManager manager;
       String componentKey;
+      InitParams params = null;
+      boolean debug = false;
+      boolean toBeLocked = !isInitialized;
       try
       {
-         InitParams params = null;
-         boolean debug = false;
-         synchronized (this)
+         if (toBeLocked)
          {
-            // Avoid to create duplicate instances if it is called at the same time by several threads
-            if (instance_ != null)
-               return instance_;
-            // Get the component
-            Object key = getComponentKey();
-            if (key instanceof String)
-               componentKey = (String)key;
-            else
-               componentKey = ((Class<?>)key).getName();
-            manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
-            component = manager == null ? null : manager.getComponent(componentKey);
-            if (component != null)
-            {
-               params = component.getInitParams();
-               debug = component.getShowDeployInfo();
-            }
-            // Please note that we cannot fully initialize the Object "instance_" before releasing other
-            // threads because it could cause StackOverflowError due to recursive calls
-            T instance = exocontainer.createComponent(getComponentImplementation(), params);
-            if (instance_ != null)
-            {
-               // Avoid instantiating twice the same component in case of a cyclic reference due
-               // to component plugins
-               return instance_;
-            }
-            container.addComponentToCtx(getComponentKey(), instance);
-            if (debug)
-               LOG.debug("==> create  component : " + instance_);
-            if (component != null && component.getComponentPlugins() != null)
-            {
-               addComponentPlugin(debug, instance, component.getComponentPlugins(), exocontainer);
-            }
-            ExternalComponentPlugins ecplugins =
-               manager == null ? null : manager.getConfiguration().getExternalComponentPlugins(componentKey);
-            if (ecplugins != null)
-            {
-               addComponentPlugin(debug, instance, ecplugins.getComponentPlugins(), exocontainer);
-            }
-            // check if component implement the ComponentLifecycle
-            if (instance instanceof ComponentLifecycle)
-            {
-               ComponentLifecycle lc = (ComponentLifecycle)instance;
-               lc.initComponent(exocontainer);
-            }
-            instance_ = instance;
+            lock.lock();
          }
-
+         // Avoid to create duplicate instances if it is called at the same time by several threads
+         if (instance_ != null)
+            return instance_;
+         // Get the component
+         Object key = getComponentKey();
+         if (key instanceof String)
+            componentKey = (String)key;
+         else
+            componentKey = ((Class<?>)key).getName();
+         manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
+         component = manager == null ? null : manager.getComponent(componentKey);
+         if (component != null)
+         {
+            params = component.getInitParams();
+            debug = component.getShowDeployInfo();
+         }
+         instance = createInstance(component, manager, componentKey, params, debug);
       }
       catch (Exception ex)
       {
@@ -143,9 +132,99 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
       }
       finally
       {
+         if (toBeLocked)
+         {
+            lock.unlock();
+         }
+      }
+      return instance;
+   }
+
+   private T createInstance(final Component component, final ConfigurationManager manager, final String componentKey,
+      final InitParams params, final boolean debug) throws Exception
+   {
+      try
+      {
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<T>()
+         {
+            public T run() throws Exception
+            {
+               T instance;
+               final Class<T> implementationClass = getComponentImplementation();
+               // Please note that we cannot fully initialize the Object "instance_" before releasing other
+               // threads because it could cause StackOverflowError due to recursive calls
+               instance = exocontainer.createComponent(implementationClass, params);
+               if (instance_ != null)
+               {
+                  // Avoid instantiating twice the same component in case of a cyclic reference due
+                  // to component plugins
+                  return instance_;
+               }
+               container.addComponentToCtx(getComponentKey(), instance);
+               if (debug)
+                  LOG.debug("==> create  component : " + instance_);
+               boolean hasInjectableConstructor =
+                  !isSingleton ? true : ContainerUtil.hasInjectableConstructor(implementationClass);
+               boolean hasOnlyEmptyPublicConstructor =
+                  !isSingleton ? true : ContainerUtil.hasOnlyEmptyPublicConstructor(implementationClass);
+               if (hasInjectableConstructor || hasOnlyEmptyPublicConstructor)
+               {
+                  // There is at least one constructor JSR 330 compliant
+                  boolean isInjectPresent = container.initializeComponent(instance);
+                  if (!isInitialized && (isInjectPresent || hasInjectableConstructor))
+                  {
+                     isSingleton = implementationClass.isAnnotationPresent(Singleton.class);
+                  }
+               }
+               if (component != null && component.getComponentPlugins() != null)
+               {
+                  addComponentPlugin(debug, instance, component.getComponentPlugins(), exocontainer);
+               }
+               ExternalComponentPlugins ecplugins =
+                  manager == null ? null : manager.getConfiguration().getExternalComponentPlugins(componentKey);
+               if (ecplugins != null)
+               {
+                  addComponentPlugin(debug, instance, ecplugins.getComponentPlugins(), exocontainer);
+               }
+               // check if component implement the ComponentLifecycle
+               if (instance instanceof ComponentLifecycle)
+               {
+                  ComponentLifecycle lc = (ComponentLifecycle)instance;
+                  lc.initComponent(exocontainer);
+               }
+               if (!isInitialized)
+               {
+                  if (isSingleton)
+                  {
+                     instance_ = instance;
+                  }
+                  isInitialized = true;
+               }
+               return instance;
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof Exception)
+         {
+            throw (Exception)e;
+         }
+         throw new Exception(cause);
+      }
+      finally
+      {
          container.removeComponentFromCtx(getComponentKey());
       }
-      return instance_;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSingleton()
+   {
+      return isInitialized ? isSingleton : (isSingleton = ContainerUtil.isSingleton(getComponentImplementation()));
    }
 
    private void addComponentPlugin(boolean debug, final Object component,

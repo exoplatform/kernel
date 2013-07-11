@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.ClassLoading;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,7 +32,7 @@ import java.util.Map;
  */
 public class XMLMap
 {
-   private ArrayList listmap = new ArrayList();
+   private List<XMLEntry> listmap = new ArrayList<XMLEntry>();
 
    private String type_;
 
@@ -40,15 +41,14 @@ public class XMLMap
 
    }
 
-   public XMLMap(Map map) throws Exception
+   public XMLMap(Map<?, ?> map) throws Exception
    {
-      Iterator i = map.entrySet().iterator();
+      Iterator<?> i = map.entrySet().iterator();
       while (i.hasNext())
       {
-         Map.Entry entry = (Map.Entry)i.next();
+         Map.Entry<?, ?> entry = (Map.Entry<?, ?>)i.next();
          Object key = entry.getKey();
          Object value = entry.getValue();
-         // S ystem.out.println("key: " + key + ", value: " + value) ;
          if (key == null || value == null)
          {
             throw new RuntimeException("key: " + key + ", value: " + value + " cannot be null");
@@ -68,18 +68,19 @@ public class XMLMap
       type_ = s;
    }
 
-   public Iterator getEntryIterator()
+   public Iterator<XMLEntry> getEntryIterator()
    {
       return listmap.iterator();
    }
 
-   public Map getMap() throws Exception
+   public Map<Object, Object> getMap() throws Exception
    {
       Class<?> clazz = ClassLoading.forName(type_, this);
-      Map map = (Map)clazz.newInstance();
+      @SuppressWarnings("unchecked")
+      Map<Object, Object> map = (Map<Object, Object>)clazz.newInstance();
       for (int i = 0; i < listmap.size(); i++)
       {
-         XMLEntry entry = (XMLEntry)listmap.get(i);
+         XMLEntry entry = listmap.get(i);
          XMLBaseObject key = entry.getKey();
          XMLBaseObject value = entry.getValue();
          map.put(key.getObjectValue(), value.getObjectValue());
