@@ -23,6 +23,8 @@ import org.exoplatform.container.component.ThreadContextHandler;
 import org.exoplatform.container.component.ThreadContextHolder;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 
+import java.util.Arrays;
+
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
@@ -30,81 +32,125 @@ import org.exoplatform.container.jmx.AbstractTestContainer;
  */
 public class TestThreadContextHandler extends AbstractTestContainer
 {
-   
+
    private ThreadContextHandler handler;
-   
+
    private TestHolder holder;
-   
+   private TestHolder6 holder6;
+
    @Override
    protected void setUp() throws Exception
    {
       ExoContainer container = createRootContainer("thread-context-handler-configuration.xml");
       this.handler = new ThreadContextHandler(container);
-      this.holder = (TestHolder)container.getComponentInstanceOfType(TestHolder.class);
+      this.holder = container.getComponentInstanceOfType(TestHolder.class);
+      this.holder6 = container.getComponentInstanceOfType(TestHolder6.class);
    }
-   
+
    public void testTLNullValue()
    {
       assertNull(holder.tl.get());
+      assertNull(holder6.tl.get());
+      assertNull(holder6.tl2.get());
+      assertNull(holder6.tl3.get());
       handler.store();
       holder.tl.set("foo");
+      holder6.tl.set("foo");
+      holder6.tl2.set("foo");
+      holder6.tl3.set("foo");
       handler.push();
       assertNull(holder.tl.get());
+      assertNull(holder6.tl.get());
+      assertNull(holder6.tl2.get());
+      assertNull(holder6.tl3.get());
       handler.restore();
       assertEquals("foo", holder.tl.get());
+      assertEquals("foo", holder6.tl.get());
+      assertEquals("foo", holder6.tl2.get());
+      assertEquals("foo", holder6.tl3.get());
    }
-   
+
    public void testTLNotNullValue()
    {
       holder.tl.set("foo");
+      holder6.tl.set("foo");
+      holder6.tl2.set("foo");
+      holder6.tl3.set("foo");
       handler.store();
       assertEquals("foo", holder.tl.get());
+      assertEquals("foo", holder6.tl.get());
+      assertEquals("foo", holder6.tl2.get());
+      assertEquals("foo", holder6.tl3.get());
       holder.tl.set("foo2");
+      holder6.tl.set("foo2");
+      holder6.tl2.set("foo2");
+      holder6.tl3.set("foo2");
       handler.push();
       assertEquals("foo", holder.tl.get());
+      assertEquals("foo", holder6.tl.get());
+      assertEquals("foo", holder6.tl2.get());
+      assertEquals("foo", holder6.tl3.get());
       handler.restore();
       assertEquals("foo2", holder.tl.get());
+      assertEquals("foo2", holder6.tl.get());
+      assertEquals("foo2", holder6.tl2.get());
+      assertEquals("foo2", holder6.tl3.get());
    }
-   
+
    public static class TestHolder implements ThreadContextHolder
    {
       public ThreadLocal<String> tl = new ThreadLocal<String>();
+
       public ThreadContext getThreadContext()
       {
          return new ThreadContext(tl);
       }
    }
-   
+
    public static class TestHolder2 implements ThreadContextHolder
    {
       public ThreadContext getThreadContext()
       {
          return null;
       }
-   }   
-   
+   }
+
    public static class TestHolder3 implements ThreadContextHolder
    {
       public ThreadContext getThreadContext()
       {
          return new ThreadContext();
       }
-   }   
-   
+   }
+
    public static class TestHolder4 implements ThreadContextHolder
    {
       public ThreadContext getThreadContext()
       {
          return new ThreadContext(null);
       }
-   }   
-   
+   }
+
    public static class TestHolder5 implements ThreadContextHolder
    {
       public ThreadLocal<String> tl = new ThreadLocal<String>();
+
       public ThreadContext getThreadContext()
       {
          return new ThreadContext(tl, null, tl);
+      }
+   }
+
+   public static class TestHolder6 implements ThreadContextHolder
+   {
+      public ThreadLocal<String> tl = new ThreadLocal<String>();
+      public ThreadLocal<String> tl2 = new ThreadLocal<String>();
+      public ThreadLocal<String> tl3 = new ThreadLocal<String>();
+
+      public ThreadContext getThreadContext()
+      {
+         return ThreadContext.merge(Arrays.asList(new ThreadContext(tl), null, new ThreadContext(), new ThreadContext(
+            null), new ThreadContext(tl2, null, tl3)));
       }
    }
 }

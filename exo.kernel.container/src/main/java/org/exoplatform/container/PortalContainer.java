@@ -59,7 +59,7 @@ import javax.servlet.ServletContext;
 @NamingContext(@Property(key = "portal", value = "{Name}"))
 @NameTemplate({@Property(key = "container", value = "portal"), @Property(key = "name", value = "{Name}")})
 @RESTEndpoint(path = "pcontainer")
-public class PortalContainer extends ExoContainer implements SessionManagerContainer
+public class PortalContainer extends ExoContainer
 {
 
    /**
@@ -94,8 +94,6 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    private volatile boolean started_;
 
    private PortalContainerInfo pinfo_;
-
-   private SessionManager smanager_;
 
    /**
     * The name of the portal container
@@ -324,52 +322,6 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
          return null;         
       }
       return result.toXML();
-   }
-   /**
-    * @param id the session container identifier
-    * @param owner the owner name
-    */
-   public SessionContainer createSessionContainer(String id, String owner)
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
-      
-      SessionContainer scontainer = getSessionManager().getSessionContainer(id);
-      if (scontainer != null)
-         getSessionManager().removeSessionContainer(id);
-      scontainer = new SessionContainer(id, owner);
-      scontainer.setPortalName(pinfo_.getContainerName());
-      getSessionManager().addSessionContainer(scontainer);
-      SessionContainer.setInstance(scontainer);
-      return scontainer;
-   }
-   /**
-    * @param sessionID the identifier of session to remove
-    */
-   public void removeSessionContainer(String sessionID)
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
-      
-      getSessionManager().removeSessionContainer(sessionID);
-   }
-   /**
-    * @return returns a collection containing all the live sessions
-    */
-   public List<SessionContainer> getLiveSessions()
-   {
-      return getSessionManager().getLiveSessions();
-   }
-   /**
-    * @return returns session manager
-    */
-   public SessionManager getSessionManager()
-   {
-      if (smanager_ == null)
-         smanager_ = (SessionManager)this.getComponentInstanceOfType(SessionManager.class);
-      return smanager_;
    }
 
    public PortalContainerInfo getPortalContainerInfo()

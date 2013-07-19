@@ -42,4 +42,8 @@
       <type>org.exoplatform.container.TestThreadContextHandler$TestHolder5</type>
    </component>
 
+   <component>
+      <type>org.exoplatform.container.TestThreadContextHandler$TestHolder6</type>
+   </component>
+
 </configuration>

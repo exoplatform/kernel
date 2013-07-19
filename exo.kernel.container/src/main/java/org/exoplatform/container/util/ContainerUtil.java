@@ -18,6 +18,10 @@
  */
 package org.exoplatform.container.util;
 
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PropertiesLoader;
 import org.exoplatform.commons.utils.SecurityHelper;
@@ -33,11 +37,13 @@ import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +52,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.NormalScope;
+import javax.enterprise.inject.Stereotype;
+import javax.enterprise.inject.UnproxyableResolutionException;
+import javax.enterprise.inject.spi.DefinitionException;
 import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Scope;
 import javax.inject.Singleton;
 
 /**
@@ -59,6 +72,17 @@ public class ContainerUtil
 {
    /** The logger. */
    private static final Log LOG = ExoLogger.getExoLogger(ContainerUtil.class);
+
+   private static final class MethodFilterHolder
+   {
+      private static final MethodFilter METHOD_FILTER = new MethodFilter()
+      {
+         public boolean isHandled(Method method)
+         {
+            return !method.getDeclaringClass().equals(Object.class);
+         }
+      };
+   }
 
    public static Constructor<?>[] getSortedConstructors(Class<?> clazz) throws NoClassDefFoundError
    {
@@ -149,10 +173,87 @@ public class ContainerUtil
    }
 
    /**
-    * Indicates whether or not the given Class is a singleton 
+    * Gives the scope defined for the given class
+    * @param clazz the class for which we want the scope
+    * @return a class representing the annotation type of the scope
+    * @throws DefinitionException in case the definition of the scope is not correct
+    */
+   public static Class<? extends Annotation> getScope(Class<?> clazz) throws DefinitionException
+   {
+      return getScope(clazz, false);
+   }
+
+   /**
+    * Gives the scope defined for the given class
+    * @param clazz the class for which we want the scope
+    * @param ignoreExplicit indicates whether the explicit scope must be ignored
+    * @return a class representing the annotation type of the scope
+    * @throws DefinitionException in case the definition of the scope is not correct
+    */
+   public static Class<? extends Annotation> getScope(Class<?> clazz, boolean ignoreExplicit)
+      throws DefinitionException
+   {
+      Annotation[] annotations = clazz.getAnnotations();
+      Class<? extends Annotation> scope = null;
+      Class<? extends Annotation> defaultScope = null;
+      boolean hasStereotype = false;
+      for (int i = 0; i < annotations.length; i++)
+      {
+         Annotation annotation = annotations[i];
+         Class<? extends Annotation> annotationType = annotation.annotationType();
+         if (!ignoreExplicit
+            && (annotationType.isAnnotationPresent(Scope.class) || annotationType
+               .isAnnotationPresent(NormalScope.class)))
+         {
+            if (scope != null)
+            {
+               throw new DefinitionException("You cannot set several scopes to the class " + clazz.getName());
+            }
+            scope = annotationType;
+         }
+         else if (annotationType.isAnnotationPresent(Stereotype.class))
+         {
+            hasStereotype = true;
+            Annotation[] stereotypeAnnotations = annotationType.getAnnotations();
+            for (int j = 0; j < stereotypeAnnotations.length; j++)
+            {
+               Annotation stereotypeAnnotation = stereotypeAnnotations[j];
+               Class<? extends Annotation> stereotypeAnnotationType = stereotypeAnnotation.annotationType();
+               if (stereotypeAnnotationType.isAnnotationPresent(Scope.class)
+                  || stereotypeAnnotationType.isAnnotationPresent(NormalScope.class))
+               {
+                  if (defaultScope != null && !defaultScope.equals(stereotypeAnnotationType))
+                  {
+                     throw new DefinitionException("The class " + clazz.getName()
+                        + " has stereotypes with different default scope");
+                  }
+                  defaultScope = stereotypeAnnotationType;
+               }
+            }
+         }
+      }
+      if (scope != null)
+         return scope;
+      if (defaultScope != null)
+         return defaultScope;
+      if (hasStereotype)
+      {
+         throw new DefinitionException("The class " + clazz.getName()
+            + " has at least one stereotype but doesn't have any scope, please set an explicit scope");
+      }
+      return null;
+   }
+
+   /**
+    * Indicates whether or not the given Class is a singleton or as the scope set to ApplicationScoped
     */
    public static boolean isSingleton(Class<?> clazz)
    {
+      Class<? extends Annotation> scope = getScope(clazz);
+      if (scope != null)
+      {
+         return scope.equals(Singleton.class) || scope.equals(ApplicationScoped.class);
+      }
       boolean hasInjectableConstructor = hasInjectableConstructor(clazz);
       boolean hasOnlyEmptyPublicConstructor = hasOnlyEmptyPublicConstructor(clazz);
       if (!hasInjectableConstructor && !hasOnlyEmptyPublicConstructor)
@@ -413,5 +514,77 @@ public class ContainerUtil
          }
       }
       return props;
+   }
+
+   /**
+    * Creates a proxy of the given super class whose instance will be created accessed lazily thanks to a provider
+    * @param superClass the super class of the proxy to create
+    * @param provider the provider that will create the instance lazily
+    * @return a proxy of the given super class
+    * @throws UnproxyableResolutionException if any issue occurs while creating the proxy
+    */
+   public static <T> T createProxy(final Class<T> superClass, final Provider<T> provider)
+      throws UnproxyableResolutionException
+   {
+      PrivilegedExceptionAction<T> action = new PrivilegedExceptionAction<T>()
+      {
+
+         public T run() throws Exception
+         {
+            // We first make sure that there is no non-static, final methods with public, protected or default visibility
+            Method[] methods = superClass.getDeclaredMethods();
+            for (int i = 0; i < methods.length; i++)
+            {
+               Method m = methods[i];
+               int modifiers = m.getModifiers();
+               if (Modifier.isFinal(modifiers) && !Modifier.isPrivate(modifiers) && !Modifier.isStatic(modifiers))
+               {
+                  throw new UnproxyableResolutionException(
+                     "Cannot create a proxy for the class "
+                        + superClass.getName()
+                        + " because it has at least one non-static, final method with public, protected or default visibility");
+               }
+            }
+            try
+            {
+               ProxyFactory factory = new ProxyFactory();
+               factory.setSuperclass(superClass);
+               factory.setFilter(MethodFilterHolder.METHOD_FILTER);
+               MethodHandler handler = new MethodHandler()
+               {
+                  public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable
+                  {
+                     if ((!Modifier.isPublic(m.getModifiers()) || !Modifier.isPublic(m.getDeclaringClass()
+                        .getModifiers())) && !m.isAccessible())
+                        m.setAccessible(true);
+                     return m.invoke(provider.get(), args);
+                  }
+               };
+               return superClass.cast(factory.create(new Class<?>[0], new Object[0], handler));
+            }
+            catch (Exception e)
+            {
+               throw new UnproxyableResolutionException("Cannot create a proxy for the class " + superClass.getName(),
+                  e);
+            }
+         }
+      };
+      try
+      {
+         return SecurityHelper.doPrivilegedExceptionAction(action);
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof UnproxyableResolutionException)
+         {
+            throw (UnproxyableResolutionException)cause;
+         }
+         else
+         {
+            throw new UnproxyableResolutionException("Cannot create a proxy for the class " + superClass.getName(),
+               cause);
+         }
+      }
    }
 }

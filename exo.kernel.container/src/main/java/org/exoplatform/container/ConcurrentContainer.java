@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import javax.enterprise.context.spi.CreationalContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -97,7 +98,8 @@ public class ConcurrentContainer extends AbstractInterceptor
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
     */
-   private final transient ThreadLocal<Map<Object, Object>> depResolutionCtx = new ThreadLocal<Map<Object, Object>>();
+   private final transient ThreadLocal<Map<Object, CreationalContextComponentAdapter<?>>> depResolutionCtx =
+      new ThreadLocal<Map<Object, CreationalContextComponentAdapter<?>>>();
 
    /**
     * Creates a new container with the default {@link ComponentAdapterFactory} and a parent container.
@@ -368,35 +370,36 @@ public class ConcurrentContainer extends AbstractInterceptor
       final ComponentAdapter<T> componentAdapter = getComponentAdapterOfType(componentType);
       if (componentAdapter == null)
          return null;
-      Map<Object, Object> map = depResolutionCtx.get();
+      Map<Object, CreationalContextComponentAdapter<?>> map = depResolutionCtx.get();
       if (map != null)
       {
-         Object result = map.get(componentAdapter.getComponentKey());
-         if (result != null)
+         CreationalContextComponentAdapter<?> result = map.get(componentAdapter.getComponentKey());
+         if (result != null && result.get() != null) 
          {
             // Don't keep in cache a component that has not been created yet
             getCache().disable();
-            return componentType.cast(result);
+            return componentType.cast(result.get());
          }
       }
       return getInstance(componentAdapter, componentType);
    }
 
    /**
-    * Add the component corresponding to the given key, to the dependency resolution
+    * Add the {@link CreationalContext} corresponding to the given key, to the dependency resolution
     * context
-    * @param key The key of the component to add to the context
-    * @param component The instance of the component to add to the context
+    * @param key The key of the component to add to the resolution context
     */
-   public void addComponentToCtx(Object key, Object component)
+   public <T> CreationalContextComponentAdapter<T> addComponentToCtx(Object key)
    {
-      Map<Object, Object> map = depResolutionCtx.get();
+      Map<Object, CreationalContextComponentAdapter<?>> map = depResolutionCtx.get();
       if (map == null)
       {
-         map = new HashMap<Object, Object>();
+         map = new HashMap<Object, CreationalContextComponentAdapter<?>>();
          depResolutionCtx.set(map);
       }
-      map.put(key, component);
+      CreationalContextComponentAdapter<T> result = new CreationalContextComponentAdapter<T>();
+      map.put(key, result);
+      return result;
    }
 
    /**
@@ -406,7 +409,7 @@ public class ConcurrentContainer extends AbstractInterceptor
     */
    public void removeComponentFromCtx(Object key)
    {
-      Map<Object, Object> map = depResolutionCtx.get();
+      Map<Object, CreationalContextComponentAdapter<?>> map = depResolutionCtx.get();
       if (map != null)
       {
          map.remove(key);
@@ -942,5 +945,39 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
       while ((co = co.getSuccessor()) != null);
       return cache;
+   }
+
+   /**
+    * This class is used as value holder
+    */
+   public static class CreationalContextComponentAdapter<T> implements CreationalContext<T>
+   {
+      /**
+       * The current value;
+       */
+      private T instance;
+
+      /**
+       * {@inheritDoc}
+       */
+      public void push(T incompleteInstance)
+      {
+         this.instance = incompleteInstance;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void release()
+      {
+      }
+
+      /**
+       * Gives the current value
+       */
+      public T get()
+      {
+         return instance;
+      }
    }
 }

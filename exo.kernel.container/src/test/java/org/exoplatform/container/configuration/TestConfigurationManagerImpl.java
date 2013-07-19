@@ -26,18 +26,27 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 22 févr. 2010  
+ * 22 fevr. 2010  
  */
 public class TestConfigurationManagerImpl extends TestCase
 {
@@ -314,73 +323,61 @@ public class TestConfigurationManagerImpl extends TestCase
 
       public Object getAttribute(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
-      public Enumeration getAttributeNames()
+      public Enumeration<String> getAttributeNames()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public ServletContext getContext(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public String getContextPath()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public String getInitParameter(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
-      public Enumeration getInitParameterNames()
+      public Enumeration<String> getInitParameterNames()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public int getMajorVersion()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       public String getMimeType(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public int getMinorVersion()
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       public RequestDispatcher getNamedDispatcher(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public String getRealPath(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public RequestDispatcher getRequestDispatcher(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
@@ -393,75 +390,182 @@ public class TestConfigurationManagerImpl extends TestCase
 
       public InputStream getResourceAsStream(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
-      public Set getResourcePaths(String arg0)
+      public Set<String> getResourcePaths(String arg0)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public String getServerInfo()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public Servlet getServlet(String arg0) throws ServletException
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public String getServletContextName()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
-      public Enumeration getServletNames()
+      public Enumeration<String> getServletNames()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
-      public Enumeration getServlets()
+      public Enumeration<Servlet> getServlets()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public void log(String arg0)
       {
-         // TODO Auto-generated method stub
-         
       }
 
       public void log(Exception arg0, String arg1)
       {
-         // TODO Auto-generated method stub
-         
       }
 
       public void log(String arg0, Throwable arg1)
       {
-         // TODO Auto-generated method stub
-         
       }
 
       public void removeAttribute(String arg0)
       {
-         // TODO Auto-generated method stub
-         
       }
 
       public void setAttribute(String arg0, Object arg1)
       {
-         // TODO Auto-generated method stub
-         
       }
-      
+
+      public int getEffectiveMajorVersion()
+      {
+         return 0;
+      }
+
+      public int getEffectiveMinorVersion()
+      {
+         return 0;
+      }
+
+      public boolean setInitParameter(String name, String value)
+      {
+         return false;
+      }
+
+      public Dynamic addServlet(String servletName, String className)
+      {
+         return null;
+      }
+
+      public Dynamic addServlet(String servletName, Servlet servlet)
+      {
+         return null;
+      }
+
+      public Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass)
+      {
+         return null;
+      }
+
+      public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException
+      {
+         return null;
+      }
+
+      public ServletRegistration getServletRegistration(String servletName)
+      {
+         return null;
+      }
+
+      public Map<String, ? extends ServletRegistration> getServletRegistrations()
+      {
+         return null;
+      }
+
+      public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, String className)
+      {
+         return null;
+      }
+
+      public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Filter filter)
+      {
+         return null;
+      }
+
+      public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass)
+      {
+         return null;
+      }
+
+      public <T extends Filter> T createFilter(Class<T> clazz) throws ServletException
+      {
+         return null;
+      }
+
+      public FilterRegistration getFilterRegistration(String filterName)
+      {
+         return null;
+      }
+
+      public Map<String, ? extends FilterRegistration> getFilterRegistrations()
+      {
+         return null;
+      }
+
+      public SessionCookieConfig getSessionCookieConfig()
+      {
+         return null;
+      }
+
+      public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes)
+      {
+      }
+
+      public Set<SessionTrackingMode> getDefaultSessionTrackingModes()
+      {
+         return null;
+      }
+
+      public Set<SessionTrackingMode> getEffectiveSessionTrackingModes()
+      {
+         return null;
+      }
+
+      public void addListener(String className)
+      {
+      }
+
+      public <T extends EventListener> void addListener(T t)
+      {
+      }
+
+      public void addListener(Class<? extends EventListener> listenerClass)
+      {
+      }
+
+      public <T extends EventListener> T createListener(Class<T> clazz) throws ServletException
+      {
+         return null;
+      }
+
+      public JspConfigDescriptor getJspConfigDescriptor()
+      {
+         return null;
+      }
+
+      public ClassLoader getClassLoader()
+      {
+         return null;
+      }
+
+      public void declareRoles(String... roleNames)
+      {
+      }
    }
 }
