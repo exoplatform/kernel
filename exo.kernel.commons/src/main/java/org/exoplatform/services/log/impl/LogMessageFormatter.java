@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.log.impl;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -41,7 +42,9 @@ public class LogMessageFormatter
             if (i != argsArray.length - 1 || !(argsArray[i] instanceof Throwable))
             {
                String message = String.valueOf(argsArray[i]);
-               str = REPLACE_PATTERN.matcher(str).replaceFirst(message != null ? message : "null");
+               str =
+                  REPLACE_PATTERN.matcher(str).replaceFirst(
+                     message != null ? Matcher.quoteReplacement(message) : "null");
             }
          }
       }
