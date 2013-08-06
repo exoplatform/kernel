@@ -94,6 +94,16 @@
       <dependency>
          <groupId>javax.enterprise</groupId>
          <artifactId>cdi-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>javax.el</groupId>
+               <artifactId>el-api</artifactId>
+            </exclusion>
+             <exclusion>
+                 <groupId>org.jboss.spec.javax.interceptor</groupId>
+                 <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
+             </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.javassist</groupId>

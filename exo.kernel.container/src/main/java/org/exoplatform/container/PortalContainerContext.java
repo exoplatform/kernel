@@ -600,7 +600,7 @@ class PortalContainerContext implements ServletContext
     */
    public ClassLoader getClassLoader()
    {
-      return getPortalContext().getClassLoader();
+      return getPortalContainer().getPortalClassLoader();
    }
 
    /**

@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -3603,7 +3602,7 @@ public class TestExoContainer extends AbstractTestContainer
 
    public abstract static class AS0
    {
-      private final int id = new Random().nextInt();
+      private final int id = System.identityHashCode(this);
 
       public int getId()
       {
@@ -3614,7 +3613,7 @@ public class TestExoContainer extends AbstractTestContainer
    @RequestScoped
    public static class S1
    {
-      private final int id = new Random().nextInt();
+      private final int id = System.identityHashCode(this);
 
       public int getId()
       {
@@ -3641,7 +3640,7 @@ public class TestExoContainer extends AbstractTestContainer
    @SessionScoped
    public static class S2 implements S, Serializable
    {
-      private final int id = new Random().nextInt();
+      private final int id = System.identityHashCode(this);
 
       public int getId()
       {
@@ -3652,7 +3651,7 @@ public class TestExoContainer extends AbstractTestContainer
    @ApplicationScoped
    public static class S3 implements S
    {
-      private final int id = new Random().nextInt();
+      private final int id = System.identityHashCode(this);
 
       public int getId()
       {

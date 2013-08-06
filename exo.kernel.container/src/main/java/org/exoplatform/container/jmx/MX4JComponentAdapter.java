@@ -124,7 +124,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
       else if (proxy != null)
          return proxy;
 
-      if (ContextManager.class.isAssignableFrom(getComponentImplementation()))
+      if (!exocontainer.isContextManagerLoaded() && ContextManager.class.isAssignableFrom(getComponentImplementation()))
       {
          return create();
       }
@@ -315,7 +315,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
                                  && !currentScope.equals(ApplicationScoped.class))
                               {
                                  // The context manager has not been defined and the defined default scope is not part of the supported ones
-                                 // so we will check the default one and set the scope to unknow
+                                 // so we will check the default one and set the scope to unknown
                                  scope.compareAndSet(currentScope, Unknown.class);
                                  currentScope = Unknown.class;
                               }
@@ -524,11 +524,11 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
       }
       finally
       {
-         container.removeComponentFromCtx(getComponentKey());
          if (toBeLocked)
          {
             lock.unlock();
          }
+         container.removeComponentFromCtx(getComponentKey());
       }
    }
 

@@ -205,9 +205,8 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
    /**
     * Sets the current storage
     * @param storage the new current storage. Set it to <code>null</code> to remove the current storage
-    * @throws IllegalStateException in case we try to set a storage and a storage has already been set
     */
-   protected void setStorage(CreationContextStorage storage) throws IllegalStateException
+   protected void setStorage(CreationContextStorage storage)
    {
       if (storage == null)
       {
@@ -215,12 +214,6 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
       }
       else
       {
-         CreationContextStorage currentSorage = this.storage.get();
-         if (currentSorage != null)
-         {
-            throw new IllegalStateException("A storage has already been defined "
-               + "for the context whose corresponding annotation is " + getScope().getName());
-         }
          this.storage.set(storage);
       }
    }

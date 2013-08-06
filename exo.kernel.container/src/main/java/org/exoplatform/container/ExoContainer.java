@@ -516,4 +516,14 @@ public class ExoContainer extends AbstractContainer
       };
       return ctxManager;
    }
+
+   /**
+    * Indicates whether or not the {@link ContextManager} has already been loaded
+    * @return <code>true</code> if the {@link ContextManager} has been loaded,
+    * <code>false</code> otherwise.
+    */
+   public boolean isContextManagerLoaded()
+   {
+      return ctxManagerLoaded.get();
+   }
 }
