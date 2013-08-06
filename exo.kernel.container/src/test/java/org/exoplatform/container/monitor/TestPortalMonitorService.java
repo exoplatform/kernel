@@ -22,7 +22,6 @@ import junit.framework.TestCase;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
-import org.exoplatform.container.SessionContainer;
 import org.exoplatform.container.monitor.jvm.JVMRuntimeInfo;
 
 /**
@@ -38,8 +37,6 @@ public class TestPortalMonitorService extends TestCase
 
    PortalContainer pcontainer_;
 
-   SessionContainer scontainer_;
-
    public TestPortalMonitorService(String name)
    {
       super(name);
@@ -48,7 +45,6 @@ public class TestPortalMonitorService extends TestCase
    public void setUp() throws Exception
    {
       pcontainer_ = PortalContainer.getInstance();
-      scontainer_ = pcontainer_.createSessionContainer("session.container", "anon");
    }
 
    public void tearDown() throws Exception

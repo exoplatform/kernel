@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.context.ContextManager;
 import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.Container;
@@ -82,6 +83,10 @@ public class ExoContainer extends AbstractContainer
    private final AtomicBoolean disposed = new AtomicBoolean();
 
    private final AtomicBoolean initialized = new AtomicBoolean();
+
+   private final AtomicBoolean ctxManagerLoaded = new AtomicBoolean();
+
+   private ContextManager ctxManager;
 
    /**
     * Returns an unmodifiable set of profiles defined by the value returned by invoking
@@ -492,5 +497,33 @@ public class ExoContainer extends AbstractContainer
    protected boolean canBeInitialized()
    {
       return !initialized.get();
+   }
+
+   /**
+    * Gives the {@link ContextManager} that has been registered
+    * @return the {@link ContextManager} related to this container, <code>null</code> otherwise.
+    */
+   public ContextManager getContextManager()
+   {
+      if (ctxManagerLoaded.get())
+         return ctxManager;
+      synchronized (this)
+      {
+         if (ctxManagerLoaded.get())
+            return ctxManager;
+         ctxManager = getComponentInstanceOfType(ContextManager.class);
+         ctxManagerLoaded.set(true);
+      };
+      return ctxManager;
+   }
+
+   /**
+    * Indicates whether or not the {@link ContextManager} has already been loaded
+    * @return <code>true</code> if the {@link ContextManager} has been loaded,
+    * <code>false</code> otherwise.
+    */
+   public boolean isContextManagerLoaded()
+   {
+      return ctxManagerLoaded.get();
    }
 }

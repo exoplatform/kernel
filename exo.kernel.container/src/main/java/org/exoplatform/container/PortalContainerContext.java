@@ -24,14 +24,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
 /**
  * This class is used to merge all the {@link ServletContext} related to a given portal container.
@@ -105,7 +114,7 @@ class PortalContainerContext implements ServletContext
    /**
     * {@inheritDoc}
     */
-   public Enumeration<?> getAttributeNames()
+   public Enumeration<String> getAttributeNames()
    {
       return getPortalContext().getAttributeNames();
    }
@@ -139,7 +148,6 @@ class PortalContainerContext implements ServletContext
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings("unchecked")
    public Enumeration<String> getInitParameterNames()
    {
       final Set<WebAppInitContext> contexts = getPortalContainer().getWebAppInitContexts();
@@ -282,7 +290,6 @@ class PortalContainerContext implements ServletContext
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings("unchecked")
    public Set<String> getResourcePaths(String path)
    {
       final Set<WebAppInitContext> contexts = getPortalContainer().getWebAppInitContexts();
@@ -331,7 +338,7 @@ class PortalContainerContext implements ServletContext
     * {@inheritDoc}
     */
    @SuppressWarnings("deprecation")
-   public Enumeration<?> getServletNames()
+   public Enumeration<String> getServletNames()
    {
       return getPortalContext().getServletNames();
    }
@@ -340,7 +347,7 @@ class PortalContainerContext implements ServletContext
     * {@inheritDoc}
     */
    @SuppressWarnings("deprecation")
-   public Enumeration<?> getServlets()
+   public Enumeration<Servlet> getServlets()
    {
       return getPortalContext().getServlets();
    }
@@ -392,5 +399,215 @@ class PortalContainerContext implements ServletContext
    public String getContextPath()
    {
       return getPortalContext().getContextPath();
+   }
+
+   // servlet 3.0. API
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getEffectiveMajorVersion()
+   {
+      return getPortalContext().getEffectiveMajorVersion();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getEffectiveMinorVersion()
+   {
+      return getPortalContext().getEffectiveMinorVersion();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean setInitParameter(String name, String value)
+   {
+      return getPortalContext().setInitParameter(name, value);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Dynamic addServlet(String servletName, String className)
+   {
+      return getPortalContext().addServlet(servletName, className);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Dynamic addServlet(String servletName, Servlet servlet)
+   {
+      return getPortalContext().addServlet(servletName, servlet);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass)
+   {
+      return getPortalContext().addServlet(servletName, servletClass);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException
+   {
+      return getPortalContext().createServlet(clazz);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ServletRegistration getServletRegistration(String servletName)
+   {
+      return getPortalContext().getServletRegistration(servletName);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Map<String, ? extends ServletRegistration> getServletRegistrations()
+   {
+      return getPortalContext().getServletRegistrations();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, String className)
+   {
+      return getPortalContext().addFilter(filterName, className);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Filter filter)
+   {
+      return getPortalContext().addFilter(filterName, filter);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass)
+   {
+      return getPortalContext().addFilter(filterName, filterClass);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public <T extends Filter> T createFilter(Class<T> clazz) throws ServletException
+   {
+      return getPortalContext().createFilter(clazz);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public FilterRegistration getFilterRegistration(String filterName)
+   {
+      return getPortalContext().getFilterRegistration(filterName);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Map<String, ? extends FilterRegistration> getFilterRegistrations()
+   {
+      return getPortalContext().getFilterRegistrations();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public SessionCookieConfig getSessionCookieConfig()
+   {
+      return getPortalContext().getSessionCookieConfig();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes)
+   {
+      getPortalContext().setSessionTrackingModes(sessionTrackingModes);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Set<SessionTrackingMode> getDefaultSessionTrackingModes()
+   {
+      return getPortalContext().getDefaultSessionTrackingModes();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Set<SessionTrackingMode> getEffectiveSessionTrackingModes()
+   {
+      return getPortalContext().getEffectiveSessionTrackingModes();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addListener(String className)
+   {
+      getPortalContext().addListener(className);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public <T extends EventListener> void addListener(T t)
+   {
+      getPortalContext().addListener(t);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addListener(Class<? extends EventListener> listenerClass)
+   {
+      getPortalContext().addListener(listenerClass);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public <T extends EventListener> T createListener(Class<T> clazz) throws ServletException
+   {
+      return getPortalContext().createListener(clazz);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public JspConfigDescriptor getJspConfigDescriptor()
+   {
+      return getPortalContext().getJspConfigDescriptor();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ClassLoader getClassLoader()
+   {
+      return getPortalContainer().getPortalClassLoader();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void declareRoles(String... roleNames)
+   {
+      getPortalContext().declareRoles(roleNames);
    }
 }

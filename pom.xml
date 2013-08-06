@@ -166,8 +166,8 @@
          </dependency>
          <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
          </dependency>
          <dependency>
             <groupId>org.jgroups</groupId>
@@ -222,7 +222,7 @@
          <dependency>
             <groupId>org.gatein.wci</groupId>
             <artifactId>wci-wci</artifactId>
-            <version>2.3.0.Final</version>
+            <version>2.3.1.Final</version>
          </dependency>
          <dependency>
             <groupId>com.google.inject</groupId>
@@ -243,6 +243,16 @@
             <groupId>org.jboss.weld.se</groupId>
             <artifactId>weld-se</artifactId>
             <version>2.0.1.Final</version>
+         </dependency>
+         <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.1</version>
+         </dependency>
+         <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.0-GA</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

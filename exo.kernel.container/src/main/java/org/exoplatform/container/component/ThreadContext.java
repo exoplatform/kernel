@@ -17,6 +17,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.exoplatform.container.component;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <p>This component contains all the variables of type {@link ThreadLocal} hold by a {@link ThreadContextHolder}
  * This component has not been designed to be thread safe so ensure that you create
@@ -51,7 +55,49 @@ public class ThreadContext
          security.checkPermission(ThreadContextHolder.MANAGE_THREAD_LOCAL);
       this.threadLocals = (ThreadLocal<Object>[])threadLocals;
    }
-   
+
+   /**
+    * This constructor can be used to group several {@link ThreadContext} into one.
+    * @param contexts the list of all the {@link ThreadContext} to merge
+    */
+   @SuppressWarnings("unchecked")
+   private ThreadContext(List<ThreadContext> contexts)
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+         security.checkPermission(ThreadContextHolder.MANAGE_THREAD_LOCAL);
+      if (contexts == null)
+      {
+         this.threadLocals = null;
+         return;
+      }
+      List<ThreadLocal<Object>> lThreadLocals = new ArrayList<ThreadLocal<Object>>();
+      for (int i = 0, length = contexts.size(); i < length; i++)
+      {
+         ThreadContext ctx = contexts.get(i);
+         if (ctx == null || ctx.threadLocals == null || ctx.threadLocals.length == 0)
+            continue;
+         for (int j = 0; j < ctx.threadLocals.length; j++)
+         {
+            ThreadLocal<Object> tl = ctx.threadLocals[j];
+            if (tl == null)
+               continue;
+            lThreadLocals.add(tl);
+         }
+      }
+      this.threadLocals = (ThreadLocal<Object>[])lThreadLocals.toArray(new ThreadLocal<?>[lThreadLocals.size()]);
+   }
+
+   /**
+    * Merges all the provided {@link ThreadContext} into one
+    * @param contexts the {@link ThreadContext} to merge
+    * @return a {@link ThreadContext} representing all the provided {@link ThreadContext} instance
+    */
+   public static ThreadContext merge(List<ThreadContext> contexts)
+   {
+      return new ThreadContext(contexts);
+   }
+
    /**
     * Stores into memory the current values of all the Thread Local variables
     */

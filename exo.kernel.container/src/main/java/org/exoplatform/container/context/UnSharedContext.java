@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,22 +16,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container;
+package org.exoplatform.container.context;
 
-import java.util.List;
+import java.util.concurrent.locks.Lock;
+
 
 /**
- * Created by The eXo Platform SAS Author : Tuan Nguyen
- * tuan08@users.sourceforge.net Nov 4, 2005
+ * This is the root class of all the unshared contexts, it relies on a thread local
+ * 
+ * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
+ * @version $Id$
+ *
  */
-public interface SessionManager
+public abstract class UnSharedContext<K> extends AbstractContext<K>
 {
 
-   public List<SessionContainer> getLiveSessions();
+   /**
+    * {@inheritDoc}
+    */
+   public void unregister(K key)
+   {
+   }
 
-   public SessionContainer getSessionContainer(String id);
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void deactivate(K key)
+   {
+      destroy();
+      super.deactivate(key);
+   }
 
-   public void removeSessionContainer(String id);
+   /**
+    * {@inheritDoc}
+    */
+   protected final boolean isSharable()
+   {
+      return false;
+   }
 
-   public void addSessionContainer(SessionContainer scontainer);
+   /**
+    * {@inheritDoc}
+    */
+   protected final Lock getLock(String id)
+   {
+      return null;
+   }
 }

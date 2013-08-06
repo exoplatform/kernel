@@ -170,6 +170,27 @@
 	<component profiles="testContainers">
 		<type>org.exoplatform.container.TestExoContainer$CCTC3</type>
 	</component>
+	<component profiles="testScope">
+		<key>org.exoplatform.container.context.ContextManager</key>
+		<type>org.exoplatform.container.context.ContextManagerImpl</type>
+		<component-plugins>
+			<component-plugin>
+				<name>main-scopes</name>
+				<set-method>addContexts</set-method>
+				<type>org.exoplatform.container.context.ContextPlugin</type>
+				<init-params>
+					<object-param>
+						<name>request-scope</name>
+						<object type="org.exoplatform.container.context.RequestContext"/>
+					</object-param>
+					<object-param>
+						<name>session-scope</name>
+						<object type="org.exoplatform.container.context.SessionContext"/>
+					</object-param>
+				</init-params>
+			</component-plugin>
+		</component-plugins>
+	</component>
 	<external-component-plugins profiles="testStackOverflowError">
 		<target-component>org.exoplatform.container.TestExoContainer$MyService</target-component>
 		<component-plugin>

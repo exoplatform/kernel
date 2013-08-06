@@ -47,7 +47,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
     */
    public final void sessionCreated(HttpSessionEvent event)
    {
-      final ExoContainer oldContainer = ExoContainerContext.getCurrentContainer();
+      final ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
       ExoContainer container = null;
@@ -55,6 +55,8 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
       try
       {
          container = getContainer(event);
+         if (container == null)
+            return;
          if (!container.equals(oldContainer))
          {
             if (container instanceof PortalContainer)
@@ -85,7 +87,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
                   LOG.info("The portal environment could not be set for the webapp '" + ctxName
                      + "' because this servlet context has not been defined as a "
                      + "dependency of any portal container or it is a disabled portal"
-                     + " container, the sessionCreated event will be ignored");                 
+                     + " container, the sessionCreated event will be ignored");
                }
                return;
             }
@@ -117,7 +119,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
     */
    public final void sessionDestroyed(HttpSessionEvent event)
    {
-      final ExoContainer oldContainer = ExoContainerContext.getCurrentContainer();
+      final ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
       ExoContainer container = null;
@@ -125,6 +127,8 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
       try
       {
          container = getContainer(event);
+         if (container == null)
+            return;
          if (!container.equals(oldContainer))
          {
             if (container instanceof PortalContainer)
@@ -146,7 +150,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
                   hasBeenSet = true;
                }
                // Set the full classloader of the portal container
-               Thread.currentThread().setContextClassLoader(((PortalContainer)container).getPortalClassLoader());               
+               Thread.currentThread().setContextClassLoader(((PortalContainer)container).getPortalClassLoader());
             }
             else
             {
@@ -156,8 +160,8 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
                      + "' because this servlet context has not been defined as a "
                      + "dependency of any portal container or it is a disabled portal"
                      + " container, the sessionDestroyed event will be ignored");
-               }               
-               return;              
+               }
+               return;
             }
          }
          onSessionDestroyed(container, event);
@@ -207,7 +211,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
     */
    protected final ExoContainer getContainer(HttpSessionEvent event)
    {
-      ExoContainer container = ExoContainerContext.getCurrentContainer();
+      ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
       if (container instanceof RootContainer)
       {
          // The top container is a RootContainer, thus we assume that we are in a portal mode

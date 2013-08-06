@@ -96,10 +96,6 @@ public class TestContainer extends TestCase
       PortalContainer pcontainer = rootContainer.getPortalContainer("portal");
       Object parent = pcontainer.getParent();
       assertTrue("Root container should not be null", parent != null);
-      pcontainer.createSessionContainer("sessioncontainer1", "anon");
-      pcontainer.createSessionContainer("sessioncontainer2", "anon");
-      List sessions = pcontainer.getLiveSessions();
-      assertEquals("expect 2 session container", 2, sessions.size());
       // performance test
 
       int INSERTLOOP = 0;

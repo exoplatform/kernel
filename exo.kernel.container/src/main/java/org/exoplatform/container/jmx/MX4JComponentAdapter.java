@@ -18,14 +18,18 @@
  */
 package org.exoplatform.container.jmx;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.AbstractComponentAdapter;
 import org.exoplatform.container.ConcurrentContainer;
+import org.exoplatform.container.ConcurrentContainer.CreationalContextComponentAdapter;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.context.ContextManager;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.ExternalComponentPlugins;
@@ -33,13 +37,28 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
 import java.lang.reflect.Method;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.NormalScope;
+import javax.enterprise.context.spi.Context;
+import javax.enterprise.context.spi.Contextual;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.DefinitionException;
+import javax.enterprise.inject.spi.PassivationCapable;
+import javax.inject.Provider;
+import javax.inject.Scope;
 import javax.inject.Singleton;
 
 /**
@@ -49,31 +68,47 @@ import javax.inject.Singleton;
  * @author Benjamin Mestrallet
  * @version $Revision: 1.5 $
  */
-public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
+public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> implements Contextual<T>, PassivationCapable
 {
+
+   /**
+    * The prefix of the id
+    */
+   private static final String PREFIX = MX4JComponentAdapter.class.getPackage().getName();
+
    /**
     * Serial Version ID
     */
    private static final long serialVersionUID = -9001193588034229411L;
 
-   private volatile T instance_;
+   private transient volatile T instance_;
 
-   private final Lock lock = new ReentrantLock();
+   private transient volatile T proxy;
+
+   private transient volatile String id;
+
+   private transient final Lock lock = new ReentrantLock();
 
    /**
     * Indicates whether or not it should be managed as a singleton
     */
-   protected volatile boolean isSingleton = true;
+   private volatile boolean isSingleton = true;
 
-   private volatile boolean isInitialized;
+   private transient volatile boolean isInitialized;
+
+   /**
+    * The scope of the adapter
+    */
+   private transient final AtomicReference<Class<? extends Annotation>> scope =
+      new AtomicReference<Class<? extends Annotation>>();
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
 
    /** . */
-   protected final ExoContainer exocontainer;
+   protected transient final ExoContainer exocontainer;
 
    /** . */
-   protected final ConcurrentContainer container;
+   protected transient final ConcurrentContainer container;
 
    public MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<T> implementation)
    {
@@ -86,62 +121,142 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
    {
       if (instance_ != null)
          return instance_;
+      else if (proxy != null)
+         return proxy;
 
-      //
-      T instance = null;
-      Component component = null;
-      ConfigurationManager manager;
-      String componentKey;
-      InitParams params = null;
-      boolean debug = false;
-      boolean toBeLocked = !isInitialized;
-      try
+      if (!exocontainer.isContextManagerLoaded() && ContextManager.class.isAssignableFrom(getComponentImplementation()))
       {
-         if (toBeLocked)
+         return create();
+      }
+      ContextManager manager = exocontainer.getContextManager();
+      if (manager == null)
+      {
+         return create();
+      }
+      return create(manager, true);
+   }
+
+   private T create(ContextManager manager, boolean retryAllowed)
+   {
+      Class<? extends Annotation> scope = getScope(true, false);
+      if (scope.equals(Unknown.class) || scope.equals(Singleton.class) || scope.equals(Dependent.class)
+         || scope.equals(ApplicationScoped.class))
+      {
+         return create();
+      }
+      final Context ctx = manager.getContext(scope);
+      if (ctx == null)
+      {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("The scope {} is unknown, thus we will create the component {} out of a scope context.",
+               scope.getName(), getComponentImplementation().getName());
+         }
+         if (!retryAllowed)
+            throw new IllegalArgumentException("The scope and the default scope of the class "
+               + getComponentImplementation().getName() + " are unknown");
+         try
+         {
+            Class<? extends Annotation> defaultScope = ContainerUtil.getScope(getComponentImplementation(), true);
+            setScope(scope, defaultScope);
+            return create(manager, false);
+         }
+         catch (DefinitionException e)
+         {
+            throw new IllegalArgumentException("The scope of the class " + getComponentImplementation().getName()
+               + " is unknown and we cannot get a clear default scope: " + e.getMessage());
+         }
+      }
+      NormalScope normalScope = scope.getAnnotation(NormalScope.class);
+      if (normalScope != null)
+      {
+         // A proxy is expected
+         if (normalScope.passivating() && !Serializable.class.isAssignableFrom(getComponentImplementation()))
+         {
+            throw new IllegalArgumentException("As the scope " + scope.getName()
+               + " is a passivating scope, we expect only serializable objects and "
+               + getComponentImplementation().getName() + " is not serializable.");
+         }
+         T result = null;
+         try
          {
             lock.lock();
+            if (proxy != null)
+               return proxy;
+            result = ContainerUtil.createProxy(getComponentImplementation(), new Provider<T>()
+            {
+               public T get()
+               {
+                  return createInstance(ctx);
+               }
+            });
+            return proxy = result;
          }
-         // Avoid to create duplicate instances if it is called at the same time by several threads
-         if (instance_ != null)
-            return instance_;
-         // Get the component
-         Object key = getComponentKey();
-         if (key instanceof String)
-            componentKey = (String)key;
-         else
-            componentKey = ((Class<?>)key).getName();
-         manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
-         component = manager == null ? null : manager.getComponent(componentKey);
-         if (component != null)
-         {
-            params = component.getInitParams();
-            debug = component.getShowDeployInfo();
-         }
-         instance = createInstance(component, manager, componentKey, params, debug);
-      }
-      catch (Exception ex)
-      {
-         String msg = "Cannot instantiate component " + getComponentImplementation();
-         if (component != null)
-         {
-            msg =
-               "Cannot instantiate component key=" + component.getKey() + " type=" + component.getType() + " found at "
-                  + component.getDocumentURL();
-         }
-         throw new RuntimeException(msg, ex);
-      }
-      finally
-      {
-         if (toBeLocked)
+         finally
          {
             lock.unlock();
          }
       }
-      return instance;
+      return createInstance(ctx);
    }
 
-   private T createInstance(final Component component, final ConfigurationManager manager, final String componentKey,
-      final InitParams params, final boolean debug) throws Exception
+   /**
+    * Gives the scope of the adapter
+    */
+   public Class<? extends Annotation> getScope()
+   {
+      return getScope(false, false);
+   }
+
+   private Class<? extends Annotation> getScope(boolean initializeIfNull, boolean ignoreExplicit)
+   {
+      Class<? extends Annotation> scope = this.scope.get();
+      if (scope == null && initializeIfNull)
+      {
+         scope = ContainerUtil.getScope(getComponentImplementation(), ignoreExplicit);
+         scope = setScope(null, scope);
+      }
+      return scope;
+   }
+
+   private Class<? extends Annotation> setScope(Class<? extends Annotation> expect, Class<? extends Annotation> scope)
+   {
+      if (scope == null)
+      {
+         scope = Unknown.class;
+         isSingleton = true;
+      }
+      else
+      {
+         isSingleton = scope.equals(Singleton.class) || scope.equals(ApplicationScoped.class);
+      }
+      if (this.scope.compareAndSet(expect, scope))
+      {
+         return scope;
+      }
+      return this.scope.get();
+   }
+
+   private T createInstance(Context ctx)
+   {
+      T result = ctx.get(this);
+      if (result != null)
+      {
+         return result;
+      }
+      try
+      {
+         return ctx.get(this, container.<T> addComponentToCtx(getComponentKey()));
+      }
+      finally
+      {
+         container.removeComponentFromCtx(getComponentKey());
+      }
+   }
+
+   private T createInstance(final CreationalContextComponentAdapter<T> ctx, final Component component,
+      final ConfigurationManager manager, final String componentKey, final InitParams params, final boolean debug)
+      throws Exception
    {
       try
       {
@@ -160,21 +275,77 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
                   // to component plugins
                   return instance_;
                }
-               container.addComponentToCtx(getComponentKey(), instance);
+               else if (ctx.get() != null)
+                  return ctx.get();
+
+               ctx.push(instance);
+               boolean isSingleton = MX4JComponentAdapter.this.isSingleton;
+               boolean isInitialized = MX4JComponentAdapter.this.isInitialized;
                if (debug)
-                  LOG.debug("==> create  component : " + instance_);
+                  LOG.debug("==> create  component : " + instance);
                boolean hasInjectableConstructor =
                   !isSingleton ? true : ContainerUtil.hasInjectableConstructor(implementationClass);
                boolean hasOnlyEmptyPublicConstructor =
                   !isSingleton ? true : ContainerUtil.hasOnlyEmptyPublicConstructor(implementationClass);
                if (hasInjectableConstructor || hasOnlyEmptyPublicConstructor)
                {
-                  // There is at least one constructor JSR 330 compliant
+                  // There is at least one constructor JSR 330 compliant or we already know 
+                  // that it is not a singleton such that the new behavior is expected
                   boolean isInjectPresent = container.initializeComponent(instance);
-                  if (!isInitialized && (isInjectPresent || hasInjectableConstructor))
+                  if (!isInitialized)
                   {
-                     isSingleton = implementationClass.isAnnotationPresent(Singleton.class);
+                     // The adapter has not been initialized yet
+                     if (isInjectPresent || hasInjectableConstructor)
+                     {
+                        // The component is JSR 330 compliant, so we expect the new behavior
+                        Class<? extends Annotation> currentScope = scope.get();
+                        if (currentScope == null)
+                        {
+                           // The scope has not been set which means that the Context Manager has not been defined
+                           currentScope = getScope(true, false);
+                           if (!currentScope.equals(Unknown.class) && !currentScope.equals(Singleton.class)
+                              && !currentScope.equals(Dependent.class) && !currentScope.equals(ApplicationScoped.class))
+                           {
+                              // The context manager has not been defined and the defined scope is not part of the supported ones
+                              // so we will check the default one and reset the scope
+                              scope.compareAndSet(currentScope, null);
+                              currentScope = getScope(true, true);
+                              if (!currentScope.equals(Unknown.class) && !currentScope.equals(Singleton.class)
+                                 && !currentScope.equals(Dependent.class)
+                                 && !currentScope.equals(ApplicationScoped.class))
+                              {
+                                 // The context manager has not been defined and the defined default scope is not part of the supported ones
+                                 // so we will check the default one and set the scope to unknown
+                                 scope.compareAndSet(currentScope, Unknown.class);
+                                 currentScope = Unknown.class;
+                              }
+                           }
+                        }
+                        if (currentScope.equals(Unknown.class))
+                        {
+                           // The scope is unknown so far
+                           isSingleton = MX4JComponentAdapter.this.isSingleton = false;
+                           scope.set(Dependent.class);
+                        }
+                        else
+                        {
+                           isSingleton = MX4JComponentAdapter.this.isSingleton;
+                        }
+                     }
+                     else
+                     {
+                        // The old behavior is expected as there the component is not JSR 330 compliant 
+                        isSingleton = MX4JComponentAdapter.this.isSingleton = true;
+                        scope.set(Singleton.class);
+                     }
                   }
+               }
+               else if (!isInitialized)
+               {
+                  // The adapter has not been initialized yet
+                  // The old behavior is expected as there is no constructor JSR 330 compliant 
+                  isSingleton = MX4JComponentAdapter.this.isSingleton = true;
+                  scope.set(Singleton.class);
                }
                if (component != null && component.getComponentPlugins() != null)
                {
@@ -198,7 +369,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
                   {
                      instance_ = instance;
                   }
-                  isInitialized = true;
+                  MX4JComponentAdapter.this.isInitialized = true;
                }
                return instance;
             }
@@ -212,10 +383,6 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
             throw (Exception)e;
          }
          throw new Exception(cause);
-      }
-      finally
-      {
-         container.removeComponentFromCtx(getComponentKey());
       }
    }
 
@@ -339,5 +506,151 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T>
          return depth;
       }
       return getClosestMatchDepth(pluginClass.getSuperclass(), type, depth + 1);
+   }
+
+   /**
+    * Must be used to create Singleton or Prototype only
+    */
+   private T create()
+   {
+      boolean toBeLocked = !isInitialized;
+      try
+      {
+         if (toBeLocked)
+         {
+            lock.lock();
+         }
+         return create(container.<T> addComponentToCtx(getComponentKey()));
+      }
+      finally
+      {
+         if (toBeLocked)
+         {
+            lock.unlock();
+         }
+         container.removeComponentFromCtx(getComponentKey());
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public T create(CreationalContext<T> creationalContext)
+   {
+      //
+      T instance = null;
+      Component component = null;
+      ConfigurationManager manager;
+      String componentKey;
+      InitParams params = null;
+      boolean debug = false;
+      CreationalContextComponentAdapter<T> ctx = (CreationalContextComponentAdapter<T>)creationalContext;
+      try
+      {
+         // Avoid to create duplicate instances if it is called at the same time by several threads
+         if (instance_ != null)
+            return instance_;
+         else if (ctx.get() != null)
+            return ctx.get();
+         // Get the component
+         Object key = getComponentKey();
+         if (key instanceof String)
+            componentKey = (String)key;
+         else
+            componentKey = ((Class<?>)key).getName();
+         manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
+         component = manager == null ? null : manager.getComponent(componentKey);
+         if (component != null)
+         {
+            params = component.getInitParams();
+            debug = component.getShowDeployInfo();
+         }
+         instance = createInstance(ctx, component, manager, componentKey, params, debug);
+      }
+      catch (Exception ex)
+      {
+         String msg = "Cannot instantiate component " + getComponentImplementation();
+         if (component != null)
+         {
+            msg =
+               "Cannot instantiate component key=" + component.getKey() + " type=" + component.getType() + " found at "
+                  + component.getDocumentURL();
+         }
+         throw new RuntimeException(msg, ex);
+      }
+      return instance;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void destroy(T instance, CreationalContext<T> creationalContext)
+   {
+      try
+      {
+         creationalContext.release();
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not destroy the instance " + instance + ": " + e.getMessage());
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((getComponentKey() == null) ? 0 : getComponentKey().hashCode());
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      MX4JComponentAdapter<?> other = (MX4JComponentAdapter<?>)obj;
+      if (getComponentKey() == null)
+      {
+         if (other.getComponentKey() != null)
+            return false;
+      }
+      else if (!getComponentKey().equals(other.getComponentKey()))
+         return false;
+      return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getId()
+   {
+      if (id != null)
+         return id;
+      StringBuilder sb = new StringBuilder(PREFIX);
+      Object key = getComponentKey();
+      String componentKey;
+      if (key instanceof String)
+         componentKey = (String)key;
+      else
+         componentKey = ((Class<?>)key).getName();
+      return id = sb.append(componentKey).toString();
+   }
+
+   @Scope
+   @Documented
+   @Retention(RUNTIME)
+   private static @interface Unknown {
    }
 }

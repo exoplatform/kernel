@@ -28,12 +28,21 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
 /**
  * Created by The eXo Platform SAS
@@ -41,7 +50,6 @@ import javax.servlet.ServletException;
  *          nicolas.filotto@exoplatform.com
  * 24 sept. 2009  
  */
-@SuppressWarnings("unchecked")
 public class TestPortalContainerInitTaskContextComparator extends TestCase
 {
  
@@ -80,7 +88,7 @@ public class TestPortalContainerInitTaskContextComparator extends TestCase
          return null;
       }
 
-      public Enumeration getAttributeNames()
+      public Enumeration<String> getAttributeNames()
       {
 
          return null;
@@ -98,7 +106,7 @@ public class TestPortalContainerInitTaskContextComparator extends TestCase
          return null;
       }
 
-      public Enumeration getInitParameterNames()
+      public Enumeration<String> getInitParameterNames()
       {
 
          return null;
@@ -152,7 +160,7 @@ public class TestPortalContainerInitTaskContextComparator extends TestCase
          return null;
       }
 
-      public Set getResourcePaths(String path)
+      public Set<String> getResourcePaths(String path)
       {
 
          return null;
@@ -175,13 +183,13 @@ public class TestPortalContainerInitTaskContextComparator extends TestCase
          return name;
       }
 
-      public Enumeration getServletNames()
+      public Enumeration<String> getServletNames()
       {
 
          return null;
       }
 
-      public Enumeration getServlets()
+      public Enumeration<Servlet> getServlets()
       {
 
          return null;
@@ -217,5 +225,129 @@ public class TestPortalContainerInitTaskContextComparator extends TestCase
          return null;
       }
 
-   }   
+      public int getEffectiveMajorVersion()
+      {
+         return 0;
+      }
+
+      public int getEffectiveMinorVersion()
+      {
+         return 0;
+      }
+
+      public boolean setInitParameter(String name, String value)
+      {
+         return false;
+      }
+
+      public Dynamic addServlet(String servletName, String className)
+      {
+         return null;
+      }
+
+      public Dynamic addServlet(String servletName, Servlet servlet)
+      {
+         return null;
+      }
+
+      public Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass)
+      {
+         return null;
+      }
+
+      public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException
+      {
+         return null;
+      }
+
+      public ServletRegistration getServletRegistration(String servletName)
+      {
+         return null;
+      }
+
+      public Map<String, ? extends ServletRegistration> getServletRegistrations()
+      {
+         return null;
+      }
+
+      public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, String className)
+      {
+         return null;
+      }
+
+      public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Filter filter)
+      {
+         return null;
+      }
+
+      public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass)
+      {
+         return null;
+      }
+
+      public <T extends Filter> T createFilter(Class<T> clazz) throws ServletException
+      {
+         return null;
+      }
+
+      public FilterRegistration getFilterRegistration(String filterName)
+      {
+         return null;
+      }
+
+      public Map<String, ? extends FilterRegistration> getFilterRegistrations()
+      {
+         return null;
+      }
+
+      public SessionCookieConfig getSessionCookieConfig()
+      {
+         return null;
+      }
+
+      public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes)
+      {
+      }
+
+      public Set<SessionTrackingMode> getDefaultSessionTrackingModes()
+      {
+         return null;
+      }
+
+      public Set<SessionTrackingMode> getEffectiveSessionTrackingModes()
+      {
+         return null;
+      }
+
+      public void addListener(String className)
+      {
+      }
+
+      public <T extends EventListener> void addListener(T t)
+      {
+      }
+
+      public void addListener(Class<? extends EventListener> listenerClass)
+      {
+      }
+
+      public <T extends EventListener> T createListener(Class<T> clazz) throws ServletException
+      {
+         return null;
+      }
+
+      public JspConfigDescriptor getJspConfigDescriptor()
+      {
+         return null;
+      }
+
+      public ClassLoader getClassLoader()
+      {
+         return null;
+      }
+
+      public void declareRoles(String... roleNames)
+      {
+      }
+   }
 }

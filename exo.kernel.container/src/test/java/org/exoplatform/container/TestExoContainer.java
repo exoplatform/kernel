@@ -16,11 +16,19 @@
  */
 package org.exoplatform.container;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.context.AdvancedContext;
+import org.exoplatform.container.context.ContextManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
+import org.exoplatform.container.jmx.MX4JComponentAdapter;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.util.ContainerUtil;
@@ -28,21 +36,43 @@ import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.Disposable;
 import org.picocontainer.Startable;
 
+import java.io.Serializable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.NormalScope;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.enterprise.inject.Stereotype;
+import javax.enterprise.inject.spi.DefinitionException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Qualifier;
+import javax.inject.Scope;
 import javax.inject.Singleton;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * Created by The eXo Platform SAS
@@ -1872,6 +1902,7 @@ public class TestExoContainer extends AbstractTestContainer
       @Inject
       private Provider<JSR330_P4> p4;
 
+      @SuppressWarnings("unused")
       private int value;
 
       private int calledInit;
@@ -1984,6 +2015,7 @@ public class TestExoContainer extends AbstractTestContainer
 
    public static class JSR330_P2
    {
+      @SuppressWarnings("unused")
       private final JSR330_A a;
 
       @Inject
@@ -2004,6 +2036,7 @@ public class TestExoContainer extends AbstractTestContainer
    @Singleton
    public static class JSR330_P3
    {
+      @SuppressWarnings("unused")
       private JSR330_A a;
 
       @Inject
@@ -2034,28 +2067,41 @@ public class TestExoContainer extends AbstractTestContainer
       // Create a constructor with the inject annotation to indicate clearly that it is a component
       // JSR 330 aware
       @Inject
-      public JSR330_N2() {}
+      public JSR330_N2()
+      {
+      }
    }
 
    public static class JSR330_N2_2 extends JSR330_N2
    {
-      public JSR330_N2_2() {}
-      public JSR330_N2_2(JSR330_N n) {}
+      public JSR330_N2_2()
+      {
+      }
+
+      public JSR330_N2_2(JSR330_N n)
+      {
+      }
    }
 
    public static class JSR330_N2_3 extends JSR330_N2
    {
-      JSR330_N2_3() {}
+      JSR330_N2_3()
+      {
+      }
    }
 
    public static class JSR330_N2_4 extends JSR330_N2
    {
-      private JSR330_N2_4() {}
+      private JSR330_N2_4()
+      {
+      }
    }
 
    public static class JSR330_N2_5 extends JSR330_N2
    {
-      protected JSR330_N2_5() {}
+      protected JSR330_N2_5()
+      {
+      }
    }
 
    public static class JSR330_N2_6 extends JSR330_N2
@@ -2076,7 +2122,8 @@ public class TestExoContainer extends AbstractTestContainer
    {
       @Inject
       public void setJSR330_N2(JSR330_N2 n)
-      {}
+      {
+      }
    }
 
    public static class JSR330_N8_2 extends JSR330_N8
@@ -2090,7 +2137,1642 @@ public class TestExoContainer extends AbstractTestContainer
 
    @Retention(RetentionPolicy.RUNTIME)
    @Qualifier
-   public static @interface N1 
+   public static @interface N1 {
+   }
+
+   @SuppressWarnings("unchecked")
+   private static Class<? extends AS0> getClass(int index, boolean oldComponents) throws Exception
    {
+      String classPrefix = S0.class.getName();
+      String classsuffix;
+      if (index == 1)
+      {
+         classsuffix = oldComponents ? "" : "27";
+      }
+      else
+      {
+         classsuffix = Integer.toString(oldComponents ? index : index + 26);
+      }
+      String classname = classPrefix + classsuffix;
+      return (Class<? extends AS0>)Class.forName(classname);
+   }
+   
+   private void testScope(RootContainer container, ContextManager manager, boolean oldComponents) throws Exception
+   {
+      assertFalse(ContainerUtil.isSingleton(getClass(1, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(2, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(3, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(4, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(5, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(6, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(7, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(8, oldComponents)));
+      assertTrue(ContainerUtil.isSingleton(getClass(9, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(10, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(11, oldComponents)));
+      assertTrue(ContainerUtil.isSingleton(getClass(12, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(13, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(14, oldComponents)));
+      try
+      {
+         ContainerUtil.isSingleton(getClass(15, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.isSingleton(getClass(16, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.isSingleton(getClass(17, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.isSingleton(getClass(18, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.isSingleton(getClass(19, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.isSingleton(getClass(20, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      assertTrue(ContainerUtil.isSingleton(getClass(21, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(22, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(23, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(24, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(25, oldComponents)));
+      assertFalse(ContainerUtil.isSingleton(getClass(26, oldComponents)));
+
+      assertNull(ContainerUtil.getScope(getClass(1, oldComponents), true));
+      assertNull(ContainerUtil.getScope(getClass(2, oldComponents), true));
+      assertSame(Singleton.class, ContainerUtil.getScope(getClass(3, oldComponents), true));
+      assertSame(Singleton.class, ContainerUtil.getScope(getClass(4, oldComponents), true));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(23, oldComponents), true));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(24, oldComponents), true));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(25, oldComponents), true));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(26, oldComponents), true));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(1, oldComponents)));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(2, oldComponents)));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(3, oldComponents)));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(4, oldComponents)));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(5, oldComponents)));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(6, oldComponents)));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(7, oldComponents)));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(8, oldComponents)));
+      assertSame(Singleton.class, ContainerUtil.getScope(getClass(9, oldComponents)));
+      assertSame(Dependent.class, ContainerUtil.getScope(getClass(10, oldComponents)));
+      assertSame(RequestScoped.class, ContainerUtil.getScope(getClass(11, oldComponents)));
+      assertSame(Singleton.class, ContainerUtil.getScope(getClass(12, oldComponents)));
+      assertSame(Dependent.class, ContainerUtil.getScope(getClass(13, oldComponents)));
+      assertSame(RequestScoped.class, ContainerUtil.getScope(getClass(14, oldComponents)));
+      try
+      {
+         ContainerUtil.getScope(getClass(15, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.getScope(getClass(16, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.getScope(getClass(17, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.getScope(getClass(18, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.getScope(getClass(19, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      try
+      {
+         ContainerUtil.getScope(getClass(20, oldComponents));
+      }
+      catch (DefinitionException e)
+      {
+         // OK
+      }
+      assertSame(Singleton.class, ContainerUtil.getScope(getClass(21, oldComponents)));
+      assertSame(Dependent.class, ContainerUtil.getScope(getClass(22, oldComponents)));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(23, oldComponents)));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(24, oldComponents)));
+      assertSame(MyNormalScope.class, ContainerUtil.getScope(getClass(25, oldComponents)));
+      assertSame(MyPseudoScope.class, ContainerUtil.getScope(getClass(26, oldComponents)));
+
+      container.registerComponentImplementation(getClass(1, oldComponents));
+      container.registerComponentImplementation(getClass(2, oldComponents));
+      container.registerComponentImplementation(getClass(3, oldComponents));
+      container.registerComponentImplementation(getClass(4, oldComponents));
+      container.registerComponentImplementation(getClass(5, oldComponents));
+      container.registerComponentImplementation(getClass(6, oldComponents));
+      container.registerComponentImplementation(getClass(7, oldComponents));
+      container.registerComponentImplementation(getClass(8, oldComponents));
+      container.registerComponentImplementation(getClass(9, oldComponents));
+      container.registerComponentImplementation(getClass(10, oldComponents));
+      container.registerComponentImplementation(getClass(11, oldComponents));
+      container.registerComponentImplementation(getClass(12, oldComponents));
+      container.registerComponentImplementation(getClass(13, oldComponents));
+      container.registerComponentImplementation(getClass(14, oldComponents));
+      container.registerComponentImplementation(getClass(15, oldComponents));
+      container.registerComponentImplementation(getClass(16, oldComponents));
+      container.registerComponentImplementation(getClass(17, oldComponents));
+      container.registerComponentImplementation(getClass(18, oldComponents));
+      container.registerComponentImplementation(getClass(19, oldComponents));
+      container.registerComponentImplementation(getClass(20, oldComponents));
+      container.registerComponentImplementation(getClass(21, oldComponents));
+      container.registerComponentImplementation(getClass(22, oldComponents));
+      container.registerComponentImplementation(getClass(23, oldComponents));
+      container.registerComponentImplementation(getClass(24, oldComponents));
+      container.registerComponentImplementation(getClass(25, oldComponents));
+      container.registerComponentImplementation(getClass(26, oldComponents));
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(1, oldComponents)));
+      assertNotNull(container.getComponentInstanceOfType(getClass(2, oldComponents)));
+      if (oldComponents)
+      {
+         assertSame(container.getComponentInstanceOfType(getClass(1, oldComponents)), container.getComponentInstanceOfType(getClass(1, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(1, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(1, oldComponents)).getId());
+
+         assertSame(container.getComponentInstanceOfType(getClass(2, oldComponents)), container.getComponentInstanceOfType(getClass(2, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(2, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(2, oldComponents)).getId());
+      }
+      else
+      {
+         assertNotSame(container.getComponentInstanceOfType(getClass(1, oldComponents)), container.getComponentInstanceOfType(getClass(1, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(1, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(1, oldComponents)).getId());
+
+         assertNotSame(container.getComponentInstanceOfType(getClass(2, oldComponents)), container.getComponentInstanceOfType(getClass(2, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(2, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(2, oldComponents)).getId());
+      }
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(3, oldComponents)));
+      assertSame(container.getComponentInstanceOfType(getClass(3, oldComponents)), container.getComponentInstanceOfType(getClass(3, oldComponents)));
+      assertEquals(container.getComponentInstanceOfType(getClass(3, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(3, oldComponents)).getId());
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(4, oldComponents)));
+      assertSame(container.getComponentInstanceOfType(getClass(4, oldComponents)), container.getComponentInstanceOfType(getClass(4, oldComponents)));
+      assertEquals(container.getComponentInstanceOfType(getClass(4, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(4, oldComponents)).getId());
+      
+      assertNotNull(container.getComponentInstanceOfType(getClass(5, oldComponents)));
+      assertNotNull(container.getComponentInstanceOfType(getClass(6, oldComponents)));
+      if (manager == null && oldComponents)
+      {
+         assertSame(container.getComponentInstanceOfType(getClass(5, oldComponents)), container.getComponentInstanceOfType(getClass(5, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(5, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(5, oldComponents)).getId());
+
+         assertSame(container.getComponentInstanceOfType(getClass(6, oldComponents)), container.getComponentInstanceOfType(getClass(6, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(6, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(6, oldComponents)).getId());
+      }
+      else
+      {
+         assertNotSame(container.getComponentInstanceOfType(getClass(5, oldComponents)), container.getComponentInstanceOfType(getClass(5, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(5, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(5, oldComponents)).getId());
+
+         assertNotSame(container.getComponentInstanceOfType(getClass(6, oldComponents)), container.getComponentInstanceOfType(getClass(6, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(6, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(6, oldComponents)).getId());
+      }
+
+      ServletRequest req = createProxy(ServletRequest.class, new HashMap<Object, Object>());
+      if (manager != null)
+         manager.<ServletRequest> getContext(RequestScoped.class).activate(req);
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(7, oldComponents)));
+      assertNotNull(container.getComponentInstanceOfType(getClass(8, oldComponents)));
+      if (manager == null && !oldComponents)
+      {
+         assertNotSame(container.getComponentInstanceOfType(getClass(7, oldComponents)), container.getComponentInstanceOfType(getClass(7, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(7, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(7, oldComponents)).getId());
+
+         assertNotSame(container.getComponentInstanceOfType(getClass(8, oldComponents)), container.getComponentInstanceOfType(getClass(8, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(8, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(8, oldComponents)).getId());
+      }
+      else
+      {
+         assertSame(container.getComponentInstanceOfType(getClass(7, oldComponents)), container.getComponentInstanceOfType(getClass(7, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(7, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(7, oldComponents)).getId());
+
+         assertSame(container.getComponentInstanceOfType(getClass(8, oldComponents)), container.getComponentInstanceOfType(getClass(8, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(8, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(8, oldComponents)).getId());
+      }
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(11, oldComponents)));
+      assertNotNull(container.getComponentInstanceOfType(getClass(14, oldComponents)));
+      if (manager == null && !oldComponents)
+      {
+         assertNotSame(container.getComponentInstanceOfType(getClass(11, oldComponents)), container.getComponentInstanceOfType(getClass(11, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(11, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(11, oldComponents)).getId());
+         
+         assertNotSame(container.getComponentInstanceOfType(getClass(14, oldComponents)), container.getComponentInstanceOfType(getClass(14, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(14, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(14, oldComponents)).getId());
+      }
+      else
+      {
+         assertSame(container.getComponentInstanceOfType(getClass(11, oldComponents)), container.getComponentInstanceOfType(getClass(11, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(11, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(11, oldComponents)).getId());
+         
+         assertSame(container.getComponentInstanceOfType(getClass(14, oldComponents)), container.getComponentInstanceOfType(getClass(14, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(14, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(14, oldComponents)).getId());
+      }
+
+      if (manager != null)
+         manager.<ServletRequest> getContext(RequestScoped.class).deactivate(req);
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(7, oldComponents)).getId();
+         if (manager != null) fail("An exception is expected as we are out of a request context");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(8, oldComponents)).getId();
+         if (manager != null) fail("An exception is expected as we are out of a request context");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(11, oldComponents)).getId();
+         if (manager != null) fail("An exception is expected as we are out of a request context");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(14, oldComponents)).getId();
+         if (manager != null) fail("An exception is expected as we are out of a request context");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(9, oldComponents)));
+      assertSame(container.getComponentInstanceOfType(getClass(9, oldComponents)), container.getComponentInstanceOfType(getClass(9, oldComponents)));
+      assertEquals(container.getComponentInstanceOfType(getClass(9, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(9, oldComponents)).getId());
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(10, oldComponents)));
+      assertNotNull(container.getComponentInstanceOfType(getClass(13, oldComponents)));
+      if (manager == null && oldComponents)
+      {
+         assertSame(container.getComponentInstanceOfType(getClass(10, oldComponents)), container.getComponentInstanceOfType(getClass(10, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(10, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(10, oldComponents)).getId());
+
+         assertSame(container.getComponentInstanceOfType(getClass(13, oldComponents)), container.getComponentInstanceOfType(getClass(13, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(13, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(13, oldComponents)).getId());
+      }
+      else
+      {
+         assertNotSame(container.getComponentInstanceOfType(getClass(10, oldComponents)), container.getComponentInstanceOfType(getClass(10, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(10, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(10, oldComponents)).getId());
+
+         assertNotSame(container.getComponentInstanceOfType(getClass(13, oldComponents)), container.getComponentInstanceOfType(getClass(13, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(13, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(13, oldComponents)).getId());
+      }
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(12, oldComponents)));
+      assertSame(container.getComponentInstanceOfType(getClass(12, oldComponents)), container.getComponentInstanceOfType(getClass(12, oldComponents)));
+      assertEquals(container.getComponentInstanceOfType(getClass(12, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(12, oldComponents)).getId());
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(15, oldComponents));
+         if (manager != null || !oldComponents) fail("An exception is expected as the scope is invalid");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null && oldComponents) throw e1;
+     }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(16, oldComponents));
+         if (manager != null || !oldComponents) fail("An exception is expected as the scope is invalid");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null && oldComponents) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(17, oldComponents));
+         if (manager != null || !oldComponents) fail("An exception is expected as the scope is invalid");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null && oldComponents) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(18, oldComponents));
+         if (manager != null || !oldComponents) fail("An exception is expected as the scope is invalid");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null && oldComponents) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(19, oldComponents));
+         if (manager != null || !oldComponents) fail("An exception is expected as the scope is invalid");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null && oldComponents) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(20, oldComponents));
+         if (manager != null || !oldComponents) fail("An exception is expected as the scope is invalid");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null && oldComponents) throw e1;
+      }
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(21, oldComponents)));
+      assertSame(container.getComponentInstanceOfType(getClass(21, oldComponents)), container.getComponentInstanceOfType(getClass(21, oldComponents)));
+      assertEquals(container.getComponentInstanceOfType(getClass(21, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(21, oldComponents)).getId());
+
+      assertNotNull(container.getComponentInstanceOfType(getClass(22, oldComponents)));
+      if (manager == null && oldComponents)
+      {
+         assertSame(container.getComponentInstanceOfType(getClass(22, oldComponents)), container.getComponentInstanceOfType(getClass(22, oldComponents)));
+         assertEquals(container.getComponentInstanceOfType(getClass(22, oldComponents)).getId(), container.getComponentInstanceOfType(getClass(22, oldComponents)).getId());
+      }
+      else
+      {
+         assertNotSame(container.getComponentInstanceOfType(getClass(22, oldComponents)), container.getComponentInstanceOfType(getClass(22, oldComponents)));
+         assertFalse(container.getComponentInstanceOfType(getClass(22, oldComponents)).getId() == container.getComponentInstanceOfType(getClass(22, oldComponents)).getId());
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(23, oldComponents));
+         if (manager != null) fail("An exception is expected as the scope and the default scopes are unknown");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(24, oldComponents));
+         if (manager != null) fail("An exception is expected as the scope and the default scopes are unknown");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(25, oldComponents));
+         if (manager != null) fail("An exception is expected as the scope and the default scopes are unknown");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+
+      try
+      {
+         container.getComponentInstanceOfType(getClass(26, oldComponents));
+         if (manager != null) fail("An exception is expected as the scope and the default scopes are unknown");
+      }
+      catch (Exception e1)
+      {
+         // ok
+         if (manager == null) throw e1;
+      }
+   }
+
+   public void testScopeWithNoContextManager() throws Exception
+   {
+      final RootContainer container = createRootContainer("test-exo-container.xml");
+      ContextManager manager = container.getComponentInstanceOfType(ContextManager.class);
+      assertNull(manager);
+      testScope(container, manager, true);
+      testScope(container, manager, false);
+   }
+
+   public void testScope() throws Exception
+   {
+
+      assertFalse(ContainerUtil.isSingleton(S1.class));
+      assertFalse(ContainerUtil.isSingleton(S2.class));
+      assertTrue(ContainerUtil.isSingleton(S3.class));
+      assertTrue(ContainerUtil.isSingleton(S4.class));
+      assertTrue(ContainerUtil.isSingleton(S5.class));
+      assertFalse(ContainerUtil.isSingleton(S6.class));
+      assertFalse(ContainerUtil.isSingleton(S7.class));
+      assertTrue(ContainerUtil.isSingleton(S8.class));
+      assertSame(RequestScoped.class, ContainerUtil.getScope(S1.class));
+      assertSame(SessionScoped.class, ContainerUtil.getScope(S2.class));
+      assertSame(ApplicationScoped.class, ContainerUtil.getScope(S3.class));
+      assertSame(Singleton.class, ContainerUtil.getScope(S4.class));
+      assertNull(ContainerUtil.getScope(S5.class));
+      assertNull(ContainerUtil.getScope(S6.class));
+      assertSame(Dependent.class, ContainerUtil.getScope(S7.class));
+      assertSame(ApplicationScoped.class, ContainerUtil.getScope(S8.class));
+      final RootContainer container = createRootContainer("test-exo-container.xml", "testScope");
+
+      container.registerComponentImplementation(S1.class);
+      container.registerComponentImplementation(S2.class);
+      container.registerComponentImplementation(S20.class);
+      container.registerComponentImplementation(S3.class);
+      container.registerComponentImplementation(S4.class);
+      container.registerComponentImplementation(S5.class);
+      container.registerComponentImplementation(S6.class);
+      container.registerComponentImplementation(S7.class);
+      container.registerComponentImplementation(S8.class);
+      container.registerComponentImplementation(Unproxyable1.class);
+      container.registerComponentImplementation(Unproxyable2.class);
+      container.registerComponentImplementation(Unproxyable3.class);
+      container.registerComponentImplementation(Unproxyable4.class);
+      container.registerComponentImplementation(Unproxyable5.class);
+      container.registerComponentImplementation(Proxyable.class);
+      container.registerComponentImplementation(Proxyable2.class);
+      ContextManager manager = container.getComponentInstanceOfType(ContextManager.class);
+      assertNotNull(manager);
+      testScope(container, manager, true);
+      testScope(container, manager, false);
+      try
+      {
+         container.getComponentInstanceOfType(Unproxyable1.class);
+         fail("An exception is expected as the class is unproxyable");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         container.getComponentInstanceOfType(Unproxyable2.class);
+         fail("An exception is expected as the class is unproxyable");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         container.getComponentInstanceOfType(Unproxyable3.class);
+         fail("An exception is expected as the class is unproxyable");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         container.getComponentInstanceOfType(Unproxyable4.class);
+         fail("An exception is expected as the class is unproxyable");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         container.getComponentInstanceOfType(Unproxyable5.class);
+         fail("An exception is expected as the class is unproxyable");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      assertNotNull(container.getComponentInstanceOfType(Proxyable.class));
+      assertNotNull(container.getComponentInstanceOfType(Proxyable2.class));
+
+
+      try
+      {
+         container.getComponentInstanceOfType(S1.class).getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+
+      S4 s4 = container.getComponentInstanceOfType(S4.class);
+      assertSame(s4, container.getComponentInstanceOfType(S4.class));
+      assertSame(Singleton.class, ((MX4JComponentAdapter<S4>)container.getComponentAdapterOfType(S4.class)).getScope());
+
+      S5 s5 = container.getComponentInstanceOfType(S5.class);
+      assertSame(s5, container.getComponentInstanceOfType(S5.class));
+      assertSame(Singleton.class, ((MX4JComponentAdapter<S5>)container.getComponentAdapterOfType(S5.class)).getScope());
+
+      S6 s6 = container.getComponentInstanceOfType(S6.class);
+      assertNotSame(s6, container.getComponentInstanceOfType(S6.class));
+      assertSame(Dependent.class, ((MX4JComponentAdapter<S6>)container.getComponentAdapterOfType(S6.class)).getScope());
+
+      S7 s7 = container.getComponentInstanceOfType(S7.class);
+      assertNotSame(s7, container.getComponentInstanceOfType(S7.class));
+      assertSame(Dependent.class, ((MX4JComponentAdapter<S7>)container.getComponentAdapterOfType(S7.class)).getScope());
+
+      S8 s8 = container.getComponentInstanceOfType(S8.class);
+      assertSame(s8, container.getComponentInstanceOfType(S8.class));
+      assertSame(ApplicationScoped.class,
+         ((MX4JComponentAdapter<S8>)container.getComponentAdapterOfType(S8.class)).getScope());
+
+      try
+      {
+         s4.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+
+      try
+      {
+         s5.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+
+      try
+      {
+         s6.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+
+      try
+      {
+         s7.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+
+      try
+      {
+         s8.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+
+      // Request 1
+      Map<Object, Object> mapReq1 = new HashMap<Object, Object>();
+      ServletRequest req1 = createProxy(ServletRequest.class, mapReq1);
+      manager.<ServletRequest> getContext(RequestScoped.class).activate(req1);
+      S1 s1 = container.getComponentInstanceOfType(S1.class);
+      int s1Id = s1.getId();
+      assertEquals(1, mapReq1.size());
+      assertNotNull(s1);
+      assertSame(s1, container.getComponentInstanceOfType(S1.class));
+      assertEquals(s1Id, container.getComponentInstanceOfType(S1.class).getId());
+      assertEquals(s1Id, s1.getId());
+      assertEquals(s1Id, s1.getId2());
+      assertEquals(s1Id, s1.getId3());
+      assertSame(s1, s4.s1);
+      assertEquals(s1Id, s4.s1.getId());
+      assertEquals(s1Id, s4.s1.getId2());
+      assertEquals(s1Id, s4.s1.getId3());
+      assertSame(s1, s5.s1);
+      assertEquals(s1Id, s5.s1.getId());
+      assertEquals(s1Id, s5.s1.getId2());
+      assertEquals(s1Id, s5.s1.getId3());
+      assertSame(s1, s6.s1);
+      assertEquals(s1Id, s6.s1.getId());
+      assertEquals(s1Id, s6.s1.getId2());
+      assertEquals(s1Id, s6.s1.getId3());
+      assertSame(s1, s7.s1);
+      assertEquals(s1Id, s7.s1.getId());
+      assertEquals(s1Id, s7.s1.getId2());
+      assertEquals(s1Id, s7.s1.getId3());
+      assertSame(s1, s8.s1);
+      assertEquals(s1Id, s8.s1.getId());
+      assertEquals(s1Id, s8.s1.getId2());
+      assertEquals(s1Id, s8.s1.getId3());
+      manager.<ServletRequest> getContext(RequestScoped.class).deactivate(req1);
+      assertTrue(mapReq1.isEmpty());
+      s4 = container.getComponentInstanceOfType(S4.class);
+      assertSame(s1, s4.s1);
+      s5 = container.getComponentInstanceOfType(S5.class);
+      assertSame(s1, s5.s1);
+      s6 = container.getComponentInstanceOfType(S6.class);
+      assertSame(s1, s6.s1);
+      s7 = container.getComponentInstanceOfType(S7.class);
+      assertSame(s1, s7.s1);
+      s8 = container.getComponentInstanceOfType(S8.class);
+      assertSame(s1, s8.s1);
+      try
+      {
+         container.getComponentInstanceOfType(S1.class).getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         s4.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         s5.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         s6.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         s7.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      try
+      {
+         s8.s1.getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      // Request 2
+      ServletRequest req2 = createProxy(ServletRequest.class, new HashMap<Object, Object>());
+      manager.<ServletRequest> getContext(RequestScoped.class).activate(req2);
+      S1 s1_2 = container.getComponentInstanceOfType(S1.class);
+      assertNotNull(s1_2);
+      assertSame(s1_2, container.getComponentInstanceOfType(S1.class));
+      assertEquals(s1_2.getId(), container.getComponentInstanceOfType(S1.class).getId());
+      assertFalse(s1_2.getId() == s1Id);
+      assertSame(s1_2, s4.s1);
+      assertEquals(s1_2.getId(), s4.s1.getId());
+      assertEquals(s1_2.getId(), s4.s1.getId2());
+      assertEquals(s1_2.getId(), s4.s1.getId3());
+      assertSame(s1_2, s5.s1);
+      assertEquals(s1_2.getId(), s5.s1.getId());
+      assertEquals(s1_2.getId(), s5.s1.getId2());
+      assertEquals(s1_2.getId(), s5.s1.getId3());
+      assertSame(s1_2, s6.s1);
+      assertEquals(s1_2.getId(), s6.s1.getId());
+      assertEquals(s1_2.getId(), s6.s1.getId2());
+      assertEquals(s1_2.getId(), s6.s1.getId3());
+      assertSame(s1_2, s7.s1);
+      assertEquals(s1_2.getId(), s7.s1.getId());
+      assertEquals(s1_2.getId(), s7.s1.getId2());
+      assertEquals(s1_2.getId(), s7.s1.getId3());
+      assertSame(s1_2, s8.s1);
+      assertEquals(s1_2.getId(), s8.s1.getId());
+      assertEquals(s1_2.getId(), s8.s1.getId2());
+      assertEquals(s1_2.getId(), s8.s1.getId3());
+      manager.<ServletRequest> getContext(RequestScoped.class).deactivate(req2);
+
+      try
+      {
+         container.getComponentInstanceOfType(S2.class).getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      // Request1 out of any session context
+      manager.<HttpSession> getContext(SessionScoped.class).activate(null);
+      try
+      {
+         container.getComponentInstanceOfType(S2.class).getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      manager.<HttpSession> getContext(SessionScoped.class).deactivate(null);
+
+      // Register a session
+      Map<Object, Object> mapSession1 = new HashMap<Object, Object>();
+      HttpSession session1 = createProxy(HttpSession.class, mapSession1);
+      manager.<HttpSession> getContext(SessionScoped.class).register(session1);
+
+      // Request2 out of any session context
+      manager.<HttpSession> getContext(SessionScoped.class).activate(null);
+      try
+      {
+         container.getComponentInstanceOfType(S2.class).getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      assertTrue(mapSession1.isEmpty());
+      manager.<HttpSession> getContext(SessionScoped.class).deactivate(null);
+
+      // Request3 within the session context
+      manager.<HttpSession> getContext(SessionScoped.class).activate(session1);
+      try
+      {
+         container.getComponentInstanceOfType(S20.class);
+         fail("An exception is expected as it is a passivating scope and S20 is not serializable");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      S2 s2 = container.getComponentInstanceOfType(S2.class);
+      assertNotNull(s2);
+      int s2Id = s2.getId();
+      assertSame(s2, container.getComponentInstanceOfType(S2.class));
+      assertEquals(s2Id, container.getComponentInstanceOfType(S2.class).getId());
+      manager.<HttpSession> getContext(SessionScoped.class).deactivate(session1);
+
+      // Request4 within the session context
+      manager.<HttpSession> getContext(SessionScoped.class).activate(session1);
+      S2 s2_2 = container.getComponentInstanceOfType(S2.class);
+      assertNotNull(s2_2);
+      assertSame(s2_2, container.getComponentInstanceOfType(S2.class));
+      assertSame(s2_2, s2);
+      assertEquals(s2_2.getId(), s2Id);
+      manager.<HttpSession> getContext(SessionScoped.class).deactivate(session1);
+
+      // Register session 2
+      Map<Object, Object> mapSession2 = new HashMap<Object, Object>();
+      HttpSession session2 = createProxy(HttpSession.class, mapSession2);
+      manager.<HttpSession> getContext(SessionScoped.class).register(session2);
+
+      // Request5 within the session context of session#2
+      manager.<HttpSession> getContext(SessionScoped.class).activate(session2);
+      S2 s2_3 = container.getComponentInstanceOfType(S2.class);
+      assertNotNull(s2_3);
+      assertSame(s2_3, container.getComponentInstanceOfType(S2.class));
+      assertFalse(s2_3.getId() == s2Id);
+      assertEquals(1, mapSession2.size());
+      manager.<HttpSession> getContext(SessionScoped.class).deactivate(session2);
+      assertEquals(1, mapSession2.size());
+
+      // Unregister session 2
+      manager.<HttpSession> getContext(SessionScoped.class).unregister(session2);
+      assertTrue(mapSession2.isEmpty());
+
+      // Unregister session 1
+      manager.<HttpSession> getContext(SessionScoped.class).unregister(session1);
+      assertTrue(mapSession1.isEmpty());
+
+      // Request6 out of any session context
+      manager.<HttpSession> getContext(SessionScoped.class).activate(session1);
+      container.getComponentInstanceOfType(S2.class).getId();
+      assertEquals(1, mapSession1.size());
+     manager.<HttpSession> getContext(SessionScoped.class).deactivate(session1);
+
+      // Register session 3
+      Map<Object, Object> mapSession3 = new HashMap<Object, Object>();
+      HttpSession session3 = createProxy(HttpSession.class, mapSession2);
+
+      manager.<HttpSession> getContext(SessionScoped.class).register(session3);
+      checkConcurrentAccesses(container, S2.class, mapSession3, HttpSession.class,
+         manager.<HttpSession> getContext(SessionScoped.class));
+
+      // Unregister session 3
+      manager.<HttpSession> getContext(SessionScoped.class).unregister(session3);
+
+      // Request1 within the application context as it is always active
+      S3 s3 = container.getComponentInstanceOfType(S3.class);
+      assertNotNull(s3);
+      assertSame(s3, container.getComponentInstanceOfType(S3.class));
+      assertEquals(s3.getId(), container.getComponentInstanceOfType(S3.class).getId());
+   }
+
+   private <T> T createProxy(Class<T> type, final Map<Object, Object> map)
+   {
+      Object o = Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{type}, new InvocationHandler()
+      {
+         public Object invoke(Object proxy, Method method, Object[] args)
+         {
+            if ("setAttribute".equals(method.getName()))
+            {
+               Object o = map.put(args[0], args[1]);
+               if (o != null)
+               {
+                  throw new IllegalStateException("A value has already been set");
+               }
+            }
+            else if ("getAttribute".equals(method.getName()))
+            {
+               return map.get(args[0]);
+            }
+            else if ("removeAttribute".equals(method.getName()))
+            {
+               map.remove(args[0]);
+            }
+            else if ("getId".equals(method.getName()))
+            {
+               return Integer.toString(System.identityHashCode(map));
+            }
+            else if ("getAttributeNames".equals(method.getName()))
+            {
+               final Iterator<Object> keys = map.keySet().iterator();
+               return new Enumeration<Object>()
+               {
+
+                  public boolean hasMoreElements()
+                  {
+                     return keys.hasNext();
+                  }
+
+                  public Object nextElement()
+                  {
+                     return keys.next();
+                  }
+               };
+            }
+            return null;
+         }
+      });
+      return type.cast(o);
+   }
+
+   private <K> void checkConcurrentAccesses(final RootContainer container, final Class<? extends S> type,
+      final Map<Object, Object> map, final Class<K> keyType, final AdvancedContext<K> context) throws Exception
+   {
+      int reader = 20;
+      final List<S> results = new CopyOnWriteArrayList<S>();
+      final List<Integer> ids = new CopyOnWriteArrayList<Integer>();
+      final CountDownLatch startSignal = new CountDownLatch(1);
+      final CountDownLatch doneSignal = new CountDownLatch(reader);
+      final List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
+      for (int i = 0; i < reader; i++)
+      {
+         Thread thread = new Thread()
+         {
+            public void run()
+            {
+               K key = createProxy(keyType, map);
+               try
+               {
+                  context.activate(key);
+                  startSignal.await();
+                  S s = container.getComponentInstanceOfType(type);
+                  ids.add(s.getId());
+                  results.add(s);
+               }
+               catch (Exception e)
+               {
+                  errors.add(e);
+               }
+               finally
+               {
+                  doneSignal.countDown();
+                  context.deactivate(key);
+               }
+            }
+         };
+         thread.start();
+      }
+      startSignal.countDown();
+      doneSignal.await();
+      if (!errors.isEmpty())
+      {
+         for (Exception e : errors)
+         {
+            e.printStackTrace();
+         }
+         throw errors.get(0);
+      }
+      assertEquals(reader, results.size());
+      assertEquals(reader, ids.size());
+      S value = results.get(0);
+      int id = ids.get(0);
+      for (int i = 1; i < reader; i++)
+      {
+         assertSame(value, results.get(i));
+         assertEquals(id, ids.get(i).intValue());
+      }
+      assertEquals(1, map.size());
+   }
+
+   @Target({TYPE, METHOD, FIELD})
+   @Retention(RUNTIME)
+   @Documented
+   @NormalScope
+   @Inherited
+   public static @interface MyNormalScope {
+   }
+
+   @Retention(RUNTIME)
+   @Documented
+   @Scope
+   public static @interface MyPseudoScope {
+   }
+
+   @Singleton
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype {
+      
+   }
+
+   @Dependent
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype2 {
+      
+   }
+
+   @RequestScoped
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype3 {
+      
+   }
+
+   @Singleton
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype4 {
+      
+   }
+
+   @Dependent
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype5 {
+      
+   }
+
+   @RequestScoped
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype6 {
+      
+   }
+
+   @ApplicationScoped
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype7 {
+      
+   }
+
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype8 {
+      
+   }
+
+   @MyNormalScope
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype9 {
+      
+   }
+
+   @MyPseudoScope
+   @Stereotype
+   @Target(TYPE)
+   @Retention(RUNTIME)
+   public static @interface MyStereotype10 {
+      
+   }
+// Old components
+   @MyNormalScope
+   public static class S0 extends AS0
+   {
+   }
+
+   @MyPseudoScope
+   public static class S02 extends AS0
+   {
+   }
+
+   @MyStereotype
+   @MyNormalScope
+   public static class S03 extends AS0
+   {
+   }
+
+   @MyStereotype
+   @MyPseudoScope
+   public static class S04 extends AS0
+   {
+   }
+
+   @MyStereotype2
+   @MyNormalScope
+   public static class S05 extends AS0
+   {
+   }
+
+   @MyStereotype2
+   @MyPseudoScope
+   public static class S06 extends AS0
+   {
+   }
+
+   @MyStereotype3
+   @MyNormalScope
+   public static class S07 extends AS0
+   {
+   }
+
+   @MyStereotype3
+   @MyPseudoScope
+   public static class S08 extends AS0
+   {
+   }
+
+   @MyStereotype
+   public static class S09 extends AS0
+   {
+   }
+
+   @MyStereotype2
+   public static class S010 extends AS0
+   {
+   }
+
+   @MyStereotype3
+   public static class S011 extends AS0
+   {
+   }
+
+   @MyStereotype
+   @MyStereotype4
+   public static class S012 extends AS0
+   {
+   }
+
+   @MyStereotype2
+   @MyStereotype5
+   public static class S013 extends AS0
+   {
+   }
+
+   @MyStereotype3
+   @MyStereotype6
+   public static class S014 extends AS0
+   {
+   }
+
+   @MyStereotype
+   @MyStereotype2
+   public static class S015 extends AS0
+   {
+   }
+
+   @MyStereotype
+   @MyStereotype3
+   public static class S016 extends AS0
+   {
+   }
+
+   @MyStereotype3
+   @MyStereotype7
+   public static class S017 extends AS0
+   {
+   }
+
+   @Singleton
+   @Dependent
+   public static class S018 extends AS0
+   {
+   }
+
+   @Singleton
+   @ApplicationScoped
+   public static class S019 extends AS0
+   {
+   }
+
+   @MyStereotype8
+   public static class S020 extends AS0
+   {
+   }
+
+   @MyStereotype
+   @MyStereotype8
+   public static class S021 extends AS0
+   {
+   }
+
+   @MyStereotype2
+   @MyStereotype8
+   public static class S022 extends AS0
+   {
+   }
+
+   @MyNormalScope
+   @MyStereotype9
+   public static class S023 extends AS0
+   {
+   }
+
+   @MyPseudoScope
+   @MyStereotype9
+   public static class S024 extends AS0
+   {
+   }
+
+   @MyNormalScope
+   @MyStereotype10
+   public static class S025 extends AS0
+   {
+   }
+
+   @MyPseudoScope
+   @MyStereotype10
+   public static class S026 extends AS0
+   {
+   }
+
+// New components
+
+   @MyNormalScope
+   public static class S027 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyPseudoScope
+   public static class S028 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   @MyNormalScope
+   public static class S029 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   @MyPseudoScope
+   public static class S030 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype2
+   @MyNormalScope
+   public static class S031 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype2
+   @MyPseudoScope
+   public static class S032 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype3
+   @MyNormalScope
+   public static class S033 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype3
+   @MyPseudoScope
+   public static class S034 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   public static class S035 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype2
+   public static class S036 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype3
+   public static class S037 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   @MyStereotype4
+   public static class S038 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype2
+   @MyStereotype5
+   public static class S039 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype3
+   @MyStereotype6
+   public static class S040 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   @MyStereotype2
+   public static class S041 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   @MyStereotype3
+   public static class S042 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype3
+   @MyStereotype7
+   public static class S043 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @Singleton
+   @Dependent
+   public static class S044 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @Singleton
+   @ApplicationScoped
+   public static class S045 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype8
+   public static class S046 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype
+   @MyStereotype8
+   public static class S047 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyStereotype2
+   @MyStereotype8
+   public static class S048 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyNormalScope
+   @MyStereotype9
+   public static class S049 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyPseudoScope
+   @MyStereotype9
+   public static class S050 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyNormalScope
+   @MyStereotype10
+   public static class S051 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   @MyPseudoScope
+   @MyStereotype10
+   public static class S052 extends AS0
+   {
+      @Inject
+      public void init(){}
+   }
+
+   public abstract static class AS0
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @RequestScoped
+   public static class S1
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+
+      protected int getId2()
+      {
+         return id;
+      }
+
+      int getId3()
+      {
+         return id;
+      }
+   }
+
+   @SessionScoped
+   public static class S20
+   {
+   }
+
+   @SuppressWarnings("serial")
+   @SessionScoped
+   public static class S2 implements S, Serializable
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @ApplicationScoped
+   public static class S3 implements S
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   public static interface S
+   {
+      int getId();
+   }
+
+   /**
+    * New singleton
+    */
+   @Singleton
+   public static class S4
+   {
+      @Inject
+      private S1 s1;
+   }
+
+   /**
+    * Old singleton
+    */
+   public static class S5
+   {
+      private S1 s1;
+
+      public S5(S1 s1)
+      {
+         this.s1 = s1;
+      }
+   }
+
+   /**
+    * New bean with the default scope
+    */
+   public static class S6
+   {
+      @Inject
+      private S1 s1;
+   }
+
+   /**
+    * New bean with the dependent scope
+    */
+   @Dependent
+   public static class S7
+   {
+      @Inject
+      private S1 s1;
+   }
+
+   /**
+    * New bean with an inherited application scope
+    */
+   public static class S8 extends S9
+   {
+      @Inject
+      private S1 s1;
+   }
+
+   @ApplicationScoped
+   public static class S9
+   {
+
+   }
+
+   @RequestScoped
+   public static class Unproxyable1
+   {
+      @Inject
+      public Unproxyable1(S1 s1)
+      {
+      }
+   }
+
+   @RequestScoped
+   public static final class Unproxyable2
+   {
+   }
+
+   @RequestScoped
+   public static class Unproxyable3
+   {
+      public final void foo()
+      {
+      }
+   }
+
+   @RequestScoped
+   public static class Unproxyable4
+   {
+      protected final void foo()
+      {
+      }
+   }
+
+   @RequestScoped
+   public static class Unproxyable5
+   {
+      protected final void foo()
+      {
+      }
+   }
+
+   @RequestScoped
+   public static class Proxyable
+   {
+      @SuppressWarnings("unused")
+      private final void foo()
+      {
+      }
+   }
+
+   @RequestScoped
+   public static class Proxyable2
+   {
+      public static void foo()
+      {
+      }
    }
 }
