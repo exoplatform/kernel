@@ -200,4 +200,28 @@
 			<description>User - Ticket Authenticator</description>
 		</component-plugin>
 	</external-component-plugins>
+	<external-component-plugins profiles="testAutoRegistration">
+		<target-component>org.exoplatform.container.TestExoContainer$AutoRegistration1</target-component>
+		<component-plugin>
+			<name>AutoRegistration1</name>
+			<set-method>add</set-method>
+			<type>org.exoplatform.container.component.BaseComponentPlugin</type>
+		</component-plugin>
+	</external-component-plugins>
+	<external-component-plugins profiles="testAutoRegistration">
+		<target-component></target-component>
+		<component-plugin>
+			<name>AutoRegistrationN1</name>
+			<set-method>add</set-method>
+			<type>org.exoplatform.container.component.BaseComponentPlugin</type>
+		</component-plugin>
+	</external-component-plugins>
+	<external-component-plugins profiles="testAutoRegistration">
+		<target-component>org.exoplatform.container.TestExoContainer$AutoRegistrationQualifier1</target-component>
+		<component-plugin>
+			<name>AutoRegistrationQ1</name>
+			<set-method>add</set-method>
+			<type>org.exoplatform.container.component.BaseComponentPlugin</type>
+		</component-plugin>
+	</external-component-plugins>
 </configuration>

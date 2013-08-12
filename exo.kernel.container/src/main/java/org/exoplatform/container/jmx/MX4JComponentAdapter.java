@@ -36,6 +36,7 @@ import org.exoplatform.container.xml.ExternalComponentPlugins;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -177,13 +178,12 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
                + " is a passivating scope, we expect only serializable objects and "
                + getComponentImplementation().getName() + " is not serializable.");
          }
-         T result = null;
          try
          {
             lock.lock();
             if (proxy != null)
                return proxy;
-            result = ContainerUtil.createProxy(getComponentImplementation(), new Provider<T>()
+            T result = ContainerUtil.createProxy(getComponentImplementation(), new Provider<T>()
             {
                public T get()
                {
@@ -284,9 +284,9 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
                if (debug)
                   LOG.debug("==> create  component : " + instance);
                boolean hasInjectableConstructor =
-                  !isSingleton ? true : ContainerUtil.hasInjectableConstructor(implementationClass);
+                  !isSingleton || ContainerUtil.hasInjectableConstructor(implementationClass);
                boolean hasOnlyEmptyPublicConstructor =
-                  !isSingleton ? true : ContainerUtil.hasOnlyEmptyPublicConstructor(implementationClass);
+                  !isSingleton || ContainerUtil.hasOnlyEmptyPublicConstructor(implementationClass);
                if (hasInjectableConstructor || hasOnlyEmptyPublicConstructor)
                {
                   // There is at least one constructor JSR 330 compliant or we already know 
@@ -380,7 +380,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
          Throwable cause = e.getCause();
          if (cause instanceof Exception)
          {
-            throw (Exception)e;
+            throw (Exception)cause;
          }
          throw new Exception(cause);
       }
@@ -538,7 +538,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
    public T create(CreationalContext<T> creationalContext)
    {
       //
-      T instance = null;
+      T instance;
       Component component = null;
       ConfigurationManager manager;
       String componentKey;
@@ -558,7 +558,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
             componentKey = (String)key;
          else
             componentKey = ((Class<?>)key).getName();
-         manager = (ConfigurationManager)exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
+         manager = exocontainer.getComponentInstanceOfType(ConfigurationManager.class);
          component = manager == null ? null : manager.getComponent(componentKey);
          if (component != null)
          {
@@ -566,6 +566,11 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
             debug = component.getShowDeployInfo();
          }
          instance = createInstance(ctx, component, manager, componentKey, params, debug);
+         if (instance instanceof Startable && exocontainer.canBeStopped())
+         {
+            // Start the component if the container is already started
+            ((Startable)instance).start();
+         }
       }
       catch (Exception ex)
       {

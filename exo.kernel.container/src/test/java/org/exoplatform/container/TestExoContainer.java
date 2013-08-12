@@ -31,6 +31,9 @@ import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapter;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.spi.DefinitionByName;
+import org.exoplatform.container.spi.DefinitionByQualifier;
+import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
 import org.picocontainer.Disposable;
@@ -3774,5 +3777,813 @@ public class TestExoContainer extends AbstractTestContainer
       public static void foo()
       {
       }
+   }
+
+   public void testDefinitionByType()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      final RootContainer rootContainer = new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).
+         profiledBy("testAutoRegistration").build();
+      final ExoContainer container = PortalContainer.getInstance();
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration1.class));
+      assertTrue(container.getComponentInstanceOfType(AutoRegistration1.class).started);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration1.class).plugin);
+      assertEquals("AutoRegistration1", container.getComponentInstanceOfType(AutoRegistration1.class).plugin.getName());
+      assertNull(rootContainer.getComponentInstanceOfType(AutoRegistration1.class));
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration2.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration3.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration4.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration5.class));
+      assertTrue(container.getComponentInstanceOfType(AutoRegistration6.class) instanceof AutoRegistration6Type);
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration7.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration8.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+   }
+
+   public void testDefinitionByTypeWithProvider()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testAutoRegistration").build();
+      final ExoContainer container = PortalContainer.getInstance();
+      container.registerComponentImplementation(AutoRegistration1P.class);
+      container.registerComponentImplementation(AutoRegistration2P.class);
+      container.registerComponentImplementation(AutoRegistration3P.class);
+      container.registerComponentImplementation(AutoRegistration4P.class);
+      container.registerComponentImplementation(AutoRegistration5P.class);
+      container.registerComponentImplementation(AutoRegistration6P.class);
+      container.registerComponentImplementation(AutoRegistration7P.class);
+      container.registerComponentImplementation(AutoRegistration8P.class);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration1P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration1P.class).p);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration1P.class).p.get());
+      assertTrue(container.getComponentInstanceOfType(AutoRegistration1P.class).p.get().started);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration1P.class).p.get().plugin);
+      assertEquals("AutoRegistration1", container.getComponentInstanceOfType(AutoRegistration1P.class).p.get().plugin.getName());
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration2P.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration3P.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration4P.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration5P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration5P.class).p);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration5P.class).p.get());
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration6P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration6P.class).p);
+      assertTrue(container.getComponentInstanceOfType(AutoRegistration6P.class).p.get() instanceof AutoRegistration6Type);
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration7P.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistration8P.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+   }
+
+   @DefinitionByType
+   public static class AutoRegistration1 implements Startable
+   {
+      boolean started;
+      ComponentPlugin plugin;
+
+      public void start()
+      {
+         started = true;
+      }
+
+      public void stop()
+      {
+      }
+
+      public void add(ComponentPlugin plugin)
+      {
+         this.plugin = plugin;
+      }
+   }
+   public static class AutoRegistration1P
+   {
+      @Inject
+      public Provider<AutoRegistration1> p;
+   }
+
+   @DefinitionByType
+   public static abstract class AutoRegistration2 {}
+   public static class AutoRegistration2P
+   {
+      @Inject
+      public Provider<AutoRegistration2> p;
+   }
+
+   @DefinitionByType
+   public static interface AutoRegistration3 {}
+   public static class AutoRegistration3P
+   {
+      @Inject
+      public Provider<AutoRegistration3> p;
+   }
+
+   @DefinitionByType(type = AutoRegistration1.class)
+   public static class AutoRegistration4 {}
+   public static class AutoRegistration4P
+   {
+      @Inject
+      public Provider<AutoRegistration4> p;
+   }
+
+   @DefinitionByType(type = AutoRegistration5.class)
+   public static class AutoRegistration5 {}
+   public static class AutoRegistration5P
+   {
+      @Inject
+      public Provider<AutoRegistration5> p;
+   }
+
+   @DefinitionByType(type = AutoRegistration6Type.class)
+   public static interface AutoRegistration6 {}
+   public static class AutoRegistration6Type implements AutoRegistration6 {}
+   public static class AutoRegistration6P
+   {
+      @Inject
+      public Provider<AutoRegistration6> p;
+   }
+
+   @DefinitionByType(type = AutoRegistration7Type.class)
+   public static interface AutoRegistration7 {}
+   public static abstract class AutoRegistration7Type implements AutoRegistration7 {}
+   public static class AutoRegistration7P
+   {
+      @Inject
+      public Provider<AutoRegistration7> p;
+   }
+
+   @DefinitionByType(type = AutoRegistration8Type.class)
+   public static interface AutoRegistration8 {}
+   public static interface AutoRegistration8Type extends AutoRegistration8 {}
+   public static class AutoRegistration8P
+   {
+      @Inject
+      public Provider<AutoRegistration8> p;
+   }
+
+   public void testDefinitionByName()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      final RootContainer rootContainer = new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).
+         profiledBy("testAutoRegistration").build();
+      final ExoContainer container = PortalContainer.getInstance();
+      assertNull(container.getComponentInstanceOfType(AutoRegistrationN1.class));
+      assertNotNull(container.getComponentInstance("", AutoRegistrationN1.class));
+      assertTrue(container.getComponentInstance("", AutoRegistrationN1.class).started);
+      assertNotNull(container.getComponentInstance("", AutoRegistrationN1.class).plugin);
+      assertEquals("AutoRegistrationN1", container.getComponentInstance("", AutoRegistrationN1.class).plugin.getName());
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN1.class));
+      assertNull(rootContainer.getComponentInstance("", AutoRegistrationN1.class));
+      assertNull(rootContainer.getComponentInstanceOfType(AutoRegistrationN1.class));
+      try
+      {
+         container.getComponentInstance("", AutoRegistrationN2.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstance("", AutoRegistrationN3.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstance("", AutoRegistrationN4.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNull(container.getComponentInstanceOfType(AutoRegistrationN5.class));
+      try
+      {
+         container.getComponentInstance("", AutoRegistrationN5.class);
+         fail("An exception is expected as the type is not compatible");
+      }
+      catch (Exception e)
+      {
+         //ok
+      }
+      assertNotNull(container.getComponentInstance("foo", AutoRegistrationN5.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN5.class));
+      try
+      {
+         container.getComponentInstance("", AutoRegistrationN5.class);
+         fail("An exception is expected as the type is not compatible");
+      }
+      catch (Exception e)
+      {
+         //ok
+      }
+      assertTrue(container.getComponentInstance("foo2", AutoRegistrationN6.class) instanceof AutoRegistrationN6Type);
+      try
+      {
+         container.getComponentInstance("", AutoRegistrationN7.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstance("foo3", AutoRegistrationN8.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+   }
+
+   public void testDefinitionByNameWithProvider()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testAutoRegistration").build();
+      final ExoContainer container = PortalContainer.getInstance();
+      container.registerComponentImplementation(AutoRegistrationN1P.class);
+      container.registerComponentImplementation(AutoRegistrationN2P.class);
+      container.registerComponentImplementation(AutoRegistrationN3P.class);
+      container.registerComponentImplementation(AutoRegistrationN4P.class);
+      container.registerComponentImplementation(AutoRegistrationN5P.class);
+      container.registerComponentImplementation(AutoRegistrationN5P2.class);
+      container.registerComponentImplementation(AutoRegistrationN6P.class);
+      container.registerComponentImplementation(AutoRegistrationN7P.class);
+      container.registerComponentImplementation(AutoRegistrationN8P.class);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN1P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN1P.class).p);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN1P.class).p.get());
+      assertTrue(container.getComponentInstanceOfType(AutoRegistrationN1P.class).p.get().started);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN1P.class).p.get().plugin);
+      assertEquals("AutoRegistrationN1", container.getComponentInstanceOfType(AutoRegistrationN1P.class).p.get().plugin.getName());
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationN2P.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationN3P.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationN4P.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN5P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN5P.class).p);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN5P.class).p.get());
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationN5P2.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN6P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN6P.class).p);
+      assertTrue(container.getComponentInstanceOfType(AutoRegistrationN6P.class).p.get() instanceof AutoRegistrationN6Type);
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationN7P.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationN8P.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+   }
+
+   @DefinitionByName
+   public static class AutoRegistrationN1 implements Startable
+   {
+      boolean started;
+      ComponentPlugin plugin;
+
+      public void start()
+      {
+         started = true;
+      }
+
+      public void stop()
+      {
+      }
+
+      public void add(ComponentPlugin plugin)
+      {
+         this.plugin = plugin;
+      }
+   }
+   public static class AutoRegistrationN1P
+   {
+      @Inject
+      @Named
+      public Provider<AutoRegistrationN1> p;
+   }
+
+   @DefinitionByName
+   public static abstract class AutoRegistrationN2 {}
+   public static class AutoRegistrationN2P
+   {
+      @Inject
+      @Named
+      public Provider<AutoRegistrationN2> p;
+   }
+
+   @DefinitionByName
+   public static interface AutoRegistrationN3 {}
+   public static class AutoRegistrationN3P
+   {
+      @Inject
+      @Named
+      public Provider<AutoRegistrationN3> p;
+   }
+
+   @DefinitionByName(type = AutoRegistrationN1.class)
+   public static class AutoRegistrationN4 {}
+   public static class AutoRegistrationN4P
+   {
+      @Inject
+      @Named
+      public Provider<AutoRegistrationN4> p;
+   }
+
+   @DefinitionByName(named = "foo", type = AutoRegistrationN5.class)
+   public static class AutoRegistrationN5 {}
+   public static class AutoRegistrationN5P
+   {
+      @Inject
+      @Named("foo")
+      public Provider<AutoRegistrationN5> p;
+   }
+   public static class AutoRegistrationN5P2
+   {
+      @Inject
+      @Named
+      public Provider<AutoRegistrationN5> p;
+   }
+
+   @DefinitionByName(named = "foo2", type = AutoRegistrationN6Type.class)
+   public static interface AutoRegistrationN6 {}
+   public static class AutoRegistrationN6Type implements AutoRegistrationN6 {}
+   public static class AutoRegistrationN6P
+   {
+      @Inject
+      @Named("foo2")
+      public Provider<AutoRegistrationN6> p;
+   }
+
+   @DefinitionByName(type = AutoRegistrationN7Type.class)
+   public static interface AutoRegistrationN7 {}
+   public static abstract class AutoRegistrationN7Type implements AutoRegistrationN7 {}
+   public static class AutoRegistrationN7P
+   {
+      @Inject
+      @Named
+      public Provider<AutoRegistrationN7> p;
+   }
+
+   @DefinitionByName(named = "foo3", type = AutoRegistrationN8Type.class)
+   public static interface AutoRegistrationN8 {}
+   public static interface AutoRegistrationN8Type extends AutoRegistrationN8 {}
+   public static class AutoRegistrationN8P
+   {
+      @Inject
+      @Named("foo3")
+      public Provider<AutoRegistrationN8> p;
+   }
+
+
+   public void testDefinitionByQualifier()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      final RootContainer rootContainer = new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).
+         profiledBy("testAutoRegistration").build();
+      final ExoContainer container = PortalContainer.getInstance();
+      assertNull(container.getComponentInstanceOfType(AutoRegistrationQ1.class));
+      assertNotNull(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class));
+      assertTrue(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class).started);
+      assertNotNull(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class).plugin);
+      assertEquals("AutoRegistrationQ1", container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class).
+         plugin.getName());
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ1.class));
+      assertNull(rootContainer.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class));
+      assertNull(rootContainer.getComponentInstanceOfType(AutoRegistrationQ1.class));
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ2.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ3.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ4.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNull(container.getComponentInstanceOfType(AutoRegistrationQ5.class));
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ5.class);
+         fail("An exception is expected as the type is not compatible");
+      }
+      catch (Exception e)
+      {
+         //ok
+      }
+      assertNotNull(container.getComponentInstance(AutoRegistrationQualifier2.class, AutoRegistrationQ5.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ5.class));
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ5.class);
+         fail("An exception is expected as the type is not compatible");
+      }
+      catch (Exception e)
+      {
+         //ok
+      }
+      assertTrue(container.getComponentInstance(AutoRegistrationQualifier3.class, AutoRegistrationQ6.class) instanceof AutoRegistrationQ6Type);
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ7.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstance(AutoRegistrationQualifier4.class, AutoRegistrationQ8.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNull(container.getComponentInstance(AutoRegistrationBadQualifier.class, AutoRegistrationQ9.class));
+   }
+
+   public void testDefinitionByQualifierWithProvider()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testAutoRegistration").build();
+      final ExoContainer container = PortalContainer.getInstance();
+      container.registerComponentImplementation(AutoRegistrationQ1P.class);
+      container.registerComponentImplementation(AutoRegistrationQ2P.class);
+      container.registerComponentImplementation(AutoRegistrationQ3P.class);
+      container.registerComponentImplementation(AutoRegistrationQ4P.class);
+      container.registerComponentImplementation(AutoRegistrationQ5P.class);
+      container.registerComponentImplementation(AutoRegistrationQ5P2.class);
+      container.registerComponentImplementation(AutoRegistrationQ6P.class);
+      container.registerComponentImplementation(AutoRegistrationQ7P.class);
+      container.registerComponentImplementation(AutoRegistrationQ8P.class);
+      container.registerComponentImplementation(AutoRegistrationQ9P.class);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ1P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ1P.class).p);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ1P.class).p.get());
+      assertTrue(container.getComponentInstanceOfType(AutoRegistrationQ1P.class).p.get().started);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ1P.class).p.get().plugin);
+      assertEquals("AutoRegistrationQ1", container.getComponentInstanceOfType(AutoRegistrationQ1P.class).p.get().plugin.getName());
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationQ2P.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationQ3P.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationQ4P.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ5P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ5P.class).p);
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ5P.class).p.get());
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationQ5P2.class);
+         fail("An exception is expected as the type is not correct");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ6P.class));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ6P.class).p);
+      assertTrue(container.getComponentInstanceOfType(AutoRegistrationQ6P.class).p.get() instanceof AutoRegistrationQ6Type);
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationQ7P.class);
+         fail("An exception is expected as the class is an abstract class");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      try
+      {
+         container.getComponentInstanceOfType(AutoRegistrationQ8P.class);
+         fail("An exception is expected as the class is an interface");
+      }
+      catch (Exception e)
+      {
+         // OK
+      }
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ9P.class));
+      assertNull(container.getComponentInstanceOfType(AutoRegistrationQ9P.class).p);
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier1.class)
+   public static class AutoRegistrationQ1 implements Startable
+   {
+      boolean started;
+      ComponentPlugin plugin;
+
+      public void start()
+      {
+         started = true;
+      }
+
+      public void stop()
+      {
+      }
+
+      public void add(ComponentPlugin plugin)
+      {
+         this.plugin = plugin;
+      }
+   }
+   public static class AutoRegistrationQ1P
+   {
+      @Inject
+      @AutoRegistrationQualifier1
+      public Provider<AutoRegistrationQ1> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier1.class)
+   public static abstract class AutoRegistrationQ2 {}
+   public static class AutoRegistrationQ2P
+   {
+      @Inject
+      @AutoRegistrationQualifier1
+      public Provider<AutoRegistrationQ2> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier1.class)
+   public static interface AutoRegistrationQ3 {}
+   public static class AutoRegistrationQ3P
+   {
+      @Inject
+      @AutoRegistrationQualifier1
+      public Provider<AutoRegistrationQ3> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier1.class, type = AutoRegistrationQ1.class)
+   public static class AutoRegistrationQ4 {}
+   public static class AutoRegistrationQ4P
+   {
+      @Inject
+      @AutoRegistrationQualifier1
+      public Provider<AutoRegistrationQ4> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier2.class, type = AutoRegistrationQ5.class)
+   public static class AutoRegistrationQ5 {}
+   public static class AutoRegistrationQ5P
+   {
+      @Inject
+      @AutoRegistrationQualifier2
+      public Provider<AutoRegistrationQ5> p;
+   }
+   public static class AutoRegistrationQ5P2
+   {
+      @Inject
+      @AutoRegistrationQualifier1
+      public Provider<AutoRegistrationQ5> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier3.class, type = AutoRegistrationQ6Type.class)
+   public static interface AutoRegistrationQ6 {}
+   public static class AutoRegistrationQ6Type implements AutoRegistrationQ6 {}
+   public static class AutoRegistrationQ6P
+   {
+      @Inject
+      @AutoRegistrationQualifier3
+      public Provider<AutoRegistrationQ6> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier1.class, type = AutoRegistrationQ7Type.class)
+   public static interface AutoRegistrationQ7 {}
+   public static abstract class AutoRegistrationQ7Type implements AutoRegistrationQ7 {}
+   public static class AutoRegistrationQ7P
+   {
+      @Inject
+      @AutoRegistrationQualifier1
+      public Provider<AutoRegistrationQ7> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier4.class, type = AutoRegistrationQ8Type.class)
+   public static interface AutoRegistrationQ8 {}
+   public static interface AutoRegistrationQ8Type extends AutoRegistrationQ8 {}
+   public static class AutoRegistrationQ8P
+   {
+      @Inject
+      @AutoRegistrationQualifier4
+      public Provider<AutoRegistrationQ8> p;
+   }
+
+   @DefinitionByQualifier(qualifier = AutoRegistrationBadQualifier.class, type = AutoRegistrationQ9Type.class)
+   public static interface AutoRegistrationQ9 {}
+   public static class AutoRegistrationQ9Type implements AutoRegistrationQ9 {}
+   public static class AutoRegistrationQ9P
+   {
+      @Inject
+      @AutoRegistrationBadQualifier
+      public Provider<AutoRegistrationQ9> p;
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface AutoRegistrationQualifier1
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface AutoRegistrationQualifier2
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface AutoRegistrationQualifier3
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface AutoRegistrationQualifier4
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   public static @interface AutoRegistrationBadQualifier
+   {
    }
 }
