@@ -590,77 +590,84 @@ public class ExoContainer extends AbstractContainer
     * @param componentType the type of the component that we would like to auto register
     * @return <code>true</code> if the component has been registered, <code>false</code> otherwise.
     */
-   private <T> boolean autoRegister(DefinitionType definitionType, Object componentKey, Class<T> componentType)
+   private <T> boolean autoRegister(final DefinitionType definitionType, final Object componentKey,
+      final Class<T> componentType)
    {
-      Class<?> type;
-      Class<? extends ExoContainer>[] containers;
-      if (definitionType == DefinitionType.TYPE)
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
-         DefinitionByType definition = componentType.getAnnotation(DefinitionByType.class);
-         containers = definition.target();
-         type = definition.type();
-      }
-      else if (definitionType == DefinitionType.NAME)
-      {
-         DefinitionByName definition = componentType.getAnnotation(DefinitionByName.class);
-         if (!definition.named().equals(componentKey))
+         public Boolean run()
          {
-            return false;
+            Class<?> type;
+            Class<? extends ExoContainer>[] containers;
+            if (definitionType == DefinitionType.TYPE)
+            {
+               DefinitionByType definition = componentType.getAnnotation(DefinitionByType.class);
+               containers = definition.target();
+               type = definition.type();
+            }
+            else if (definitionType == DefinitionType.NAME)
+            {
+               DefinitionByName definition = componentType.getAnnotation(DefinitionByName.class);
+               if (!definition.named().equals(componentKey))
+               {
+                  return false;
+               }
+               containers = definition.target();
+               type = definition.type();
+            }
+            else
+            {
+               DefinitionByQualifier definition = componentType.getAnnotation(DefinitionByQualifier.class);
+               if (!definition.qualifier().equals(componentKey))
+               {
+                  return false;
+               }
+               containers = definition.target();
+               type = definition.type();
+            }
+            if (!accepts(containers))
+            {
+               // The class of the current container is not part of the allowed classes.
+               return false;
+            }
+            if (type.equals(void.class))
+            {
+               // No default implementation has been set
+               if (componentType.isInterface() || Modifier.isAbstract(componentType.getModifiers()))
+               {
+                  throw new IllegalArgumentException("The class " + componentType.getName()
+                     + " is an interface or an abstract class so it cannot be automatically registered without a type.");
+               }
+               if (definitionType == DefinitionType.TYPE)
+               {
+                  registerComponentImplementation(componentType);
+               }
+               else
+               {
+                  registerComponentImplementation(componentKey, componentType);
+               }
+            }
+            else if (!componentType.isAssignableFrom(type))
+            {
+               throw new IllegalArgumentException("The class " + type.getName() + " must be a sub class of "
+                  + componentType.getName() + ".");
+            }
+            else if (type.isInterface() || Modifier.isAbstract(type.getModifiers()))
+            {
+               throw new IllegalArgumentException("The class " + type.getName()
+                  + " is an interface or an abstract class so it cannot be used as default implementation.");
+            }
+            else if (definitionType == DefinitionType.TYPE)
+            {
+               registerComponentImplementation(componentType, type);
+            }
+            else
+            {
+               registerComponentImplementation(componentKey, type);
+            }
+            return true;
          }
-         containers = definition.target();
-         type = definition.type();
-      }
-      else
-      {
-         DefinitionByQualifier definition = componentType.getAnnotation(DefinitionByQualifier.class);
-         if (!definition.qualifier().equals(componentKey))
-         {
-            return false;
-         }
-         containers = definition.target();
-         type = definition.type();
-      }
-      if (!accepts(containers))
-      {
-         // The class of the current container is not part of the allowed classes.
-         return false;
-      }
-      if (type.equals(void.class))
-      {
-         // No default implementation has been set
-         if (componentType.isInterface() || Modifier.isAbstract(componentType.getModifiers()))
-         {
-            throw new IllegalArgumentException("The class " + componentType.getName() +
-               " is an interface or an abstract class so it cannot be automatically registered without a type.");
-         }
-         if (definitionType == DefinitionType.TYPE)
-         {
-            registerComponentImplementation(componentType);
-         }
-         else
-         {
-            registerComponentImplementation(componentKey, componentType);
-         }
-      }
-      else if (!componentType.isAssignableFrom(type))
-      {
-         throw new IllegalArgumentException("The class " + type.getName() +
-            " must be a sub class of " + componentType.getName() + ".");
-      }
-      else if (type.isInterface() || Modifier.isAbstract(type.getModifiers()))
-      {
-         throw new IllegalArgumentException("The class " + type.getName() +
-            " is an interface or an abstract class so it cannot be used as default implementation.");
-      }
-      else if (definitionType == DefinitionType.TYPE)
-      {
-         registerComponentImplementation(componentType, type);
-      }
-      else
-      {
-         registerComponentImplementation(componentKey, type);
-      }
-      return true;
+      });
    }
 
    /**

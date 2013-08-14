@@ -23,16 +23,6 @@
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
    <component>
-      <key>org.exoplatform.services.listener.ListenerService</key>
-      <type>org.exoplatform.services.listener.ListenerService</type>
-   </component>
-
-   <component>
-      <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
-      <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
-   </component>
-
-   <component>
       <key>org.exoplatform.services.naming.InitialContextInitializer</key>
       <type>org.exoplatform.services.naming.InitialContextInitializer</type>
       <init-params>
@@ -43,108 +33,5 @@
          </properties-param>
       </init-params>
    </component>
-   
-   <component>
-      <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
-      <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
-      <init-params>
-      	 <!--  Indicates that the data source needs to check if a tx is active
-    		   to decide if the provided connection needs to be managed or not.
-    		   If it is set to false, the data source will provide only
-    		   managed connections if the data source itself is managed.  -->
-         <!--value-param>
-            <name>check-tx-active</name>
-            <value>true</value>
-         </value-param-->
-         <!-- Indicates that all the data sources are managed 
-              If set to true the parameter never-managed and 
-              managed-data-sources will be ignored -->
-         <!--value-param>
-            <name>always-managed</name>
-            <value>true</value>
-         </value-param-->
-         <!-- Indicates the list of all the data sources that are 
-              managed, each value tag can contain a list of
-              data source names separated by a comma, in the
-              example below we will register ds-foo1, ds-foo2 
-              and ds-foo3 as managed data source. If always-managed
-              and/or never-managed is set true this parameter is ignored -->
-         <!--values-param>
-            <name>managed-data-sources</name>
-            <value>ds-foo1, ds-foo2</value>
-            <value>ds-foo3</value>
-         </values-param-->
-      </init-params>
-   </component>
-   <!-- component>
-      <key>org.exoplatform.services.net.NetService</key>
-      <type>org.exoplatform.services.net.impl.NetServiceImpl</type>
-   </component -->
-
-   <!-- component>
-      <key>org.exoplatform.services.scheduler.JobSchedulerService</key>
-      <type>org.exoplatform.services.scheduler.impl.JobSchedulerServiceImpl</type>
-      <component-plugins>
-         <component-plugin>
-            <name>JobContextConfigListener</name>
-            <set-method>addGlobalJobListener</set-method>
-            <type>org.exoplatform.services.scheduler.impl.JobEnvironmentConfigListener</type>
-            <description>description</description>
-         </component-plugin>
-
-         <component-plugin>
-            <name>QueueTask</name>
-            <set-method>addPeriodJob</set-method>
-            <type>org.exoplatform.services.scheduler.PeriodJob</type>
-            <description>add QueueTaskJob to the JobSchedulerService</description>
-            <init-params>
-               <properties-param>
-                  <name>job.info</name>
-                  <description>Queue Task Job</description>
-                  <property name="jobName" value="queueTask" />
-                  <property name="groupName" value="queueTask" />
-                  <property name="job" value="org.exoplatform.services.scheduler.impl.QueueTaskJob" />
-
-                  <property name="repeatCount" value="0" />
-                  <property name="period" value="10000" />
-                  <property name="startTime" value="+0" />
-                  <property name="endTime" value="" />
-               </properties-param>
-            </init-params>
-         </component-plugin>
-      </component-plugins>
-      <init-params>
-         <value-param>
-            <name>data.version</name>
-            <description>The current data version of the plugin module</description>
-            <value>1.1</value>
-         </value-param>
-      </init-params>
-   </component -->
-
-   <!-- component>
-      <key>org.exoplatform.services.scheduler.QueueTasks</key>
-      <type>org.exoplatform.services.scheduler.QueueTasks</type>
-   </component -->
-
-   <!-- ============================================================================= -->
-   <!--                     M A I L      S E R V I C E                                -->
-   <!-- ============================================================================= -->
-   <!-- component>
-      <key>org.exoplatform.services.mail.MailService</key>
-      <type>org.exoplatform.services.mail.impl.MailServiceImpl</type>
-      <init-params>
-         <properties-param>
-            <name>config</name>
-            <property name="mail.smtp.host" value="PC01" />
-            <property name="mail.smtp.port" value="25" />
-            <property name="mail.transport.protocol" value="smtp" />
-
-            <property name="mail.smtp.auth" value="false" />
-            <property name="mail.smtp.auth.username" value="exo" />
-            <property name="mail.smtp.auth.password" value="exo" />
-         </properties-param>
-      </init-params>
-   </component -->
 
 </configuration>

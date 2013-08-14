@@ -18,6 +18,10 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
+import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.container.spi.DefinitionByType;
+
 import java.net.URL;
 
 /**
@@ -25,6 +29,7 @@ import java.net.URL;
  * @since Nov 8, 2004
  * @version $Id: OperatingSystemInfo.java 5799 2006-05-28 17:55:42Z geaz $
  */
+@DefinitionByType(type = OperatingSystemInfoImpl.class, target = {RootContainer.class, StandaloneContainer.class})
 public interface OperatingSystemInfo
 {
 

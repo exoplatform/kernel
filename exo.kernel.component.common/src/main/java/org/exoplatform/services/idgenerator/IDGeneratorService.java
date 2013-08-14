@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.idgenerator;
 
+import org.exoplatform.container.spi.DefinitionByType;
+import org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl;
+
 import java.io.Serializable;
 
 /**
@@ -25,6 +28,7 @@ import java.io.Serializable;
  * @since Oct 14, 2004
  * @version $Id: IDGeneratorService.java 5332 2006-04-29 18:32:44Z geaz $
  */
+@DefinitionByType(type = IDGeneratorServiceImpl.class)
 public interface IDGeneratorService
 {
    public static final int ID_LENGTH = 32;
