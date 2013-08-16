@@ -92,8 +92,13 @@ public abstract class SharedContext<K> extends AbstractContext<K>
       @Override
       public void unlock()
       {
+         if (!hasQueuedThreads())
+         {
+            // No thread is currently waiting for this lock
+            // The lock will then be removed
+            locks.remove(id, this);
+         }
          super.unlock();
-         locks.remove(id, this);
       }
    }
 }
