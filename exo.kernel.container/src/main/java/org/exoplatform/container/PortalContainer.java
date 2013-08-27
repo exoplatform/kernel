@@ -247,7 +247,7 @@ public class PortalContainer extends ExoContainer
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       final WebAppInitContext webappCtx = new WebAppInitContext(context);
       if (!webAppContexts.contains(webappCtx))
       {
@@ -274,7 +274,7 @@ public class PortalContainer extends ExoContainer
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       final WebAppInitContext webappCtx = new WebAppInitContext(context);
       if (webAppContexts.contains(webappCtx))
@@ -319,7 +319,7 @@ public class PortalContainer extends ExoContainer
       if (result == null)
       {
          LOG.warn("The configurations could not be merged");
-         return null;         
+         return null;
       }
       return result.toXML();
    }
@@ -428,7 +428,7 @@ public class PortalContainer extends ExoContainer
       String contextName = context.getServletContextName();
       List<String> portalContainerNames = CONFIG.getPortalContainerNames(contextName);
       RootContainer root = RootContainer.getInstance();
-      // We assume that we have at list one portal container otherwise there is a bug in PortalContainerConfig
+      // We assume that we have at least one portal container otherwise there is a bug in PortalContainerConfig
       for (String name : portalContainerNames)
       {
          if (portalContainerName == null || portalContainerName.equals(name))
@@ -455,7 +455,7 @@ public class PortalContainer extends ExoContainer
          if (PropertyManager.isDevelopping())
          {
             LOG.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
-               + " has a dependency of any PortalContainerDefinitions.");            
+               + " has a dependency of any PortalContainerDefinitions.");
          }
          return null;
       }

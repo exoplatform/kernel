@@ -348,7 +348,7 @@ public class Configuration implements Cloneable
             {
                LOG.trace("An exception occurred: " + ignore.getMessage());
             }
-         }            
+         }
       }
       return sw.toString();
    }
