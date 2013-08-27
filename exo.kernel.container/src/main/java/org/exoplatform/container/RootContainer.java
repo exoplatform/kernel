@@ -50,6 +50,7 @@ import org.picocontainer.PicoException;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -221,7 +222,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    public J2EEServerInfo getServerEnvironment()
    {
       return serverenv_;
-   }   
+   }
    
    /**
     * {@inheritDoc}
@@ -370,7 +371,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                LOG.warn("The portal container '" + portalContainerName + "' doesn't exist or"
                   + " it has not yet been registered, please check your PortalContainerDefinitions and "
                   + "the loading order.");
-               config.unregisterPortalContainerName(portalContainerName);            
+               config.unregisterPortalContainerName(portalContainerName);
             }
          }
          // remove all the registered web application contexts 
@@ -405,9 +406,32 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                      if (context.getServletContextName().equals(contextName))
                      {
                         it.remove();
-                        portalContainer2Reload.add(portalContainer);
                         updated = true;
-                        lastUpdateTime.set(System.currentTimeMillis());
+                        if (portalContainer2Reload.contains(portalContainer))
+                        {
+                           // The current portal container is already part of the portal containers to be reloaded to so need to continue
+                           // at that point.
+                           lastUpdateTime.set(System.currentTimeMillis());
+                           continue;
+                        }
+                        final PortalContainer container = getPortalContainer(portalContainer);
+                        if (container != null)
+                        {
+                           Set<WebAppInitContext> contexts = container.getWebAppInitContexts();
+                           for (WebAppInitContext webappctx : contexts)
+                           {
+                              ServletContext ctx = webappctx.getServletContext();
+                              if (context.getServletContextName().equals(ctx.getServletContextName()))
+                              {
+                                 // We found a matching servlet context which means that the current servlet context is defined as a
+                                 // PortalContainerConfigOwner
+                                 portalContainer2Reload.add(portalContainer);
+                                 lastUpdateTime.set(System.currentTimeMillis());
+                                 // We already found the corresponding servlet context no need to continue
+                                 break;
+                              }
+                           }
+                        }
                      }
                   }
                }
@@ -440,6 +464,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                   }
                   while (System.currentTimeMillis() < lastUpdateTime.get() + pause);
                   dynamicReload();
+                  // We reset the value of the thread to allow other reloading
+                  reloadingThread = null;
                }
             };
             reloadingThread.setDaemon(true);
@@ -478,7 +504,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
             System.setProperties(currentSystemProperties);
-         }         
+         }
       }
       if (newConfig == null)
       {
@@ -497,7 +523,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          LOG.info("The current configuration of the root container could not be loaded," +
                   " thus everything will be reloaded");
          reload();
-         return;         
+         return;
       }
       if (newConfig.getCurrentSize() != currentConfig.getCurrentSize()
          || newConfig.getCurrentHash() != currentConfig.getCurrentHash())
@@ -506,7 +532,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          LOG.info("The configuration of the root container has changed," +
                   " thus everything will be reloaded");
          reload();
-         return;         
+         return;
       }
       LOG.info("The configuration of the root container did not change," +
                " thus only affected portal containers will be reloaded");
@@ -597,7 +623,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -634,7 +660,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          {
             uri = "conf/portal/generic-configuration.xml";
          }
-         Collection envConf = ContainerUtil.getConfigurationURL(uri);
+         Collection<URL> envConf = ContainerUtil.getConfigurationURL(uri);
          try
          {
             cService.addConfiguration(envConf);
@@ -717,7 +743,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       this.unregisterComponent(servletContext.getServletContextName());
    }
@@ -832,7 +858,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                               ExoContainerContext.setTopContainer(singleton_);
                               return null;
                            }
-                        }); 
+                        });
                         LOG.info("Root container booted");
                      }
                      else
@@ -858,7 +884,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       singleton_ = rcontainer;
    }
@@ -893,7 +919,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       else if (stopping.get())
       {
          LOG.debug("The containers cannot be reloaded as we are currently stopping the root container.");
-         return;         
+         return;
       }
       try
       {
@@ -939,13 +965,13 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
             {
                if (rootContainer != null)
                {
-                  rootContainer.reloading.set(false);                  
+                  rootContainer.reloading.set(false);
                }
                if (hasChanged)
                {
                   Thread.currentThread().setContextClassLoader(currentClassLoader);
                }
-            }            
+            }
          }
          LOG.info("All the containers have been reloaded successfully in " + (System.currentTimeMillis() - time) + " ms");
       }
@@ -972,7 +998,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       {
          LOG.debug("The portal container '" + portalContainerName
             + "' cannot be reloaded as we are currently stopping the root container.");
-         return;         
+         return;
       }
       try
       {
@@ -1019,15 +1045,15 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                   Thread.currentThread().setContextClassLoader(currentClassLoader);
                }
                reloading.set(false);
-            }               
+            }
          }
-         LOG.info("The portal container '" + portalContainerName + "' has been reloaded successfully in "
+         LOG.info("The portal container '" + portalContainerName + "' has been reloaded in "
             + (System.currentTimeMillis() - time) + " ms");
       }
       catch (Exception e)
       {
          LOG.error("Could not reload the portal container '" + portalContainerName + "'", e);
-      }      
+      }
    }
    
    /**
@@ -1063,57 +1089,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          if (LOG.isDebugEnabled())
             LOG.debug("The portal container '" + portalContainer
                + "' has not yet been initialized, thus the task can be added");
-         ConcurrentMap<String, Queue<PortalContainerInitTaskContext>> queues = initTasks.get(portalContainer);
-         if (queues == null)
-         {
-            queues = new ConcurrentHashMap<String, Queue<PortalContainerInitTaskContext>>();
-            final ConcurrentMap<String, Queue<PortalContainerInitTaskContext>> q =
-               initTasks.putIfAbsent(portalContainer, queues);
-            if (q != null)
-            {
-               queues = q;
-            }
-         }
-         final String type = task.getType();
-         Queue<PortalContainerInitTaskContext> queue = queues.get(type);
-         if (queue == null)
-         {
-            final List<String> dependencies = getPortalContainerConfig().getDependencies(portalContainer);
-            if (dependencies == null || dependencies.isEmpty())
-            {
-               // No order is required
-               queue = new ConcurrentLinkedQueue<PortalContainerInitTaskContext>();
-            }
-            else
-            {
-               queue =
-                  new PriorityBlockingQueue<PortalContainerInitTaskContext>(10,
-                     new PortalContainerInitTaskContextComparator(dependencies));
-            }
-            final Queue<PortalContainerInitTaskContext> q = queues.putIfAbsent(type, queue);
-            if (q != null)
-            {
-               queue = q;
-            }
-         }
-         else if (reloading.get())
-         {
-            // The queue already exists and we are in reloading phase, we will then check
-            // if a task of the same type exist for the same servlet context if so we replace it
-            // with a new one
-            String contextName = context.getServletContextName();
-            Class<?> c = task.getClass();
-            for (Iterator<PortalContainerInitTaskContext> it = queue.iterator(); it.hasNext();)
-            {
-               PortalContainerInitTaskContext ctx = it.next();
-               if (ctx.getServletContextName().equals(contextName) && ctx.getTask().getClass().equals(c))
-               {
-                  it.remove();
-                  break;
-               }
-            }
-         }
-         queue.add(new PortalContainerInitTaskContext(context, task));
+         addInitTaskToQueue(context, task, portalContainer);
       }
       else
       {
@@ -1130,7 +1106,74 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          {
             PortalContainer.setInstance(oldPortalContainer);
          }
+         if (PropertyManager.isDevelopping())
+         {
+            // To be able to reload the tasks properly, we need to add the task in the queue of tasks
+            addInitTaskToQueue(context, task, portalContainer);
+         }
       }
+   }
+
+   /**
+    * Adds the task to the queue of tasks
+    * 
+    * @param context the servlet context from which the task comes from
+    * @param task the task to add
+    * @param portalContainer the name of the portal container on which the task must be executed
+    */
+   private void addInitTaskToQueue(ServletContext context, PortalContainerInitTask task, String portalContainer)
+   {
+      ConcurrentMap<String, Queue<PortalContainerInitTaskContext>> queues = initTasks.get(portalContainer);
+      if (queues == null)
+      {
+         queues = new ConcurrentHashMap<String, Queue<PortalContainerInitTaskContext>>();
+         final ConcurrentMap<String, Queue<PortalContainerInitTaskContext>> q =
+            initTasks.putIfAbsent(portalContainer, queues);
+         if (q != null)
+         {
+            queues = q;
+         }
+      }
+      final String type = task.getType();
+      Queue<PortalContainerInitTaskContext> queue = queues.get(type);
+      if (queue == null)
+      {
+         final List<String> dependencies = getPortalContainerConfig().getDependencies(portalContainer);
+         if (dependencies == null || dependencies.isEmpty())
+         {
+            // No order is required
+            queue = new ConcurrentLinkedQueue<PortalContainerInitTaskContext>();
+         }
+         else
+         {
+            queue =
+               new PriorityBlockingQueue<PortalContainerInitTaskContext>(10,
+                  new PortalContainerInitTaskContextComparator(dependencies));
+         }
+         final Queue<PortalContainerInitTaskContext> q = queues.putIfAbsent(type, queue);
+         if (q != null)
+         {
+            queue = q;
+         }
+      }
+      else if (reloading.get())
+      {
+         // The queue already exists and we are in reloading phase, we will then check
+         // if a task of the same type exist for the same servlet context if so we replace it
+         // with a new one
+         String contextName = context.getServletContextName();
+         Class<?> c = task.getClass();
+         for (Iterator<PortalContainerInitTaskContext> it = queue.iterator(); it.hasNext();)
+         {
+            PortalContainerInitTaskContext ctx = it.next();
+            if (ctx.getServletContextName().equals(contextName) && ctx.getTask().getClass().equals(c))
+            {
+               it.remove();
+               break;
+            }
+         }
+      }
+      queue.add(new PortalContainerInitTaskContext(context, task));
    }
 
    /**
@@ -1196,7 +1239,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          {
             // If there is no queue anymore remove init tasks holder for this portal container
             initTasks.remove(portalContainerName);
-         }         
+         }
       }
       if (LOG.isDebugEnabled())
          LOG.debug("End launching the " + type + " tasks of the portal container '" + portalContainer + "'");
@@ -1333,6 +1376,11 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
        */
       public final void onAlreadyExists(ServletContext context, PortalContainer portalContainer)
       {
+         if (PropertyManager.isDevelopping())
+         {
+            execute(context, portalContainer);
+            return;
+         }
          throw new IllegalStateException("No pre init tasks can be added to the portal container '"
             + portalContainer.getName() + "', because it has already been " + "initialized. Check the webapp '"
             + context.getServletContextName() + "'");
