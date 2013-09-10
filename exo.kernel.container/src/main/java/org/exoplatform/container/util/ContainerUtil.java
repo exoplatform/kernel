@@ -45,8 +45,10 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -84,6 +86,15 @@ public class ContainerUtil
       };
    }
 
+   private static final Comparator<Constructor<?>> CONSTRUCTOR_COMPARATOR = new Comparator<Constructor<?>>()
+   {
+      @Override
+      public int compare(Constructor<?> o1, Constructor<?> o2)
+      {
+         return o2.getParameterTypes().length - o1.getParameterTypes().length;
+      }
+   };
+
    public static Constructor<?>[] getSortedConstructors(Class<?> clazz) throws NoClassDefFoundError
    {
       Constructor<?>[] constructors = clazz.getDeclaredConstructors();
@@ -97,19 +108,7 @@ public class ContainerUtil
          }
       }
       constructors = clazz.getConstructors();
-      for (int i = 0; i < constructors.length; i++)
-      {
-         Constructor<?> tmp = constructors[i];
-         for (int j = i + 1; j < constructors.length; j++)
-         {
-            if (constructors[i].getParameterTypes().length < constructors[j].getParameterTypes().length)
-            {
-               constructors[i] = constructors[j];
-               constructors[j] = tmp;
-            }
-         }
-      }
-
+      Arrays.sort(constructors, CONSTRUCTOR_COMPARATOR);
       return constructors;
    }
 

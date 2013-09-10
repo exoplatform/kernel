@@ -45,6 +45,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -1624,6 +1625,67 @@ public class TestExoContainer extends AbstractTestContainer
       {
          this.container = ExoContainerContext.getCurrentContainer();
       }
+   }
+
+   public static class SortedConstructorsA
+   {
+      public SortedConstructorsA(String a, String b, String c) {}
+      public SortedConstructorsA(String a, String b) {}
+      public SortedConstructorsA(String a) {}
+   }
+
+   public static class SortedConstructorsB
+   {
+      public SortedConstructorsB(String a, String b, String c) {}
+      public SortedConstructorsB(String a) {}
+      public SortedConstructorsB(String a, String b) {}
+   }
+
+   public static class SortedConstructorsC
+   {
+      public SortedConstructorsC(String a, String b) {}
+      public SortedConstructorsC(String a) {}
+      public SortedConstructorsC(String a, String b, String c) {}
+   }
+
+   public static class SortedConstructorsD
+   {
+      public SortedConstructorsD(String a, String b) {}
+      public SortedConstructorsD(String a, String b, String c) {}
+      public SortedConstructorsD(String a) {}
+   }
+
+   public static class SortedConstructorsE
+   {
+      public SortedConstructorsE(String a) {}
+      public SortedConstructorsE(String a, String b, String c) {}
+      public SortedConstructorsE(String a, String b) {}
+   }
+
+   public static class SortedConstructorsF
+   {
+      public SortedConstructorsF(String a) {}
+      public SortedConstructorsF(String a, String b) {}
+      public SortedConstructorsF(String a, String b, String c) {}
+   }
+
+   public void testSortedConstructors()
+   {
+      testSortedConstructors(SortedConstructorsA.class);
+      testSortedConstructors(SortedConstructorsB.class);
+      testSortedConstructors(SortedConstructorsC.class);
+      testSortedConstructors(SortedConstructorsD.class);
+      testSortedConstructors(SortedConstructorsE.class);
+      testSortedConstructors(SortedConstructorsF.class);
+   }
+
+   private void testSortedConstructors(Class<?> c)
+   {
+      Constructor<?>[] constructors = ContainerUtil.getSortedConstructors(c);
+      assertEquals(3, constructors.length);
+      assertEquals(3, constructors[0].getParameterTypes().length);
+      assertEquals(2, constructors[1].getParameterTypes().length);
+      assertEquals(1, constructors[2].getParameterTypes().length);
    }
 
    public void testJSR330() throws Exception
