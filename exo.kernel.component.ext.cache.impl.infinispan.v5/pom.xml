@@ -29,12 +29,12 @@
 	</parent>
 	<artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
 	<name>eXo Kernel :: Cache Extension :: Infinispan Implementation</name>
-    <description>Infinispan Implementation of Cache Service for Exoplatform SAS 'eXo Kernel' project.</description>
+	<description>Infinispan Implementation of Cache Service for Exoplatform SAS 'eXo Kernel' project.</description>
 	<dependencies>
 		<dependency>
 			<groupId>org.exoplatform.kernel</groupId>
 			<artifactId>exo.kernel.commons.test</artifactId>
-            <scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.exoplatform.kernel</groupId>
@@ -43,21 +43,50 @@
 		<dependency>
 			<groupId>org.exoplatform.kernel</groupId>
 			<artifactId>exo.kernel.component.common</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jgroups</groupId>
+					<artifactId>jgroups</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-core</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.spec.javax.transaction</groupId>
+					<artifactId>jboss-transaction-api_1.1_spec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jgroups</groupId>
+					<artifactId>jgroups</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>jta</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
 			<version>3.3.1.Final</version>
-            <scope>runtime</scope>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.exoplatform.kernel</groupId>

@@ -56,8 +56,25 @@
                <groupId>jgroups</groupId>
                <artifactId>jgroups</artifactId>
             </exclusion>
+            <exclusion>
+               <groupId>org.jboss.logging</groupId>
+               <artifactId>jboss-logging-spi</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.jboss.javaee</groupId>
+               <artifactId>jboss-transaction-api</artifactId>
+            </exclusion>
          </exclusions>
       </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>             
+      <dependency>
+         <groupId>javax.transaction</groupId>
+         <artifactId>jta</artifactId>
+         <scope>provided</scope>
+      </dependency>             
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>

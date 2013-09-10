@@ -46,11 +46,6 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>javax.activation</groupId>
-         <artifactId>activation</artifactId>
-         <scope>runtime</scope>
-      </dependency>
-      <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
          <scope>test</scope>
@@ -60,6 +55,10 @@
          <artifactId>jotm-core</artifactId>
          <scope>provided</scope>
          <exclusions>
+            <exclusion>
+               <groupId>org.ow2.spec.ee</groupId>
+               <artifactId>ow2-jta-1.1-spec</artifactId>
+            </exclusion>
             <exclusion>
                <groupId>javax.resource</groupId>
                <artifactId>connector</artifactId>
@@ -81,6 +80,11 @@
                 <artifactId>commons-logging</artifactId>
             </exclusion>
          </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.spec.ee</groupId>
+         <artifactId>ow2-jta-1.1-spec</artifactId>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>javax.resource</groupId>
@@ -115,11 +119,23 @@
          <groupId>com.atomikos</groupId>
          <artifactId>transactions-jta</artifactId>
          <scope>provided</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>org.mockito</groupId>
+               <artifactId>mockito-all</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.subethamail</groupId>
          <artifactId>subethasmtp</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>javax.activation</groupId>
+               <artifactId>activation</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
    </dependencies>
    <build>

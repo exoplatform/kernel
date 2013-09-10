@@ -55,9 +55,14 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>xpp3</groupId>
+         <groupId>org.ogce</groupId>
          <artifactId>xpp3</artifactId>
-         <scope>provided</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>junit</groupId>
+               <artifactId>junit</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>
