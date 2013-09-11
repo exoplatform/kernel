@@ -212,8 +212,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.addJob(job, true);
-      scheduler_.scheduleJob(trigger);
+      scheduler_.scheduleJob(job, trigger);
    }
 
    public void addCronJob(ComponentPlugin plugin) throws Exception
@@ -242,8 +241,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
-      scheduler_.addJob(job, true);
-      scheduler_.scheduleJob(trigger);
+      scheduler_.scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo, JobDataMap jdatamap) throws Exception
