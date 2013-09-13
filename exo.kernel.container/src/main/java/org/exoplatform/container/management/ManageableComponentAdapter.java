@@ -22,18 +22,21 @@ import org.exoplatform.container.ConcurrentContainer;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapter;
 import org.exoplatform.container.spi.Container;
-import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.annotation.Annotation;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.CreationalContext;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class ManageableComponentAdapter extends MX4JComponentAdapter
+public class ManageableComponentAdapter<T> extends MX4JComponentAdapter<T>
 {
 
    /**
@@ -48,50 +51,92 @@ public class ManageableComponentAdapter extends MX4JComponentAdapter
    private final AtomicBoolean registered = new AtomicBoolean();
 
    public ManageableComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key,
-      Class<?> implementation)
+      Class<T> implementation)
    {
       super(holder, container, key, implementation);
    }
 
-   public Object getComponentInstance() throws ContainerException
+   protected void register(Container co, Object instance)
    {
-      Object instance = super.getComponentInstance();
+      if (registered.compareAndSet(false, true))
+      {
+         do
+         {
+            if (co instanceof ManageableContainer)
+            {
+               break;
+            }
+         }
+         while ((co = co.getSuccessor()) != null);
+         if (co instanceof ManageableContainer)
+         {
+            ManageableContainer container = (ManageableContainer)co;
+            if (container.managementContext != null)
+            {
+               // Register the instance against the management context
+               if (LOG.isDebugEnabled())
+                  LOG.debug("==> add " + instance + " to a mbean server");
+               container.managementContext.register(instance);
 
-      //
-      if (instance != null)
+               // Register if it is a management provider
+               if (instance instanceof ManagementProvider)
+               {
+                  ManagementProvider provider = (ManagementProvider)instance;
+                  container.addProvider(provider);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public T create(CreationalContext<T> creationalContext)
+   {
+      T instance = super.create(creationalContext);
+      Class<? extends Annotation> scope = null;
+      if (instance != null && (((scope = getScope()) != null && !scope.equals(Dependent.class))) || isSingleton())
       {
          register(exocontainer, instance);
       }
       return instance;
    }
 
-   protected void register(Container co, Object instance)
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void destroy(T instance, CreationalContext<T> creationalContext)
    {
-      do
+      try
       {
-         if (co instanceof ManageableContainer)
+         Container co = exocontainer;
+         do
          {
-            break;
-         }
-      }
-      while ((co = co.getSuccessor()) != null);
-      if (co instanceof ManageableContainer && registered.compareAndSet(false, true))
-      {
-         ManageableContainer container = (ManageableContainer)co;
-         if (container.managementContext != null)
-         {
-            // Registry the instance against the management context
-            if (LOG.isDebugEnabled())
-               LOG.debug("==> add " + instance + " to a mbean server");
-            container.managementContext.register(instance);
-
-            // Register if it is a management provider
-            if (instance instanceof ManagementProvider)
+            if (co instanceof ManageableContainer)
             {
-               ManagementProvider provider = (ManagementProvider)instance;
-               container.addProvider(provider);
+               break;
             }
          }
+         while ((co = co.getSuccessor()) != null);
+         if (co instanceof ManageableContainer)
+         {
+            ManageableContainer container = (ManageableContainer)co;
+            if (container.managementContext != null)
+            {
+               // UnRegister the instance against the management context
+               if (LOG.isDebugEnabled())
+                  LOG.debug("==> remove " + instance + " from a mbean server");
+               container.managementContext.unregister(instance);
+            }
+         }
+         creationalContext.release();
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not destroy the instance " + instance + ": " + e.getMessage());
       }
    }
 }

@@ -38,12 +38,27 @@ public class MimeTypeResolver
 {
    protected static final Log LOG = ExoLogger.getLogger("exo.kernel.commons.MimeTypeResolver");
 
+   /**
+    *  Name of mime cache file property parameter.
+    */
+   private static final String MIME_CACHE = "exo.mime.cache";
+
+
    static {
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
          {
-            MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+            String mimeCacheFile = PropertyManager.getProperty(MIME_CACHE);
+            if (mimeCacheFile != null && !mimeCacheFile.isEmpty())
+            {
+               new eu.medsea.mimeutil.detector.OpendesktopMimeDetector(mimeCacheFile);
+               MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.OpendesktopMimeDetector");
+            }
+            else
+            {
+               MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+            }
             return null;
          }
       });

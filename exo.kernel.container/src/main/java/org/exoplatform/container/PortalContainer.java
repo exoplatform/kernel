@@ -59,7 +59,7 @@ import javax.servlet.ServletContext;
 @NamingContext(@Property(key = "portal", value = "{Name}"))
 @NameTemplate({@Property(key = "container", value = "portal"), @Property(key = "name", value = "{Name}")})
 @RESTEndpoint(path = "pcontainer")
-public class PortalContainer extends ExoContainer implements SessionManagerContainer
+public class PortalContainer extends ExoContainer
 {
 
    /**
@@ -94,8 +94,6 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    private volatile boolean started_;
 
    private PortalContainerInfo pinfo_;
-
-   private SessionManager smanager_;
 
    /**
     * The name of the portal container
@@ -249,7 +247,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       final WebAppInitContext webappCtx = new WebAppInitContext(context);
       if (!webAppContexts.contains(webappCtx))
       {
@@ -276,7 +274,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
+         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
       final WebAppInitContext webappCtx = new WebAppInitContext(context);
       if (webAppContexts.contains(webappCtx))
@@ -321,55 +319,9 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       if (result == null)
       {
          LOG.warn("The configurations could not be merged");
-         return null;         
+         return null;
       }
       return result.toXML();
-   }
-   /**
-    * @param id the session container identifier
-    * @param owner the owner name
-    */
-   public SessionContainer createSessionContainer(String id, String owner)
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
-      
-      SessionContainer scontainer = getSessionManager().getSessionContainer(id);
-      if (scontainer != null)
-         getSessionManager().removeSessionContainer(id);
-      scontainer = new SessionContainer(id, owner);
-      scontainer.setPortalName(pinfo_.getContainerName());
-      getSessionManager().addSessionContainer(scontainer);
-      SessionContainer.setInstance(scontainer);
-      return scontainer;
-   }
-   /**
-    * @param sessionID the identifier of session to remove
-    */
-   public void removeSessionContainer(String sessionID)
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);     
-      
-      getSessionManager().removeSessionContainer(sessionID);
-   }
-   /**
-    * @return returns a collection containing all the live sessions
-    */
-   public List<SessionContainer> getLiveSessions()
-   {
-      return getSessionManager().getLiveSessions();
-   }
-   /**
-    * @return returns session manager
-    */
-   public SessionManager getSessionManager()
-   {
-      if (smanager_ == null)
-         smanager_ = (SessionManager)this.getComponentInstanceOfType(SessionManager.class);
-      return smanager_;
    }
 
    public PortalContainerInfo getPortalContainerInfo()
@@ -476,7 +428,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
       String contextName = context.getServletContextName();
       List<String> portalContainerNames = CONFIG.getPortalContainerNames(contextName);
       RootContainer root = RootContainer.getInstance();
-      // We assume that we have at list one portal container otherwise there is a bug in PortalContainerConfig
+      // We assume that we have at least one portal container otherwise there is a bug in PortalContainerConfig
       for (String name : portalContainerNames)
       {
          if (portalContainerName == null || portalContainerName.equals(name))
@@ -503,7 +455,7 @@ public class PortalContainer extends ExoContainer implements SessionManagerConta
          if (PropertyManager.isDevelopping())
          {
             LOG.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
-               + " has a dependency of any PortalContainerDefinitions.");            
+               + " has a dependency of any PortalContainerDefinitions.");
          }
          return null;
       }

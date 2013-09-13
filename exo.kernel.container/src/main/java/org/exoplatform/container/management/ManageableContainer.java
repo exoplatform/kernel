@@ -182,10 +182,10 @@ public class ManageableContainer extends AbstractInterceptor
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+   public <T> ComponentAdapter<T> registerComponentInstance(Object componentKey, T componentInstance)
       throws ContainerException
    {
-      ComponentAdapter adapter = super.registerComponentInstance(componentKey, componentInstance);
+      ComponentAdapter<T> adapter = super.registerComponentInstance(componentKey, componentInstance);
       if (managementContext != null)
       {
          managementContext.register(componentInstance);
@@ -204,12 +204,12 @@ public class ManageableContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public ComponentAdapter unregisterComponent(Object componentKey)
+   public ComponentAdapter<?> unregisterComponent(Object componentKey)
    {
       Object componentInstance;
       try
       {
-         componentInstance = getComponentInstance(componentKey);
+         componentInstance = getComponentInstance(componentKey, Object.class);
 
          if (managementContext != null && componentInstance != null)
          {

@@ -86,9 +86,9 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public Object getComponentInstance(Object componentKey)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
    {
-      return delegate.getComponentInstance(componentKey);
+      return delegate.getComponentInstance(componentKey, bindType);
    }
 
    /**
@@ -110,15 +110,15 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter getComponentAdapter(Object componentKey)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
    {
-      return delegate.getComponentAdapter(componentKey);
+      return delegate.getComponentAdapter(componentKey, bindType);
    }
 
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
       return delegate.getComponentAdapterOfType(componentType);
    }
@@ -126,7 +126,7 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public Collection<ComponentAdapter> getComponentAdapters()
+   public Collection<ComponentAdapter<?>> getComponentAdapters()
    {
       return delegate.getComponentAdapters();
    }
@@ -134,7 +134,7 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
       return delegate.getComponentAdaptersOfType(componentType);
    }
@@ -158,7 +158,7 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter registerComponentImplementation(Object componentKey, Class<?> componentImplementation)
+   public <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
       throws ContainerException
    {
       return delegate.registerComponentImplementation(componentKey, componentImplementation);
@@ -167,7 +167,7 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
+   public <T> ComponentAdapter<T> registerComponentInstance(Object componentKey, T componentInstance)
       throws ContainerException
    {
       return delegate.registerComponentInstance(componentKey, componentInstance);
@@ -176,7 +176,7 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public ComponentAdapter unregisterComponent(Object componentKey)
+   public ComponentAdapter<?> unregisterComponent(Object componentKey)
    {
       return delegate.unregisterComponent(componentKey);
    }

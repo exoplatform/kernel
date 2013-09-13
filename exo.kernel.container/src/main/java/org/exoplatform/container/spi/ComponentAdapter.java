@@ -29,7 +29,7 @@ package org.exoplatform.container.spi;
  * @version $Id$
  *
  */
-public interface ComponentAdapter
+public interface ComponentAdapter<T>
 {
    /**
     * Retrieve the key associated with the component.
@@ -45,7 +45,7 @@ public interface ComponentAdapter
     * @return the component's implementation class. Should normally be a concrete class (ie, a class that can be
     *         instantiated).
     */
-   Class<?> getComponentImplementation();
+   Class<? extends T> getComponentImplementation();
 
    /**
     * Retrieve the component instance. This method will usually create a new instance each time it is called, but that
@@ -55,5 +55,10 @@ public interface ComponentAdapter
     * @throws ContainerException if the component could not be instantiated. Or if the component has dependencies which could not be resolved, or
     *                   instantiation of the component lead to an ambiguous situation within the container.
     */
-   Object getComponentInstance() throws ContainerException;
+   T getComponentInstance() throws ContainerException;
+
+   /**
+    * Indicates whether or not this adapter is a singleton
+    */
+   boolean isSingleton();
 }

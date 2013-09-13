@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jdbc;
 
+import org.exoplatform.container.spi.DefinitionByType;
+import org.exoplatform.services.jdbc.impl.DataSourceProviderImpl;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -29,6 +32,7 @@ import javax.sql.DataSource;
  * @version $Id$
  *
  */
+@DefinitionByType(type = DataSourceProviderImpl.class)
 public interface DataSourceProvider
 {
    /**

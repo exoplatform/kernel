@@ -29,7 +29,7 @@ public class XMLValue extends XMLBaseObject
    {
    }
 
-   public XMLValue(Class objecttype, Object val) throws Exception
+   public XMLValue(Class<?> objecttype, Object val) throws Exception
    {
       super(objecttype, val);
    }

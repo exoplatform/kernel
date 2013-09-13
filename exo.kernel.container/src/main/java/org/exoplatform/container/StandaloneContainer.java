@@ -40,7 +40,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -60,7 +59,7 @@ import java.util.List;
 @Managed
 @NameTemplate(@Property(key = "container", value = "standalone"))
 @RESTEndpoint(path = "scontainer")
-public class StandaloneContainer extends ExoContainer implements SessionManagerContainer
+public class StandaloneContainer extends ExoContainer
 {
 
    /**
@@ -75,8 +74,6 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    private static volatile URL configurationURL = null;
 
    private static boolean useDefault = true;
-
-   private SessionManager smanager_;
 
    private ConfigurationManagerImpl configurationManager;
 
@@ -94,7 +91,6 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
          public Void run()
          {
             registerComponentInstance(ConfigurationManager.class, configurationManager);
-            registerComponentImplementation(SessionManagerImpl.class);
             // Workaround used to allow to use the PropertyConfigurator with the StandaloneContainer
             // If the system property PropertyManager.PROPERTIES_URL has been set properly, it will load the properties
             // from the file and load them as system properties
@@ -277,47 +273,6 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    }
 
    /**
-    * Ccreate SessionContainer.
-    *
-    * @param id String 
-    * @return SessionContainer instance
-    */
-   public SessionContainer createSessionContainer(String id)
-   {
-      SessionContainer scontainer = getSessionManager().getSessionContainer(id);
-      if (scontainer != null)
-         getSessionManager().removeSessionContainer(id);
-      scontainer = new SessionContainer(id, null);
-      getSessionManager().addSessionContainer(scontainer);
-      SessionContainer.setInstance(scontainer);
-      return scontainer;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public SessionContainer createSessionContainer(String id, String owner)
-   {
-      return createSessionContainer(id);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public List<SessionContainer> getLiveSessions()
-   {
-      return getSessionManager().getLiveSessions();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void removeSessionContainer(String sessionID)
-   {
-      getSessionManager().removeSessionContainer(sessionID);
-   }
-
-   /**
     * Get configurationURL.
     *
     * @return URL
@@ -352,16 +307,6 @@ public class StandaloneContainer extends ExoContainer implements SessionManagerC
    }
 
    // -------------- Helpers ----------
-
-   /**
-    * {@inheritDoc}
-    */
-   public SessionManager getSessionManager()
-   {
-      if (smanager_ == null)
-         smanager_ = (SessionManager)this.getComponentInstanceOfType(SessionManager.class);
-      return smanager_;
-   }
 
    private static boolean fileExists(final URL url)
    {

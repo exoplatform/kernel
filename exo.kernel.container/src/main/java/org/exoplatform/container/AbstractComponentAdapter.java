@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @version $Id$
  *
  */
-public abstract class AbstractComponentAdapter implements ComponentAdapter, Serializable
+public abstract class AbstractComponentAdapter<T> implements ComponentAdapter<T>, Serializable
 {
    /**
     * The serial version UID
@@ -37,7 +37,7 @@ public abstract class AbstractComponentAdapter implements ComponentAdapter, Seri
 
    private Object componentKey;
 
-   private Class<?> componentImplementation;
+   private Class<T> componentImplementation;
 
    /**
     * Constructs a new ComponentAdapter for the given key and implementation. 
@@ -45,7 +45,7 @@ public abstract class AbstractComponentAdapter implements ComponentAdapter, Seri
     * @param componentImplementation the concrete implementation
     * @throws ContainerException if the key is a type and the implementation cannot be assigned to.
     */
-   protected AbstractComponentAdapter(Object componentKey, Class<?> componentImplementation)
+   protected AbstractComponentAdapter(Object componentKey, Class<T> componentImplementation)
       throws ContainerException
    {
       if (componentImplementation == null)
@@ -59,7 +59,6 @@ public abstract class AbstractComponentAdapter implements ComponentAdapter, Seri
 
    /**
     * {@inheritDoc}
-    * @see org.picocontainer.ComponentAdapter#getComponentKey()
     */
    public Object getComponentKey()
    {
@@ -72,19 +71,18 @@ public abstract class AbstractComponentAdapter implements ComponentAdapter, Seri
 
    /**
     * {@inheritDoc}
-    * @see org.picocontainer.ComponentAdapter#getComponentImplementation()
     */
-   public Class<?> getComponentImplementation()
+   public Class<T> getComponentImplementation()
    {
       return componentImplementation;
    }
 
    protected void checkTypeCompatibility() throws ContainerException
    {
-      if (componentKey instanceof Class)
+      if (componentKey instanceof Class<?>)
       {
          Class<?> componentType = (Class<?>)componentKey;
-         if (!componentType.isAssignableFrom(componentImplementation))
+         if (!componentType.isAnnotation() && !componentType.isAssignableFrom(componentImplementation))
          {
             throw new ContainerException("The type:" + componentType.getName() + "  was not assignable from the class "
                + componentImplementation.getName());

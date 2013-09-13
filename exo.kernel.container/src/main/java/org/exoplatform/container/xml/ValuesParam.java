@@ -20,6 +20,7 @@ package org.exoplatform.container.xml;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Jul 19, 2004
@@ -31,14 +32,14 @@ import java.util.Iterator;
 public class ValuesParam extends Parameter
 {
 
-   private ArrayList values = new ArrayList(2);
+   private List<String> values = new ArrayList<String>();
 
-   public ArrayList getValues()
+   public List<String> getValues()
    {
       return values;
    }
 
-   public void setValues(ArrayList values)
+   public void setValues(List<String> values)
    {
       this.values = values;
    }
@@ -47,17 +48,17 @@ public class ValuesParam extends Parameter
    {
       if (values.size() == 0)
          return null;
-      return (String)values.get(0);
+      return values.get(0);
    }
 
    public String toString()
    {
-      Iterator it = values.iterator();
+      Iterator<String> it = values.iterator();
       StringBuilder builder = new StringBuilder();
       while (it.hasNext())
       {
-         Object object = (Object)it.next();
-         builder.append(object);
+         String value = it.next();
+         builder.append(value);
          if (it.hasNext())
          {
             builder.append(",");

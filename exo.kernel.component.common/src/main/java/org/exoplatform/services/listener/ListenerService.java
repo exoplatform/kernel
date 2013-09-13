@@ -23,6 +23,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.container.component.ThreadContextHandler;
+import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -45,6 +46,7 @@ import java.util.concurrent.Executors;
  * @author : <a href="nhudinhthuan@exoplatform.com">Nhu Dinh Thuan</a>.
  * @LevelAPI Platform
  */
+@DefinitionByType
 public class ListenerService
 {
    /** 

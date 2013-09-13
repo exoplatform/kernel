@@ -18,6 +18,10 @@
  */
 package org.exoplatform.container.monitor.jvm;
 
+import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.container.spi.DefinitionByType;
+
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +30,7 @@ import java.util.Map;
  * @since Nov 8, 2004
  * @version $Id: JVMRuntimeInfo.java 5799 2006-05-28 17:55:42Z geaz $
  */
+@DefinitionByType(type = JVMRuntimeInfoImpl.class, target = {RootContainer.class, StandaloneContainer.class})
 public interface JVMRuntimeInfo
 {
    final static public String MEMORY_MANAGER_MXBEANS = "MemoryManagerMXBean";

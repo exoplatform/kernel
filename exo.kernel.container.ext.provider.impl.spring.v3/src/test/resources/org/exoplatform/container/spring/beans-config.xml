@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context.xsd">
+
+   <context:annotation-config />
+   <bean id="b" class="org.exoplatform.container.spring.TestSpringContainer$B">
+   </bean>
+
+   <bean id="c" class="org.exoplatform.container.spring.TestSpringContainer$C" scope="prototype">
+   </bean>
+
+   <bean id="f" class="org.exoplatform.container.spring.TestSpringContainer$F">
+   </bean>
+
+   <bean id="g" class="org.exoplatform.container.spring.TestSpringContainer$G1">
+   </bean>
+
+   <bean id="g_2" class="org.exoplatform.container.spring.TestSpringContainer$G2" name="MyClassG2">
+   </bean>
+
+   <bean id="g2" class="org.exoplatform.container.spring.TestSpringContainer$G2">
+   </bean>
+
+   <bean id="g2_1" class="org.exoplatform.container.spring.TestSpringContainer$G1" name="org.exoplatform.container.spring.TestSpringContainer$QG2_1">
+   </bean>
+
+   <bean id="g3" class="org.exoplatform.container.spring.TestSpringContainer$G3" name="org.exoplatform.container.spring.TestSpringContainer$G">
+   </bean>
+</beans>

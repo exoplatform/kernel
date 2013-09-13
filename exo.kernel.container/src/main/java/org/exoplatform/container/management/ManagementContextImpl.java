@@ -145,7 +145,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       {
          throw new IllegalArgumentException("The parent cannot be null");
       }
-      if ((resource != null && typeMD == null) && (resource == null && typeMD != null))
+      if ((resource != null && typeMD == null) || (resource == null && typeMD != null))
       {
          throw new IllegalArgumentException("Can't have resource null and meta data not null or the converse");
       }

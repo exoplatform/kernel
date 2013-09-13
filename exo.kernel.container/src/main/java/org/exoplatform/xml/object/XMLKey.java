@@ -30,7 +30,7 @@ public class XMLKey extends XMLBaseObject
    {
    }
 
-   public XMLKey(Class objecttype, Object val) throws Exception
+   public XMLKey(Class<?> objecttype, Object val) throws Exception
    {
       super(objecttype, val);
    }

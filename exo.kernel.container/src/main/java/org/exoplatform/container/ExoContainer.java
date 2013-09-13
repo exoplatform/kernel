@@ -22,10 +22,14 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.context.ContextManager;
 import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.Container;
 import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.spi.DefinitionByName;
+import org.exoplatform.container.spi.DefinitionByQualifier;
+import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.container.spi.InterceptorChainFactoryProvider;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
@@ -36,6 +40,8 @@ import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.inject.Qualifier;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -69,7 +77,7 @@ public class ExoContainer extends AbstractContainer
     * The current list of profiles
     */
    private static volatile String PROFILES;
-   
+
    /**
     * The current set of profiles
     */
@@ -78,8 +86,14 @@ public class ExoContainer extends AbstractContainer
    protected final AtomicBoolean stopping = new AtomicBoolean();
 
    private final AtomicBoolean started = new AtomicBoolean();
+
    private final AtomicBoolean disposed = new AtomicBoolean();
+
    private final AtomicBoolean initialized = new AtomicBoolean();
+
+   private final AtomicBoolean ctxManagerLoaded = new AtomicBoolean();
+
+   private ContextManager ctxManager;
 
    /**
     * Returns an unmodifiable set of profiles defined by the value returned by invoking
@@ -184,7 +198,7 @@ public class ExoContainer extends AbstractContainer
 
    private void initContainerInternal()
    {
-      ConfigurationManager manager = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
+      ConfigurationManager manager = getComponentInstanceOfType(ConfigurationManager.class);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);
@@ -206,7 +220,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeDisposed())
       {
          destroyContainerInternal();
@@ -233,7 +247,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeInitialized())
       {
          // Initialize the successors
@@ -249,7 +263,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStarted())
       {
          super.start();
@@ -263,7 +277,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       if (canBeStopped())
       {
          stopping.set(true);
@@ -323,7 +337,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       List<String> list = plugin.getManageableComponents();
       for (String component : list)
          componentLifecylePlugin_.put(component, plugin);
@@ -334,7 +348,7 @@ public class ExoContainer extends AbstractContainer
       SecurityManager security = System.getSecurityManager();
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
-      
+
       containerLifecyclePlugin_.add(plugin);
    }
 
@@ -344,7 +358,7 @@ public class ExoContainer extends AbstractContainer
     */
    protected Configuration getConfiguration()
    {
-      ConfigurationManager cm = (ConfigurationManager)getComponentInstanceOfType(ConfigurationManager.class);
+      ConfigurationManager cm = getComponentInstanceOfType(ConfigurationManager.class);
       return cm == null ? null : cm.getConfiguration();
    }
 
@@ -353,8 +367,8 @@ public class ExoContainer extends AbstractContainer
     */
    protected void unregisterAllComponents()
    {
-      Collection<ComponentAdapter> adapters = getComponentAdapters();
-      for (ComponentAdapter adapter : adapters)
+      Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
+      for (ComponentAdapter<?> adapter : adapters)
       {
          unregisterComponent(adapter.getComponentKey());
       }
@@ -370,7 +384,8 @@ public class ExoContainer extends AbstractContainer
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
     * @throws ContainerException if registration fails.
     */
-   public ComponentAdapter registerComponentImplementation(Class<?> componentImplementation) throws ContainerException
+   public <T> ComponentAdapter<T> registerComponentImplementation(Class<T> componentImplementation)
+      throws ContainerException
    {
       return registerComponentImplementation(componentImplementation, componentImplementation);
    }
@@ -379,13 +394,13 @@ public class ExoContainer extends AbstractContainer
     * Register an arbitrary object. The class of the object will be used as a key. Calling this method is equivalent to
     * calling     * <code>registerComponentImplementation(componentImplementation, componentImplementation)</code>.
     *
-    * @param componentInstance
+    * @param componentInstance the instance of the component to register
     * @return the ComponentAdapter that has been associated with this component. In the majority of cases, this return
     *         value can be safely ignored, as one of the <code>getXXX()</code> methods of the
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
     * @throws ContainerException if registration fails.
     */
-   public ComponentAdapter registerComponentInstance(Object componentInstance) throws ContainerException
+   public <T> ComponentAdapter<T> registerComponentInstance(T componentInstance) throws ContainerException
    {
       return registerComponentInstance(componentInstance.getClass(), componentInstance);
    }
@@ -403,14 +418,40 @@ public class ExoContainer extends AbstractContainer
       return createComponent(clazz, null);
    }
 
+   /**
+    * Find a component adapter associated with the specified key. If a component adapter cannot be found in this
+    * container, the parent container (if one exists) will be searched.
+    * 
+    * @param componentKey the key that the component was registered with.
+    * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
+    *         for the specified key.
+    */
+   public ComponentAdapter<?> getComponentAdapter(Object componentKey)
+   {
+      return getComponentAdapter(componentKey, Object.class);
+   }
+
+   /**
+    * Retrieve a component instance registered with a specific key. If a component cannot be found in this container,
+    * the parent container (if one exists) will be searched.
+    * 
+    * @param componentKey the key that the component was registered with.
+    * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
+    *         key.
+    */
+   public Object getComponentInstance(Object componentKey)
+   {
+      return getComponentInstance(componentKey, Object.class);
+   }
+
    @Managed
    @ManagedName("RegisteredComponentNames")
    @ManagedDescription("Return the list of the registered component names")
    public Set<String> getRegisteredComponentNames() throws ContainerException
    {
       Set<String> names = new HashSet<String>();
-      Collection<ComponentAdapter> adapters = getComponentAdapters();
-      for (ComponentAdapter adapter : adapters)
+      Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
+      for (ComponentAdapter<?> adapter : adapters)
       {
          Object key = adapter.getComponentKey();
          String name = String.valueOf(key);
@@ -464,4 +505,296 @@ public class ExoContainer extends AbstractContainer
    {
       return !initialized.get();
    }
+
+   /**
+    * Gives the {@link ContextManager} that has been registered
+    * @return the {@link ContextManager} related to this container, <code>null</code> otherwise.
+    */
+   public ContextManager getContextManager()
+   {
+      if (ctxManagerLoaded.get())
+         return ctxManager;
+      synchronized (this)
+      {
+         if (ctxManagerLoaded.get())
+            return ctxManager;
+         ctxManager = getComponentInstanceOfType(ContextManager.class);
+         ctxManagerLoaded.set(true);
+      }
+      return ctxManager;
+   }
+
+   /**
+    * Indicates whether or not the {@link ContextManager} has already been loaded
+    * @return <code>true</code> if the {@link ContextManager} has been loaded,
+    * <code>false</code> otherwise.
+    */
+   public boolean isContextManagerLoaded()
+   {
+      return ctxManagerLoaded.get();
+   }
+
+   /**
+    * Find a component instance matching the specified type. If none can be
+    * found it will try to auto register the component according to the
+    * content of the annotation {@link org.exoplatform.container.spi.DefinitionByType}
+    *
+    * @param componentType the type of the component.
+    * @return the adapter matching the class.
+    */
+   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   {
+      T result = super.getComponentInstanceOfType(componentType);
+      if (result != null)
+      {
+         return result;
+      }
+      if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
+      {
+         return super.getComponentInstanceOfType(componentType);
+      }
+      return result;
+   }
+
+   /**
+    * Find a component adapter associated with the specified type. If a component adapter cannot be found in this
+    * container, the parent container (if one exists) will be searched. If none can be
+    * found it will try to auto register the component according to the
+    * content of the annotation {@link org.exoplatform.container.spi.DefinitionByType}
+    *
+    * @param componentType the type of the component.
+    * @return the component adapter associated with this class, or <code>null</code> if no component has been
+    *         registered for the specified key.
+    */
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+   {
+      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
+      if (result != null)
+      {
+         return result;
+      }
+      if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
+      {
+         return super.getComponentAdapterOfType(componentType);
+      }
+      return result;
+   }
+
+   /**
+    * Tries to auto register the component according to what has been defined in the annotations
+    * {@link org.exoplatform.container.spi.DefinitionByType}, {@link org.exoplatform.container.spi.DefinitionByName}
+    * or {@link org.exoplatform.container.spi.DefinitionByQualifier} according to the definition type.
+    * @param definitionType the type of definition expected
+    * @param componentKey the key that the component was registered with or <code>null</code> in case it has been
+    *                     registered by type.
+    * @param componentType the type of the component that we would like to auto register
+    * @return <code>true</code> if the component has been registered, <code>false</code> otherwise.
+    */
+   private <T> boolean autoRegister(final DefinitionType definitionType, final Object componentKey,
+      final Class<T> componentType)
+   {
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
+      {
+         public Boolean run()
+         {
+            Class<?> type;
+            Class<? extends ExoContainer>[] containers;
+            if (definitionType == DefinitionType.TYPE)
+            {
+               DefinitionByType definition = componentType.getAnnotation(DefinitionByType.class);
+               containers = definition.target();
+               type = definition.type();
+            }
+            else if (definitionType == DefinitionType.NAME)
+            {
+               DefinitionByName definition = componentType.getAnnotation(DefinitionByName.class);
+               if (!definition.named().equals(componentKey))
+               {
+                  return false;
+               }
+               containers = definition.target();
+               type = definition.type();
+            }
+            else
+            {
+               DefinitionByQualifier definition = componentType.getAnnotation(DefinitionByQualifier.class);
+               if (!definition.qualifier().equals(componentKey))
+               {
+                  return false;
+               }
+               containers = definition.target();
+               type = definition.type();
+            }
+            if (!accepts(containers))
+            {
+               // The class of the current container is not part of the allowed classes.
+               return false;
+            }
+            if (type.equals(void.class))
+            {
+               // No default implementation has been set
+               if (componentType.isInterface() || Modifier.isAbstract(componentType.getModifiers()))
+               {
+                  throw new IllegalArgumentException("The class " + componentType.getName()
+                     + " is an interface or an abstract class so it cannot be automatically registered without a type.");
+               }
+               if (definitionType == DefinitionType.TYPE)
+               {
+                  registerComponentImplementation(componentType);
+               }
+               else
+               {
+                  registerComponentImplementation(componentKey, componentType);
+               }
+            }
+            else if (!componentType.isAssignableFrom(type))
+            {
+               throw new IllegalArgumentException("The class " + type.getName() + " must be a sub class of "
+                  + componentType.getName() + ".");
+            }
+            else if (type.isInterface() || Modifier.isAbstract(type.getModifiers()))
+            {
+               throw new IllegalArgumentException("The class " + type.getName()
+                  + " is an interface or an abstract class so it cannot be used as default implementation.");
+            }
+            else if (definitionType == DefinitionType.TYPE)
+            {
+               registerComponentImplementation(componentType, type);
+            }
+            else
+            {
+               registerComponentImplementation(componentKey, type);
+            }
+            return true;
+         }
+      });
+   }
+
+   /**
+    * Indicates whether or not the class of the current container is part of the allowed classes.
+    * @param containers the class of ExoContainer allowed by the definition
+    * @return <code>true</code> if the class of the current container is part of the allowed classes. <code>false</code>
+    * otherwise
+    */
+   private boolean accepts(Class<? extends ExoContainer>[] containers)
+   {
+      for (Class<? extends ExoContainer> clazz : containers)
+      {
+         if (getClass().equals(clazz))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   /**
+    * Retrieve a component instance registered with a specific key. If a component cannot be found in this container,
+    * the parent container (if one exists) will be searched. If none can be found it will try to auto register the
+    * component according to the content of:
+    * <ul>
+    *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByType} if the <code>componentKey</code> is a
+    *    class</li>
+    *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByName} if the <code>componentKey</code> is a
+    *    string</li>
+    *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByQualifier} if the <code>componentKey</code>
+    *    is a qualifier</li>
+    * </ul>
+    *
+    * @param componentKey the key that the component was registered with.
+    * @param bindType the expected type of the instance if one can be found.
+    * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
+    *         key.
+    */
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
+   {
+      T result = super.getComponentInstance(componentKey, bindType);
+      if (result != null || Object.class.equals(bindType))
+      {
+         return result;
+      }
+      if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
+      {
+         @SuppressWarnings("unchecked")
+         Class<T> componentType = (Class<T>)componentKey;
+         if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
+         {
+            return super.getComponentInstanceOfType(componentType);
+         }
+      }
+      else if (componentKey instanceof String)
+      {
+         if (bindType.isAnnotationPresent(DefinitionByName.class) && autoRegister(DefinitionType.NAME, componentKey, bindType))
+         {
+            return super.getComponentInstance(componentKey, bindType);
+         }
+      }
+      else if (componentKey instanceof Class<?>)
+      {
+         @SuppressWarnings("unchecked")
+         final Class<? extends Annotation> annotationType = (Class<? extends Annotation>)componentKey;
+         if (annotationType.isAnnotationPresent(Qualifier.class) && bindType.isAnnotationPresent(DefinitionByQualifier.class)
+             && autoRegister(DefinitionType.QUALIFIER, componentKey, bindType))
+         {
+            return super.getComponentInstance(componentKey, bindType);
+         }
+      }
+      return result;
+   }
+
+   /**
+    * Find a component adapter associated with the specified key. If a component adapter cannot be found in this
+    * container, the parent container (if one exists) will be searched. If none can be found it will try to auto
+    * register the component according to the content of:
+    * <ul>
+    *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByType} if the <code>componentKey</code> is a
+    *    class</li>
+    *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByName} if the <code>componentKey</code> is a
+    *    string</li>
+    *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByQualifier} if the <code>componentKey</code>
+    *    is a qualifier</li>
+    * </ul>
+    *
+    * @param componentKey the key that the component was registered with.
+    * @param bindType the expected raw type of the adapter if one can be found.
+    * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
+    *         for the specified key.
+    */
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
+   {
+      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType);
+      if (result != null || Object.class.equals(bindType))
+      {
+         return result;
+      }
+      if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
+      {
+         @SuppressWarnings("unchecked")
+         Class<T> componentType = (Class<T>)componentKey;
+         if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
+         {
+            return super.getComponentAdapterOfType(componentType);
+         }
+      }
+      else if (componentKey instanceof String)
+      {
+         if (bindType.isAnnotationPresent(DefinitionByName.class) && autoRegister(DefinitionType.NAME, componentKey, bindType))
+         {
+            return super.getComponentAdapter(componentKey, bindType);
+         }
+      }
+      else if (componentKey instanceof Class<?>)
+      {
+         @SuppressWarnings("unchecked")
+         final Class<? extends Annotation> annotationType = (Class<? extends Annotation>)componentKey;
+         if (annotationType.isAnnotationPresent(Qualifier.class) && bindType.isAnnotationPresent(DefinitionByQualifier.class)
+            && autoRegister(DefinitionType.QUALIFIER, componentKey, bindType))
+         {
+            return super.getComponentAdapter(componentKey, bindType);
+         }
+      }
+      return result;
+   }
+
+   private enum DefinitionType {TYPE, NAME, QUALIFIER}
 }

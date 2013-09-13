@@ -30,29 +30,29 @@ import java.util.Map;
 public class XMLBaseObject
 {
 
-   final static public String STRING = "string";
+   public static final String STRING = "string";
 
-   final static public String INT = "int";
+   public static final String INT = "int";
 
-   final static public String LONG = "long";
+   public static final String LONG = "long";
 
-   final static public String BOOLEAN = "boolean";
+   public static final String BOOLEAN = "boolean";
 
-   final static public String FLOAT = "float";
+   public static final String FLOAT = "float";
 
-   final static public String DOUBLE = "double";
+   public static final String DOUBLE = "double";
 
-   final static public String DATE = "date";
+   public static final String DATE = "date";
 
-   final static public String MAP = "map";
+   public static final String MAP = "map";
 
-   final static public String COLLECTION = "collection";
+   public static final String COLLECTION = "collection";
 
-   final static public String ARRAY = "array";
+   public static final String ARRAY = "array";
 
-   final static public String NATIVE_ARRAY = "native-array";
+   public static final String NATIVE_ARRAY = "native-array";
 
-   final static public String OBJECT = "object";
+   public static final String OBJECT = "object";
 
    protected String type;
 
@@ -62,7 +62,7 @@ public class XMLBaseObject
    {
    }
 
-   public XMLBaseObject(Class objecttype, Object val) throws Exception
+   public XMLBaseObject(Class<?> objecttype, Object val) throws Exception
    {
       if (val == null)
       {
@@ -84,7 +84,7 @@ public class XMLBaseObject
       type = s;
    }
 
-   public void setType(Class clazz)
+   public void setType(Class<?> clazz)
    {
       if (String.class.equals(clazz))
          type = STRING;
@@ -150,9 +150,9 @@ public class XMLBaseObject
       else if (o instanceof Date)
          setDate((Date)o);
       else if (o instanceof Map)
-         setMapValue((Map)o);
+         setMapValue((Map<?, ?>)o);
       else if (o instanceof Collection)
-         setCollectiontValue((Collection)o);
+         setCollectiontValue((Collection<?>)o);
       else if (o instanceof XMLObject)
          setObject((XMLObject)o);
       else if (XMLNativeArray.isNativeArray(o))
@@ -288,7 +288,7 @@ public class XMLBaseObject
       return null;
    }
 
-   public void setMapValue(Map map) throws Exception
+   public void setMapValue(Map<?, ?> map) throws Exception
    {
       if (map == null)
          return;
@@ -311,7 +311,7 @@ public class XMLBaseObject
       return null;
    }
 
-   public void setCollectiontValue(Collection collection) throws Exception
+   public void setCollectiontValue(Collection<?> collection) throws Exception
    {
       if (collection == null)
          return;

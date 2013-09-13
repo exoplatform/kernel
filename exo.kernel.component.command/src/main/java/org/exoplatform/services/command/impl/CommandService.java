@@ -25,6 +25,7 @@ import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.apache.commons.digester.Digester;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.spi.DefinitionByType;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ import java.util.Iterator;
  *         Azarenkov</a>
  * @version $Id: CommandService.java 12832 2007-02-15 12:41:32Z geaz $
  */
-
+@DefinitionByType
 public class CommandService
 {
 
