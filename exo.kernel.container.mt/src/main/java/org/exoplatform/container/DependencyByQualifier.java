@@ -18,60 +18,46 @@
  */
 package org.exoplatform.container;
 
-import java.util.Collection;
+import org.exoplatform.container.spi.ComponentAdapter;
 
 /**
+ * This defines a dependency by qualifier
+ * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public class InstanceComponentAdapterStateAware extends ComponentAdapterStateAware
+public class DependencyByQualifier extends Dependency
 {
 
-   /**
-    * The serial version UID
-    */
-   private static final long serialVersionUID = -1178136586777812583L;
-
-   protected InstanceComponentAdapterStateAware(Object componentKey, Object componentInstance)
+   public DependencyByQualifier(Class<?> key, Class<?> bindType)
    {
-      super(null, componentKey, componentInstance);
+      super(key, bindType);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Object load(ExoContainer holder) throws Exception
+   {
+      return holder.getComponentInstance(key, bindType);
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   protected Collection<Class<?>> getCreateDependencies()
+   protected ComponentAdapter<?> getAdapter(ExoContainer holder)
    {
-      return null;
+      return holder.getComponentAdapter(key, bindType);
    }
 
    /**
-    * {@inheritDoc}
+    * @see java.lang.Object#toString()
     */
    @Override
-   protected ComponentTask<Object> getCreateTask(ComponentTaskContext ctx)
+   public String toString()
    {
-      return null;
+      return "DependencyByQualifier [key=" + key + ", bindType=" + bindType + "]";
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected Collection<Class<?>> getInitDependencies()
-   {
-      return null;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected Collection<ComponentTask<Void>> getInitTasks(Object instance, ComponentTaskContext ctx)
-   {
-      return null;
-   }
-
 }

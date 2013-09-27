@@ -42,7 +42,7 @@ public class LifecycleVisitor implements ContainerVisitor
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.LifecycleVisitor");
 
-   private static final Method START;
+   protected static final Method START;
 
    private static final Method STOP;
 

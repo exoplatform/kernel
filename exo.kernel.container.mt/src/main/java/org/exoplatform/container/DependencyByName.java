@@ -16,37 +16,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container.management;
+package org.exoplatform.container;
 
-import org.exoplatform.container.ConcurrentContainerMT;
-import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.spi.ComponentAdapter;
-import org.exoplatform.container.spi.ComponentAdapterFactory;
-import org.exoplatform.container.spi.ContainerException;
 
 /**
+ * This defines a dependency by name
+ * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public class ManageableComponentAdapterFactoryMT implements ComponentAdapterFactory
+public class DependencyByName extends Dependency
 {
 
-   /** . */
-   private final ExoContainer holder;
-
-   /** . */
-   private final ConcurrentContainerMT container;
-
-   public ManageableComponentAdapterFactoryMT(ExoContainer holder, ConcurrentContainerMT container)
+   public DependencyByName(String key, Class<?> bindType)
    {
-      this.holder = holder;
-      this.container = container;
+      super(key, bindType);
    }
 
-   public <T> ComponentAdapter<T> createComponentAdapter(Object componentKey, Class<T> componentImplementation) 
-            throws ContainerException
+   /**
+    * {@inheritDoc}
+    */
+   protected Object load(ExoContainer holder) throws Exception
    {
-      return new ManageableComponentAdapterMT<T>(holder, container, componentKey, componentImplementation);
+      return holder.getComponentInstance(key, bindType);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ComponentAdapter<?> getAdapter(ExoContainer holder)
+   {
+      return holder.getComponentAdapter(key, bindType);
+   }
+
+   /**
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "DependencyByName [key=" + key + ", bindType=" + bindType + "]";
    }
 }

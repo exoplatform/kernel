@@ -31,5 +31,5 @@ public interface DependencyStackListener
    /**
     * Used to trigger an action in case we are trying to call a dependency
     */
-   void callDependency(ComponentTask<?> task, Class<?> c);
+   void callDependency(ComponentTask<?> task, Dependency dep);
 }

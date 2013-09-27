@@ -18,14 +18,51 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.spi.ComponentAdapter;
+
+import javax.inject.Provider;
+
 /**
- * Defines all the possible states of a component
- * 
+ * This defines a dependency by provider
+ *
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public enum ComponentState 
+public class DependencyByProvider extends Dependency
 {
-   INITIAL, CREATED, INITIALIZED, STARTED, STOPPED, DISPOSED, UNKNOWN;
+
+   private final Provider<Object> provider;
+
+   public DependencyByProvider(Object key, Class<?> bindType, Provider<Object> provider)
+   {
+      super(key, bindType, true);
+      this.provider = provider;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Object load(ExoContainer holder) throws Exception
+   {
+      return provider;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ComponentAdapter<?> getAdapter(ExoContainer holder)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "DependencyByProvider [key=" + key + ", bindType=" + bindType + "]";
+   }
 }

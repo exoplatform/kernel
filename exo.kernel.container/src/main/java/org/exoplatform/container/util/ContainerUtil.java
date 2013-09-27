@@ -88,7 +88,6 @@ public class ContainerUtil
 
    private static final Comparator<Constructor<?>> CONSTRUCTOR_COMPARATOR = new Comparator<Constructor<?>>()
    {
-      @Override
       public int compare(Constructor<?> o1, Constructor<?> o2)
       {
          return o2.getParameterTypes().length - o1.getParameterTypes().length;

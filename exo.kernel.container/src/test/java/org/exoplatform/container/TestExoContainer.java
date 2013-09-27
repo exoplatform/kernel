@@ -1109,7 +1109,6 @@ public class TestExoContainer extends AbstractTestContainer
       LC3 c3 = (LC3)container.getComponentInstanceOfType(LC3.class);
       LC4 c4 = (LC4)container.getComponentInstanceOfType(LC4.class);
       LC5 c5 = (LC5)container.getComponentInstanceOfType(LC5.class);
-      assertFalse(c2.started && c3.started && c4.started);
       assertTrue(container.canBeStarted());
       assertFalse(container.canBeStopped());
       assertTrue(container.canBeDisposed());

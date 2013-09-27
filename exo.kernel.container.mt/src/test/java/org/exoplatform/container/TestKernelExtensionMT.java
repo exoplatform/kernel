@@ -197,12 +197,13 @@ public class TestKernelExtensionMT extends TestCase
          return holder;
       }
 
+      @SuppressWarnings("unchecked")
       @Override
-      public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
+      public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
       {
          if (componentType.equals(Test4.class))
          {
-            return new InstanceComponentAdapter(Test4.class, new Test4());
+            return (ComponentAdapter<T>)new InstanceComponentAdapter<Test4>(Test4.class, new Test4());
          }
          return super.getComponentAdapterOfType(componentType);
       }

@@ -18,7 +18,7 @@
  */
 package org.exoplatform.container;
 
-import java.util.concurrent.Callable;
+import org.exoplatform.container.ConcurrentContainer.CreationalContextComponentAdapter;
 
 /**
  * This class represents a task to be launched to change the state of a component
@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
  * @version $Id$
  *
  */
-public abstract class ComponentTask<T> implements Callable<T>
+public abstract class ComponentTask<T>
 {
 
    /**
@@ -39,11 +39,6 @@ public abstract class ComponentTask<T> implements Callable<T>
     * The container that holds the component
     */
    private final ConcurrentContainerMT container;
-
-   /**
-    * The context of the task
-    */
-   private final ComponentTaskContext ctx;
 
    /**
     * The component that expects to be notified any time we
@@ -59,21 +54,19 @@ public abstract class ComponentTask<T> implements Callable<T>
    /**
     * The main constructor of a task
     */
-   public ComponentTask(ConcurrentContainerMT container, ComponentTaskContext ctx, DependencyStackListener caller,
-      ComponentTaskType type)
+   public ComponentTask(ConcurrentContainerMT container, DependencyStackListener caller, ComponentTaskType type)
    {
-      this(null, container, ctx, caller, type);
+      this(null, container, caller, type);
    }
 
    /**
     * The main constructor of a task
     */
-   public ComponentTask(String name, ConcurrentContainerMT container, ComponentTaskContext ctx,
-      DependencyStackListener caller, ComponentTaskType type)
+   public ComponentTask(String name, ConcurrentContainerMT container, DependencyStackListener caller,
+      ComponentTaskType type)
    {
       this.name = name;
       this.container = container;
-      this.ctx = ctx;
       this.caller = caller;
       this.type = type;
    }
@@ -95,14 +88,6 @@ public abstract class ComponentTask<T> implements Callable<T>
    }
 
    /**
-    * @return the context
-    */
-   public ComponentTaskContext getContext()
-   {
-      return ctx;
-   }
-
-   /**
     * @return the caller
     */
    public DependencyStackListener getCaller()
@@ -118,13 +103,13 @@ public abstract class ComponentTask<T> implements Callable<T>
       return type;
    }
 
-   public final T call() throws Exception
+   public final T call(CreationalContextComponentAdapter<?> cCtx) throws Exception
    {
-      return container.execute(this);
+      return container.execute(this, cCtx);
    }
 
    /**
     * This is what is actually executed
     */
-   protected abstract T execute() throws Exception;
+   protected abstract T execute(CreationalContextComponentAdapter<?> cCtx) throws Exception;
 }

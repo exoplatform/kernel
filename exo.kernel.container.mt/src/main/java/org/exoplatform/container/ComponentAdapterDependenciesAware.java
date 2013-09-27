@@ -20,23 +20,29 @@ package org.exoplatform.container;
 
 import org.exoplatform.container.spi.ComponentAdapter;
 
+import java.util.Collection;
+
 /**
+ * This defines a kind of {@link ComponentAdapter} that is aware of its dependencies
+ * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public interface ComponentAdapterTaskContextAware extends ComponentAdapter
+public interface ComponentAdapterDependenciesAware<T> extends ComponentAdapter<T>
 {
-   /**
-    * Gives an instance of the component according to the given context
-    * @param ctx the initialization's context of the component
-    * @return an instance of the component
-    */
-   Object getComponentInstance(ComponentTaskContext ctx);
 
    /**
-    * Starts the component related to the ComponentAdater
-    * @param ctx the startup's context of the component
+    * Gives the create dependencies of the component
+    * @return a {@link Collection} of {@link Dependency} objects representing the 
+    * dependencies of the component for the creation phase
     */
-   void start(ComponentTaskContext ctx);
+   Collection<Dependency> getCreateDependencies();
+
+   /**
+    * Gives the initialization dependencies of the component
+    * @return a {@link Collection} of {@link Dependency} objects representing the 
+    * dependencies of the component for the initialization phase
+    */
+   Collection<Dependency> getInitDependencies();
 }

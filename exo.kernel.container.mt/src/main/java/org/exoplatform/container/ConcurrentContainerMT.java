@@ -18,22 +18,30 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.management.ManageableComponentAdapterFactoryMT;
-import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.ComponentAdapterFactory;
-import org.exoplatform.container.spi.Container;
 import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedAction;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,12 +49,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Qualifier;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -61,9 +76,16 @@ public class ConcurrentContainerMT extends ConcurrentContainer
     */
    private static final long serialVersionUID = -1059330085804288350L;
 
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.ConcurrentContainerMT");
+
    private static volatile transient ExecutorService EXECUTOR;
 
    private final transient ThreadLocal<ComponentTaskContext> currentCtx = new ThreadLocal<ComponentTaskContext>();
+
+   /**
+    * The name of the system parameter to indicate the total amount of threads to use for the kernel
+    */
+   public static final String THREAD_POOL_SIZE_PARAM_NAME = "org.exoplatform.container.mt.tps";
 
    /**
     * Used to detect all the dependencies not properly defined
@@ -79,8 +101,19 @@ public class ConcurrentContainerMT extends ConcurrentContainer
          {
             if (EXECUTOR == null)
             {
-               EXECUTOR =
-                  Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new KernelThreadFactory());
+               String sValue = PropertyManager.getProperty(THREAD_POOL_SIZE_PARAM_NAME);
+               int threadPoolSize;
+               if (sValue != null)
+               {
+                  LOG.debug("A value for the thread pool size has been found, it has been set to '" + sValue + "'");
+                  threadPoolSize = Integer.parseInt(sValue);
+               }
+               else
+               {
+                  threadPoolSize = Runtime.getRuntime().availableProcessors();
+               }
+               LOG.debug("The size of the thread pool used by the kernel has been set to " + threadPoolSize);
+               EXECUTOR = Executors.newFixedThreadPool(threadPoolSize, new KernelThreadFactory());
             }
          }
       }
@@ -106,256 +139,10 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       setHolder(holder);
    }
 
+   @Override
    protected ComponentAdapterFactory getDefaultComponentAdapterFactory()
    {
       return new ManageableComponentAdapterFactoryMT(holder, this);
-   }
-
-   public ComponentAdapter getComponentAdapter(Object componentKey) throws ContainerException
-   {
-      ComponentAdapter adapter = getComponentAdapterInternal(componentKey);
-      if (adapter instanceof WrapperComponentAdapterStateAware)
-      {
-         adapter = ((WrapperComponentAdapterStateAware)adapter).getNestedComponentAdapter();
-      }
-      return adapter;
-   }
-
-   protected final ComponentAdapterTaskContextAware getComponentAdapterInternal(Object componentKey)
-      throws ContainerException
-   {
-      ComponentAdapterTaskContextAware adapter =
-         (ComponentAdapterTaskContextAware)componentKeyToAdapterCache.get(componentKey);
-      if (adapter == null && parent != null)
-      {
-         adapter = getParent().getComponentAdapterInternal(componentKey);
-      }
-      return adapter;
-   }
-
-   public ComponentAdapter getComponentAdapterOfType(Class<?> componentType)
-   {
-      ComponentAdapter adapter = getComponentAdapterOfTypeInternal(componentType);
-      if (adapter instanceof WrapperComponentAdapterStateAware)
-      {
-         adapter = ((WrapperComponentAdapterStateAware)adapter).getNestedComponentAdapter();
-      }
-      return adapter;
-   }
-
-   protected ComponentAdapterTaskContextAware getComponentAdapterOfTypeInternal(Class<?> componentType)
-   {
-      ComponentAdapterTaskContextAware adapterByKey = getComponentAdapterInternal(componentType);
-      if (adapterByKey != null)
-      {
-         return adapterByKey;
-      }
-
-      List<ComponentAdapter> found = getComponentAdaptersOfTypeInternal(componentType);
-
-      if (found.size() == 1)
-      {
-         return (ComponentAdapterTaskContextAware)found.get(0);
-      }
-      else if (found.size() == 0)
-      {
-         if (parent != null)
-         {
-            return getParent().getComponentAdapterOfTypeInternal(componentType);
-         }
-         else
-         {
-            return null;
-         }
-      }
-      else
-      {
-         Class<?>[] foundClasses = new Class<?>[found.size()];
-         for (int i = 0; i < foundClasses.length; i++)
-         {
-            ComponentAdapter componentAdapter = (ComponentAdapter)found.get(i);
-            foundClasses[i] = componentAdapter.getComponentImplementation();
-         }
-         throw new ContainerException("Several ComponentAdapter found for " + componentType);
-      }
-   }
-
-   public List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType)
-   {
-      return getComponentAdaptersOfType(componentType, true);
-   }
-
-   protected List<ComponentAdapter> getComponentAdaptersOfTypeInternal(Class<?> componentType)
-   {
-      return getComponentAdaptersOfType(componentType, false);
-   }
-
-   private List<ComponentAdapter> getComponentAdaptersOfType(Class<?> componentType, boolean withNativeAdapters)
-   {
-      if (componentType == null)
-      {
-         return Collections.emptyList();
-      }
-      List<ComponentAdapter> found = new ArrayList<ComponentAdapter>();
-      for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
-      {
-         ComponentAdapterTaskContextAware componentAdapter = (ComponentAdapterTaskContextAware)iterator.next();
-
-         if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
-         {
-            if (withNativeAdapters && componentAdapter instanceof WrapperComponentAdapterStateAware)
-            {
-               found.add(((WrapperComponentAdapterStateAware)componentAdapter).getNestedComponentAdapter());
-            }
-            else
-            {
-               found.add(componentAdapter);
-            }
-         }
-      }
-      return found;
-   }
-
-   /**
-    * {@inheritDoc} 
-    */
-   protected ComponentAdapter registerComponent(ComponentAdapter componentAdapter) throws ContainerException
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-         security.checkPermission(ContainerPermissions.MANAGE_COMPONENT_PERMISSION);
-
-      Object componentKey = componentAdapter.getComponentKey();
-      ComponentAdapterTaskContextAware componentAdapterTaskContextAware;
-      if (componentAdapter instanceof ComponentAdapterTaskContextAware)
-      {
-         componentAdapterTaskContextAware = (ComponentAdapterTaskContextAware)componentAdapter;
-      }
-      else
-      {
-         componentAdapterTaskContextAware = new WrapperComponentAdapterStateAware(this, componentAdapter);
-      }
-      if (componentKeyToAdapterCache.putIfAbsent(componentKey, componentAdapterTaskContextAware) != null)
-      {
-         throw new ContainerException("Key " + componentKey + " duplicated");
-      }
-      componentAdapters.add(componentAdapterTaskContextAware);
-      return componentAdapter;
-   }
-
-   public ComponentAdapter unregisterComponent(Object componentKey)
-   {
-      ComponentAdapter adapter = super.unregisterComponent(componentKey);
-      if (adapter instanceof WrapperComponentAdapterStateAware)
-      {
-         adapter = ((WrapperComponentAdapterStateAware)adapter).getNestedComponentAdapter();
-      }
-      return adapter;
-   }
-
-   /**
-    * {@inheritDoc}
-    * The returned ComponentAdapter will be an {@link InstanceComponentAdapterStateAware}.
-    */
-   public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-      throws ContainerException
-   {
-      if (componentInstance instanceof ExoContainer)
-      {
-         ExoContainer pc = (ExoContainer)componentInstance;
-         Object contrivedKey = new Object();
-         String contrivedComp = "";
-         pc.registerComponentInstance(contrivedKey, contrivedComp);
-         try
-         {
-            if (this.getComponentInstance(contrivedKey) != null)
-            {
-               throw new ContainerException(
-                  "Cannot register a container to itself. The container is already implicitly registered.");
-            }
-         }
-         finally
-         {
-            pc.unregisterComponent(contrivedKey);
-         }
-         children.add(pc);
-      }
-      ComponentAdapter componentAdapter = new InstanceComponentAdapterStateAware(componentKey, componentInstance);
-      registerComponent(componentAdapter);
-      return componentAdapter;
-   }
-
-   private List<Object> getComponentsOfType(Class<?> componentType, boolean instance) throws ContainerException
-   {
-      if (componentType == null)
-      {
-         return Collections.emptyList();
-      }
-
-      Map<ComponentAdapterTaskContextAware, Object> adapterToInstanceMap =
-         new HashMap<ComponentAdapterTaskContextAware, Object>();
-      for (Iterator<ComponentAdapter> iterator = componentAdapters.iterator(); iterator.hasNext();)
-      {
-         ComponentAdapterTaskContextAware componentAdapter = (ComponentAdapterTaskContextAware)iterator.next();
-         if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
-         {
-            Object componentInstance = getInstance(componentAdapter, null);
-            adapterToInstanceMap.put(componentAdapter, componentInstance);
-
-            // This is to ensure all are added. (Indirect dependencies will be added
-            // from InstantiatingComponentAdapter).
-            addOrderedComponentAdapter(componentAdapter);
-         }
-      }
-      List<Object> result = new ArrayList<Object>();
-      for (Iterator<ComponentAdapter> iterator = orderedComponentAdapters.iterator(); iterator.hasNext();)
-      {
-         ComponentAdapterTaskContextAware componentAdapter = (ComponentAdapterTaskContextAware)iterator.next();
-         final Object componentInstance = adapterToInstanceMap.get(componentAdapter);
-         if (componentInstance != null)
-         {
-            // may be null in the case of the "implicit" adapter
-            // representing "this".
-            result.add(instance ? componentInstance : componentAdapter);
-         }
-      }
-      return result;
-   }
-
-   @SuppressWarnings("unchecked")
-   public <T> List<T> getComponentInstancesOfType(Class<T> componentType) throws ContainerException
-   {
-      return (List<T>)getComponentsOfType(componentType, true);
-   }
-
-   protected List<ComponentAdapterTaskContextAware> getComponentAdapterTaskContextAwaresOfType(Class<?> componentType)
-      throws ContainerException
-   {
-      List<ComponentAdapterTaskContextAware> result = new ArrayList<ComponentAdapterTaskContextAware>();
-      for (Iterator<Object> iterator = getComponentsOfType(componentType, false).iterator(); iterator.hasNext();)
-      {
-         Object componentAdapter = iterator.next();
-         result.add((ComponentAdapterTaskContextAware)componentAdapter);
-      }
-      return result;
-   }
-
-   public Object getComponentInstance(Object componentKey) throws ContainerException
-   {
-      return getComponentInstance(componentKey, null);
-   }
-
-   protected Object getComponentInstance(Object componentKey, ComponentTaskContext ctx) throws ContainerException
-   {
-      ComponentAdapterTaskContextAware componentAdapter = getComponentAdapterInternal(componentKey);
-      if (componentAdapter != null)
-      {
-         return getInstance(componentAdapter, ctx);
-      }
-      else
-      {
-         return null;
-      }
    }
 
    public <T> T getComponentInstanceOfType(Class<T> componentType)
@@ -368,9 +155,9 @@ public class ConcurrentContainerMT extends ConcurrentContainer
          if (stacks != null)
          {
             stack = stacks.getLast();
-            stack.add(componentType);
+            stack.add(new DependencyByType(componentType));
          }
-         instance = getComponentInstanceOfType(componentType, null);
+         instance = super.getComponentInstanceOfType(componentType);
       }
       finally
       {
@@ -382,59 +169,91 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       return instance;
    }
 
-   protected <T> T getComponentInstanceOfType(Class<T> componentType, ComponentTaskContext ctx)
+   /**
+    * @see org.exoplatform.container.ConcurrentContainer#getComponentInstance(java.lang.Object, java.lang.Class)
+    */
+   @Override
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
    {
-      final ComponentAdapterTaskContextAware componentAdapter = getComponentAdapterOfTypeInternal(componentType);
-      if (componentAdapter == null)
-         return null;
-      return componentType.cast(getInstance(componentAdapter, ctx));
+      Deque<DependencyStack> stacks = dependencyStacks != null ? dependencyStacks.get() : null;
+      DependencyStack stack = null;
+      T instance;
+      try
+      {
+         if (stacks != null)
+         {
+            stack = stacks.getLast();
+            if (componentKey instanceof String)
+            {
+               stack.add(new DependencyByName((String)componentKey, bindType));
+            }
+            else if (componentKey instanceof Class<?>)
+            {
+               Class<?> type = (Class<?>)componentKey;
+               if (type.isAnnotation())
+               {
+                  stack.add(new DependencyByQualifier(type, bindType));
+               }
+               else
+               {
+                  stack.add(new DependencyByType(type));
+               }
+            }
+            else
+            {
+               stack = null;
+            }
+         }
+         instance = super.getComponentInstance(componentKey, bindType);
+      }
+      finally
+      {
+         if (stack != null && !stack.isEmpty())
+         {
+            stack.removeLast();
+         }
+      }
+      return instance;
    }
 
-   private Object getInstance(ComponentAdapterTaskContextAware componentAdapter, ComponentTaskContext ctx)
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected <T> T getComponentInstanceFromContext(ComponentAdapter<T> componentAdapter, Class<T> bindType)
    {
-      if (ctx == null)
-      {
-         ctx = currentCtx.get();
-      }
+      ComponentTaskContext ctx = currentCtx.get();
       if (ctx != null)
       {
-         Object result = ctx.getComponentFromContext(componentAdapter.getComponentKey());
+         T result = ctx.getComponentInstanceFromContext(componentAdapter.getComponentKey(), bindType);
          if (result != null)
          {
+            // Don't keep in cache a component that has not been created yet
+            getCache().disable();
             return result;
          }
       }
-      // check whether this is our adapter
-      // we need to check this to ensure up-down dependencies cannot be followed
-      final boolean isLocal = componentAdapters.contains(componentAdapter);
-
-      if (isLocal)
-      {
-         Object instance = componentAdapter.getComponentInstance(ctx);
-         addOrderedComponentAdapter(componentAdapter);
-
-         return instance;
-      }
-      else if (parent != null)
-      {
-         return getParent().getComponentInstance(componentAdapter.getComponentKey(), ctx);
-      }
-
       return null;
    }
 
-   private ConcurrentContainerMT getParent()
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public <T> CreationalContextComponentAdapter<T> addComponentToCtx(Object key)
    {
-      Container co = parent;
-      do
-      {
-         if (co instanceof ConcurrentContainerMT)
-         {
-            return (ConcurrentContainerMT)co;
-         }
-      }
-      while ((co = co.getSuccessor()) != null);
-      return null;
+      ComponentTaskContext ctx = currentCtx.get();
+      return ctx.addComponentToContext(key, new CreationalContextComponentAdapter<T>());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void removeComponentFromCtx(Object key)
+   {
+      ComponentTaskContext ctx = currentCtx.get();
+      ctx.removeComponentFromContext(key);
    }
 
    /**
@@ -443,29 +262,195 @@ public class ConcurrentContainerMT extends ConcurrentContainer
     */
    public void start()
    {
-      LifecycleVisitorMT.start(this);
+      // First, create and initialize the components
+      getComponentInstancesOfType(Startable.class);
+      List<ComponentAdapter<Startable>> adapters = getComponentAdaptersOfType(Startable.class);
+      final Map<ComponentAdapter<Startable>, Object> alreadyStarted =
+         new ConcurrentHashMap<ComponentAdapter<Startable>, Object>();
+      final AtomicReference<Exception> error = new AtomicReference<Exception>();
+      start(adapters, alreadyStarted, error);
+      if (error.get() != null)
+      {
+         throw new RuntimeException("Could not start the container", error.get());
+      }
    }
 
    /**
-    * Stop the components of this Container and all its logical child containers.
-    * Any component implementing the lifecycle interface {@link org.picocontainer.Startable} will be stopped.
+    * Starts all the provided adapters
     */
-   public void stop()
+   protected void start(Collection<ComponentAdapter<Startable>> adapters,
+      final Map<ComponentAdapter<Startable>, Object> alreadyStarted, final AtomicReference<Exception> error)
    {
-      LifecycleVisitorMT.stop(this);
-   }
-
-   /**
-    * Dispose the components of this Container and all its logical child containers.
-    * Any component implementing the lifecycle interface {@link org.picocontainer.Disposable} will be disposed.
-    */
-   public void dispose()
-   {
-      LifecycleVisitorMT.dispose(this);
+      if (adapters == null || adapters.isEmpty())
+         return;
+      boolean enableMultiThreading = Mode.hasMode(Mode.MULTI_THREADED) && adapters.size() > 1;
+      List<Future<?>> submittedTasks = null;
+      for (final ComponentAdapter<Startable> adapter : adapters)
+      {
+         if (error.get() != null)
+            break;
+         if (alreadyStarted.containsKey(adapter))
+         {
+            // The component has already been started
+            continue;
+         }
+         if (enableMultiThreading)
+         {
+            final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            Callable<Object> task = new Callable<Object>()
+            {
+               public Object call() throws Exception
+               {
+                  try
+                  {
+                     return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+                     {
+                        public Void run() throws Exception
+                        {
+                           if (error.get() != null)
+                           {
+                              return null;
+                           }
+                           else if (alreadyStarted.containsKey(adapter))
+                           {
+                              // The component has already been started
+                              return null;
+                           }
+                           if (adapter instanceof ComponentAdapterDependenciesAware)
+                           {
+                              ComponentAdapterDependenciesAware<Startable> cada = (ComponentAdapterDependenciesAware<Startable>)adapter;
+                              start(getStartableDependencies(cada.getCreateDependencies()), alreadyStarted, error);
+                           }
+                           synchronized (adapter)
+                           {
+                              if (alreadyStarted.containsKey(adapter))
+                              {
+                                 // The component has already been started
+                                 return null;
+                              }
+                              ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+                              ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+                              try
+                              {
+                                 ExoContainerContext.setCurrentContainer(container);
+                                 Thread.currentThread().setContextClassLoader(cl);
+                                 Startable startable = adapter.getComponentInstance();
+                                 startable.start();
+                              }
+                              catch (Exception e)
+                              {
+                                 error.compareAndSet(null, e);
+                              }
+                              finally
+                              {
+                                 Thread.currentThread().setContextClassLoader(oldCl);
+                                 ExoContainerContext.setCurrentContainer(oldContainer);
+                              }
+                              return null;
+                           }
+                        }
+                     });
+                  }
+                  catch (PrivilegedActionException pae)
+                  {
+                     Throwable cause = pae.getCause();
+                     if (cause instanceof Exception)
+                     {
+                        throw (Exception)cause;
+                     }
+                     throw new Exception(cause);
+                  }
+               }
+            };
+            if (submittedTasks == null)
+            {
+               submittedTasks = new ArrayList<Future<?>>();
+            }
+            submittedTasks.add(getExecutor().submit(task));
+         }
+         else
+         {
+            if (adapter instanceof ComponentAdapterDependenciesAware)
+            {
+               ComponentAdapterDependenciesAware<Startable> cada = (ComponentAdapterDependenciesAware<Startable>)adapter;
+               start(getStartableDependencies(cada.getCreateDependencies()), alreadyStarted, error);
+            }
+            synchronized (adapter)
+            {
+               if (alreadyStarted.containsKey(adapter))
+               {
+                  // The component has already been started
+                  continue;
+               }
+               try
+               {
+                  Startable startable = adapter.getComponentInstance();
+                  startable.start();
+               }
+               catch (Exception e)
+               {
+                  error.compareAndSet(null, e);
+               }
+            }
+         }
+      }
+      if (submittedTasks != null)
+      {
+         for (int i = 0, length = submittedTasks.size(); i < length; i++)
+         {
+            Future<?> task = submittedTasks.get(i);
+            try
+            {
+               task.get();
+            }
+            catch (ExecutionException e)
+            {
+               Throwable cause = e.getCause();
+               if (cause instanceof RuntimeException)
+               {
+                  throw (RuntimeException)cause;
+               }
+               throw new RuntimeException(cause);
+            }
+            catch (InterruptedException e)
+            {
+               Thread.currentThread().interrupt();
+            }
+         }
+      }
    }
 
    @SuppressWarnings("unchecked")
-   public <T> Constructor<T> getConstructor(Class<T> clazz) throws Exception
+   private Collection<ComponentAdapter<Startable>> getStartableDependencies(Collection<Dependency> dependencies)
+   {
+      if (dependencies == null || dependencies.isEmpty())
+         return null;
+      Collection<ComponentAdapter<Startable>> result = new ArrayList<ComponentAdapter<Startable>>();
+      for (Dependency dep : dependencies)
+      {
+         if (dep.isLazy())
+            continue;
+         ComponentAdapter<?> adapter = dep.getAdapter(holder);
+         boolean isLocal = componentAdapters.contains(adapter);
+         if (!isLocal)
+         {
+            // To prevent infinite loop we assume that component adapters of
+            // parent container are already started so we skip them
+            continue;
+         }
+         else if (!Startable.class.isAssignableFrom(adapter.getComponentImplementation()))
+         {
+            // The dependency is not startable
+            continue;
+         }
+         result.add((ComponentAdapter<Startable>)adapter);
+      }
+      return result;
+   }
+
+   @SuppressWarnings("unchecked")
+   public <T> Constructor<T> getConstructor(Class<T> clazz, List<Dependency> dependencies) throws Exception
    {
       Constructor<?>[] constructors = new Constructor<?>[0];
       try
@@ -481,23 +466,354 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       {
          Constructor<?> constructor = constructors[k];
          Class<?>[] parameters = constructor.getParameterTypes();
+         Object[] args = new Object[parameters.length];
+         boolean constructorWithInject = constructors.length == 1 && constructor.isAnnotationPresent(Inject.class);
          boolean satisfied = true;
-         for (int i = 0; i < parameters.length; i++)
+         String logMessagePrefix = null;
+         Type[] genericTypes = null;
+         Annotation[][] parameterAnnotations = null;
+         if (constructorWithInject)
          {
-            Class<?> parameter = parameters[i];
-            if (!parameter.equals(InitParams.class) && holder.getComponentAdapterOfType(parameter) == null)
+            genericTypes = constructor.getGenericParameterTypes();
+            parameterAnnotations = constructor.getParameterAnnotations();
+         }
+         if (LOG.isDebugEnabled() && constructorWithInject)
+         {
+            logMessagePrefix = "Could not call the constructor of the class " + clazz.getName();
+         }
+         for (int i = 0; i < args.length; i++)
+         {
+            if (!parameters[i].equals(InitParams.class))
             {
-               satisfied = false;
-               unknownParameter = parameter;
-               break;
+               if (constructorWithInject)
+               {
+                  Object result =
+                     resolveType(parameters[i], genericTypes[i], parameterAnnotations[i], logMessagePrefix,
+                        dependencies);
+                  if (!(result instanceof Integer))
+                  {
+                     args[i] = result;
+                  }
+               }
+               else
+               {
+                  final Class<?> componentType = parameters[i];
+                  args[i] = holder.getComponentAdapterOfType(componentType);
+                  dependencies.add(new DependencyByType(componentType));
+               }
+               if (args[i] == null)
+               {
+                  satisfied = false;
+                  unknownParameter = parameters[i];
+                  dependencies.clear();
+                  break;
+               }
             }
          }
          if (satisfied)
          {
+            if ((!Modifier.isPublic(constructor.getModifiers()) || !Modifier.isPublic(constructor.getDeclaringClass()
+               .getModifiers())) && !constructor.isAccessible())
+               constructor.setAccessible(true);
             return (Constructor<T>)constructor;
          }
       }
       throw new Exception("Cannot find a satisfying constructor for " + clazz + " with parameter " + unknownParameter);
+   }
+
+   /**
+    * Initializes the instance by injecting objects into fields and the methods with the
+    * annotation {@link Inject}
+    * @return <code>true</code> if at least Inject annotation has been found, <code>false</code> otherwise
+    */
+   public <T> boolean initializeComponent(Class<T> targetClass, List<Dependency> dependencies,
+      List<ComponentTask<Void>> componentInitTasks, DependencyStackListener caller)
+   {
+      LinkedList<Class<?>> hierarchy = new LinkedList<Class<?>>();
+      Class<?> clazz = targetClass;
+      do
+      {
+         hierarchy.addFirst(clazz);
+      }
+      while (!(clazz = clazz.getSuperclass()).equals(Object.class));
+      // Fields and methods in superclasses are injected before those in subclasses. 
+      Map<String, Method> methodAlreadyRegistered = new HashMap<String, Method>();
+      Map<Class<?>, Collection<Method>> methodsPerClass = new HashMap<Class<?>, Collection<Method>>();
+      for (Class<?> c : hierarchy)
+      {
+         addMethods(c, methodAlreadyRegistered, methodsPerClass);
+      }
+      boolean isInjectPresent = !methodAlreadyRegistered.isEmpty();
+      for (Class<?> c : hierarchy)
+      {
+         if (initializeFields(targetClass, c, dependencies, componentInitTasks, caller))
+         {
+            isInjectPresent = true;
+         }
+         initializeMethods(targetClass, methodsPerClass.get(c), dependencies, componentInitTasks, caller);
+      }
+      return isInjectPresent;
+   }
+
+   /**
+    * Initializes the instance by calling all the methods with the
+    * annotation {@link Inject}
+    */
+   private <T> void initializeMethods(final Class<T> targetClass, Collection<Method> methods,
+      List<Dependency> dependencies, List<ComponentTask<Void>> componentInitTasks, DependencyStackListener caller)
+   {
+      if (methods == null)
+      {
+         return;
+      }
+      main : for (final Method m : methods)
+      {
+         if (m.isAnnotationPresent(Inject.class))
+         {
+            if (Modifier.isAbstract(m.getModifiers()))
+            {
+               LOG.warn("Could not call the method " + m.getName() + " of the class " + targetClass.getName()
+                  + ": The method cannot be abstract");
+               continue;
+            }
+            else if (Modifier.isStatic(m.getModifiers()))
+            {
+               LOG.warn("Could not call the method " + m.getName() + " of the class " + targetClass.getName()
+                  + ": The method cannot be static");
+               continue;
+            }
+            // The method is annotated with Inject and is not abstract and has not been called yet
+            Class<?>[] paramTypes = m.getParameterTypes();
+            final Object[] params = new Object[paramTypes.length];
+            Type[] genericTypes = m.getGenericParameterTypes();
+            Annotation[][] parameterAnnotations = m.getParameterAnnotations();
+            String logMessagePrefix = null;
+            if (LOG.isDebugEnabled())
+            {
+               logMessagePrefix = "Could not call the method " + m.getName() + " of the class " + targetClass.getName();
+            }
+            for (int j = 0, l = paramTypes.length; j < l; j++)
+            {
+               Object result =
+                  resolveType(paramTypes[j], genericTypes[j], parameterAnnotations[j], logMessagePrefix, dependencies);
+               if (result instanceof Integer)
+               {
+                  int r = (Integer)result;
+                  if (r == 1 || r == 2)
+                  {
+                     continue main;
+                  }
+                  params[j] = null;
+                  continue;
+               }
+               else
+               {
+                  params[j] = dependencies.get(dependencies.size() - 1);
+               }
+            }
+            try
+            {
+               if ((!Modifier.isPublic(m.getModifiers()) || !Modifier.isPublic(m.getDeclaringClass().getModifiers()))
+                  && !m.isAccessible())
+                  m.setAccessible(true);
+               componentInitTasks.add(new ComponentTask<Void>("Call the method " + m.getName() + " of the class "
+                  + targetClass.getName(), this, caller, ComponentTaskType.INIT)
+               {
+                  public Void execute(CreationalContextComponentAdapter<?> cCtx) throws Exception
+                  {
+                     try
+                     {
+                        loadArguments(params);
+                        m.invoke(cCtx.get(), params);
+                     }
+                     catch (Exception e)
+                     {
+                        throw new RuntimeException("Could not call the method " + m.getName() + " of the class "
+                           + targetClass.getName() + ": " + e.getMessage(), e);
+                     }
+                     return null;
+                  }
+               });
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Could not call the method " + m.getName() + " of the class "
+                  + targetClass.getName() + ": " + e.getMessage(), e);
+            }
+         }
+      }
+   }
+
+   /**
+    * Initializes the fields of the instance by injecting objects into fields with the
+    * annotation {@link Inject} for a given class
+    */
+   private <T> boolean initializeFields(final Class<T> targetClass, Class<?> clazz, List<Dependency> dependencies,
+      List<ComponentTask<Void>> componentInitTasks, DependencyStackListener caller)
+   {
+      boolean isInjectPresent = false;
+      Field[] fields = clazz.getDeclaredFields();
+      for (int i = 0, length = fields.length; i < length; i++)
+      {
+         final Field f = fields[i];
+         if (f.isAnnotationPresent(Inject.class))
+         {
+            isInjectPresent = true;
+            if (Modifier.isFinal(f.getModifiers()))
+            {
+               LOG.warn("Could not set a value to the field " + f.getName() + " of the class " + targetClass.getName()
+                  + ": The field cannot be final");
+               continue;
+            }
+            else if (Modifier.isStatic(f.getModifiers()))
+            {
+               LOG.warn("Could not set a value to the field " + f.getName() + " of the class " + targetClass.getName()
+                  + ": The field cannot be static");
+               continue;
+            }
+            // The field is annotated with Inject and is not final and/or static
+            try
+            {
+               if ((!Modifier.isPublic(f.getModifiers()) || !Modifier.isPublic(f.getDeclaringClass().getModifiers()))
+                  && !f.isAccessible())
+                  f.setAccessible(true);
+               String logMessagePrefix = null;
+               if (LOG.isDebugEnabled())
+               {
+                  logMessagePrefix =
+                     "Could not set a value to the field " + f.getName() + " of the class " + targetClass.getName();
+               }
+               Object result =
+                  resolveType(f.getType(), f.getGenericType(), f.getAnnotations(), logMessagePrefix, dependencies);
+               if (result instanceof Integer)
+               {
+                  continue;
+               }
+               final Dependency dependency = dependencies.get(dependencies.size() - 1);
+               componentInitTasks.add(new ComponentTask<Void>("Set a value to the field " + f.getName()
+                  + " of the class " + targetClass.getName(), this, caller, ComponentTaskType.INIT)
+               {
+                  public Void execute(CreationalContextComponentAdapter<?> cCtx) throws Exception
+                  {
+                     try
+                     {
+                        f.set(cCtx.get(), dependency.load(holder));
+                     }
+                     catch (Exception e)
+                     {
+                        throw new RuntimeException("Could not set a value to the field " + f.getName()
+                           + " of the class " + targetClass.getName() + ": " + e.getMessage(), e);
+                     }
+                     return null;
+                  }
+               });
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Could not set a value to the field " + f.getName() + " of the class "
+                  + targetClass.getName() + ": " + e.getMessage(), e);
+            }
+         }
+      }
+      return isInjectPresent;
+   }
+
+   /**
+    * Resolves the given type and generic type
+    */
+   private Object resolveType(final Class<?> type, Type genericType, Annotation[] annotations, String logMessagePrefix,
+      List<Dependency> dependencies)
+   {
+      if (type.isPrimitive())
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug(logMessagePrefix + ": Primitive types are not supported");
+         }
+         return 1;
+      }
+      Named named = null;
+      Class<?> qualifier = null;
+      for (int i = 0, length = annotations.length; i < length; i++)
+      {
+         Annotation a = annotations[i];
+         if (a instanceof Named)
+         {
+            named = (Named)a;
+            break;
+         }
+         else if (a.annotationType().isAnnotationPresent(Qualifier.class))
+         {
+            qualifier = a.annotationType();
+            break;
+         }
+      }
+      if (type.isInterface() && type.equals(Provider.class))
+      {
+         if (!(genericType instanceof ParameterizedType))
+         {
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug(logMessagePrefix + ": The generic type is not of type ParameterizedType");
+            }
+            return 2;
+         }
+         ParameterizedType aType = (ParameterizedType)genericType;
+         Type[] typeVars = aType.getActualTypeArguments();
+         Class<?> expectedType = (Class<?>)typeVars[0];
+         final ComponentAdapter<?> adapter;
+         final Object key;
+         if (named != null)
+         {
+            adapter = holder.getComponentAdapter(key = named.value(), expectedType);
+         }
+         else if (qualifier != null)
+         {
+            adapter = holder.getComponentAdapter(key = qualifier, expectedType);
+         }
+         else
+         {
+            key = expectedType;
+            adapter = holder.getComponentAdapterOfType(expectedType);
+         }
+
+         if (adapter == null)
+         {
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug(logMessagePrefix + ": We have no value to set so we skip it");
+            }
+            return 3;
+         }
+         final Provider<Object> result = new Provider<Object>()
+         {
+            public Object get()
+            {
+               return adapter.getComponentInstance();
+            }
+         };
+         dependencies.add(new DependencyByProvider(key, expectedType, result));
+         return result;
+      }
+      else
+      {
+         if (named != null)
+         {
+            final String name = named.value();
+            dependencies.add(new DependencyByName(name, type));
+            return holder.getComponentAdapter(name, type);
+         }
+         else if (qualifier != null)
+         {
+            dependencies.add(new DependencyByQualifier(qualifier, type));
+            return holder.getComponentAdapter(qualifier, type);
+         }
+         else
+         {
+            dependencies.add(new DependencyByType(type));
+            return holder.getComponentAdapterOfType(type);
+         }
+      }
    }
 
    public <T> T createComponent(Class<T> clazz) throws Exception
@@ -507,29 +823,163 @@ public class ConcurrentContainerMT extends ConcurrentContainer
 
    public <T> T createComponent(Class<T> clazz, InitParams params) throws Exception
    {
-      Constructor<T> constructor = getConstructor(clazz);
-      final Object[] args =
-         getArguments(constructor, params, new ComponentTaskContext(clazz, ComponentTaskType.CREATE),
-            ComponentTaskType.CREATE);
+      List<Dependency> dependencies = new ArrayList<Dependency>();
+      Constructor<T> constructor = getConstructor(clazz, dependencies);
+      final Object[] args = getArguments(constructor, params, dependencies);
+      loadArguments(args);
       return constructor.getDeclaringClass().cast(constructor.newInstance(args));
    }
 
    public <T> ComponentTask<T> createComponentTask(final Constructor<T> constructor, InitParams params,
-      final ComponentTaskContext ctx, DependencyStackListener caller) throws Exception
+      List<Dependency> dependencies, DependencyStackListener caller) throws Exception
    {
-      final Object[] args = getArguments(constructor, params, ctx, ComponentTaskType.CREATE);
-      return new ComponentTask<T>(this, ctx, caller, ComponentTaskType.CREATE)
+      final Object[] args = getArguments(constructor, params, dependencies);
+      return new ComponentTask<T>(this, caller, ComponentTaskType.CREATE)
       {
-         public T execute() throws Exception
+         public T execute(CreationalContextComponentAdapter<?> cCtx) throws Exception
          {
+            loadArguments(args);
             return constructor.getDeclaringClass().cast(constructor.newInstance(args));
          }
       };
    }
 
-   protected <T> T execute(ComponentTask<T> task) throws Exception
+   public void loadArguments(Object[] args)
    {
-      ComponentTaskContext previousCtx = currentCtx.get();
+      try
+      {
+         for (int i = 0, length = args.length; i < length; i++)
+         {
+            if (args[i] instanceof Dependency)
+            {
+               args[i] = ((Dependency)args[i]).load(holder);
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Could not load the arguments", e);
+      }
+   }
+
+   public void loadDependencies(Object originalComponentKey, final ComponentTaskContext ctx,
+      Collection<Dependency> dependencies, final ComponentTaskType type) throws Exception
+   {
+      if (dependencies.isEmpty())
+         return;
+      List<Future<?>> submittedTasks = null;
+      boolean enableMultiThreading = Mode.hasMode(Mode.MULTI_THREADED) && dependencies.size() > 1;
+      for (final Dependency dependency : dependencies)
+      {
+         if (dependency.getKey().equals(originalComponentKey) || dependency.isLazy())
+         {
+            // Prevent infinite loop
+            continue;
+         }
+         if (enableMultiThreading)
+         {
+            final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            Callable<Object> task = new Callable<Object>()
+            {
+               public Object call() throws Exception
+               {
+                  try
+                  {
+                     return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+                     {
+                        public Object run() throws Exception
+                        {
+                           ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+                           ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+                           ComponentTaskContext previousCtx = currentCtx.get();
+                           try
+                           {
+                              ExoContainerContext.setCurrentContainer(container);
+                              Thread.currentThread().setContextClassLoader(cl);
+                              currentCtx.set(ctx.addToContext(dependency.getKey(), type));
+                              return dependency.load(holder);
+                           }
+                           finally
+                           {
+                              Thread.currentThread().setContextClassLoader(oldCl);
+                              ExoContainerContext.setCurrentContainer(oldContainer);
+                              currentCtx.set(previousCtx);
+                           }
+                        }
+                     });
+                  }
+                  catch (PrivilegedActionException pae)
+                  {
+                     Throwable cause = pae.getCause();
+                     if (cause instanceof Exception)
+                     {
+                        throw (Exception)cause;
+                     }
+                     throw new Exception(cause);
+                  }
+               }
+            };
+            if (submittedTasks == null)
+            {
+               submittedTasks = new ArrayList<Future<?>>();
+            }
+            submittedTasks.add(getExecutor().submit(task));
+         }
+         else
+         {
+            ComponentTaskContext previousCtx = currentCtx.get();
+            try
+            {
+               currentCtx.set(ctx.addToContext(dependency.getKey(), type));
+               dependency.load(holder);
+            }
+            finally
+            {
+               currentCtx.set(previousCtx);
+            }
+         }
+      }
+      if (submittedTasks != null)
+      {
+         for (int i = 0, length = submittedTasks.size(); i < length; i++)
+         {
+            Future<?> task = submittedTasks.get(i);
+            try
+            {
+               task.get();
+            }
+            catch (ExecutionException e)
+            {
+               Throwable cause = e.getCause();
+               if (cause instanceof Exception)
+               {
+                  throw (Exception)cause;
+               }
+               throw new Exception(cause);
+            }
+         }
+      }
+   }
+
+   /**
+    * Gives the current context
+    */
+   public ComponentTaskContext getComponentTaskContext()
+   {
+      return currentCtx.get();
+   }
+
+   /**
+    * Set the current context
+    */
+   public void setComponentTaskContext(ComponentTaskContext ctx)
+   {
+      currentCtx.set(ctx);
+   }
+
+   protected <T> T execute(ComponentTask<T> task, CreationalContextComponentAdapter<?> cCtx) throws Exception
+   {
       Deque<DependencyStack> stacks = null;
       try
       {
@@ -544,8 +994,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
             DependencyStack stack = new DependencyStack(task);
             stacks.add(stack);
          }
-         currentCtx.set(task.getContext().toDisableMultiThreading());
-         return task.execute();
+         return task.execute(cCtx);
       }
       catch (InvocationTargetException e)
       {
@@ -557,7 +1006,6 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       }
       finally
       {
-         currentCtx.set(previousCtx);
          if (dependencyStacks != null)
          {
             stacks.removeLast();
@@ -569,296 +1017,24 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       }
    }
 
-   public <T> Object[] getArguments(Constructor<T> constructor, InitParams params, final ComponentTaskContext ctx,
-      final ComponentTaskType type) throws Exception
-   {
-      return getArguments(null, constructor, params, ctx, type);
-   }
-
-   @SuppressWarnings("unchecked")
-   public <T> Object[] getArguments(ComponentAdapterStateAware caller, Constructor<T> constructor, InitParams params,
-      final ComponentTaskContext ctx, final ComponentTaskType type) throws Exception
+   public <T> Object[] getArguments(Constructor<T> constructor, InitParams params, List<Dependency> dependencies)
    {
       Class<?>[] parameters = constructor.getParameterTypes();
       Object[] args = new Object[parameters.length];
       if (args.length == 0)
          return args;
-      boolean hasSubmittedTasks = false;
-      boolean enableMultiThreading =
-         Mode.hasMode(Mode.MULTI_THREADED)
-            && !ctx.disableMultiThreading()
-            && (parameters.length > 2 || (parameters.length == 2 && !parameters[0].equals(InitParams.class) && !parameters[1]
-               .equals(InitParams.class)));
+      Iterator<Dependency> tasks = dependencies.iterator();
       for (int i = 0; i < parameters.length; i++)
       {
          final Class<?> parameter = parameters[i];
          if (parameter.equals(InitParams.class))
          {
             args[i] = params;
-         }
-         else if (enableMultiThreading)
-         {
-            final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
-            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            Callable<Object> task = new Callable<Object>()
-            {
-               public Object call() throws Exception
-               {
-                  return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
-                  {
-                     public Object run()
-                     {
-                        ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
-                        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-                        ComponentTaskContext previousCtx = currentCtx.get();
-                        try
-                        {
-                           ExoContainerContext.setCurrentContainer(container);
-                           Thread.currentThread().setContextClassLoader(cl);
-                           currentCtx.set(ctx.addToContext(parameter, type).toDisableMultiThreading());
-                           return holder.getComponentInstanceOfType(parameter);
-                        }
-                        finally
-                        {
-                           Thread.currentThread().setContextClassLoader(oldCl);
-                           ExoContainerContext.setCurrentContainer(oldContainer);
-                           currentCtx.set(previousCtx);
-                        }
-                     }
-                  });
-               }
-            };
-            args[i] = getExecutor().submit(task);
-            hasSubmittedTasks = true;
-         }
-         else
-         {
-            ComponentTaskContext previousCtx = currentCtx.get();
-            try
-            {
-               currentCtx.set(ctx.addToContext(parameter, type));
-               args[i] = holder.getComponentInstanceOfType(parameter);
-            }
-            finally
-            {
-               currentCtx.set(previousCtx);
-            }
-         }
-      }
-      if (hasSubmittedTasks)
-      {
-         for (int i = 0; i < args.length; i++)
-         {
-            Object o = args[i];
-            if (o instanceof Future<?>)
-            {
-               try
-               {
-                  args[i] = ((Future<Object>)o).get();
-               }
-               catch (ExecutionException e)
-               {
-                  Throwable cause = e.getCause();
-                  if (cause instanceof Exception)
-                  {
-                     throw (Exception)cause;
-                  }
-                  throw e;
-               }
-            }
-         }
-      }
-      return args;
-   }
-
-   public void startComponents(Collection<Class<?>> components, ComponentTaskContext ctx) throws Exception
-   {
-      if (components == null || components.isEmpty())
-         return;
-      List<Future<?>> futureTasks = null;
-      boolean enableMultiThreading =
-         Mode.hasMode(Mode.MULTI_THREADED) && !ctx.disableMultiThreading() && components.size() > 1;
-      CyclicDependencyException ex = null;
-      for (Class<?> component : components)
-      {
-         final ComponentAdapterTaskContextAware adapter = getComponentAdapterOfTypeInternal(component);
-         boolean isLocal = componentAdapters.contains(adapter);
-         if (!isLocal)
-         {
-            // To prevent infinite loop we assume that component adapters of
-            // parent container are already started so we skip them
             continue;
          }
-         try
-         {
-            futureTasks = startAdapter(ctx, futureTasks, enableMultiThreading, adapter);
-         }
-         catch (CyclicDependencyException e)
-         {
-            ex = e;
-         }
+         args[i] = tasks.next();
       }
-      if (futureTasks != null)
-      {
-         for (Future<?> task : futureTasks)
-         {
-            try
-            {
-               task.get();
-            }
-            catch (CyclicDependencyException e)
-            {
-               ex = e;
-            }
-            catch (ExecutionException e)
-            {
-               Throwable cause = e.getCause();
-               if (cause instanceof Exception)
-               {
-                  throw (Exception)cause;
-               }
-               throw e;
-            }
-         }
-      }
-      if (ex != null)
-      {
-         throw ex;
-      }
-   }
-
-   private List<Future<?>> startAdapter(final ComponentTaskContext ctx, List<Future<?>> futureTasks,
-      boolean enableMultiThreading, final ComponentAdapterTaskContextAware adapter)
-   {
-      if (enableMultiThreading)
-      {
-         final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
-         final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-         Runnable task = new Runnable()
-         {
-            public void run()
-            {
-               SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-               {
-                  public Void run()
-                  {
-                     ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
-                     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-                     try
-                     {
-                        ExoContainerContext.setCurrentContainer(container);
-                        Thread.currentThread().setContextClassLoader(cl);
-                        adapter.start(ctx.addToContext(adapter.getComponentKey(), ComponentTaskType.START)
-                           .toDisableMultiThreading());
-                     }
-                     finally
-                     {
-                        Thread.currentThread().setContextClassLoader(oldCl);
-                        ExoContainerContext.setCurrentContainer(oldContainer);
-                     }
-                     return null;
-                  }
-               });
-            }
-         };
-         if (futureTasks == null)
-         {
-            futureTasks = new LinkedList<Future<?>>();
-         }
-         futureTasks.add(getExecutor().submit(task));
-      }
-      else
-      {
-         adapter.start(ctx.addToContext(adapter.getComponentKey(), ComponentTaskType.START));
-      }
-      return futureTasks;
-   }
-
-   public void initialize(Collection<Class<?>> components, boolean disableMultiThreading)
-   {
-      if (components == null)
-         return;
-      List<Future<?>> futureTasks = null;
-      boolean enableMultiThreading =
-         Mode.hasMode(Mode.MULTI_THREADED) && components.size() > 1 && !disableMultiThreading;
-      for (final Class<?> component : components)
-      {
-         if (enableMultiThreading)
-         {
-            final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
-            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            Runnable task = new Runnable()
-            {
-               public void run()
-               {
-                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-                  {
-                     public Void run()
-                     {
-                        ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
-                        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-                        ComponentTaskContext previousCtx = currentCtx.get();
-                        try
-                        {
-                           ExoContainerContext.setCurrentContainer(container);
-                           Thread.currentThread().setContextClassLoader(cl);
-                           currentCtx.set(new ComponentTaskContext(component, ComponentTaskType.CREATE)
-                              .toDisableMultiThreading());
-                           holder.getComponentInstanceOfType(component);
-                        }
-                        catch (CyclicDependencyException e)
-                        {
-                           // We ignore it as it means that the component is already planned to be started
-                        }
-                        finally
-                        {
-                           Thread.currentThread().setContextClassLoader(oldCl);
-                           ExoContainerContext.setCurrentContainer(oldContainer);
-                           currentCtx.set(previousCtx);
-                        }
-                        return null;
-                     }
-                  });
-               }
-            };
-            if (futureTasks == null)
-            {
-               futureTasks = new LinkedList<Future<?>>();
-            }
-            futureTasks.add(getExecutor().submit(task));
-         }
-         else
-         {
-            ComponentTaskContext previousCtx = currentCtx.get();
-            try
-            {
-               currentCtx.set(new ComponentTaskContext(component, ComponentTaskType.CREATE));
-               holder.getComponentInstanceOfType(component);
-            }
-            finally
-            {
-               currentCtx.set(previousCtx);
-            }
-         }
-      }
-      if (futureTasks != null)
-      {
-         for (Future<?> task : futureTasks)
-         {
-            try
-            {
-               task.get();
-            }
-            catch (ExecutionException e)
-            {
-               throw new RuntimeException(e.getCause());
-            }
-            catch (InterruptedException e)
-            {
-               throw new RuntimeException(e);
-            }
-         }
-      }
+      return args;
    }
 
    /**

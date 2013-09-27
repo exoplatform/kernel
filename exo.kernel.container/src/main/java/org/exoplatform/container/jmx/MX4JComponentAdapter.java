@@ -82,25 +82,25 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
     */
    private static final long serialVersionUID = -9001193588034229411L;
 
-   private transient volatile T instance_;
+   protected transient volatile T instance_;
 
    private transient volatile T proxy;
 
    private transient volatile String id;
 
-   private transient final Lock lock = new ReentrantLock();
+   protected transient final Lock lock = new ReentrantLock();
 
    /**
     * Indicates whether or not it should be managed as a singleton
     */
-   private volatile boolean isSingleton = true;
+   protected volatile boolean isSingleton = true;
 
-   private transient volatile boolean isInitialized;
+   protected transient volatile boolean isInitialized;
 
    /**
     * The scope of the adapter
     */
-   private transient final AtomicReference<Class<? extends Annotation>> scope =
+   protected transient final AtomicReference<Class<? extends Annotation>> scope =
       new AtomicReference<Class<? extends Annotation>>();
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.MX4JComponentAdapter");
@@ -208,7 +208,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
       return getScope(false, false);
    }
 
-   private Class<? extends Annotation> getScope(boolean initializeIfNull, boolean ignoreExplicit)
+   protected Class<? extends Annotation> getScope(boolean initializeIfNull, boolean ignoreExplicit)
    {
       Class<? extends Annotation> scope = this.scope.get();
       if (scope == null && initializeIfNull)
@@ -237,7 +237,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
       return this.scope.get();
    }
 
-   private T createInstance(Context ctx)
+   protected T createInstance(Context ctx)
    {
       T result = ctx.get(this);
       if (result != null)
@@ -292,53 +292,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
                   // There is at least one constructor JSR 330 compliant or we already know 
                   // that it is not a singleton such that the new behavior is expected
                   boolean isInjectPresent = container.initializeComponent(instance);
-                  if (!isInitialized)
-                  {
-                     // The adapter has not been initialized yet
-                     if (isInjectPresent || hasInjectableConstructor)
-                     {
-                        // The component is JSR 330 compliant, so we expect the new behavior
-                        Class<? extends Annotation> currentScope = scope.get();
-                        if (currentScope == null)
-                        {
-                           // The scope has not been set which means that the Context Manager has not been defined
-                           currentScope = getScope(true, false);
-                           if (!currentScope.equals(Unknown.class) && !currentScope.equals(Singleton.class)
-                              && !currentScope.equals(Dependent.class) && !currentScope.equals(ApplicationScoped.class))
-                           {
-                              // The context manager has not been defined and the defined scope is not part of the supported ones
-                              // so we will check the default one and reset the scope
-                              scope.compareAndSet(currentScope, null);
-                              currentScope = getScope(true, true);
-                              if (!currentScope.equals(Unknown.class) && !currentScope.equals(Singleton.class)
-                                 && !currentScope.equals(Dependent.class)
-                                 && !currentScope.equals(ApplicationScoped.class))
-                              {
-                                 // The context manager has not been defined and the defined default scope is not part of the supported ones
-                                 // so we will check the default one and set the scope to unknown
-                                 scope.compareAndSet(currentScope, Unknown.class);
-                                 currentScope = Unknown.class;
-                              }
-                           }
-                        }
-                        if (currentScope.equals(Unknown.class))
-                        {
-                           // The scope is unknown so far
-                           isSingleton = MX4JComponentAdapter.this.isSingleton = false;
-                           scope.set(Dependent.class);
-                        }
-                        else
-                        {
-                           isSingleton = MX4JComponentAdapter.this.isSingleton;
-                        }
-                     }
-                     else
-                     {
-                        // The old behavior is expected as there the component is not JSR 330 compliant 
-                        isSingleton = MX4JComponentAdapter.this.isSingleton = true;
-                        scope.set(Singleton.class);
-                     }
-                  }
+                  isSingleton = manageScope(isSingleton, isInitialized, hasInjectableConstructor, isInjectPresent);
                }
                else if (!isInitialized)
                {
@@ -450,7 +404,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
     * @param pluginClass the {@link Class} of the plugin
     * @return the "set method" corresponding to the given context
     */
-   private Method getSetMethod(Class<?> clazz, String name, Class<?> pluginClass)
+   protected static Method getSetMethod(Class<?> clazz, String name, Class<?> pluginClass)
    {
       Method[] methods = clazz.getMethods();
       Method bestCandidate = null;
@@ -511,7 +465,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
    /**
     * Must be used to create Singleton or Prototype only
     */
-   private T create()
+   protected T create()
    {
       boolean toBeLocked = !isInitialized;
       try
@@ -653,9 +607,69 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
       return id = sb.append(componentKey).toString();
    }
 
+   /**
+    * @param isSingleton
+    * @param isInitialized
+    * @param hasInjectableConstructor
+    * @param isInjectPresent
+    * @return
+    */
+   protected boolean manageScope(boolean isSingleton, boolean isInitialized, boolean hasInjectableConstructor,
+      boolean isInjectPresent)
+   {
+      if (!isInitialized)
+      {
+         // The adapter has not been initialized yet
+         if (isInjectPresent || hasInjectableConstructor)
+         {
+            // The component is JSR 330 compliant, so we expect the new behavior
+            Class<? extends Annotation> currentScope = scope.get();
+            if (currentScope == null)
+            {
+               // The scope has not been set which means that the Context Manager has not been defined
+               currentScope = getScope(true, false);
+               if (!currentScope.equals(Unknown.class) && !currentScope.equals(Singleton.class)
+                  && !currentScope.equals(Dependent.class) && !currentScope.equals(ApplicationScoped.class))
+               {
+                  // The context manager has not been defined and the defined scope is not part of the supported ones
+                  // so we will check the default one and reset the scope
+                  scope.compareAndSet(currentScope, null);
+                  currentScope = getScope(true, true);
+                  if (!currentScope.equals(Unknown.class) && !currentScope.equals(Singleton.class)
+                     && !currentScope.equals(Dependent.class)
+                     && !currentScope.equals(ApplicationScoped.class))
+                  {
+                     // The context manager has not been defined and the defined default scope is not part of the supported ones
+                     // so we will check the default one and set the scope to unknown
+                     scope.compareAndSet(currentScope, Unknown.class);
+                     currentScope = Unknown.class;
+                  }
+               }
+            }
+            if (currentScope.equals(Unknown.class))
+            {
+               // The scope is unknown so far
+               isSingleton = MX4JComponentAdapter.this.isSingleton = false;
+               scope.set(Dependent.class);
+            }
+            else
+            {
+               isSingleton = MX4JComponentAdapter.this.isSingleton;
+            }
+         }
+         else
+         {
+            // The old behavior is expected as there the component is not JSR 330 compliant 
+            isSingleton = MX4JComponentAdapter.this.isSingleton = true;
+            scope.set(Singleton.class);
+         }
+      }
+      return isSingleton;
+   }
+
    @Scope
    @Documented
    @Retention(RUNTIME)
-   private static @interface Unknown {
+   protected static @interface Unknown {
    }
 }

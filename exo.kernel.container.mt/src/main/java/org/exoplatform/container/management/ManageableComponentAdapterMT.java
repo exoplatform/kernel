@@ -18,30 +18,32 @@
  */
 package org.exoplatform.container.management;
 
-import org.exoplatform.container.ComponentTaskContext;
 import org.exoplatform.container.ConcurrentContainerMT;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterMT;
 import org.exoplatform.container.spi.Container;
-import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.management.spi.ManagementProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.annotation.Annotation;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.CreationalContext;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public class ManageableComponentAdapterMT extends MX4JComponentAdapterMT
+public class ManageableComponentAdapterMT<T> extends MX4JComponentAdapterMT<T>
 {
 
    /**
     * The serial version UID
     */
-   private static final long serialVersionUID = 8922696628680586728L;
+   private static final long serialVersionUID = 5165449586256525854L;
 
    /** . */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.ManageableComponentAdapterMT");
@@ -50,48 +52,39 @@ public class ManageableComponentAdapterMT extends MX4JComponentAdapterMT
    private final AtomicBoolean registered = new AtomicBoolean();
 
    public ManageableComponentAdapterMT(ExoContainer holder, ConcurrentContainerMT container, Object key,
-      Class<?> implementation)
+      Class<T> implementation)
    {
       super(holder, container, key, implementation);
    }
 
-   public Object getComponentInstance() throws ContainerException
-   {
-      Object instance = super.getComponentInstance();
-
-      //
-      if (instance != null)
-      {
-         register(exocontainer, instance);
-      }
-      return instance;
-   }
-
    protected void register(Container co, Object instance)
    {
-      do
+      if (registered.compareAndSet(false, true))
       {
+         do
+         {
+            if (co instanceof ManageableContainer)
+            {
+               break;
+            }
+         }
+         while ((co = co.getSuccessor()) != null);
          if (co instanceof ManageableContainer)
          {
-            break;
-         }
-      }
-      while ((co = co.getSuccessor()) != null);
-      if (co instanceof ManageableContainer && registered.compareAndSet(false, true))
-      {
-         ManageableContainer container = (ManageableContainer)co;
-         if (container.managementContext != null)
-         {
-            // Registry the instance against the management context
-            if (LOG.isDebugEnabled())
-               LOG.debug("==> add " + instance + " to a mbean server");
-            container.managementContext.register(instance);
-
-            // Register if it is a management provider
-            if (instance instanceof ManagementProvider)
+            ManageableContainer container = (ManageableContainer)co;
+            if (container.managementContext != null)
             {
-               ManagementProvider provider = (ManagementProvider)instance;
-               container.addProvider(provider);
+               // Register the instance against the management context
+               if (LOG.isDebugEnabled())
+                  LOG.debug("==> add " + instance + " to a mbean server");
+               container.managementContext.register(instance);
+
+               // Register if it is a management provider
+               if (instance instanceof ManagementProvider)
+               {
+                  ManagementProvider provider = (ManagementProvider)instance;
+                  container.addProvider(provider);
+               }
             }
          }
       }
@@ -100,13 +93,51 @@ public class ManageableComponentAdapterMT extends MX4JComponentAdapterMT
    /**
     * {@inheritDoc}
     */
-   public Object getComponentInstance(ComponentTaskContext ctx)
+   @Override
+   public T create(CreationalContext<T> creationalContext)
    {
-      Object instance = super.getComponentInstance(ctx);
-      if (instance != null)
+      T instance = super.create(creationalContext);
+      Class<? extends Annotation> scope = null;
+      if (instance != null && (((scope = getScope()) != null && !scope.equals(Dependent.class))) || isSingleton())
       {
          register(exocontainer, instance);
       }
       return instance;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void destroy(T instance, CreationalContext<T> creationalContext)
+   {
+      try
+      {
+         Container co = exocontainer;
+         do
+         {
+            if (co instanceof ManageableContainer)
+            {
+               break;
+            }
+         }
+         while ((co = co.getSuccessor()) != null);
+         if (co instanceof ManageableContainer)
+         {
+            ManageableContainer container = (ManageableContainer)co;
+            if (container.managementContext != null)
+            {
+               // UnRegister the instance against the management context
+               if (LOG.isDebugEnabled())
+                  LOG.debug("==> remove " + instance + " from a mbean server");
+               container.managementContext.unregister(instance);
+            }
+         }
+         creationalContext.release();
+      }
+      catch (Exception e)
+      {
+         LOG.error("Could not destroy the instance " + instance + ": " + e.getMessage());
+      }
    }
 }

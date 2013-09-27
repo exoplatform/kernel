@@ -18,9 +18,13 @@
  */
 package org.exoplatform.container;
 
-import java.util.HashMap;
+import org.exoplatform.container.ConcurrentContainer.CreationalContextComponentAdapter;
+
 import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.enterprise.context.spi.CreationalContext;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -35,31 +39,15 @@ public class ComponentTaskContext
    private final LinkedHashSet<ComponentTaskContextEntry> dependencies;
 
    /**
-    * Indicates whether the dependencies should be checked or not. In case it is set to <code>false</code>
-    * and the dependency that we would like to add has already been registered, a {@link CyclicDependencyException}
-    * will be thrown otherwise it will be ignored.
-    */
-   private final boolean skipDependencyChecking;
-
-   /**
-    * Indicates whether the multi-threading is allowed or not. In case it is set to <code>true</code> and the
-    * kernel is launched in multi-threaded mode, the task won't be delegated to the thread pool, it will be managed
-    * by the current thread instead to prevent possible deadlock.
-    */
-   private final boolean disableMultiThreading;
-
-   /**
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
     */
-   private final Map<Object, Object> depResolutionCtx;
+   private final ConcurrentMap<Object, CreationalContextComponentAdapter<?>> depResolutionCtx;
 
-   private ComponentTaskContext(LinkedHashSet<ComponentTaskContextEntry> dependencies, boolean skipDependencyChecking,
-      boolean disableMultiThreading, Map<Object, Object> depResolutionCtx)
+   private ComponentTaskContext(LinkedHashSet<ComponentTaskContextEntry> dependencies,
+      ConcurrentMap<Object, CreationalContextComponentAdapter<?>> depResolutionCtx)
    {
       this.dependencies = dependencies;
-      this.skipDependencyChecking = skipDependencyChecking;
-      this.disableMultiThreading = disableMultiThreading;
       this.depResolutionCtx = depResolutionCtx;
    }
 
@@ -72,9 +60,7 @@ public class ComponentTaskContext
       ComponentTaskContextEntry entry = new ComponentTaskContextEntry(componentKey, type);
       dependencies.add(entry);
       this.dependencies = dependencies;
-      this.skipDependencyChecking = false;
-      this.disableMultiThreading = false;
-      this.depResolutionCtx = null;
+      this.depResolutionCtx = new ConcurrentHashMap<Object, CreationalContextComponentAdapter<?>>();
    }
 
    /**
@@ -90,31 +76,7 @@ public class ComponentTaskContext
       LinkedHashSet<ComponentTaskContextEntry> dependencies =
          new LinkedHashSet<ComponentTaskContextEntry>(this.dependencies);
       dependencies.add(entry);
-      return new ComponentTaskContext(dependencies, skipDependencyChecking, disableMultiThreading, depResolutionCtx);
-   }
-
-   /**
-    * Creates a new {@link ComponentTaskContext} based on the already registered dependencies
-    * with the flag skip dependency checking set to <code>true</code>. If it is already in skip dependency
-    * checking mode, an {@link IllegalStateException} will be thrown
-    */
-   public ComponentTaskContext toSkipDependencyChecking() throws IllegalStateException
-   {
-      if (skipDependencyChecking)
-         throw new IllegalStateException("The context is already in skip dependency checking mode.");
-      return new ComponentTaskContext(dependencies, true, disableMultiThreading, depResolutionCtx);
-   }
-
-   /**
-    * Creates a new {@link ComponentTaskContext} based on the already registered dependencies
-    * with the flag disable multi-threading set to <code>true</code>. If it is already in disable 
-    * multi-threading mode, it will return itself
-    */
-   public ComponentTaskContext toDisableMultiThreading()
-   {
-      if (disableMultiThreading)
-         return this;
-      return new ComponentTaskContext(dependencies, skipDependencyChecking, true, depResolutionCtx);
+      return new ComponentTaskContext(dependencies, depResolutionCtx);
    }
 
    /**
@@ -133,8 +95,8 @@ public class ComponentTaskContext
     */
    private void checkDependency(ComponentTaskContextEntry entry)
    {
-      if (dependencies.contains(entry)
-         && (depResolutionCtx == null || !depResolutionCtx.containsKey(entry.getComponentKey())))
+      if (entry.getTaskType() == ComponentTaskType.CREATE && dependencies.contains(entry)
+         && !depResolutionCtx.containsKey(entry.getComponentKey()))
       {
          boolean startToCheck = false;
          boolean sameType = true;
@@ -153,7 +115,7 @@ public class ComponentTaskContext
                startToCheck = true;
             }
          }
-         if (!skipDependencyChecking || sameType)
+         if (sameType)
          {
             throw new CyclicDependencyException(entry, sameType);
          }
@@ -169,53 +131,52 @@ public class ComponentTaskContext
    }
 
    /**
-    * Indicates whether the dependencies should be checked or not. In case it is set to <code>false</code>
-    * and the dependency that we would like to add has already been registered, a {@link CyclicDependencyException}
-    * will be thrown otherwise it will be ignored.
-    */
-   public boolean skipDependencyChecking()
-   {
-      return skipDependencyChecking;
-   }
-
-   /**
-    * Indicates whether the multi-threading is allowed or not. In case it is set to <code>true</code> and the
-    * kernel is launched in multi-threaded mode, the task won't be delegated to the thread pool, it will be managed
-    * by the current thread instead to prevent possible deadlock.
-    */
-   public boolean disableMultiThreading()
-   {
-      return disableMultiThreading;
-   }
-
-   /**
-    * Add the component corresponding to the given key, to the dependency resolution
+    * Adds the {@link CreationalContext} of the component corresponding to the given key, to the dependency resolution
     * context
     * @param key The key of the component to add to the context
-    * @param component The instance of the component to add to the context
+    * @param ctx The {@link CreationalContext} of the component to add to the context
+    * @return {@link CreationalContextComponentAdapter} instance that has been put into the map
     */
-   public ComponentTaskContext addComponentToContext(Object key, Object component)
+   @SuppressWarnings("unchecked")
+   public <T> CreationalContextComponentAdapter<T> addComponentToContext(Object key,
+      CreationalContextComponentAdapter<T> ctx)
    {
-      Map<Object, Object> depResolutionCtx = this.depResolutionCtx;
-      if (depResolutionCtx == null)
-      {
-         depResolutionCtx = new HashMap<Object, Object>();
-      }
-      else
-      {
-         depResolutionCtx = new HashMap<Object, Object>(depResolutionCtx);
-      }
-      depResolutionCtx.put(key, component);
-      return new ComponentTaskContext(dependencies, skipDependencyChecking, disableMultiThreading, depResolutionCtx);
+      CreationalContextComponentAdapter<?> prevValue = depResolutionCtx.putIfAbsent(key, ctx);
+      return prevValue != null ? (CreationalContextComponentAdapter<T>)prevValue : ctx;
+   }
+
+   /**
+    * Removes the {@link CreationalContext} of the component corresponding to the given key, from the dependency resolution
+    * context
+    * @param key The key of the component to remove from the context
+    */
+   public void removeComponentFromContext(Object key)
+   {
+      depResolutionCtx.remove(key);
    }
 
    /**
     * Tries to get the component related to the given from the context, if it can be found the current state of the component
     * instance is returned, otherwise <code>null</code> is returned
     */
-   public Object getComponentFromContext(Object key)
+   public <T> T getComponentInstanceFromContext(Object key, Class<T> bindType)
    {
-      return depResolutionCtx != null ? depResolutionCtx.get(key) : null;
+      CreationalContextComponentAdapter<?> ctx = depResolutionCtx.get(key);
+      return ctx == null ? null : bindType.cast(ctx.get());
+   }
+
+   /**
+    * Resets the dependencies but keeps the current dependency resolution context.
+    * @param key the key of the new first dependency
+    * @param type the type of the corresponding task
+    * @return a {@link ComponentTaskContext} instance with the dependencies reseted
+    */
+   public ComponentTaskContext resetDependencies(Object key, ComponentTaskType type)
+   {
+      LinkedHashSet<ComponentTaskContextEntry> dependencies = new LinkedHashSet<ComponentTaskContextEntry>();
+      ComponentTaskContextEntry entry = new ComponentTaskContextEntry(key, type);
+      dependencies.add(entry);
+      return new ComponentTaskContext(dependencies, depResolutionCtx);
    }
 
    /**
@@ -224,8 +185,6 @@ public class ComponentTaskContext
    @Override
    public String toString()
    {
-      return "ComponentTaskContext [dependencies=" + dependencies + ", skipDependencyChecking="
-         + skipDependencyChecking + ", disableMultiThreading=" + disableMultiThreading + ", depResolutionCtx="
-         + depResolutionCtx + "]";
+      return "ComponentTaskContext [dependencies=" + dependencies + ", depResolutionCtx=" + depResolutionCtx + "]";
    }
 }

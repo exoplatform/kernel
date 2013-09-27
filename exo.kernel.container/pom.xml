@@ -184,6 +184,7 @@
                   <exclude>org/exoplatform/container/spi/*.java</exclude>
                   <exclude>test.policy</exclude>
                   <exclude>tsm-excludes.properties</exclude>
+                  <exclude>conf/*</exclude>
                </excludes>
             </configuration>
             <executions>

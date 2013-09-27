@@ -29,7 +29,7 @@ import java.util.LinkedList;
  * @version $Id$
  *
  */
-public class DependencyStack extends LinkedList<Class<?>>
+public class DependencyStack extends LinkedList<Dependency>
 {
    /**
     * The serial version UID
@@ -47,10 +47,10 @@ public class DependencyStack extends LinkedList<Class<?>>
    }
 
    @Override
-   public boolean add(Class<?> c)
+   public boolean add(Dependency dep)
    {
       if (isEmpty())
-         task.getCaller().callDependency(task, c);
-      return super.add(c);
+         task.getCaller().callDependency(task, dep);
+      return super.add(dep);
    }
 }

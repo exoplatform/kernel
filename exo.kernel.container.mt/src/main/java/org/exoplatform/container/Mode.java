@@ -51,17 +51,17 @@ public enum Mode {
     * The logger
     */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.Mode");
-   
+
    /**
     * The name of the system parameter to indicate that we want to enable the <i>multi-threaded</i> mode of the kernel
     */
-   public static final String MULTI_THREADED_PARAM_NAME = "org.exoplatform.container.mode.mt";
+   public static final String MULTI_THREADED_PARAM_NAME = "org.exoplatform.container.mt.enabled";
 
    /**
     * The name of the system parameter to indicate that we want to enable the <i>auto solve dependency issues</i> mode
     * of the kernel
     */
-   public static final String AUTO_SOLVE_DEP_ISSUES_PARAM_NAME = "org.exoplatform.container.mode.as";
+   public static final String AUTO_SOLVE_DEP_ISSUES_PARAM_NAME = "org.exoplatform.container.as.enabled";
 
    private static volatile Set<Mode> MODES;
 
@@ -81,14 +81,14 @@ public enum Mode {
          MODES = Collections.unmodifiableSet(sModes);
       }
    }
-   
+
    static void clearModes()
    {
       // Clear to enforce reloading the default configuration
       synchronized (Mode.class)
       {
          MODES = null;
-      }      
+      }
    }
 
    /**
@@ -111,7 +111,7 @@ public enum Mode {
             {
                Set<Mode> sModes = new HashSet<Mode>();
                String sValue = PropertyManager.getProperty(MULTI_THREADED_PARAM_NAME);
-               if (Boolean.valueOf(sValue))
+               if (sValue == null || Boolean.valueOf(sValue))
                {
                   sModes.add(MULTI_THREADED);
                   if (LOG.isDebugEnabled())

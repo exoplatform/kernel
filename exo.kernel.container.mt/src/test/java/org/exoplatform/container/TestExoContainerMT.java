@@ -448,6 +448,176 @@ public class TestExoContainerMT extends TestExoContainer
       execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
    }
 
+   public void testSortedConstructors()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testSortedConstructors();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testJSR330() throws Exception
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testJSR330();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testScopeWithNoContextManager() throws Exception
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testScopeWithNoContextManager();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testScope() throws Exception
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testScope();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testDefinitionByType()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testDefinitionByType();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testDefinitionByTypeWithProvider()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testDefinitionByTypeWithProvider();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testDefinitionByName()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testDefinitionByName();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testDefinitionByNameWithProvider()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testDefinitionByNameWithProvider();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testDefinitionByQualifier()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testDefinitionByQualifier();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testDefinitionByQualifierWithProvider()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            TestExoContainerMT.super.testDefinitionByQualifierWithProvider();
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
    private static void execute(Callable<Void> task, Mode... modes)
    {
       try

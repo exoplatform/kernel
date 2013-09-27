@@ -27,5 +27,5 @@ package org.exoplatform.container;
  */
 public enum ComponentTaskType 
 {
-   CREATE, INIT, START, STOP, DISPOSE;
+   CREATE, INIT;
 }
