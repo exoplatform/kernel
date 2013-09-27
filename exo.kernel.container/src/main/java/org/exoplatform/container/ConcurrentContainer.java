@@ -98,7 +98,7 @@ public class ConcurrentContainer extends AbstractInterceptor
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
     */
-   protected final transient ThreadLocal<Map<Object, CreationalContextComponentAdapter<?>>> depResolutionCtx =
+   private final transient ThreadLocal<Map<Object, CreationalContextComponentAdapter<?>>> depResolutionCtx =
       new ThreadLocal<Map<Object, CreationalContextComponentAdapter<?>>>();
 
    /**

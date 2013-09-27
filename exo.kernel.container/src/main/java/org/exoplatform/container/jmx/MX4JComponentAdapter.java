@@ -208,7 +208,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
       return getScope(false, false);
    }
 
-   protected Class<? extends Annotation> getScope(boolean initializeIfNull, boolean ignoreExplicit)
+   private Class<? extends Annotation> getScope(boolean initializeIfNull, boolean ignoreExplicit)
    {
       Class<? extends Annotation> scope = this.scope.get();
       if (scope == null && initializeIfNull)
@@ -608,11 +608,9 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
    }
 
    /**
-    * @param isSingleton
-    * @param isInitialized
-    * @param hasInjectableConstructor
-    * @param isInjectPresent
-    * @return
+    * Defines the scope of the component
+    * @return <code>true</code> if the component is considered as a singleton,
+    * <code>false</code> otherwise.
     */
    protected boolean manageScope(boolean isSingleton, boolean isInitialized, boolean hasInjectableConstructor,
       boolean isInjectPresent)
@@ -670,6 +668,6 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
    @Scope
    @Documented
    @Retention(RUNTIME)
-   protected static @interface Unknown {
+   private static @interface Unknown {
    }
 }
