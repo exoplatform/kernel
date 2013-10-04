@@ -18,7 +18,14 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.component.ComponentRequestLifecycle;
+import org.exoplatform.container.component.RequestLifeCycle;
+import org.exoplatform.container.xml.InitParams;
+import org.picocontainer.Startable;
+
+import java.net.URL;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -298,6 +305,91 @@ public class TestExoContainerMT extends TestExoContainer
       execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
    }
 
+   public void testContainerNameSuffix()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            final URL rootURL = getClass().getResource("test-exo-container-mt.xml");
+            final URL portalURL = getClass().getResource("test-exo-container-mt.xml");
+            assertNotNull(rootURL);
+            assertNotNull(portalURL);
+            final ExoContainer rContainer =
+               new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testContainerNameSuffix")
+                  .build();
+            final ExoContainer pContainer = PortalContainer.getInstance();
+            TCNS t1 = rContainer.getComponentInstanceOfType(TCNS.class);
+            assertNotNull(t1);
+            assertEquals("empty${container.name.suffix}", t1.value);
+            assertNotNull(t1.dep);
+            assertEquals("empty${container.name.suffix}", t1.dep.value);
+            TCNS t2 = pContainer.getComponentInstanceOfType(TCNS.class);
+            assertNotNull(t2);
+            assertEquals("empty_portal", t2.value);
+            assertNotNull(t2.dep);
+            assertEquals("empty_portal", t2.dep.value);
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public static class TCNS implements Startable
+   {
+      public String value;
+
+      public TCNS_DEP dep;
+
+      public TCNS(InitParams params, TCNS_DEP dep)
+      {
+         this.dep = dep;
+         this.value = params.getValueParam("param").getValue();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TCNS_DEP implements Startable
+   {
+      public String value;
+
+      public TCNS_DEP(InitParams params)
+      {
+         this.value = params.getValueParam("param").getValue();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
    public void testStartOrder()
    {
       Callable<Void> task = new Callable<Void>()
@@ -313,6 +405,234 @@ public class TestExoContainerMT extends TestExoContainer
       execute(task, Mode.MULTI_THREADED);
       execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
       execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public void testStartOrder2()
+   {
+      Callable<Void> task = new Callable<Void>()
+      {
+         public Void call() throws Exception
+         {
+            COUNTER = new AtomicInteger();
+            ExoContainer container = createRootContainer("test-exo-container-mt.xml", "testStartOrder2");
+            TSO2_A a = container.getComponentInstanceOfType(TSO2_A.class);
+            assertNotNull(a);
+            TSO2_B b = container.getComponentInstanceOfType(TSO2_B.class);
+            assertNotNull(b);
+            TSO2_C c = container.getComponentInstanceOfType(TSO2_C.class);
+            assertNotNull(c);
+            TSO2_D d = container.getComponentInstanceOfType(TSO2_D.class);
+            assertNotNull(d);
+            assertTrue(a.startOrder > 0);
+            assertTrue(c.startOrder > 0);
+            assertTrue(d.startOrder > 0);
+            assertTrue(c.startOrder < a.startOrder);
+            assertTrue(d.startOrder < a.startOrder);
+            assertTrue(c.startOrder < d.startOrder);
+            TSO2_A2 a2 = container.getComponentInstanceOfType(TSO2_A2.class);
+            assertNotNull(a2);
+            TSO2_B2 b2 = container.getComponentInstanceOfType(TSO2_B2.class);
+            assertNotNull(b2);
+            TSO2_C2 c2 = container.getComponentInstanceOfType(TSO2_C2.class);
+            assertNotNull(c2);
+            assertTrue(a2.startOrder > 0);
+            assertTrue(b2.startOrder > 0);
+            assertTrue(c2.startOrder > 0);
+            assertTrue(c2.startOrder < b2.startOrder);
+            assertTrue(b2.startOrder < a2.startOrder);
+            assertTrue(c.startOrder < d.startOrder);
+            return null;
+         }
+
+      };
+      execute(task, (Mode[])null);
+      execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+   }
+
+   public static class TSO2_A implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_A(TSO2_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_B
+   {
+      public TSO2_B(TSO2_C c, TSO2_D d)
+      {
+      }
+   }
+
+   public static class TSO2_C implements Startable
+   {
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_D implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_D(TSO2_C c)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_A2 implements Startable
+   {
+      public int startOrder;
+      private ExoContainerContext ctx;
+
+      public TSO2_A2(TSO2_B2 b, ExoContainerContext ctx)
+      {
+         this.ctx = ctx;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            RequestLifeCycle.begin(ctx.getContainer());
+            startOrder = COUNTER.incrementAndGet();
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_B2 implements Startable, ComponentRequestLifecycle
+   {
+      public int startOrder;
+
+      public TSO2_C2 c;
+
+      public TSO2_B2(TSO2_C2 c)
+      {
+         this.c = c;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            RequestLifeCycle.begin(this);
+            startOrder = COUNTER.incrementAndGet();
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+
+      /**
+       * @see org.exoplatform.container.component.ComponentRequestLifecycle#startRequest(org.exoplatform.container.ExoContainer)
+       */
+      public void startRequest(ExoContainer container)
+      {
+         if (c.startOrder == 0)
+            throw new IllegalStateException("TSO2_C2 should be started");
+      }
+
+      /**
+       * @see org.exoplatform.container.component.ComponentRequestLifecycle#endRequest(org.exoplatform.container.ExoContainer)
+       */
+      public void endRequest(ExoContainer container)
+      {
+      }
+   }
+
+   public static class TSO2_C2 implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_C2()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
    }
 
    public void testCache()

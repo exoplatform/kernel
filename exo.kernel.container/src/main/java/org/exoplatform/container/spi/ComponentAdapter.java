@@ -29,7 +29,8 @@ package org.exoplatform.container.spi;
  * @version $Id$
  *
  */
-public interface ComponentAdapter<T>
+@SuppressWarnings("deprecation")
+public interface ComponentAdapter<T> extends org.picocontainer.ComponentAdapter<T>
 {
    /**
     * Retrieve the key associated with the component.

@@ -84,7 +84,7 @@ public abstract class Dependency
    /**
     * Loads a given dependency from the provided {@link ExoContainer}
     */
-   protected abstract Object load(ExoContainer holder) throws Exception;
+   protected abstract Object load(ExoContainer holder);
 
    /**
     * Gives the {@link ComponentAdapter} corresponding to this dependency

@@ -432,7 +432,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
    }
 
-   private <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type)
+   protected <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type)
    {
       // check whether this is our adapter
       // we need to check this to ensure up-down dependencies cannot be followed

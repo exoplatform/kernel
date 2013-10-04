@@ -38,7 +38,7 @@ public class DependencyByType extends Dependency
    /**
     * {@inheritDoc}
     */
-   protected Object load(ExoContainer holder) throws Exception
+   protected Object load(ExoContainer holder)
    {
       return holder.getComponentInstanceOfType((Class<?>)key);
    }

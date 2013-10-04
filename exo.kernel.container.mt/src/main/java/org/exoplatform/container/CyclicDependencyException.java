@@ -18,12 +18,14 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.spi.ContainerException;
+
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public class CyclicDependencyException extends RuntimeException
+public class CyclicDependencyException extends ContainerException
 {
 
    /**

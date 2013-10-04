@@ -137,6 +137,18 @@
 	<component profiles="testStartOrder">
 		<type>org.exoplatform.container.TestExoContainer$C2</type>
 	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C2_1</type>
+	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C2_2</type>
+	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C2_3</type>
+	</component>
+	<component profiles="testStartOrder">
+		<type>org.exoplatform.container.TestExoContainer$C2_4</type>
+	</component>
 	<component profiles="testStackOverflowError">
 		<key>org.exoplatform.container.TestExoContainer$MyService</key>
 		<type>org.exoplatform.container.TestExoContainer$MyServiceImpl</type>

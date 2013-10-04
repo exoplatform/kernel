@@ -16,48 +16,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.container;
-
-import org.exoplatform.container.spi.ComponentAdapter;
+package org.picocontainer;
 
 /**
- * This defines a dependency by qualifier
+ * This is used for backward compatibility, now you are supposed to use 
+ * {@link org.exoplatform.container.spi.ComponentAdapter}
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
- *
+ * @deprecated use {@link org.exoplatform.container.spi.ComponentAdapter} instead
  */
-public class DependencyByQualifier extends Dependency
+public interface ComponentAdapter<T>
 {
-
-   public DependencyByQualifier(Class<?> key, Class<?> bindType)
-   {
-      super(key, bindType);
-   }
+   /**
+    * Retrieve the key associated with the component.
+    * 
+    * @return the component's key. Should either be a class type (normally an interface) or an identifier that is
+    *         unique (within the scope of the current Container).
+    */
+   Object getComponentKey();
 
    /**
-    * {@inheritDoc}
+    * Retrieve the class of the component.
+    * 
+    * @return the component's implementation class. Should normally be a concrete class (ie, a class that can be
+    *         instantiated).
     */
-   protected Object load(ExoContainer holder)
-   {
-      return holder.getComponentInstance(key, bindType);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ComponentAdapter<?> getAdapter(ExoContainer holder)
-   {
-      return holder.getComponentAdapter(key, bindType);
-   }
-
-   /**
-    * @see java.lang.Object#toString()
-    */
-   @Override
-   public String toString()
-   {
-      return "DependencyByQualifier [key=" + key + ", bindType=" + bindType + "]";
-   }
+   Class<? extends T> getComponentImplementation();
 }

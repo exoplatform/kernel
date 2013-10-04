@@ -31,6 +31,7 @@ import org.exoplatform.container.CyclicDependencyException;
 import org.exoplatform.container.Dependency;
 import org.exoplatform.container.DependencyStackListener;
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.LockManager;
 import org.exoplatform.container.component.ComponentLifecycle;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -53,7 +54,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
 
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.CreationalContext;
@@ -95,11 +98,14 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
    /** . */
    protected transient final ConcurrentContainerMT container;
 
+   protected transient final Lock lock;
+
    public MX4JComponentAdapterMT(ExoContainer holder, ConcurrentContainerMT container, Object key,
       Class<T> implementation)
    {
       super(holder, container, key, implementation);
       this.container = container;
+      this.lock = LockManager.getInstance().createLock();
    }
 
    private void addComponentPlugin(List<ComponentTask<Void>> tasks, Set<Dependency> dependencies, boolean debug,
@@ -174,6 +180,14 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
       {
          return;
       }
+      if (task.getType() == ComponentTaskType.CREATE)
+      {
+         getCreateDependencies().add(dep);
+      }
+      else if (task.getType() == ComponentTaskType.INIT)
+      {
+         getInitDependencies().add(dep);
+      }
       container.getComponentTaskContext().checkDependency(dep.getKey(), task.getType());
    }
 
@@ -230,8 +244,7 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
    {
       if (createDependencies.get() == null)
       {
-         Set<Dependency> dependencies = new HashSet<Dependency>(lDependencies);
-         createDependencies.compareAndSet(null, dependencies);
+         createDependencies.compareAndSet(null, new CopyOnWriteArraySet<Dependency>(lDependencies));
       }
    }
 
@@ -296,7 +309,7 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
          {
             addComponentPlugin(tasks, dependencies, debug, ecplugins.getComponentPlugins());
          }
-         initDependencies.compareAndSet(null, dependencies);
+         initDependencies.compareAndSet(null, new CopyOnWriteArraySet<Dependency>(dependencies));
          tasks.add(new ComponentTask<Void>("initialize component " + getComponentImplementation().getName(), container,
             this, ComponentTaskType.INIT)
          {
@@ -429,36 +442,76 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
     */
    protected T doCreate()
    {
+      return doCreate(false);
+   }
+
+   /**
+    * Must be used to create Singleton or Prototype only
+    */
+   protected T doCreate(boolean useSharedMemory)
+   {
+      if (instance_ != null)
+      {
+         return instance_;
+      }
       boolean toBeLocked = isSingleton;
+      boolean skipFinally = false;
       try
       {
+         CreationalContextComponentAdapter<T> ctx;
          if (toBeLocked)
          {
-            lock.lock();
+            if (useSharedMemory)
+            {
+               T result = container.<T>getComponentFromSharedMemory(getComponentKey());
+               if (result != null)
+               {
+                  LOG.debug("The value could be found from the shared memory");
+                  skipFinally = true;
+                  return result;
+               }
+               LOG.debug("The value could not be found from the shared memory");
+            }
+            if (!lock.tryLock())
+            {
+               // The lock has already been acquired, let's make sure that we
+               // don't have any deadlocks
+               lock.lockInterruptibly();
+            }
+            ctx = container.<T> addComponentToCtx(getComponentKey());
          }
-         return create(container.<T> addComponentToCtx(getComponentKey()));
+         else
+         {
+            // Don't add to context non singleton
+            skipFinally = true;
+            ctx = new CreationalContextComponentAdapter<T>();
+         }
+         return create(ctx);
+      }
+      catch (InterruptedException e)
+      {
+         skipFinally = true;
+         LOG.debug("A deadlock has been detected, let's retry using the shared memory");
+         return doCreate(true);
       }
       finally
       {
-         if (toBeLocked)
+         if (!skipFinally)
          {
             lock.unlock();
+            container.removeComponentFromCtx(getComponentKey());
          }
-         container.removeComponentFromCtx(getComponentKey());
       }
    }
 
    private T create(Callable<T> mainCreateTask)
    {
       ComponentTaskContext ctx = container.getComponentTaskContext();
-      T result = null;
       try
       {
          loadTasks();
          loadDependencies(ctx);
-         result = mainCreateTask.call();
-         autoStart(result);
-         return result;
+         return mainCreateTask.call();
       }
       catch (CyclicDependencyException e)
       {
@@ -486,25 +539,6 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
          container.setComponentTaskContext(createCtx);
       }
       container.loadDependencies(getComponentKey(), createCtx, getCreateDependencies(), ComponentTaskType.CREATE);
-   }
-
-   /**
-    * Auto starts the component
-    */
-   private void autoStart(T result)
-   {
-      if (result instanceof Startable && exocontainer.canBeStopped())
-      {
-         try
-         {
-            // Start the component if the container is already started
-            ((Startable)result).start();
-         }
-         catch (Exception e)
-         {
-            throw new RuntimeException("Cannot auto-start component " + getComponentImplementation(), e);
-         }
-      }
    }
 
    /**
@@ -587,6 +621,18 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
                + getComponentImplementation(), e);
          }
          throw new RuntimeException("Cannot initialize component " + getComponentImplementation(), e);
+      }
+      if (ctx.get() instanceof Startable && exocontainer.canBeStopped())
+      {
+         try
+         {
+            // Start the component if the container is already started
+            ((Startable)ctx.get()).start();
+         }
+         catch (Exception e)
+         {
+            throw new RuntimeException("Cannot auto-start component " + getComponentImplementation(), e);
+         }
       }
       return ctx.get();
    }

@@ -1,24 +1,94 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-	<!--
-
-		Copyright (C) 2009 eXo Platform SAS. This is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License
-		as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version. This software is distributed in the
-		hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-		Lesser General Public License for more details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
-		write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-	-->
+<!-- Copyright (C) 2009 eXo Platform SAS. This is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License 
+   as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version. This software is distributed in the hope 
+   that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General 
+   Public License for more details. You should have received a copy of the GNU Lesser General Public License along with this software; if not, write to the Free Software 
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org. -->
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
-	xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
-	<component profiles="testBadCyclicRef">
-		<type>org.exoplatform.container.TestExoContainer$A1</type>
-	</component>
-	<component profiles="testBadCyclicRef">
-		<type>org.exoplatform.container.TestExoContainer$B1</type>
-	</component>
-	<component profiles="testBadCyclicRef2">
-		<type>org.exoplatform.container.TestExoContainer$A2</type>
-	</component>
-	<component profiles="testBadCyclicRef2">
-		<type>org.exoplatform.container.TestExoContainer$B2</type>
-	</component>
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
+   <component profiles="testBadCyclicRef">
+      <type>org.exoplatform.container.TestExoContainer$A1</type>
+   </component>
+   <component profiles="testBadCyclicRef">
+      <type>org.exoplatform.container.TestExoContainer$B1</type>
+   </component>
+   <component profiles="testBadCyclicRef2">
+      <type>org.exoplatform.container.TestExoContainer$A2</type>
+   </component>
+   <component profiles="testBadCyclicRef2">
+      <type>org.exoplatform.container.TestExoContainer$B2</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_A</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_B</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_C</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_D</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_A2</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_B2</type>
+   </component>
+   <component profiles="testStartOrder2">
+      <type>org.exoplatform.container.TestExoContainerMT$TSO2_C2</type>
+   </component>
+   <component profiles="testContainerNameSuffix">
+      <type>org.exoplatform.container.definition.PortalContainerConfig</type>
+   </component>
+   <component profiles="testContainerNameSuffix">
+      <type>org.exoplatform.container.TestExoContainerMT$TCNS</type>
+      <init-params>
+         <value-param>
+            <name>param</name>
+            <value>empty${container.name.suffix}</value>
+         </value-param>
+      </init-params>
+   </component>
+   <component profiles="testContainerNameSuffix">
+      <type>org.exoplatform.container.TestExoContainerMT$TCNS_DEP</type>
+      <init-params>
+         <value-param>
+            <name>param</name>
+            <value>empty${container.name.suffix}</value>
+         </value-param>
+      </init-params>
+   </component>
+   <external-component-plugins profiles="testContainerNameSuffix">
+      <!-- The full qualified name of the PortalContainerConfig -->
+      <target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
+      <component-plugin>
+         <!-- The name of the plugin -->
+         <name>Add PortalContainer Definitions</name>
+         <!-- The name of the method to call on the PortalContainerConfig in order to register the PortalContainerDefinitions -->
+         <set-method>registerPlugin</set-method>
+         <!-- The full qualified name of the PortalContainerDefinitionPlugin -->
+         <type>org.exoplatform.container.definition.PortalContainerDefinitionPlugin</type>
+         <init-params>
+            <object-param>
+               <name>portal</name>
+               <object type="org.exoplatform.container.definition.PortalContainerDefinition">
+                  <!-- The name of the portal container -->
+                  <field name="name">
+                     <string>portal</string>
+                  </field>
+                  <!-- The name of the context name of the rest web application -->
+                  <field name="restContextName">
+                     <string>rest</string>
+                  </field>
+                  <!-- The name of the realm -->
+                  <field name="realmName">
+                     <string>exo-domain</string>
+                  </field>
+               </object>
+            </object-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
 </configuration>

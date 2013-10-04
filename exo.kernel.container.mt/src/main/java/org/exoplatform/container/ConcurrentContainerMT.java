@@ -38,23 +38,28 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -78,9 +83,15 @@ public class ConcurrentContainerMT extends ConcurrentContainer
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.ConcurrentContainerMT");
 
-   private static volatile transient ExecutorService EXECUTOR;
+   private static volatile transient ThreadPoolExecutor EXECUTOR;
 
    private final transient ThreadLocal<ComponentTaskContext> currentCtx = new ThreadLocal<ComponentTaskContext>();
+
+   /**
+    * Needed to fix the deadlocks
+    */
+   private final transient ConcurrentMap<Object, CreationalContextComponentAdapter<?>> sharedMemory =
+      new ConcurrentHashMap<Object, CreationalContextComponentAdapter<?>>();
 
    /**
     * The name of the system parameter to indicate the total amount of threads to use for the kernel
@@ -93,7 +104,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
    protected final transient ThreadLocal<Deque<DependencyStack>> dependencyStacks = Mode
       .hasMode(Mode.AUTO_SOLVE_DEP_ISSUES) ? new ThreadLocal<Deque<DependencyStack>>() : null;
 
-   private static ExecutorService getExecutor()
+   private static ThreadPoolExecutor getExecutor()
    {
       if (EXECUTOR == null)
       {
@@ -113,7 +124,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                   threadPoolSize = Runtime.getRuntime().availableProcessors();
                }
                LOG.debug("The size of the thread pool used by the kernel has been set to " + threadPoolSize);
-               EXECUTOR = Executors.newFixedThreadPool(threadPoolSize, new KernelThreadFactory());
+               EXECUTOR = new KernelThreadPoolExecutor(threadPoolSize);
             }
          }
       }
@@ -237,13 +248,25 @@ public class ConcurrentContainerMT extends ConcurrentContainer
    }
 
    /**
+    * Gives a value from the shared memory 
+    */
+   @SuppressWarnings("unchecked")
+   public <T> T getComponentFromSharedMemory(Object key)
+   {
+      CreationalContextComponentAdapter<?> ccca = sharedMemory.get(key);
+      return ccca == null ? null : (T)ccca.get();
+   }
+
+   /**
     * {@inheritDoc}
     */
    @Override
    public <T> CreationalContextComponentAdapter<T> addComponentToCtx(Object key)
    {
       ComponentTaskContext ctx = currentCtx.get();
-      return ctx.addComponentToContext(key, new CreationalContextComponentAdapter<T>());
+      CreationalContextComponentAdapter<T> ccca = new CreationalContextComponentAdapter<T>();
+      sharedMemory.put(key, ccca);
+      return ctx.addComponentToContext(key, ccca);
    }
 
    /**
@@ -253,74 +276,237 @@ public class ConcurrentContainerMT extends ConcurrentContainer
    public void removeComponentFromCtx(Object key)
    {
       ComponentTaskContext ctx = currentCtx.get();
-      ctx.removeComponentFromContext(key);
+      CreationalContextComponentAdapter<?> ccca = ctx.removeComponentFromContext(key);
+      sharedMemory.remove(key, ccca);
    }
 
    /**
-    * Start the components of this Container and all its logical child containers.
-    * Any component implementing the lifecycle interface {@link org.picocontainer.Startable} will be started.
+    * A multi-threaded implementation of the start method
     */
+   public <T> List<T> getComponentInstancesOfType(final Class<T> componentType) throws ContainerException
+   {
+      if (componentType == null)
+      {
+         return Collections.emptyList();
+      }
+      List<ComponentAdapter<T>> adapters = getComponentAdaptersOfType(componentType);
+      if (adapters == null || adapters.isEmpty())
+         return Collections.emptyList();
+      boolean enableMultiThreading = Mode.hasMode(Mode.MULTI_THREADED) && adapters.size() > 1;
+      List<Future<?>> submittedTasks = null;
+      final Map<ComponentAdapter<T>, Object> adapterToInstanceMap =
+         enableMultiThreading ? new ConcurrentHashMap<ComponentAdapter<T>, Object>()
+            : new HashMap<ComponentAdapter<T>, Object>();
+      for (final ComponentAdapter<T> adapter : adapters)
+      {
+         if (enableMultiThreading
+            && getExecutor().getActiveCount() + getExecutor().getQueue().size() < getExecutor().getCorePoolSize()
+            && !(adapter instanceof InstanceComponentAdapter))
+         {
+            final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            Runnable task = new Runnable()
+            {
+               public void run()
+               {
+                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+                  {
+                     public Void run()
+                     {
+                        ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+                        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+                        try
+                        {
+                           ExoContainerContext.setCurrentContainer(container);
+                           Thread.currentThread().setContextClassLoader(cl);
+                           Object o = getInstance(adapter, componentType);
+                           if (o != null)
+                              adapterToInstanceMap.put(adapter, o);
+                           // This is to ensure all are added. (Indirect dependencies will be added
+                           // from InstantiatingComponentAdapter).
+                           addOrderedComponentAdapter(adapter);
+                        }
+                        finally
+                        {
+                           Thread.currentThread().setContextClassLoader(oldCl);
+                           ExoContainerContext.setCurrentContainer(oldContainer);
+                        }
+                        return null;
+                     }
+                  });
+               }
+            };
+            if (submittedTasks == null)
+            {
+               submittedTasks = new ArrayList<Future<?>>();
+            }
+            submittedTasks.add(getExecutor().submit(task));
+         }
+         else if (enableMultiThreading)
+         {
+            Object o = getInstance(adapter, componentType);
+            if (o != null)
+               adapterToInstanceMap.put(adapter, o);
+            // This is to ensure all are added. (Indirect dependencies will be added
+            // from InstantiatingComponentAdapter).
+            addOrderedComponentAdapter(adapter);
+         }
+         else
+         {
+            adapterToInstanceMap.put(adapter, getInstance(adapter, componentType));
+            // This is to ensure all are added. (Indirect dependencies will be added
+            // from InstantiatingComponentAdapter).
+            addOrderedComponentAdapter(adapter);
+         }
+      }
+      if (submittedTasks != null)
+      {
+         for (int i = 0, length = submittedTasks.size(); i < length; i++)
+         {
+            Future<?> task = submittedTasks.get(i);
+            try
+            {
+               task.get();
+            }
+            catch (ExecutionException e)
+            {
+               Throwable cause = e.getCause();
+               if (cause instanceof RuntimeException)
+               {
+                  throw (RuntimeException)cause;
+               }
+               throw new RuntimeException(cause);
+            }
+            catch (InterruptedException e)
+            {
+               Thread.currentThread().interrupt();
+            }
+         }
+      }
+      List<T> result = new ArrayList<T>();
+      for (Iterator<ComponentAdapter<?>> iterator = orderedComponentAdapters.iterator(); iterator.hasNext();)
+      {
+         Object componentAdapter = iterator.next();
+         final Object componentInstance = adapterToInstanceMap.get(componentAdapter);
+         if (componentInstance != null)
+         {
+            // may be null in the case of the "implicit" adapter
+            // representing "this".
+            result.add(componentType.cast(componentInstance));
+         }
+      }
+      return result;
+   }
+
+   /**
+    * A multi-threaded implementation of the start method
+    */
+   @Override
    public void start()
    {
-      // First, create and initialize the components
+      // First we get the context manager to prevent deadlock
+      holder.getContextManager();
+      // Then, create and initialize the components
       getComponentInstancesOfType(Startable.class);
-      List<ComponentAdapter<Startable>> adapters = getComponentAdaptersOfType(Startable.class);
-      final Map<ComponentAdapter<Startable>, Object> alreadyStarted =
-         new ConcurrentHashMap<ComponentAdapter<Startable>, Object>();
+      Object startables = getComponentAdaptersOfType(Startable.class);
+      @SuppressWarnings("unchecked")
+      List<ComponentAdapter<?>> adapters = (List<ComponentAdapter<?>>)startables;
+      final Map<ComponentAdapter<?>, Object> alreadyStarted = new ConcurrentHashMap<ComponentAdapter<?>, Object>();
       final AtomicReference<Exception> error = new AtomicReference<Exception>();
-      start(adapters, alreadyStarted, error);
+      // We first start all the non containers
+      start(adapters, alreadyStarted, new HashSet<ComponentAdapter<?>>(), error);
       if (error.get() != null)
       {
          throw new RuntimeException("Could not start the container", error.get());
+      }
+      // Then we start the sub containers
+      for (Iterator<ExoContainer> iterator = children.iterator(); iterator.hasNext();)
+      {
+         ExoContainer child = iterator.next();
+         child.start();
       }
    }
 
    /**
     * Starts all the provided adapters
     */
-   protected void start(Collection<ComponentAdapter<Startable>> adapters,
-      final Map<ComponentAdapter<Startable>, Object> alreadyStarted, final AtomicReference<Exception> error)
+   protected void start(Collection<ComponentAdapter<?>> adapters,
+      final Map<ComponentAdapter<?>, Object> alreadyStarted, final Set<ComponentAdapter<?>> startInProgress,
+      final AtomicReference<Exception> error)
    {
       if (adapters == null || adapters.isEmpty())
          return;
       boolean enableMultiThreading = Mode.hasMode(Mode.MULTI_THREADED) && adapters.size() > 1;
       List<Future<?>> submittedTasks = null;
-      for (final ComponentAdapter<Startable> adapter : adapters)
+      for (final ComponentAdapter<?> adapter : adapters)
       {
          if (error.get() != null)
             break;
-         if (alreadyStarted.containsKey(adapter))
+         if (ExoContainer.class.isAssignableFrom(adapter.getComponentImplementation()))
          {
-            // The component has already been started
+            // Only non containers are expected and it is a container
             continue;
          }
-         if (enableMultiThreading)
+         else if (alreadyStarted.containsKey(adapter) || startInProgress.contains(adapter))
+         {
+            // The component has already been started or is in progress
+            continue;
+         }
+         if (enableMultiThreading
+            && getExecutor().getActiveCount() + getExecutor().getQueue().size() < getExecutor().getCorePoolSize()
+            && !(adapter instanceof InstanceComponentAdapter))
          {
             final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
             final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            Callable<Object> task = new Callable<Object>()
+            Runnable task = new Runnable()
             {
-               public Object call() throws Exception
+               public void run()
                {
-                  try
+                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
                   {
-                     return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+                     public Void run()
                      {
-                        public Void run() throws Exception
+                        if (error.get() != null)
                         {
-                           if (error.get() != null)
+                           return null;
+                        }
+                        else if (alreadyStarted.containsKey(adapter) || startInProgress.contains(adapter))
+                        {
+                           // The component has already been started or is in progress
+                           return null;
+                        }
+                        ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+                        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+                        try
+                        {
+                           ExoContainerContext.setCurrentContainer(container);
+                           Thread.currentThread().setContextClassLoader(cl);
+                           if (adapter instanceof ComponentAdapterDependenciesAware)
                            {
+                              ComponentAdapterDependenciesAware<?> cada = (ComponentAdapterDependenciesAware<?>)adapter;
+                              Collection<Dependency> dependencies = new HashSet<Dependency>();
+                              if (cada.getCreateDependencies() != null)
+                              {
+                                 dependencies.addAll(cada.getCreateDependencies());
+                              }
+                              if (cada.getInitDependencies() != null)
+                              {
+                                 dependencies.addAll(cada.getInitDependencies());
+                              }
+                              Set<ComponentAdapter<?>> startInProgressNew =
+                                 new HashSet<ComponentAdapter<?>>(startInProgress);
+                              startInProgressNew.add(adapter);
+                              start(getDependencies(dependencies), alreadyStarted, startInProgressNew, error);
+                           }
+                           if (!Startable.class.isAssignableFrom(adapter.getComponentImplementation()))
+                           {
+                              alreadyStarted.put(adapter, adapter);
                               return null;
                            }
                            else if (alreadyStarted.containsKey(adapter))
                            {
                               // The component has already been started
                               return null;
-                           }
-                           if (adapter instanceof ComponentAdapterDependenciesAware)
-                           {
-                              ComponentAdapterDependenciesAware<Startable> cada = (ComponentAdapterDependenciesAware<Startable>)adapter;
-                              start(getStartableDependencies(cada.getCreateDependencies()), alreadyStarted, error);
                            }
                            synchronized (adapter)
                            {
@@ -329,38 +515,29 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                                  // The component has already been started
                                  return null;
                               }
-                              ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
-                              ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
                               try
                               {
-                                 ExoContainerContext.setCurrentContainer(container);
-                                 Thread.currentThread().setContextClassLoader(cl);
-                                 Startable startable = adapter.getComponentInstance();
+                                 Startable startable = (Startable)adapter.getComponentInstance();
                                  startable.start();
-                              }
-                              catch (Exception e)
-                              {
-                                 error.compareAndSet(null, e);
                               }
                               finally
                               {
-                                 Thread.currentThread().setContextClassLoader(oldCl);
-                                 ExoContainerContext.setCurrentContainer(oldContainer);
+                                 alreadyStarted.put(adapter, adapter);
                               }
-                              return null;
                            }
                         }
-                     });
-                  }
-                  catch (PrivilegedActionException pae)
-                  {
-                     Throwable cause = pae.getCause();
-                     if (cause instanceof Exception)
-                     {
-                        throw (Exception)cause;
+                        catch (Exception e)
+                        {
+                           error.compareAndSet(null, e);
+                        }
+                        finally
+                        {
+                           Thread.currentThread().setContextClassLoader(oldCl);
+                           ExoContainerContext.setCurrentContainer(oldContainer);
+                        }
+                        return null;
                      }
-                     throw new Exception(cause);
-                  }
+                  });
                }
             };
             if (submittedTasks == null)
@@ -373,8 +550,29 @@ public class ConcurrentContainerMT extends ConcurrentContainer
          {
             if (adapter instanceof ComponentAdapterDependenciesAware)
             {
-               ComponentAdapterDependenciesAware<Startable> cada = (ComponentAdapterDependenciesAware<Startable>)adapter;
-               start(getStartableDependencies(cada.getCreateDependencies()), alreadyStarted, error);
+               ComponentAdapterDependenciesAware<?> cada = (ComponentAdapterDependenciesAware<?>)adapter;
+               Collection<Dependency> dependencies = new HashSet<Dependency>();
+               if (cada.getCreateDependencies() != null)
+               {
+                  dependencies.addAll(cada.getCreateDependencies());
+               }
+               if (cada.getInitDependencies() != null)
+               {
+                  dependencies.addAll(cada.getInitDependencies());
+               }
+               Set<ComponentAdapter<?>> startInProgressNew = new HashSet<ComponentAdapter<?>>(startInProgress);
+               startInProgressNew.add(adapter);
+               start(getDependencies(dependencies), alreadyStarted, startInProgressNew, error);
+            }
+            if (!Startable.class.isAssignableFrom(adapter.getComponentImplementation()))
+            {
+               alreadyStarted.put(adapter, adapter);
+               continue;
+            }
+            else if (alreadyStarted.containsKey(adapter))
+            {
+               // The component has already been started
+               continue;
             }
             synchronized (adapter)
             {
@@ -385,12 +583,16 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                }
                try
                {
-                  Startable startable = adapter.getComponentInstance();
+                  Startable startable = (Startable)adapter.getComponentInstance();
                   startable.start();
                }
                catch (Exception e)
                {
                   error.compareAndSet(null, e);
+               }
+               finally
+               {
+                  alreadyStarted.put(adapter, adapter);
                }
             }
          }
@@ -421,12 +623,11 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       }
    }
 
-   @SuppressWarnings("unchecked")
-   private Collection<ComponentAdapter<Startable>> getStartableDependencies(Collection<Dependency> dependencies)
+   private Collection<ComponentAdapter<?>> getDependencies(Collection<Dependency> dependencies)
    {
       if (dependencies == null || dependencies.isEmpty())
          return null;
-      Collection<ComponentAdapter<Startable>> result = new ArrayList<ComponentAdapter<Startable>>();
+      Collection<ComponentAdapter<?>> result = new ArrayList<ComponentAdapter<?>>();
       for (Dependency dep : dependencies)
       {
          if (dep.isLazy())
@@ -439,12 +640,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
             // parent container are already started so we skip them
             continue;
          }
-         else if (!Startable.class.isAssignableFrom(adapter.getComponentImplementation()))
-         {
-            // The dependency is not startable
-            continue;
-         }
-         result.add((ComponentAdapter<Startable>)adapter);
+         result.add(adapter);
       }
       return result;
    }
@@ -876,48 +1072,38 @@ public class ConcurrentContainerMT extends ConcurrentContainer
             // Prevent infinite loop
             continue;
          }
-         if (enableMultiThreading)
+         if (enableMultiThreading
+            && getExecutor().getActiveCount() + getExecutor().getQueue().size() < getExecutor().getCorePoolSize()
+            && !(dependency.getAdapter(holder) instanceof InstanceComponentAdapter))
          {
             final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
             final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            Callable<Object> task = new Callable<Object>()
+            Runnable task = new Runnable()
             {
-               public Object call() throws Exception
+               public void run()
                {
-                  try
+                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
                   {
-                     return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+                     public Object run()
                      {
-                        public Object run() throws Exception
+                        ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
+                        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+                        ComponentTaskContext previousCtx = currentCtx.get();
+                        try
                         {
-                           ExoContainer oldContainer = ExoContainerContext.getCurrentContainerIfPresent();
-                           ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-                           ComponentTaskContext previousCtx = currentCtx.get();
-                           try
-                           {
-                              ExoContainerContext.setCurrentContainer(container);
-                              Thread.currentThread().setContextClassLoader(cl);
-                              currentCtx.set(ctx.addToContext(dependency.getKey(), type));
-                              return dependency.load(holder);
-                           }
-                           finally
-                           {
-                              Thread.currentThread().setContextClassLoader(oldCl);
-                              ExoContainerContext.setCurrentContainer(oldContainer);
-                              currentCtx.set(previousCtx);
-                           }
+                           ExoContainerContext.setCurrentContainer(container);
+                           Thread.currentThread().setContextClassLoader(cl);
+                           currentCtx.set(ctx.addToContext(dependency.getKey(), type));
+                           return dependency.load(holder);
                         }
-                     });
-                  }
-                  catch (PrivilegedActionException pae)
-                  {
-                     Throwable cause = pae.getCause();
-                     if (cause instanceof Exception)
-                     {
-                        throw (Exception)cause;
+                        finally
+                        {
+                           Thread.currentThread().setContextClassLoader(oldCl);
+                           ExoContainerContext.setCurrentContainer(oldContainer);
+                           currentCtx.set(previousCtx);
+                        }
                      }
-                     throw new Exception(cause);
-                  }
+                  });
                }
             };
             if (submittedTasks == null)
@@ -1067,11 +1253,36 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       public Thread newThread(Runnable r)
       {
          Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
-         if (t.isDaemon())
-            t.setDaemon(false);
+         if (!t.isDaemon())
+            t.setDaemon(true);
          if (t.getPriority() != Thread.NORM_PRIORITY)
             t.setPriority(Thread.NORM_PRIORITY);
          return t;
+      }
+   }
+
+   private static class KernelThreadPoolExecutor extends ThreadPoolExecutor
+   {
+      public KernelThreadPoolExecutor(int threadPoolSize)
+      {
+         super(threadPoolSize, threadPoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+            new KernelThreadFactory());
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value)
+      {
+         return LockManager.getInstance().createRunnableFuture(runnable, value);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable)
+      {
+         return LockManager.getInstance().createRunnableFuture(callable);
       }
    }
 }

@@ -18,17 +18,16 @@
  */
 package org.exoplatform.container.spi;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.StandaloneContainer;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * This annotation can be used to provide a default definition of the component when we try to access it thanks

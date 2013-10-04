@@ -20,9 +20,9 @@ package org.exoplatform.container;
 
 import org.exoplatform.container.ConcurrentContainer.CreationalContextComponentAdapter;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 import javax.enterprise.context.spi.CreationalContext;
 
@@ -42,10 +42,10 @@ public class ComponentTaskContext
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
     */
-   private final ConcurrentMap<Object, CreationalContextComponentAdapter<?>> depResolutionCtx;
+   private Map<Object, CreationalContextComponentAdapter<?>> depResolutionCtx;
 
    private ComponentTaskContext(LinkedHashSet<ComponentTaskContextEntry> dependencies,
-      ConcurrentMap<Object, CreationalContextComponentAdapter<?>> depResolutionCtx)
+      Map<Object, CreationalContextComponentAdapter<?>> depResolutionCtx)
    {
       this.dependencies = dependencies;
       this.depResolutionCtx = depResolutionCtx;
@@ -60,7 +60,6 @@ public class ComponentTaskContext
       ComponentTaskContextEntry entry = new ComponentTaskContextEntry(componentKey, type);
       dependencies.add(entry);
       this.dependencies = dependencies;
-      this.depResolutionCtx = new ConcurrentHashMap<Object, CreationalContextComponentAdapter<?>>();
    }
 
    /**
@@ -76,7 +75,8 @@ public class ComponentTaskContext
       LinkedHashSet<ComponentTaskContextEntry> dependencies =
          new LinkedHashSet<ComponentTaskContextEntry>(this.dependencies);
       dependencies.add(entry);
-      return new ComponentTaskContext(dependencies, depResolutionCtx);
+      return new ComponentTaskContext(dependencies, depResolutionCtx == null ? null
+         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx));
    }
 
    /**
@@ -96,7 +96,7 @@ public class ComponentTaskContext
    private void checkDependency(ComponentTaskContextEntry entry)
    {
       if (entry.getTaskType() == ComponentTaskType.CREATE && dependencies.contains(entry)
-         && !depResolutionCtx.containsKey(entry.getComponentKey()))
+         && (depResolutionCtx == null || !depResolutionCtx.containsKey(entry.getComponentKey())))
       {
          boolean startToCheck = false;
          boolean sameType = true;
@@ -141,8 +141,19 @@ public class ComponentTaskContext
    public <T> CreationalContextComponentAdapter<T> addComponentToContext(Object key,
       CreationalContextComponentAdapter<T> ctx)
    {
-      CreationalContextComponentAdapter<?> prevValue = depResolutionCtx.putIfAbsent(key, ctx);
-      return prevValue != null ? (CreationalContextComponentAdapter<T>)prevValue : ctx;
+      if (depResolutionCtx == null)
+      {
+         depResolutionCtx = new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>();
+         depResolutionCtx.put(key, ctx);
+         return ctx;
+      }
+      CreationalContextComponentAdapter<?> prevValue = depResolutionCtx.get(key);
+      if (prevValue == null)
+      {
+         depResolutionCtx.put(key, ctx);
+         return ctx;
+      }
+      return (CreationalContextComponentAdapter<T>)prevValue;
    }
 
    /**
@@ -150,9 +161,11 @@ public class ComponentTaskContext
     * context
     * @param key The key of the component to remove from the context
     */
-   public void removeComponentFromContext(Object key)
+   public CreationalContextComponentAdapter<?> removeComponentFromContext(Object key)
    {
-      depResolutionCtx.remove(key);
+      if (depResolutionCtx == null)
+         return null;
+      return depResolutionCtx.remove(key);
    }
 
    /**
@@ -161,6 +174,8 @@ public class ComponentTaskContext
     */
    public <T> T getComponentInstanceFromContext(Object key, Class<T> bindType)
    {
+      if (depResolutionCtx == null)
+         return null;
       CreationalContextComponentAdapter<?> ctx = depResolutionCtx.get(key);
       return ctx == null ? null : bindType.cast(ctx.get());
    }
@@ -176,7 +191,8 @@ public class ComponentTaskContext
       LinkedHashSet<ComponentTaskContextEntry> dependencies = new LinkedHashSet<ComponentTaskContextEntry>();
       ComponentTaskContextEntry entry = new ComponentTaskContextEntry(key, type);
       dependencies.add(entry);
-      return new ComponentTaskContext(dependencies, depResolutionCtx);
+      return new ComponentTaskContext(dependencies, depResolutionCtx == null ? null
+         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx));
    }
 
    /**
