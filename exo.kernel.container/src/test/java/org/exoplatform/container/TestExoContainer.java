@@ -24,6 +24,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.component.ComponentRequestLifecycle;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.context.AdvancedContext;
 import org.exoplatform.container.context.ContextManager;
@@ -350,6 +352,79 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(a, b.a);
    }
 
+   public void testContainerNameSuffix()
+   {
+      final URL rootURL = getClass().getResource("test-exo-container.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      final ExoContainer rContainer =
+         new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testContainerNameSuffix")
+            .build();
+      final ExoContainer pContainer = PortalContainer.getInstance();
+      TCNS t1 = rContainer.getComponentInstanceOfType(TCNS.class);
+      assertNotNull(t1);
+      assertEquals("empty${container.name.suffix}", t1.value);
+      assertNotNull(t1.dep);
+      assertEquals("empty${container.name.suffix}", t1.dep.value);
+      TCNS t2 = pContainer.getComponentInstanceOfType(TCNS.class);
+      assertNotNull(t2);
+      assertEquals("empty_portal", t2.value);
+      assertNotNull(t2.dep);
+      assertEquals("empty_portal", t2.dep.value);
+   }
+
+   public static class TCNS implements Startable
+   {
+      public String value;
+
+      public TCNS_DEP dep;
+
+      public TCNS(InitParams params, TCNS_DEP dep)
+      {
+         this.dep = dep;
+         this.value = params.getValueParam("param").getValue();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TCNS_DEP implements Startable
+   {
+      public String value;
+
+      public TCNS_DEP(InitParams params)
+      {
+         this.value = params.getValueParam("param").getValue();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
    public void testStartOrder()
    {
       COUNTER = new AtomicInteger();
@@ -366,6 +441,340 @@ public class TestExoContainer extends AbstractTestContainer
       assertNotNull(c2);
       //      assertEquals(1, c2.startOrder);
       assertTrue(c2.startOrder > 0);
+
+      C2_1 c2_1 = container.getComponentInstanceOfType(C2_1.class);
+      assertNotNull(c2_1);
+      assertTrue(c2_1.startOrder > 0);
+      C2_2 c2_2 = container.getComponentInstanceOfType(C2_2.class);
+      assertNotNull(c2_2);
+      assertTrue(c2_2.startOrder > 0);
+      C2_3 c2_3 = container.getComponentInstanceOfType(C2_3.class);
+      assertNotNull(c2_3);
+      assertTrue(c2_3.startOrder > 0);
+      C2_4 c2_4 = container.getComponentInstanceOfType(C2_4.class);
+      assertNotNull(c2_4);
+      assertTrue(c2_4.startOrder > 0);
+      assertSame(c2_1.getC2(), c2_2);
+      assertSame(c2_1.getC3(), c2_3);
+      assertSame(c2_1.getC4(), c2_4);
+      assertSame(c2_2.c3, c2_3);
+      assertSame(c2_2.c4, c2_4);
+      assertSame(c2_3.c4, c2_4);
+      assertTrue(c2_4.startOrder < c2_1.startOrder);
+      assertTrue(c2_4.startOrder < c2_2.startOrder);
+      assertTrue(c2_4.startOrder < c2_3.startOrder);
+      assertTrue(c2_3.startOrder < c2_1.startOrder);
+      assertTrue(c2_3.startOrder < c2_2.startOrder);
+      assertTrue(c2_2.startOrder < c2_1.startOrder);
+   }
+
+   public void testStartOrder2()
+   {
+      COUNTER = new AtomicInteger();
+      ExoContainer container = createRootContainer("test-exo-container.xml", "testStartOrder2");
+      TSO2_A a = container.getComponentInstanceOfType(TSO2_A.class);
+      assertNotNull(a);
+      TSO2_B b = container.getComponentInstanceOfType(TSO2_B.class);
+      assertNotNull(b);
+      TSO2_C c = container.getComponentInstanceOfType(TSO2_C.class);
+      assertNotNull(c);
+      TSO2_D d = container.getComponentInstanceOfType(TSO2_D.class);
+      assertNotNull(d);
+      assertTrue(a.startOrder > 0);
+      assertTrue(c.startOrder > 0);
+      assertTrue(d.startOrder > 0);
+      assertTrue(c.startOrder < a.startOrder);
+      assertTrue(d.startOrder < a.startOrder);
+      assertTrue(c.startOrder < d.startOrder);
+      TSO2_A2 a2 = container.getComponentInstanceOfType(TSO2_A2.class);
+      assertNotNull(a2);
+      TSO2_B2 b2 = container.getComponentInstanceOfType(TSO2_B2.class);
+      assertNotNull(b2);
+      TSO2_C2 c2 = container.getComponentInstanceOfType(TSO2_C2.class);
+      assertNotNull(c2);
+      assertTrue(a2.startOrder > 0);
+      assertTrue(b2.startOrder > 0);
+      assertTrue(c2.startOrder > 0);
+      assertTrue(c2.startOrder < b2.startOrder);
+      assertTrue(b2.startOrder < a2.startOrder);
+   }
+
+   public static class TSO2_A implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_A(TSO2_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_B
+   {
+      public TSO2_B(TSO2_C c, TSO2_D d)
+      {
+      }
+   }
+
+   public static class TSO2_C implements Startable
+   {
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_D implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_D(TSO2_C c)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_A2 implements Startable
+   {
+      public int startOrder;
+      private ExoContainerContext ctx;
+
+      public TSO2_A2(TSO2_B2 b, ExoContainerContext ctx)
+      {
+         this.ctx = ctx;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            RequestLifeCycle.begin(ctx.getContainer());
+            startOrder = COUNTER.incrementAndGet();
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_B2 implements Startable, ComponentRequestLifecycle
+   {
+      public int startOrder;
+
+      public TSO2_C2 c;
+
+      public TSO2_B2(TSO2_C2 c)
+      {
+         this.c = c;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            RequestLifeCycle.begin(this);
+            startOrder = COUNTER.incrementAndGet();
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+
+      /**
+       * @see org.exoplatform.container.component.ComponentRequestLifecycle#startRequest(org.exoplatform.container.ExoContainer)
+       */
+      public void startRequest(ExoContainer container)
+      {
+         if (c.startOrder == 0)
+            throw new IllegalStateException("TSO2_C2 should be started");
+      }
+
+      /**
+       * @see org.exoplatform.container.component.ComponentRequestLifecycle#endRequest(org.exoplatform.container.ExoContainer)
+       */
+      public void endRequest(ExoContainer container)
+      {
+      }
+   }
+
+   public static class TSO2_C2 implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_C2()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public void testStartOrder3()
+   {
+      COUNTER = new AtomicInteger();
+      ExoContainer container = createRootContainer("test-exo-container.xml", "testStartOrder3");
+      TSO3_A a = container.getComponentInstanceOfType(TSO3_A.class);
+      assertNotNull(a);
+      TSO3_B b = container.getComponentInstanceOfType(TSO3_B.class);
+      assertNotNull(b);
+      TSO3_C c = container.getComponentInstanceOfType(TSO3_C.class);
+      assertNotNull(c);
+      assertTrue(a.startOrder > 0);
+      assertTrue(b.startOrder > 0);
+      assertTrue(c.startOrder > 0);
+      assertTrue(c.startOrder < b.startOrder);
+      assertTrue(b.startOrder < a.startOrder);
+   }
+
+   @Singleton
+   public static class TSO3_A implements Startable
+   {
+      public int startOrder;
+
+      @Inject
+      public TSO3_A(TSO3_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   @Singleton
+   public static class TSO3_B implements Startable
+   {
+      public int startOrder;
+
+      @Inject
+      public TSO3_B(TSO3_C c)
+      {
+      }
+
+      @Inject
+      public void setB(TSO3_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO3_C implements Startable
+   {
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
    }
 
    public void testCache()
@@ -1084,6 +1493,137 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Singleton
+   public static class C2_1 implements Startable
+   {
+      @Inject
+      public C2_2 c2;
+      @Inject
+      protected C2_3 c3;
+      @Inject
+      private C2_4 c4;
+
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+
+      /**
+       * @return the c2
+       */
+      public C2_2 getC2()
+      {
+         return c2;
+      }
+
+      /**
+       * @return the c3
+       */
+      public C2_3 getC3()
+      {
+         return c3;
+      }
+
+      /**
+       * @return the c4
+       */
+      public C2_4 getC4()
+      {
+         return c4;
+      }
+   }
+
+   @Singleton
+   public static class C2_2 implements Startable
+   {
+      public C2_3 c3;
+      public C2_4 c4;
+      public int startOrder;
+
+      @Inject
+      public C2_2(C2_4 c4, C2_3 c3)
+      {
+         this.c3 = c3;
+         this.c4 = c4;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   @Singleton
+   public static class C2_3 implements Startable
+   {
+      public C2_4 c4;
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+
+      @Inject
+      public void setC4(C2_4 c4)
+      {
+         this.c4 = c4;
+      }
+   }
+
+   @Singleton
+   public static class C2_4 implements Startable
+   {
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
    public void testLifeCycle() throws Throwable
    {
       ExoContainer container = new ExoContainer();
@@ -1109,7 +1649,6 @@ public class TestExoContainer extends AbstractTestContainer
       LC3 c3 = (LC3)container.getComponentInstanceOfType(LC3.class);
       LC4 c4 = (LC4)container.getComponentInstanceOfType(LC4.class);
       LC5 c5 = (LC5)container.getComponentInstanceOfType(LC5.class);
-      assertFalse(c2.started && c3.started && c4.started);
       assertTrue(container.canBeStarted());
       assertFalse(container.canBeStopped());
       assertTrue(container.canBeDisposed());
@@ -1850,6 +2389,7 @@ public class TestExoContainer extends AbstractTestContainer
       @Inject
       private Provider<JSR330_P1> p1;
 
+      @SuppressWarnings("unused")
       @Inject
       private int value;
 
@@ -2717,6 +3257,12 @@ public class TestExoContainer extends AbstractTestContainer
       final RootContainer container = createRootContainer("test-exo-container.xml", "testScope");
 
       container.registerComponentImplementation(S1.class);
+      container.registerComponentImplementation(S1_DEP1.class);
+      container.registerComponentImplementation(S1_DEP2.class);
+      container.registerComponentImplementation(S1_DEP3.class);
+      container.registerComponentImplementation(S1_DEP4.class);
+      container.registerComponentImplementation(S1_DEP5.class);
+      container.registerComponentImplementation(S1_DEP6.class);
       container.registerComponentImplementation(S2.class);
       container.registerComponentImplementation(S20.class);
       container.registerComponentImplementation(S3.class);
@@ -2872,7 +3418,7 @@ public class TestExoContainer extends AbstractTestContainer
       manager.<ServletRequest> getContext(RequestScoped.class).activate(req1);
       S1 s1 = container.getComponentInstanceOfType(S1.class);
       int s1Id = s1.getId();
-      assertEquals(1, mapReq1.size());
+      assertEquals(2, mapReq1.size());
       assertNotNull(s1);
       assertSame(s1, container.getComponentInstanceOfType(S1.class));
       assertEquals(s1Id, container.getComponentInstanceOfType(S1.class).getId());
@@ -2899,6 +3445,37 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(s1Id, s8.s1.getId());
       assertEquals(s1Id, s8.s1.getId2());
       assertEquals(s1Id, s8.s1.getId3());
+      assertNotNull(s1.getDep1());
+      assertNotNull(s1.getDep2());
+      assertNotNull(s1.getDep3());
+      assertNotNull(s1.getDep4());
+      assertNotNull(s1.getDep5());
+      assertSame(s1.getDep1(), container.getComponentInstanceOfType(S1_DEP1.class));
+      int dep1Id;
+      assertEquals(dep1Id = s1.getDep1().getId(), container.getComponentInstanceOfType(S1_DEP1.class).getId());
+      assertEquals(s1.getDep1().getId(), s1.getDep1Id());
+      assertSame(s1.getDep2(), container.getComponentInstanceOfType(S1_DEP2.class));
+      try
+      {
+         s1.getDep2().getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      assertSame(s1.getDep3(), container.getComponentInstanceOfType(S1_DEP3.class));
+      assertEquals(s1.getDep3().getId(), container.getComponentInstanceOfType(S1_DEP3.class).getId());
+      assertSame(s1.getDep4(), container.getComponentInstanceOfType(S1_DEP4.class));
+      assertEquals(s1.getDep4().getId(), container.getComponentInstanceOfType(S1_DEP4.class).getId());
+      assertNotSame(s1.getDep5(), container.getComponentInstanceOfType(S1_DEP5.class));
+      assertSame(s1.getDep6(), container.getComponentInstanceOfType(S1_DEP6.class));
+      assertEquals(s1.getDep6().getId(), container.getComponentInstanceOfType(S1_DEP6.class).getId());
+      assertSame(s1, s1.getDep6().getS1());
+      assertEquals(s1.getId(), s1.getDep6().getS1().getId());
+      assertSame(s1, container.getComponentInstanceOfType(S1_DEP6.class).getS1());
+      assertEquals(s1.getId(), container.getComponentInstanceOfType(S1_DEP6.class).getS1().getId());
+
       manager.<ServletRequest> getContext(RequestScoped.class).deactivate(req1);
       assertTrue(mapReq1.isEmpty());
       s4 = container.getComponentInstanceOfType(S4.class);
@@ -2993,6 +3570,37 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(s1_2.getId(), s8.s1.getId());
       assertEquals(s1_2.getId(), s8.s1.getId2());
       assertEquals(s1_2.getId(), s8.s1.getId3());
+      assertNotNull(s1_2.getDep1());
+      assertNotNull(s1_2.getDep2());
+      assertNotNull(s1_2.getDep3());
+      assertNotNull(s1_2.getDep4());
+      assertNotNull(s1_2.getDep5());
+      assertSame(s1_2.getDep1(), container.getComponentInstanceOfType(S1_DEP1.class));
+      assertEquals(s1_2.getDep1().getId(), container.getComponentInstanceOfType(S1_DEP1.class).getId());
+      assertEquals(s1_2.getDep1().getId(), s1_2.getDep1Id());
+      assertTrue(s1_2.getDep1().getId() != dep1Id);
+      assertSame(s1_2.getDep2(), container.getComponentInstanceOfType(S1_DEP2.class));
+      try
+      {
+         s1_2.getDep2().getId();
+         fail("An exception is expected as the scope is not active");
+      }
+      catch (Exception e)
+      {
+         // ok
+      }
+      assertSame(s1_2.getDep3(), container.getComponentInstanceOfType(S1_DEP3.class));
+      assertEquals(s1_2.getDep3().getId(), container.getComponentInstanceOfType(S1_DEP3.class).getId());
+      assertSame(s1_2.getDep4(), container.getComponentInstanceOfType(S1_DEP4.class));
+      assertEquals(s1_2.getDep4().getId(), container.getComponentInstanceOfType(S1_DEP4.class).getId());
+      assertNotSame(s1_2.getDep5(), container.getComponentInstanceOfType(S1_DEP5.class));
+      assertSame(s1_2.getDep6(), container.getComponentInstanceOfType(S1_DEP6.class));
+      assertEquals(s1_2.getDep6().getId(), container.getComponentInstanceOfType(S1_DEP6.class).getId());
+      assertSame(s1_2, s1_2.getDep6().getS1());
+      assertEquals(s1_2.getId(), s1_2.getDep6().getS1().getId());
+      assertSame(s1_2, container.getComponentInstanceOfType(S1_DEP6.class).getS1());
+      assertEquals(s1_2.getId(), container.getComponentInstanceOfType(S1_DEP6.class).getS1().getId());
+
       manager.<ServletRequest> getContext(RequestScoped.class).deactivate(req2);
 
       try
@@ -3680,6 +4288,17 @@ public class TestExoContainer extends AbstractTestContainer
    {
       private final int id = System.identityHashCode(this);
 
+      private S1_DEP1 dep1;
+      private int dep1Id;
+      @Inject
+      protected S1_DEP2 dep2;
+      @Inject
+      public S1_DEP3 dep3;
+      @Inject
+      private S1_DEP4 dep4;
+      private S1_DEP5 dep5;
+      private S1_DEP6 dep6;
+
       public int getId()
       {
          return id;
@@ -3693,6 +4312,156 @@ public class TestExoContainer extends AbstractTestContainer
       int getId3()
       {
          return id;
+      }
+
+      @Inject
+      public void setDep1(S1_DEP1 dep1)
+      {
+         this.dep1 = dep1;
+         this.dep1Id = dep1.getId();
+      }
+
+      @Inject
+      protected void setDep5(S1_DEP5 dep5)
+      {
+         this.dep5 = dep5;
+      }
+
+      @Inject
+      void setDep6(S1_DEP6 dep6)
+      {
+         this.dep6 = dep6;
+      }
+
+      /**
+       * @return the dep1
+       */
+      public S1_DEP1 getDep1()
+      {
+         return dep1;
+      }
+
+      /**
+       * @return the dep1Id
+       */
+      public int getDep1Id()
+      {
+         return dep1Id;
+      }
+
+      /**
+       * @return the dep2
+       */
+      public S1_DEP2 getDep2()
+      {
+         return dep2;
+      }
+
+      /**
+       * @return the dep3
+       */
+      public S1_DEP3 getDep3()
+      {
+         return dep3;
+      }
+
+      /**
+       * @return the dep4
+       */
+      public S1_DEP4 getDep4()
+      {
+         return dep4;
+      }
+
+      /**
+       * @return the dep5
+       */
+      public S1_DEP5 getDep5()
+      {
+         return dep5;
+      }
+
+      /**
+       * @return the dep6
+       */
+      public S1_DEP6 getDep6()
+      {
+         return dep6;
+      }
+   }
+
+   @RequestScoped
+   public static class S1_DEP1
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @SuppressWarnings("serial")
+   @SessionScoped
+   public static class S1_DEP2 implements Serializable
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @ApplicationScoped
+   public static class S1_DEP3
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @Singleton
+   public static class S1_DEP4
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @Dependent
+   public static class S1_DEP5
+   {
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+   }
+
+   @RequestScoped
+   public static class S1_DEP6
+   {
+      @Inject
+      public S1 s1;
+ 
+      private final int id = System.identityHashCode(this);
+
+      public int getId()
+      {
+         return id;
+      }
+
+      public S1 getS1()
+      {
+         return s1;
       }
    }
 

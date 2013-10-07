@@ -349,14 +349,31 @@ public class ConcurrentContainer extends AbstractInterceptor
    public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
    {
       ComponentAdapter<T> componentAdapter = getComponentAdapter(componentKey, bindType);
-      if (componentAdapter != null)
-      {
-         return getInstance(componentAdapter, bindType);
-      }
-      else
+      if (componentAdapter == null)
       {
          return null;
       }
+      T value = getComponentInstanceFromContext(componentAdapter, bindType);
+      return value != null ? value : getInstance(componentAdapter, bindType);
+   }
+
+   /**
+    * Gets the component instance from the context
+    */
+   protected <T> T getComponentInstanceFromContext(ComponentAdapter<T> componentAdapter, Class<T> bindType)
+   {
+      Map<Object, CreationalContextComponentAdapter<?>> map = depResolutionCtx.get();
+      if (map != null)
+      {
+         CreationalContextComponentAdapter<?> result = map.get(componentAdapter.getComponentKey());
+         if (result != null && result.get() != null) 
+         {
+            // Don't keep in cache a component that has not been created yet
+            getCache().disable();
+            return bindType.cast(result.get());
+         }
+      }
+      return null;
    }
 
    /**
@@ -370,18 +387,8 @@ public class ConcurrentContainer extends AbstractInterceptor
       final ComponentAdapter<T> componentAdapter = getComponentAdapterOfType(componentType);
       if (componentAdapter == null)
          return null;
-      Map<Object, CreationalContextComponentAdapter<?>> map = depResolutionCtx.get();
-      if (map != null)
-      {
-         CreationalContextComponentAdapter<?> result = map.get(componentAdapter.getComponentKey());
-         if (result != null && result.get() != null) 
-         {
-            // Don't keep in cache a component that has not been created yet
-            getCache().disable();
-            return componentType.cast(result.get());
-         }
-      }
-      return getInstance(componentAdapter, componentType);
+      T value = getComponentInstanceFromContext(componentAdapter, componentType);
+      return value != null ? value : getInstance(componentAdapter, componentType);
    }
 
    /**
@@ -397,8 +404,13 @@ public class ConcurrentContainer extends AbstractInterceptor
          map = new HashMap<Object, CreationalContextComponentAdapter<?>>();
          depResolutionCtx.set(map);
       }
-      CreationalContextComponentAdapter<T> result = new CreationalContextComponentAdapter<T>();
-      map.put(key, result);
+      @SuppressWarnings("unchecked")
+      CreationalContextComponentAdapter<T> result = (CreationalContextComponentAdapter<T>)map.get(key);
+      if (result == null)
+      {
+         result = new CreationalContextComponentAdapter<T>();
+         map.put(key, result);
+      }
       return result;
    }
 
