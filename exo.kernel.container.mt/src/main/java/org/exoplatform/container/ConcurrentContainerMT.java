@@ -484,19 +484,30 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                            if (adapter instanceof ComponentAdapterDependenciesAware)
                            {
                               ComponentAdapterDependenciesAware<?> cada = (ComponentAdapterDependenciesAware<?>)adapter;
-                              Collection<Dependency> dependencies = new HashSet<Dependency>();
                               if (cada.getCreateDependencies() != null)
                               {
-                                 dependencies.addAll(cada.getCreateDependencies());
+                                 // Start first the create dependencies
+                                 Set<ComponentAdapter<?>> startInProgressNew =
+                                    new HashSet<ComponentAdapter<?>>(startInProgress);
+                                 startInProgressNew.add(adapter);
+                                 Collection<ComponentAdapter<?>> dep = getDependencies(cada.getCreateDependencies());
+                                 if (dep != null && !dep.isEmpty())
+                                    start(dep, alreadyStarted, startInProgressNew, error);
                               }
                               if (cada.getInitDependencies() != null)
                               {
-                                 dependencies.addAll(cada.getInitDependencies());
+                                 // Then start the init dependencies
+                                 Set<ComponentAdapter<?>> startInProgressNew =
+                                    new HashSet<ComponentAdapter<?>>(startInProgress);
+                                 startInProgressNew.add(adapter);
+                                 Collection<ComponentAdapter<?>> dep = getDependencies(cada.getInitDependencies());
+                                 if (dep != null && !dep.isEmpty())
+                                 {
+                                    // remove the current adapter to prevent loop
+                                    dep.remove(adapter);
+                                    start(dep, alreadyStarted, startInProgressNew, error);
+                                 }
                               }
-                              Set<ComponentAdapter<?>> startInProgressNew =
-                                 new HashSet<ComponentAdapter<?>>(startInProgress);
-                              startInProgressNew.add(adapter);
-                              start(getDependencies(dependencies), alreadyStarted, startInProgressNew, error);
                            }
                            if (!Startable.class.isAssignableFrom(adapter.getComponentImplementation()))
                            {
@@ -551,18 +562,28 @@ public class ConcurrentContainerMT extends ConcurrentContainer
             if (adapter instanceof ComponentAdapterDependenciesAware)
             {
                ComponentAdapterDependenciesAware<?> cada = (ComponentAdapterDependenciesAware<?>)adapter;
-               Collection<Dependency> dependencies = new HashSet<Dependency>();
                if (cada.getCreateDependencies() != null)
                {
-                  dependencies.addAll(cada.getCreateDependencies());
+                  // Start first the create dependencies
+                  Set<ComponentAdapter<?>> startInProgressNew = new HashSet<ComponentAdapter<?>>(startInProgress);
+                  startInProgressNew.add(adapter);
+                  Collection<ComponentAdapter<?>> dep = getDependencies(cada.getCreateDependencies());
+                  if (dep != null && !dep.isEmpty())
+                     start(dep, alreadyStarted, startInProgressNew, error);
                }
                if (cada.getInitDependencies() != null)
                {
-                  dependencies.addAll(cada.getInitDependencies());
+                  // Then start the init dependencies
+                  Set<ComponentAdapter<?>> startInProgressNew = new HashSet<ComponentAdapter<?>>(startInProgress);
+                  startInProgressNew.add(adapter);
+                  Collection<ComponentAdapter<?>> dep = getDependencies(cada.getInitDependencies());
+                  if (dep != null && !dep.isEmpty())
+                  {
+                     // remove the current adapter to prevent loop
+                     dep.remove(adapter);
+                     start(dep, alreadyStarted, startInProgressNew, error);
+                  }
                }
-               Set<ComponentAdapter<?>> startInProgressNew = new HashSet<ComponentAdapter<?>>(startInProgress);
-               startInProgressNew.add(adapter);
-               start(getDependencies(dependencies), alreadyStarted, startInProgressNew, error);
             }
             if (!Startable.class.isAssignableFrom(adapter.getComponentImplementation()))
             {
@@ -627,7 +648,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
    {
       if (dependencies == null || dependencies.isEmpty())
          return null;
-      Collection<ComponentAdapter<?>> result = new ArrayList<ComponentAdapter<?>>();
+      Collection<ComponentAdapter<?>> result = new HashSet<ComponentAdapter<?>>();
       for (Dependency dep : dependencies)
       {
          if (dep.isLazy())

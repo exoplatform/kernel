@@ -24,6 +24,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.component.ComponentRequestLifecycle;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.context.AdvancedContext;
 import org.exoplatform.container.context.ContextManager;
@@ -350,6 +352,79 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(a, b.a);
    }
 
+   public void testContainerNameSuffix()
+   {
+      final URL rootURL = getClass().getResource("test-exo-container.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      final ExoContainer rContainer =
+         new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testContainerNameSuffix")
+            .build();
+      final ExoContainer pContainer = PortalContainer.getInstance();
+      TCNS t1 = rContainer.getComponentInstanceOfType(TCNS.class);
+      assertNotNull(t1);
+      assertEquals("empty${container.name.suffix}", t1.value);
+      assertNotNull(t1.dep);
+      assertEquals("empty${container.name.suffix}", t1.dep.value);
+      TCNS t2 = pContainer.getComponentInstanceOfType(TCNS.class);
+      assertNotNull(t2);
+      assertEquals("empty_portal", t2.value);
+      assertNotNull(t2.dep);
+      assertEquals("empty_portal", t2.dep.value);
+   }
+
+   public static class TCNS implements Startable
+   {
+      public String value;
+
+      public TCNS_DEP dep;
+
+      public TCNS(InitParams params, TCNS_DEP dep)
+      {
+         this.dep = dep;
+         this.value = params.getValueParam("param").getValue();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TCNS_DEP implements Startable
+   {
+      public String value;
+
+      public TCNS_DEP(InitParams params)
+      {
+         this.value = params.getValueParam("param").getValue();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
    public void testStartOrder()
    {
       COUNTER = new AtomicInteger();
@@ -391,6 +466,315 @@ public class TestExoContainer extends AbstractTestContainer
       assertTrue(c2_3.startOrder < c2_1.startOrder);
       assertTrue(c2_3.startOrder < c2_2.startOrder);
       assertTrue(c2_2.startOrder < c2_1.startOrder);
+   }
+
+   public void testStartOrder2()
+   {
+      COUNTER = new AtomicInteger();
+      ExoContainer container = createRootContainer("test-exo-container.xml", "testStartOrder2");
+      TSO2_A a = container.getComponentInstanceOfType(TSO2_A.class);
+      assertNotNull(a);
+      TSO2_B b = container.getComponentInstanceOfType(TSO2_B.class);
+      assertNotNull(b);
+      TSO2_C c = container.getComponentInstanceOfType(TSO2_C.class);
+      assertNotNull(c);
+      TSO2_D d = container.getComponentInstanceOfType(TSO2_D.class);
+      assertNotNull(d);
+      assertTrue(a.startOrder > 0);
+      assertTrue(c.startOrder > 0);
+      assertTrue(d.startOrder > 0);
+      assertTrue(c.startOrder < a.startOrder);
+      assertTrue(d.startOrder < a.startOrder);
+      assertTrue(c.startOrder < d.startOrder);
+      TSO2_A2 a2 = container.getComponentInstanceOfType(TSO2_A2.class);
+      assertNotNull(a2);
+      TSO2_B2 b2 = container.getComponentInstanceOfType(TSO2_B2.class);
+      assertNotNull(b2);
+      TSO2_C2 c2 = container.getComponentInstanceOfType(TSO2_C2.class);
+      assertNotNull(c2);
+      assertTrue(a2.startOrder > 0);
+      assertTrue(b2.startOrder > 0);
+      assertTrue(c2.startOrder > 0);
+      assertTrue(c2.startOrder < b2.startOrder);
+      assertTrue(b2.startOrder < a2.startOrder);
+   }
+
+   public static class TSO2_A implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_A(TSO2_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_B
+   {
+      public TSO2_B(TSO2_C c, TSO2_D d)
+      {
+      }
+   }
+
+   public static class TSO2_C implements Startable
+   {
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_D implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_D(TSO2_C c)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_A2 implements Startable
+   {
+      public int startOrder;
+      private ExoContainerContext ctx;
+
+      public TSO2_A2(TSO2_B2 b, ExoContainerContext ctx)
+      {
+         this.ctx = ctx;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            RequestLifeCycle.begin(ctx.getContainer());
+            startOrder = COUNTER.incrementAndGet();
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO2_B2 implements Startable, ComponentRequestLifecycle
+   {
+      public int startOrder;
+
+      public TSO2_C2 c;
+
+      public TSO2_B2(TSO2_C2 c)
+      {
+         this.c = c;
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         try
+         {
+            RequestLifeCycle.begin(this);
+            startOrder = COUNTER.incrementAndGet();
+         }
+         finally
+         {
+            RequestLifeCycle.end();
+         }
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+
+      /**
+       * @see org.exoplatform.container.component.ComponentRequestLifecycle#startRequest(org.exoplatform.container.ExoContainer)
+       */
+      public void startRequest(ExoContainer container)
+      {
+         if (c.startOrder == 0)
+            throw new IllegalStateException("TSO2_C2 should be started");
+      }
+
+      /**
+       * @see org.exoplatform.container.component.ComponentRequestLifecycle#endRequest(org.exoplatform.container.ExoContainer)
+       */
+      public void endRequest(ExoContainer container)
+      {
+      }
+   }
+
+   public static class TSO2_C2 implements Startable
+   {
+      public int startOrder;
+
+      public TSO2_C2()
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public void testStartOrder3()
+   {
+      COUNTER = new AtomicInteger();
+      ExoContainer container = createRootContainer("test-exo-container.xml", "testStartOrder3");
+      TSO3_A a = container.getComponentInstanceOfType(TSO3_A.class);
+      assertNotNull(a);
+      TSO3_B b = container.getComponentInstanceOfType(TSO3_B.class);
+      assertNotNull(b);
+      TSO3_C c = container.getComponentInstanceOfType(TSO3_C.class);
+      assertNotNull(c);
+      assertTrue(a.startOrder > 0);
+      assertTrue(b.startOrder > 0);
+      assertTrue(c.startOrder > 0);
+      assertTrue(c.startOrder < b.startOrder);
+      assertTrue(b.startOrder < a.startOrder);
+   }
+
+   @Singleton
+   public static class TSO3_A implements Startable
+   {
+      public int startOrder;
+
+      @Inject
+      public TSO3_A(TSO3_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   @Singleton
+   public static class TSO3_B implements Startable
+   {
+      public int startOrder;
+
+      @Inject
+      public TSO3_B(TSO3_C c)
+      {
+      }
+
+      @Inject
+      public void setB(TSO3_B b)
+      {
+      }
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
+   }
+
+   public static class TSO3_C implements Startable
+   {
+      public int startOrder;
+
+      /**
+       * @see org.picocontainer.Startable#start()
+       */
+      public void start()
+      {
+         startOrder = COUNTER.incrementAndGet();
+      }
+
+      /**
+       * @see org.picocontainer.Startable#stop()
+       */
+      public void stop()
+      {
+      }
    }
 
    public void testCache()

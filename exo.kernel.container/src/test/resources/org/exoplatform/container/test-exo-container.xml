@@ -203,6 +203,88 @@
 			</component-plugin>
 		</component-plugins>
 	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_A</type>
+	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_B</type>
+	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_C</type>
+	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_D</type>
+	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_A2</type>
+	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_B2</type>
+	</component>
+	<component profiles="testStartOrder2">
+		<type>org.exoplatform.container.TestExoContainer$TSO2_C2</type>
+	</component>
+	<component profiles="testStartOrder3">
+		<type>org.exoplatform.container.TestExoContainer$TSO3_A</type>
+	</component>
+	<component profiles="testStartOrder3">
+		<type>org.exoplatform.container.TestExoContainer$TSO3_B</type>
+	</component>
+	<component profiles="testStartOrder3">
+		<type>org.exoplatform.container.TestExoContainer$TSO3_C</type>
+	</component>
+	<component profiles="testContainerNameSuffix">
+		<type>org.exoplatform.container.definition.PortalContainerConfig</type>
+	</component>
+	<component profiles="testContainerNameSuffix">
+		<type>org.exoplatform.container.TestExoContainer$TCNS</type>
+		<init-params>
+			<value-param>
+				<name>param</name>
+				<value>empty${container.name.suffix}</value>
+			</value-param>
+		</init-params>
+	</component>
+	<component profiles="testContainerNameSuffix">
+		<type>org.exoplatform.container.TestExoContainer$TCNS_DEP</type>
+		<init-params>
+			<value-param>
+				<name>param</name>
+				<value>empty${container.name.suffix}</value>
+			</value-param>
+		</init-params>
+	</component>
+	<external-component-plugins profiles="testContainerNameSuffix">
+		<!-- The full qualified name of the PortalContainerConfig -->
+		<target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
+		<component-plugin>
+			<!-- The name of the plugin -->
+			<name>Add PortalContainer Definitions</name>
+			<!-- The name of the method to call on the PortalContainerConfig in order to register the PortalContainerDefinitions -->
+			<set-method>registerPlugin</set-method>
+			<!-- The full qualified name of the PortalContainerDefinitionPlugin -->
+			<type>org.exoplatform.container.definition.PortalContainerDefinitionPlugin</type>
+			<init-params>
+				<object-param>
+					<name>portal</name>
+					<object type="org.exoplatform.container.definition.PortalContainerDefinition">
+						<!-- The name of the portal container -->
+						<field name="name">
+							<string>portal</string>
+						</field>
+						<!-- The name of the context name of the rest web application -->
+						<field name="restContextName">
+							<string>rest</string>
+						</field>
+						<!-- The name of the realm -->
+						<field name="realmName">
+							<string>exo-domain</string>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+	</external-component-plugins>
 	<external-component-plugins profiles="testStackOverflowError">
 		<target-component>org.exoplatform.container.TestExoContainer$MyService</target-component>
 		<component-plugin>
