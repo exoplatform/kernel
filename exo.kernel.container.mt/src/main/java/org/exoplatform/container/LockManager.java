@@ -29,6 +29,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -59,6 +60,11 @@ public class LockManager
     */
    private final ConcurrentMap<Thread, Lockable> locks = new ConcurrentHashMap<Thread, Lockable>();
 
+   /**
+    * The total amount of uncompleted tasks
+    */
+   private final AtomicInteger totalUncompletedTasks = new AtomicInteger();
+
    private LockManager()
    {
    }
@@ -80,7 +86,7 @@ public class LockManager
    }
 
    /**
-    * {@inheritDoc}
+    * Creates a new {@link RunnableFuture} instance
     */
    public <T> RunnableFuture<T> createRunnableFuture(Runnable runnable, T value)
    {
@@ -88,11 +94,19 @@ public class LockManager
    }
 
    /**
-    * {@inheritDoc}
+    * Creates a new {@link RunnableFuture} instance
     */
    public <T> RunnableFuture<T> createRunnableFuture(Callable<T> callable)
    {
       return new InternalFutureTask<T>(callable);
+   }
+
+   /**
+    * Gives the total amount of uncompleted tasks
+    */
+   int getTotalUncompletedTasks()
+   {
+      return totalUncompletedTasks.get();
    }
 
    /**
@@ -271,6 +285,7 @@ public class LockManager
       public InternalFutureTask(Callable<V> callable)
       {
          super(callable);
+         totalUncompletedTasks.incrementAndGet();
       }
 
       /**
@@ -279,6 +294,7 @@ public class LockManager
       public InternalFutureTask(Runnable runnable, V result)
       {
          super(runnable, result);
+         totalUncompletedTasks.incrementAndGet();
       }
 
       /**
@@ -346,6 +362,7 @@ public class LockManager
          }
          finally
          {
+            totalUncompletedTasks.decrementAndGet();
             exclusiveOwnerThread.compareAndSet(Thread.currentThread(), null);
          }
       }

@@ -321,7 +321,7 @@ public class TestExoContainerMT extends TestExoContainer
       {
          public Void call() throws Exception
          {
-            TestExoContainerMT.super.testStartOrder();
+            TestExoContainerMT.super.testStartOrder(true);
             return null;
          }
 

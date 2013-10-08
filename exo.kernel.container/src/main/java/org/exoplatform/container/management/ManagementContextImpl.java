@@ -37,11 +37,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -99,10 +99,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
 
       //
-      this.managedSet = new HashMap<ManagementProvider, Object>();
-      this.registrations = new HashMap<Object, ManagementContextImpl>();
+      this.managedSet = new ConcurrentHashMap<ManagementProvider, Object>();
+      this.registrations = new ConcurrentHashMap<Object, ManagementContextImpl>();
       this.parent = null;
-      this.scopingDataList = new HashMap<Class<?>, Object>();
+      this.scopingDataList = new ConcurrentHashMap<Class<?>, Object>();
       this.resource = resource;
       this.typeMD = typeMD;
       this.container = container;
@@ -130,10 +130,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
 
       //
-      this.managedSet = new HashMap<ManagementProvider, Object>();
-      this.registrations = new HashMap<Object, ManagementContextImpl>();
+      this.managedSet = new ConcurrentHashMap<ManagementProvider, Object>();
+      this.registrations = new ConcurrentHashMap<Object, ManagementContextImpl>();
       this.parent = parent;
-      this.scopingDataList = new HashMap<Class<?>, Object>();
+      this.scopingDataList = new ConcurrentHashMap<Class<?>, Object>();
       this.resource = resource;
       this.typeMD = typeMD;
       this.container = container;
@@ -151,10 +151,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
 
       //
-      this.managedSet = new HashMap<ManagementProvider, Object>();
-      this.registrations = new HashMap<Object, ManagementContextImpl>();
+      this.managedSet = new ConcurrentHashMap<ManagementProvider, Object>();
+      this.registrations = new ConcurrentHashMap<Object, ManagementContextImpl>();
       this.parent = parent;
-      this.scopingDataList = new HashMap<Class<?>, Object>();
+      this.scopingDataList = new ConcurrentHashMap<Class<?>, Object>();
       this.resource = resource;
       this.typeMD = typeMD;
       this.container = null;
@@ -180,7 +180,7 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       {
          try
          {
-            Class managedByClass = managedBy.value();
+            Class<?> managedByClass = managedBy.value();
             Constructor<?> blah = managedByClass.getConstructor(o.getClass());
             resource = blah.newInstance(o);
          }
@@ -321,9 +321,10 @@ public class ManagementContextImpl implements ManagementContext, ManagedResource
       }
    }
 
+   @SuppressWarnings("unchecked")
    public <S> List<S> getScopingData(Class<S> scopeType)
    {
-      ArrayList<S> list = new ArrayList<S>();
+      List<S> list = new ArrayList<S>();
       for (ManagementContextImpl current = this; current != null; current = current.parent)
       {
          Object scopedData = current.scopingDataList.get(scopeType);

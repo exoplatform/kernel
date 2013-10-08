@@ -300,7 +300,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       for (final ComponentAdapter<T> adapter : adapters)
       {
          if (enableMultiThreading
-            && getExecutor().getActiveCount() + getExecutor().getQueue().size() < getExecutor().getCorePoolSize()
+            && LockManager.getInstance().getTotalUncompletedTasks() < getExecutor().getCorePoolSize()
             && !(adapter instanceof InstanceComponentAdapter))
          {
             final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
@@ -414,7 +414,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
       final Map<ComponentAdapter<?>, Object> alreadyStarted = new ConcurrentHashMap<ComponentAdapter<?>, Object>();
       final AtomicReference<Exception> error = new AtomicReference<Exception>();
       // We first start all the non containers
-      start(adapters, alreadyStarted, new HashSet<ComponentAdapter<?>>(), error);
+      start(adapters, alreadyStarted, new HashSet<ComponentAdapter<?>>(), error, true);
       if (error.get() != null)
       {
          throw new RuntimeException("Could not start the container", error.get());
@@ -432,7 +432,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
     */
    protected void start(Collection<ComponentAdapter<?>> adapters,
       final Map<ComponentAdapter<?>, Object> alreadyStarted, final Set<ComponentAdapter<?>> startInProgress,
-      final AtomicReference<Exception> error)
+      final AtomicReference<Exception> error, final boolean skippable)
    {
       if (adapters == null || adapters.isEmpty())
          return;
@@ -447,13 +447,13 @@ public class ConcurrentContainerMT extends ConcurrentContainer
             // Only non containers are expected and it is a container
             continue;
          }
-         else if (alreadyStarted.containsKey(adapter) || startInProgress.contains(adapter))
+         else if (alreadyStarted.containsKey(adapter) || (skippable && startInProgress.contains(adapter)))
          {
             // The component has already been started or is in progress
             continue;
          }
          if (enableMultiThreading
-            && getExecutor().getActiveCount() + getExecutor().getQueue().size() < getExecutor().getCorePoolSize()
+            && LockManager.getInstance().getTotalUncompletedTasks() < getExecutor().getCorePoolSize()
             && !(adapter instanceof InstanceComponentAdapter))
          {
             final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
@@ -470,7 +470,8 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                         {
                            return null;
                         }
-                        else if (alreadyStarted.containsKey(adapter) || startInProgress.contains(adapter))
+                        else if (alreadyStarted.containsKey(adapter)
+                           || (skippable && startInProgress.contains(adapter)))
                         {
                            // The component has already been started or is in progress
                            return null;
@@ -492,7 +493,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                                  startInProgressNew.add(adapter);
                                  Collection<ComponentAdapter<?>> dep = getDependencies(cada.getCreateDependencies());
                                  if (dep != null && !dep.isEmpty())
-                                    start(dep, alreadyStarted, startInProgressNew, error);
+                                    start(dep, alreadyStarted, startInProgressNew, error, false);
                               }
                               if (cada.getInitDependencies() != null)
                               {
@@ -505,7 +506,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                                  {
                                     // remove the current adapter to prevent loop
                                     dep.remove(adapter);
-                                    start(dep, alreadyStarted, startInProgressNew, error);
+                                    start(dep, alreadyStarted, startInProgressNew, error, true);
                                  }
                               }
                            }
@@ -569,7 +570,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                   startInProgressNew.add(adapter);
                   Collection<ComponentAdapter<?>> dep = getDependencies(cada.getCreateDependencies());
                   if (dep != null && !dep.isEmpty())
-                     start(dep, alreadyStarted, startInProgressNew, error);
+                     start(dep, alreadyStarted, startInProgressNew, error, false);
                }
                if (cada.getInitDependencies() != null)
                {
@@ -581,7 +582,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
                   {
                      // remove the current adapter to prevent loop
                      dep.remove(adapter);
-                     start(dep, alreadyStarted, startInProgressNew, error);
+                     start(dep, alreadyStarted, startInProgressNew, error, true);
                   }
                }
             }
@@ -1094,7 +1095,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer
             continue;
          }
          if (enableMultiThreading
-            && getExecutor().getActiveCount() + getExecutor().getQueue().size() < getExecutor().getCorePoolSize()
+            && LockManager.getInstance().getTotalUncompletedTasks() < getExecutor().getCorePoolSize()
             && !(dependency.getAdapter(holder) instanceof InstanceComponentAdapter))
          {
             final ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();

@@ -32,12 +32,12 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -81,16 +81,12 @@ public class ManageableContainer extends AbstractInterceptor
 
    public ManageableContainer()
    {
-      // The synchronized wrapper, here will not impact runtime performances
-      // so it's fine
-      this.providers = Collections.synchronizedSet(new HashSet<ManagementProvider>());
+      this.providers = new CopyOnWriteArraySet<ManagementProvider>();
    }
 
    public ManageableContainer(ExoContainer holder, ExoContainer parent)
    {
-      // The synchronized wrapper, here will not impact runtime performances
-      // so it's fine
-      this.providers = Collections.synchronizedSet(new HashSet<ManagementProvider>());
+      this.providers = new CopyOnWriteArraySet<ManagementProvider>();
 
       //
       setHolder(holder);
