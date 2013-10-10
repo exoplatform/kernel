@@ -51,8 +51,10 @@ public class TestKernelExtensionMT extends TestCase
       };
       execute(task, (Mode[])null);
       execute(task, Mode.MULTI_THREADED);
+      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
       execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
       execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
+      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
    }
 
    private void testInterceptorsInternal(ExoContainer parent)

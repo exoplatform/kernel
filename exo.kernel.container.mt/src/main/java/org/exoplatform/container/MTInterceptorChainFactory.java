@@ -50,7 +50,7 @@ public class MTInterceptorChainFactory extends DefaultInterceptorChainFactory
    {
       List<Interceptor> list = new ArrayList<Interceptor>(4);
       list.add(new ConcurrentContainerMT(holder, parent));
-      list.add(new CachingContainer());
+      list.add(new CachingContainerMT());
       list.add(new ManageableContainer(holder, parent));
       return list;
    }

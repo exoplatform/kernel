@@ -18,53 +18,19 @@
  */
 package org.exoplatform.container;
 
-import org.exoplatform.container.spi.ComponentAdapter;
-
-import javax.inject.Provider;
-
 /**
- * This defines a dependency by provider
- *
+ * This interface allows you to add {@link TopExoContainerListener} that will be notified when the {@link TopExoContainer}
+ * will be fully started.
+ * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  *
  */
-public class DependencyByProvider extends Dependency
+interface TopExoContainer
 {
-
-   private final Provider<Object> provider;
-   private final ComponentAdapter<?> adapter;
-
-   public DependencyByProvider(Object key, Class<?> bindType, Provider<Object> provider, ComponentAdapter<?> adapter)
-   {
-      super(key, bindType, true);
-      this.provider = provider;
-      this.adapter = adapter;
-   }
-
    /**
-    * {@inheritDoc}
+    * Adds a new listener
+    * @param listener the listener to add
     */
-   protected Object load(ExoContainer holder)
-   {
-      return provider;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ComponentAdapter<?> getAdapter(ExoContainer holder)
-   {
-      return adapter;
-   }
-
-   /**
-    * @see java.lang.Object#toString()
-    */
-   @Override
-   public String toString()
-   {
-      return "DependencyByProvider [key=" + key + ", bindType=" + bindType + "]";
-   }
+   void addListener(TopExoContainerListener listener);
 }

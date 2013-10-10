@@ -110,6 +110,14 @@ public class LockManager
    }
 
    /**
+    * Increments and get the total amount of uncompleted tasks
+    */
+   int incrementAndGetTotalUncompletedTasks()
+   {
+      return totalUncompletedTasks.incrementAndGet();
+   }
+
+   /**
     * Indicates whether or not there are some remaining lockable resources
     */
    boolean isEmpty()
@@ -285,7 +293,6 @@ public class LockManager
       public InternalFutureTask(Callable<V> callable)
       {
          super(callable);
-         totalUncompletedTasks.incrementAndGet();
       }
 
       /**
@@ -294,7 +301,6 @@ public class LockManager
       public InternalFutureTask(Runnable runnable, V result)
       {
          super(runnable, result);
-         totalUncompletedTasks.incrementAndGet();
       }
 
       /**

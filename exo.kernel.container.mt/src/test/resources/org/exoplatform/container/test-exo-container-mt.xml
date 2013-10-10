@@ -18,4 +18,55 @@
    <component profiles="testBadCyclicRef2">
       <type>org.exoplatform.container.TestExoContainer$B2</type>
    </component>
+   <component profiles="testBadCyclicRef3">
+      <type>org.exoplatform.container.TestExoContainerMT$A1</type>
+   </component>
+   <component profiles="testBadCyclicRef3">
+      <type>org.exoplatform.container.TestExoContainerMT$B1</type>
+   </component>
+   <component profiles="testBadCyclicRef4">
+      <type>org.exoplatform.container.TestExoContainerMT$A2</type>
+   </component>
+   <component profiles="testBadCyclicRef4">
+      <type>org.exoplatform.container.TestExoContainerMT$B2</type>
+   </component>
+   <component profiles="testBadCyclicRef5">
+      <type>org.exoplatform.container.TestExoContainerMT$A3</type>
+   </component>
+   <component profiles="testBadCyclicRef5">
+      <type>org.exoplatform.container.TestExoContainerMT$B3</type>
+   </component>
+   <component profiles="testBadCyclicRef6">
+      <type>org.exoplatform.container.TestExoContainerMT$A4</type>
+   </component>
+   <component profiles="testBadCyclicRef6">
+      <type>org.exoplatform.container.TestExoContainerMT$B4</type>
+   </component>
+   <component profiles="testAutoSolveDepIssues">
+      <type>org.exoplatform.container.TestExoContainerMT$ASDI_1</type>
+      <component-plugins>
+         <component-plugin>
+            <name>testAutoSolveDepIssues-test-plugin</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.container.TestExoContainerMT$ASDI_1Plugin</type>
+         </component-plugin>
+      </component-plugins>
+   </component>
+   <component profiles="testAutoSolveDepIssues">
+      <type>org.exoplatform.container.TestExoContainerMT$ASDI_2</type>
+   </component>
+   <component profiles="testAutoSolveDepIssues">
+      <type>org.exoplatform.container.TestExoContainerMT$ASDI_2_2</type>
+   </component>
+   <component profiles="testAutoSolveDepIssues">
+      <type>org.exoplatform.container.TestExoContainerMT$ASDI_3</type>
+   </component>
+   <component profiles="testAutoSolveDepIssues">
+      <key>ASDI_4</key>
+      <type>org.exoplatform.container.TestExoContainerMT$ASDI_4</type>
+   </component>
+   <component profiles="testAutoSolveDepIssues">
+      <key>org.exoplatform.container.TestExoContainerMT$ASDI_5Qualifier</key>
+      <type>org.exoplatform.container.TestExoContainerMT$ASDI_5</type>
+   </component>
 </configuration>

@@ -96,9 +96,9 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.MX4JComponentAdapterMT");
 
    /** . */
-   protected transient final ConcurrentContainerMT container;
+   private transient final ConcurrentContainerMT container;
 
-   protected transient final Lock lock;
+   private transient final Lock lock;
 
    public MX4JComponentAdapterMT(ExoContainer holder, ConcurrentContainerMT container, Object key,
       Class<T> implementation)
@@ -463,7 +463,7 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
          {
             if (useSharedMemory)
             {
-               T result = container.<T>getComponentFromSharedMemory(getComponentKey());
+               T result = container.<T> getComponentFromSharedMemory(getComponentKey());
                if (result != null)
                {
                   LOG.debug("The value could be found from the shared memory");
@@ -490,6 +490,8 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
       }
       catch (InterruptedException e)
       {
+         // We make sure that the state of the Thread is back to normal
+         Thread.interrupted();
          skipFinally = true;
          LOG.debug("A deadlock has been detected, let's retry using the shared memory");
          return doCreate(true);
@@ -538,6 +540,11 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
          createCtx = new ComponentTaskContext(getComponentKey(), ComponentTaskType.CREATE);
          container.setComponentTaskContext(createCtx);
       }
+      else if (!createCtx.isLast(getComponentKey()))
+      {
+         createCtx = createCtx.addToContext(getComponentKey());
+         container.setComponentTaskContext(createCtx);
+      }
       container.loadDependencies(getComponentKey(), createCtx, getCreateDependencies(), ComponentTaskType.CREATE);
    }
 
@@ -554,6 +561,10 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
          return ctx.get();
       ComponentTaskContext taskCtx = container.getComponentTaskContext();
       boolean isRoot = taskCtx.isRoot();
+      if (!isRoot)
+      {
+         container.setComponentTaskContext(taskCtx = taskCtx.setLastTaskType(ComponentTaskType.CREATE));
+      }
       try
       {
          ComponentTask<T> task = createTask.get();
@@ -579,9 +590,12 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
       }
       if (isRoot)
       {
-         taskCtx = container.getComponentTaskContext();
          container.setComponentTaskContext(taskCtx =
             taskCtx.resetDependencies(getComponentKey(), ComponentTaskType.INIT));
+      }
+      else
+      {
+         container.setComponentTaskContext(taskCtx = taskCtx.setLastTaskType(ComponentTaskType.INIT));
       }
 
       Collection<ComponentTask<Void>> tasks = initTasks.get();

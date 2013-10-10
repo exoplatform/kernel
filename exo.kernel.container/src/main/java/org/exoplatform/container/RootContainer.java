@@ -66,6 +66,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,7 +86,7 @@ import javax.servlet.http.HttpSession;
 @Managed
 @NameTemplate(@Property(key = "container", value = "root"))
 @RESTEndpoint(path = "rcontainer")
-public class RootContainer extends ExoContainer implements WebAppListener, AuthenticationListener
+public class RootContainer extends ExoContainer implements WebAppListener, AuthenticationListener, TopExoContainer
 {
 
    /**
@@ -119,7 +120,12 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    private final AtomicBoolean reloading = new AtomicBoolean();
    
    private final AtomicLong lastUpdateTime = new AtomicLong();
-   
+
+   /**
+    * The listeners
+    */
+   private final List<TopExoContainerListener> listeners = new CopyOnWriteArrayList<TopExoContainerListener>();
+
    private ClassLoader loadingCL;
    
    private Properties loadingSystemProperties;
@@ -271,6 +277,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                      currentPortalContainer.registerComponentInstance(ConfigurationManager.class, cService);
                      registerComponentInstance(name, currentPortalContainer);
                      currentPortalContainer.start(true);
+                     onStartupComplete();
                      return null;
                   }
                });
@@ -381,6 +388,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          // remove all the unneeded tasks
          initTasks.clear();
       }
+      onStartupComplete();
    }
    
    /**
@@ -542,6 +550,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          // At least one dependency has changed so we reload all the affected portal containers
          reload(pc);
       }
+      onStartupComplete();
    }
    
    /**
@@ -1246,6 +1255,28 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
       if (LOG.isDebugEnabled())
          LOG.debug("End launching the " + type + " tasks of the portal container '" + portalContainer + "'");
+   }
+
+   /**
+    * Calls all the listeners to indicate that the startup is complete
+    */
+   private void onStartupComplete()
+   {
+      if (!listeners.isEmpty())
+      {
+         for (TopExoContainerListener listener : listeners)
+         {
+            listener.onStartupComplete();
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addListener(TopExoContainerListener listener)
+   {
+      listeners.add(listener);
    }
 
    static class ShutdownThread extends Thread

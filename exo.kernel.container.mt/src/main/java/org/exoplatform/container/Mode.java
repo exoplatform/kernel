@@ -43,9 +43,14 @@ public enum Mode {
 
    /**
     * Use this mode when you want to see the kernel automatically fixes dependency issues such as unexpected call to
-    * getComponentInstanceOfType()
+    * getComponentInstanceOfType() and/or getComponentInstance()
     */
-   AUTO_SOLVE_DEP_ISSUES;
+   AUTO_SOLVE_DEP_ISSUES,
+
+   /**
+    * Indicates whether or not the multi-threading should be disabled on startup complete.
+    */
+   DISABLE_MT_ON_STARTUP_COMPLETE;
 
    /**
     * The logger
@@ -62,6 +67,12 @@ public enum Mode {
     * of the kernel
     */
    public static final String AUTO_SOLVE_DEP_ISSUES_PARAM_NAME = "org.exoplatform.container.as.enabled";
+
+   /**
+    * The name of the system parameter to indicate that we want to disable the <i>multi-threaded</i> mode
+    * once the {@link TopExoContainer} is fully started
+    */
+   public static final String DISABLE_MT_ON_STARTUP_COMPLETE_PARAM_NAME = "org.exoplatform.container.dmtosc.enabled";
 
    private static volatile Set<Mode> MODES;
 
@@ -94,9 +105,33 @@ public enum Mode {
    /**
     * Indicates whether or not the given mode has been activated
     */
-   public static boolean hasMode(Mode mode)
+   static boolean hasMode(Mode mode)
    {
       return getModes().contains(mode);
+   }
+
+   /**
+    * Removes the provided modes if they are all defined, does nothing otherwise
+    * @param modes the modes to be removed
+    * @return <code>true</code> if the modes have been removed, <code>false</code> otherwise.
+    */
+   static boolean removeModes(Mode... modes)
+   {
+      if (modes == null || modes.length == 0)
+         return false;
+      synchronized (Mode.class)
+      {
+         Set<Mode> modesSet = new HashSet<Mode>(getModes());
+         for (Mode m : modes)
+         {
+            if (!modesSet.remove(m))
+            {
+               return false;
+            }
+         }
+         MODES = Collections.unmodifiableSet(modesSet);
+      }
+      return true;
    }
 
    private static Set<Mode> getModes()
@@ -111,17 +146,37 @@ public enum Mode {
             {
                Set<Mode> sModes = new HashSet<Mode>();
                String sValue = PropertyManager.getProperty(MULTI_THREADED_PARAM_NAME);
-               if (sValue == null || Boolean.valueOf(sValue))
+               if ((sValue == null || Boolean.valueOf(sValue)) && Runtime.getRuntime().availableProcessors() > 1)
                {
                   sModes.add(MULTI_THREADED);
                   if (LOG.isDebugEnabled())
                   {
                      LOG.debug("The 'multi-threaded' mode of the kernel has been enabled");
                   }
+                  sValue = PropertyManager.getProperty(DISABLE_MT_ON_STARTUP_COMPLETE_PARAM_NAME);
+                  if (sValue == null || Boolean.valueOf(sValue))
+                  {
+                     sModes.add(DISABLE_MT_ON_STARTUP_COMPLETE);
+                     if (LOG.isDebugEnabled())
+                     {
+                        LOG.debug("The 'multi-threaded' mode of the kernel will be disabled once fully started");
+                     }
+                  }
+                  else if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("The 'multi-threaded' mode of the kernel won't be disabled once fully started");
+                  }
                }
                else if (LOG.isDebugEnabled())
                {
-                  LOG.debug("The 'multi-threaded' mode of the kernel is disabled");
+                  if (Runtime.getRuntime().availableProcessors() == 1)
+                  {
+                     LOG.debug("The 'multi-threaded' mode of the kernel is disabled since you must have more than one processor");
+                  }
+                  else
+                  {
+                     LOG.debug("The 'multi-threaded' mode of the kernel is disabled");
+                  }
                }
                sValue = PropertyManager.getProperty(AUTO_SOLVE_DEP_ISSUES_PARAM_NAME);
                if (sValue == null || Boolean.valueOf(sValue))

@@ -39,16 +39,29 @@ public class ComponentTaskContext
    private final LinkedHashSet<ComponentTaskContextEntry> dependencies;
 
    /**
+    * The last dependency that has been added to the context
+    */
+   private final ComponentTaskContextEntry lastDependency;
+
+   /**
+    * The last task type known
+    */
+   private final ComponentTaskType lastTaskType;
+
+   /**
     * Context used to keep in memory the components that are currently being created.
     * This context is used to prevent cyclic resolution due to component plugins.
     */
    private Map<Object, CreationalContextComponentAdapter<?>> depResolutionCtx;
 
    private ComponentTaskContext(LinkedHashSet<ComponentTaskContextEntry> dependencies,
-      Map<Object, CreationalContextComponentAdapter<?>> depResolutionCtx)
+      Map<Object, CreationalContextComponentAdapter<?>> depResolutionCtx, ComponentTaskContextEntry lastDependency,
+      ComponentTaskType lastTaskType)
    {
       this.dependencies = dependencies;
       this.depResolutionCtx = depResolutionCtx;
+      this.lastDependency = lastDependency;
+      this.lastTaskType = lastTaskType;
    }
 
    /**
@@ -60,6 +73,26 @@ public class ComponentTaskContext
       ComponentTaskContextEntry entry = new ComponentTaskContextEntry(componentKey, type);
       dependencies.add(entry);
       this.dependencies = dependencies;
+      this.lastDependency = entry;
+      this.lastTaskType = type;
+   }
+
+   /**
+    * Defines explicitly the last task type known
+    */
+   public ComponentTaskContext setLastTaskType(ComponentTaskType lastTaskType)
+   {
+      return new ComponentTaskContext(dependencies, depResolutionCtx == null ? null
+         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx),
+         lastDependency, lastTaskType);
+   }
+
+   /**
+    * This method will call {@link #addToContext(Object, ComponentTaskType)} with the <code>lastTaskType</code> as type
+    */
+   public ComponentTaskContext addToContext(Object componentKey) throws CyclicDependencyException
+   {
+      return addToContext(componentKey, lastTaskType);
    }
 
    /**
@@ -76,7 +109,7 @@ public class ComponentTaskContext
          new LinkedHashSet<ComponentTaskContextEntry>(this.dependencies);
       dependencies.add(entry);
       return new ComponentTaskContext(dependencies, depResolutionCtx == null ? null
-         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx));
+         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx), entry, type);
    }
 
    /**
@@ -90,32 +123,45 @@ public class ComponentTaskContext
    }
 
    /**
+    * Indicates whether the provided componentKey is the last dependency that has been added to the context.
+    * @return <code>true</code> if the dependency is the last, <code>false</code> otherwise.
+    */
+   public boolean isLast(Object componentKey)
+   {
+      ComponentTaskContextEntry entry = new ComponentTaskContextEntry(componentKey, lastTaskType);
+      return lastDependency.equals(entry);
+   }
+
+   /**
     * Checks if the given dependency has already been defined, if so a {@link CyclicDependencyException}
     * will be thrown.
     */
    private void checkDependency(ComponentTaskContextEntry entry)
    {
-      if (entry.getTaskType() == ComponentTaskType.CREATE && dependencies.contains(entry)
-         && (depResolutionCtx == null || !depResolutionCtx.containsKey(entry.getComponentKey())))
+      if (entry.getTaskType() == ComponentTaskType.CREATE
+         && dependencies.contains(entry)
+         && (depResolutionCtx == null || !depResolutionCtx.containsKey(entry.getComponentKey()) || depResolutionCtx
+            .get(entry.getComponentKey()).get() == null))
       {
          boolean startToCheck = false;
-         boolean sameType = true;
+         Boolean sameType = null;
          for (ComponentTaskContextEntry e : dependencies)
          {
             if (startToCheck)
             {
                if (e.getTaskType() != entry.getTaskType())
                {
-                  sameType = false;
+                  sameType = Boolean.FALSE;
                   break;
                }
+               sameType = Boolean.TRUE;
             }
             else if (entry.equals(e))
             {
                startToCheck = true;
             }
          }
-         if (sameType)
+         if (sameType != null && sameType.booleanValue())
          {
             throw new CyclicDependencyException(entry, sameType);
          }
@@ -192,7 +238,7 @@ public class ComponentTaskContext
       ComponentTaskContextEntry entry = new ComponentTaskContextEntry(key, type);
       dependencies.add(entry);
       return new ComponentTaskContext(dependencies, depResolutionCtx == null ? null
-         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx));
+         : new HashMap<Object, ConcurrentContainer.CreationalContextComponentAdapter<?>>(depResolutionCtx), entry, type);
    }
 
    /**
