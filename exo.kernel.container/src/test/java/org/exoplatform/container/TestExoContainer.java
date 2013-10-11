@@ -427,19 +427,23 @@ public class TestExoContainer extends AbstractTestContainer
 
    public void testStartOrder()
    {
+      testStartOrder(false);
+   }
+
+   protected void testStartOrder(boolean checkC0NC1)
+   {
       COUNTER = new AtomicInteger();
       final RootContainer container = createRootContainer("test-exo-container.xml", "testStartOrder");
       C0 c0 = (C0)container.getComponentInstanceOfType(C0.class);
       assertNotNull(c0);
-      //      assertEquals(3, c0.startOrder);
       assertTrue(c0.startOrder > 0);
       C1 c1 = (C1)container.getComponentInstanceOfType(C1.class);
       assertNotNull(c1);
-      //      assertEquals(2, c1.startOrder);
       assertTrue(c1.startOrder > 0);
+      if (checkC0NC1)
+         assertTrue(c1.startOrder < c0.startOrder);
       C2 c2 = (C2)container.getComponentInstanceOfType(C2.class);
       assertNotNull(c2);
-      //      assertEquals(1, c2.startOrder);
       assertTrue(c2.startOrder > 0);
 
       C2_1 c2_1 = container.getComponentInstanceOfType(C2_1.class);

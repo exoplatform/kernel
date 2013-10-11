@@ -40,6 +40,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -59,7 +61,7 @@ import java.security.PrivilegedExceptionAction;
 @Managed
 @NameTemplate(@Property(key = "container", value = "standalone"))
 @RESTEndpoint(path = "scontainer")
-public class StandaloneContainer extends ExoContainer
+public class StandaloneContainer extends ExoContainer implements TopExoContainer
 {
 
    /**
@@ -75,6 +77,10 @@ public class StandaloneContainer extends ExoContainer
 
    private static boolean useDefault = true;
 
+   /**
+    * The listeners
+    */
+   private final List<TopExoContainerListener> listeners = new CopyOnWriteArrayList<TopExoContainerListener>();
    private ConfigurationManagerImpl configurationManager;
 
    /**
@@ -186,13 +192,36 @@ public class StandaloneContainer extends ExoContainer
       {
          public Void run()
          {
-            container.start();
+            container.start(true);
             return null;
          }
       });
       PrivilegedSystemHelper.setProperty("exo.standalone-container", StandaloneContainer.class.getName());
       LOG.info("StandaloneContainer initialized using:  " + configurationURL);
+      container.onStartupComplete();
       return container;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void initContainerInternal()
+   {
+      // We have no need to initialize the container since it is already done.
+   }
+
+   /**
+    * Calls all the listeners to indicate that the startup is complete
+    */
+   private void onStartupComplete()
+   {
+      if (!listeners.isEmpty())
+      {
+         for (TopExoContainerListener listener : listeners)
+         {
+            listener.onStartupComplete();
+         }
+      }
    }
 
    protected void registerArray(Object[][] components)
@@ -345,7 +374,7 @@ public class StandaloneContainer extends ExoContainer
          {
             if (configurationURL == null)
             {
-               configurationURL = getConfigurationURL(configClassLoader);     
+               configurationURL = getConfigurationURL(configClassLoader);
             }
          }
       }
@@ -420,4 +449,11 @@ public class StandaloneContainer extends ExoContainer
       });
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void addListener(TopExoContainerListener listener)
+   {
+      listeners.add(listener);
+   }
 }

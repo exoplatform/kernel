@@ -53,6 +53,7 @@
 
    <modules>
       <module>exo.kernel.container</module>
+      <module>exo.kernel.container.mt</module>
       <module>exo.kernel.container.ext.provider.impl.guice.v3</module>
       <module>exo.kernel.container.ext.provider.impl.spring.v3</module>
       <module>exo.kernel.container.ext.provider.impl.weld.v2</module>

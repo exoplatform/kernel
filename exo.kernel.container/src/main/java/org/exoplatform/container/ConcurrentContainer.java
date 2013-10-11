@@ -432,7 +432,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
    }
 
-   private <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type)
+   protected <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type)
    {
       // check whether this is our adapter
       // we need to check this to ensure up-down dependencies cannot be followed
@@ -645,7 +645,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       return isInjectPresent;
    }
 
-   private void addMethods(Class<?> c, Map<String, Method> methodAlreadyRegistered,
+   protected void addMethods(Class<?> c, Map<String, Method> methodAlreadyRegistered,
       Map<Class<?>, Collection<Method>> methodsPerClass)
    {
       Method[] methods = c.getDeclaredMethods();

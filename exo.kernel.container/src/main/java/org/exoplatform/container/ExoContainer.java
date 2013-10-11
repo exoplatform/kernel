@@ -196,7 +196,7 @@ public class ExoContainer extends AbstractContainer
       return name;
    }
 
-   private void initContainerInternal()
+   protected void initContainerInternal()
    {
       ConfigurationManager manager = getComponentInstanceOfType(ConfigurationManager.class);
       ContainerUtil.addContainerLifecyclePlugin(this, manager);

@@ -26,8 +26,12 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
@@ -133,5 +137,49 @@ public class TestManagementProvider extends TestCase
       assertEquals(2, provider2.managedResources.size());
       assertEquals(portal2, provider2.managedResources.get(0).resource);
       assertEquals(fooPortal2, provider2.managedResources.get(1).resource);
+   }
+
+   public void testMultiThreading() throws Throwable
+   {
+      URL url = getClass().getResource("configuration1.xml");
+      final RootContainer container = new ContainerBuilder().withRoot(url).build();
+      int threads = 50;
+      final CountDownLatch startSignal = new CountDownLatch(1);
+      final CountDownLatch doneSignal = new CountDownLatch(threads);
+      final List<Throwable> errors = Collections.synchronizedList(new ArrayList<Throwable>());
+      final AtomicInteger sequence = new AtomicInteger();
+      for (int i = 0; i < threads; i++)
+      {
+         Thread thread = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  startSignal.await();
+                  container.registerComponentInstance("ManagementProviderImpl" + sequence.incrementAndGet(), new ManagementProviderImpl());
+               }
+               catch (Throwable e)
+               {
+                  errors.add(e);
+               }
+               finally
+               {
+                  doneSignal.countDown();
+               }
+            }
+         };
+         thread.start();
+      }
+      startSignal.countDown();
+      doneSignal.await();
+      if (!errors.isEmpty())
+      {
+         for (Throwable e : errors)
+         {
+            e.printStackTrace();
+         }
+         throw errors.get(0);
+      }
    }
 }
