@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
 
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.CreationalContext;
@@ -93,19 +92,16 @@ public class MX4JComponentAdapterMT<T> extends MX4JComponentAdapter<T> implement
    private transient final AtomicReference<Collection<ComponentTask<Void>>> initTasks =
       new AtomicReference<Collection<ComponentTask<Void>>>();
 
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.MX4JComponentAdapterMT");
-
    /** . */
    private transient final ConcurrentContainerMT container;
 
-   private transient final Lock lock;
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.mt.MX4JComponentAdapterMT");
 
    public MX4JComponentAdapterMT(ExoContainer holder, ConcurrentContainerMT container, Object key,
       Class<T> implementation)
    {
-      super(holder, container, key, implementation);
+      super(holder, container, key, implementation, LockManager.getInstance().createLock());
       this.container = container;
-      this.lock = LockManager.getInstance().createLock();
    }
 
    private void addComponentPlugin(List<ComponentTask<Void>> tasks, Set<Dependency> dependencies, boolean debug,

@@ -88,7 +88,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
 
    private transient volatile String id;
 
-   private transient final Lock lock = new ReentrantLock();
+   protected transient final Lock lock;
 
    /**
     * Indicates whether or not it should be managed as a singleton
@@ -113,9 +113,15 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
 
    public MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<T> implementation)
    {
+      this(holder, container, key, implementation, new ReentrantLock());
+   }
+
+   protected MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<T> implementation, Lock lock)
+   {
       super(key, implementation);
       this.exocontainer = holder;
       this.container = container;
+      this.lock = lock;
    }
 
    public T getComponentInstance()
