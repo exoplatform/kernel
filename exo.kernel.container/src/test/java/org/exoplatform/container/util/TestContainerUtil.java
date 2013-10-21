@@ -21,12 +21,18 @@ package org.exoplatform.container.util;
 import junit.framework.TestCase;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.ServletContext;
 
 /**
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
@@ -34,7 +40,7 @@ import java.util.List;
  */
 public class TestContainerUtil extends TestCase
 {
-   
+
    public void testJBossAS6CL() throws Exception
    {
       ClassLoader oldCLoader = Thread.currentThread().getContextClassLoader();
@@ -50,7 +56,7 @@ public class TestContainerUtil extends TestCase
          Thread.currentThread().setContextClassLoader(oldCLoader);
       }
    }
-   
+
    private static class JBossAS6MockClassLoader extends ClassLoader
    {
 
@@ -65,5 +71,38 @@ public class TestContainerUtil extends TestCase
          return Collections.enumeration(urls);
       }
       
+   }
+
+   public void testGetServletContextName()
+   {
+      final AtomicReference<String> scn = new AtomicReference<String>("myContextName");
+      final AtomicReference<String> scp = new AtomicReference<String>("/myContextPath");
+      ServletContext context = (ServletContext)Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[]{ServletContext.class}, new InvocationHandler()
+      {
+         
+         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+         {
+            if ("getServletContextName".equals(method.getName()))
+               return scn.get();
+            else if ("getContextPath".equals(method.getName()))
+               return scp.get();
+            return null;
+         }
+      });
+      assertEquals("myContextName", ContainerUtil.getServletContextName(context));
+      scn.set(null);
+      assertEquals("myContextPath", ContainerUtil.getServletContextName(context));
+      scp.set("");
+      assertEquals("", ContainerUtil.getServletContextName(context));
+      scp.set("/a/b");
+      assertEquals("a", ContainerUtil.getServletContextName(context));
+      scp.set("/a2/b/");
+      assertEquals("a2", ContainerUtil.getServletContextName(context));
+      scp.set("a3/b");
+      assertEquals("a3", ContainerUtil.getServletContextName(context));
+      scp.set("a4/b/");
+      assertEquals("a4", ContainerUtil.getServletContextName(context));
+      scp.set(null);
+      assertNull(ContainerUtil.getServletContextName(context));
    }
 }

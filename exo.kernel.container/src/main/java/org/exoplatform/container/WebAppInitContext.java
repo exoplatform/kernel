@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.util.ContainerUtil;
+
 import javax.servlet.ServletContext;
 
 /**
@@ -54,7 +56,7 @@ public class WebAppInitContext
 
    public String getServletContextName()
    {
-      return servletContext.getServletContextName();
+      return ContainerUtil.getServletContextName(servletContext);
    }
 
    public ClassLoader getWebappClassLoader()

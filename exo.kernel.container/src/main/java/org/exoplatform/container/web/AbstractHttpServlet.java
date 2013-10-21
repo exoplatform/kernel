@@ -23,6 +23,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -75,7 +76,7 @@ public abstract class AbstractHttpServlet extends HttpServlet
    {
       super.init(config);
       this.config = config;
-      this.servletContextName = config.getServletContext().getServletContextName();
+      this.servletContextName = ContainerUtil.getServletContextName(config.getServletContext());
       afterInit(config);
    }
 
@@ -111,7 +112,7 @@ public abstract class AbstractHttpServlet extends HttpServlet
          }
          if (requirePortalEnvironment())
          {
-            final String ctxName = config.getServletContext().getServletContextName();
+            final String ctxName = ContainerUtil.getServletContextName(config.getServletContext());
             if (!PortalContainer.isPortalContainerNameDisabled(ctxName) && container instanceof PortalContainer)
             {
                if (PortalContainer.getInstanceIfPresent() == null)
@@ -195,10 +196,10 @@ public abstract class AbstractHttpServlet extends HttpServlet
       if (PropertyManager.isDevelopping())
       {
          LOG.info("The portal environment could not be set for the webapp '"
-            + config.getServletContext().getServletContextName()
+            + ContainerUtil.getServletContextName(config.getServletContext())
             + "' because this servlet context has not been defined as a "
             + "dependency of any portal container or it is a disabled portal"
-            + " container, the target URI was " + req.getRequestURI());         
+            + " container, the target URI was " + req.getRequestURI());
       }
       res.sendError(HttpServletResponse.SC_NOT_FOUND);
    }

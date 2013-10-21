@@ -63,6 +63,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Scope;
 import javax.inject.Singleton;
+import javax.servlet.ServletContext;
 
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
@@ -584,5 +585,28 @@ public class ContainerUtil
                cause);
          }
       }
+   }
+
+   /**
+    * Gives the context name thanks to the method {@link ServletContext#getServletContextName()} if not <code>null</code>
+    * otherwise it will extract the value from the value of {@link ServletContext#getContextPath()}
+    * @param context the context from which we want to extract the name of the context
+    * @return the context name
+    */
+   public static String getServletContextName(ServletContext context)
+   {
+      String result = context.getServletContextName();
+      if (result == null)
+      {
+         result = context.getContextPath();
+         if (result == null)
+            return result;
+         if (result.startsWith("/"))
+            result = result.substring(1);
+         int index = result.indexOf('/');
+         if (index >= 0)
+            result = result.substring(0, index);
+      }
+      return result;
    }
 }

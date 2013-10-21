@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container.xml;
 
+import org.exoplatform.container.util.ContainerUtil;
+
 import javax.servlet.ServletContext;
 
 /**
@@ -35,7 +37,7 @@ public class PortalContainerInfo
 
    public PortalContainerInfo(ServletContext context)
    {
-      containerName = context.getServletContextName();
+      containerName = ContainerUtil.getServletContextName(context);
    }
 
    public String getContainerName()

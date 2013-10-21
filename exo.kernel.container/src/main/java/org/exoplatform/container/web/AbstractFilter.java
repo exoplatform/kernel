@@ -22,6 +22,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.util.ContainerUtil;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -34,7 +35,6 @@ import javax.servlet.ServletException;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto
  *          nicolas.filotto@exoplatform.com
- * 21 aožt 2009  
  */
 public abstract class AbstractFilter implements Filter
 {
@@ -60,7 +60,7 @@ public abstract class AbstractFilter implements Filter
    public final void init(FilterConfig config) throws ServletException
    {
       this.config = config;
-      this.servletContextName = config.getServletContext().getServletContextName();
+      this.servletContextName = ContainerUtil.getServletContextName(config.getServletContext());
       afterInit(config);
    }
 

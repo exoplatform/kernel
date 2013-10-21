@@ -25,6 +25,7 @@ import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
 import org.exoplatform.container.RootContainer.PortalContainerPreInitTask;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.security.ContainerPermissions;
+import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
@@ -136,7 +137,7 @@ public class PortalContainer extends ExoContainer
    public PortalContainer(RootContainer parent, final ServletContext portalContext)
    {
       super(parent);
-      this.name = portalContext.getServletContextName();
+      this.name = ContainerUtil.getServletContextName(portalContext);
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
@@ -199,7 +200,7 @@ public class PortalContainer extends ExoContainer
     */
    public ClassLoader getWebAppClassLoader(ServletContext context)
    {
-      final String contextName = context.getServletContextName();
+      final String contextName = ContainerUtil.getServletContextName(context);
       ClassLoader cl = webAppClassLoaders.get(contextName);
       if (cl == null)
       {
@@ -425,7 +426,7 @@ public class PortalContainer extends ExoContainer
       {
          return;
       }
-      String contextName = context.getServletContextName();
+      String contextName = ContainerUtil.getServletContextName(context);
       List<String> portalContainerNames = CONFIG.getPortalContainerNames(contextName);
       RootContainer root = RootContainer.getInstance();
       // We assume that we have at least one portal container otherwise there is a bug in PortalContainerConfig
@@ -449,12 +450,12 @@ public class PortalContainer extends ExoContainer
       {
          return null;
       }
-      String portalContainerName = CONFIG.getPortalContainerName(context.getServletContextName());
+      String portalContainerName = CONFIG.getPortalContainerName(ContainerUtil.getServletContextName(context));
       if (portalContainerName == null)
       {
          if (PropertyManager.isDevelopping())
          {
-            LOG.warn("The Servlet Context '" + context.getServletContextName() + "' has not been registered"
+            LOG.warn("The Servlet Context '" + ContainerUtil.getServletContextName(context) + "' has not been registered"
                + " has a dependency of any PortalContainerDefinitions.");
          }
          return null;
@@ -619,7 +620,7 @@ public class PortalContainer extends ExoContainer
       {
          return true;
       }
-      return CONFIG.isScopeValid(container.getName(), context.getServletContextName());
+      return CONFIG.isScopeValid(container.getName(), ContainerUtil.getServletContextName(context));
    }
 
    @Managed

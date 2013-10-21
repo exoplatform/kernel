@@ -23,6 +23,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -68,7 +69,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
          }
          if (requirePortalEnvironment())
          {
-            final String ctxName = event.getSession().getServletContext().getServletContextName();
+            final String ctxName = ContainerUtil.getServletContextName(event.getSession().getServletContext());
             if (!PortalContainer.isPortalContainerNameDisabled(ctxName) && container instanceof PortalContainer)
             {
                if (PortalContainer.getInstanceIfPresent() == null)
@@ -140,7 +141,7 @@ public abstract class AbstractHttpSessionListener implements HttpSessionListener
          }
          if (requirePortalEnvironment())
          {
-            final String ctxName = event.getSession().getServletContext().getServletContextName();
+            final String ctxName = ContainerUtil.getServletContextName(event.getSession().getServletContext());
             if (!PortalContainer.isPortalContainerNameDisabled(ctxName) && container instanceof PortalContainer)
             {
                if (PortalContainer.getInstanceIfPresent() == null)

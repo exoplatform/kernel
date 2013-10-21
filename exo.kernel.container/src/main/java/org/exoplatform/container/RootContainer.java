@@ -307,7 +307,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       if (config.hasDefinition())
       {
          // The new behavior has been detected thus, the creation will be done at the end asynchronously
-         if (config.isPortalContainerName(context.getServletContextName()))
+         if (config.isPortalContainerName(ContainerUtil.getServletContextName(context)))
          {
             // The portal context has been registered has a portal container
             portalContexts.add(new WebAppInitContext(context));
@@ -316,12 +316,12 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          {
             if (PropertyManager.isDevelopping())
             {
-               LOG.info("We assume that the ServletContext '" + context.getServletContextName()
+               LOG.info("We assume that the ServletContext '" + ContainerUtil.getServletContextName(context)
                   + "' is not a portal since no portal container definition with the same name has been"
                   + " registered to the component PortalContainerConfig. The related portal container"
                   + " will be declared as disabled.");
             }
-            config.disablePortalContainer(context.getServletContextName());
+            config.disablePortalContainer(ContainerUtil.getServletContextName(context));
          }
          // We assume that a ServletContext of a portal container owns configuration files
          PortalContainer.addInitTask(context, new PortalContainer.RegisterTask());
@@ -329,7 +329,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       else
       {
          // Ensure that the portal container has been registered
-         config.registerPortalContainerName(context.getServletContextName());
+         config.registerPortalContainerName(ContainerUtil.getServletContextName(context));
          // The old behavior has been detected thus, the creation will be done synchronously
          createPortalContainer(context);
       }
@@ -401,7 +401,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          WebAppLifeCycleEvent waEvent = (WebAppLifeCycleEvent)event;
          if (waEvent.getType() == WebAppLifeCycleEvent.REMOVED)
          {
-            String contextName = event.getWebApp().getServletContext().getServletContextName();
+            String contextName = ContainerUtil.getServletContextName(event.getWebApp().getServletContext());
             boolean updated = false;
             for (Entry<String, ConcurrentMap<String, Queue<PortalContainerInitTaskContext>>> entry : initTasks.entrySet())
             {
@@ -430,7 +430,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
                            for (WebAppInitContext webappctx : contexts)
                            {
                               ServletContext ctx = webappctx.getServletContext();
-                              if (context.getServletContextName().equals(ctx.getServletContextName()))
+                              if (context.getServletContextName().equals(ContainerUtil.getServletContextName(ctx)))
                               {
                                  // We found a matching servlet context which means that the current servlet context is defined as a
                                  // PortalContainerConfigOwner
@@ -566,7 +566,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
             continue;
          }
          else if (portalContainerName == null
-            || portalContainerName.equals(sess.getServletContext().getServletContextName()))
+            || portalContainerName.equals(ContainerUtil.getServletContextName(sess.getServletContext())))
          {
             try
             {
@@ -592,7 +592,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       HttpSession sess = evt.getRequest().getSession(false);
 
       if (sess == null
-         || !getPortalContainerConfig().isPortalContainerName(sess.getServletContext().getServletContextName()))
+         || !getPortalContainerConfig().isPortalContainerName(ContainerUtil.getServletContextName(sess.getServletContext())))
          return;
       switch (evt.getType())
       {
@@ -638,7 +638,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       // Keep the old ClassLoader
       final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
       boolean hasChanged = false;
-      final String portalContainerName = context.getServletContextName();
+      final String portalContainerName = ContainerUtil.getServletContextName(context);
       try
       {
          LOG.info("Trying to create the portal container '" + portalContainerName + "'");
@@ -759,7 +759,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       if (security != null)
          security.checkPermission(ContainerPermissions.MANAGE_CONTAINER_PERMISSION);
       
-      this.unregisterComponent(servletContext.getServletContextName());
+      this.unregisterComponent(ContainerUtil.getServletContextName(servletContext));
    }
 
    public static Object getComponent(Class<?> key)
@@ -1077,7 +1077,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
     */
    public void addInitTask(ServletContext context, PortalContainerInitTask task)
    {
-      addInitTask(context, task, context.getServletContextName());
+      addInitTask(context, task, ContainerUtil.getServletContextName(context));
    }
 
    /**
@@ -1173,7 +1173,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          // The queue already exists and we are in reloading phase, we will then check
          // if a task of the same type exist for the same servlet context if so we replace it
          // with a new one
-         String contextName = context.getServletContextName();
+         String contextName = ContainerUtil.getServletContextName(context);
          Class<?> c = task.getClass();
          for (Iterator<PortalContainerInitTaskContext> it = queue.iterator(); it.hasNext();)
          {
@@ -1417,7 +1417,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          }
          throw new IllegalStateException("No pre init tasks can be added to the portal container '"
             + portalContainer.getName() + "', because it has already been " + "initialized. Check the webapp '"
-            + context.getServletContextName() + "'");
+            + ContainerUtil.getServletContextName(context) + "'");
       }
 
       /**
