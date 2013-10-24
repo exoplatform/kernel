@@ -36,15 +36,12 @@ import org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache;
 import org.exoplatform.services.cache.impl.CacheServiceImpl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanAttributeInfo;
@@ -72,103 +69,6 @@ public class TestCacheService extends TestCase
    public void setUp() throws Exception
    {
       service_ = (CacheService)PortalContainer.getInstance().getComponentInstanceOfType(CacheService.class);
-   }
-
-   public void testConcurrentCreation() throws Exception
-   {
-      //Needed for that case if testCacheFactory will be executed before testConcurrentCreation and MyExoCache.count will have value bigger than 0
-      MyExoCache.count.getAndSet(0);
-      int threads = 20;
-      final CountDownLatch startSignal = new CountDownLatch(1);
-      final CountDownLatch doneSignal = new CountDownLatch(threads);
-      final List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
-      for (int i = 0; i < threads; i++)
-      {
-         Thread thread = new Thread()
-         {
-            public void run()
-            {
-               try
-               {
-                  startSignal.await();
-                  if (service_.getCacheInstance("TestConcurrentCreation") == null)
-                  {
-                     throw new RuntimeException("The cache 'TestConcurrentCreation' cannot be null");
-                  }
-               }
-               catch (Exception e)
-               {
-                  errors.add(e);
-               }
-               finally
-               {
-                  doneSignal.countDown();
-               }
-            }
-         };
-         thread.start();
-      }
-      startSignal.countDown();
-      doneSignal.await();
-      if (!errors.isEmpty())
-      {
-         for (Exception e : errors)
-         {
-            e.printStackTrace();
-         }
-         throw errors.get(0);
-      }
-      assertEquals(1, MyExoCache.count.get());
-   }
-
-   public void testPerf() throws Exception
-   {
-      // Pre-create it 
-      service_.getCacheInstance("FooCache");
-      int threads = 100;
-      final CountDownLatch startSignal = new CountDownLatch(1);
-      final CountDownLatch doneSignal = new CountDownLatch(threads);
-      final List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
-      for (int i = 0; i < threads; i++)
-      {
-         Thread thread = new Thread()
-         {
-            public void run()
-            {
-               try
-               {
-                  startSignal.await();
-                  for (int i = 0; i < 1000000; i++)
-                  {
-                     if (service_.getCacheInstance("FooCache") == null)
-                     {
-                        throw new RuntimeException("The cache 'FooCache' cannot be null");
-                     }
-                  }
-               }
-               catch (Exception e)
-               {
-                  errors.add(e);
-               }
-               finally
-               {
-                  doneSignal.countDown();
-               }
-            }
-         };
-         thread.start();
-      }
-      startSignal.countDown();
-      doneSignal.await();
-
-      if (!errors.isEmpty())
-      {
-         for (Exception e : errors)
-         {
-            e.printStackTrace();
-         }
-         throw errors.get(0);
-      }
    }
 
    public void testCacheFactory() throws Exception
@@ -403,7 +303,7 @@ public class TestCacheService extends TestCase
    public static class MyExoCache<V> implements ExoCache<Serializable, V>
    {
 
-      private static AtomicInteger count = new AtomicInteger();
+      public static AtomicInteger count = new AtomicInteger();
 
       public MyExoCache()
       {

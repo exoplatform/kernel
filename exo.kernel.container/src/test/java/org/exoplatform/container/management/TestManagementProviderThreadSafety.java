@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,16 +16,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.idgenerator.impl;
+package org.exoplatform.container.management;
 
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
+import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,35 +34,28 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Id$
  *
  */
-public class TestIDGeneratorServiceImpl
+public class TestManagementProviderThreadSafety
 {
+   private static final int TOTAL_THREADS = 50;
+
    @Rule
    public ContiPerfRule rule = new ContiPerfRule();
 
-   private IDGeneratorServiceImpl generator;
-   private AtomicInteger count;
-   private ConcurrentMap<String, String> ids;
+   private CyclicBarrier startSignal = new CyclicBarrier(TOTAL_THREADS);
+   final AtomicInteger sequence = new AtomicInteger();
+   private RootContainer container;
 
    @Before
    public void setUp()
    {
-      generator = new IDGeneratorServiceImpl();
-      count = new AtomicInteger();
-      ids = new ConcurrentHashMap<String, String>();
+      this.container = AbstractTestContainer.createRootContainer(getClass(), "configuration1.xml");
    }
 
    @Test
-   @PerfTest(invocations = 750000, threads = 50)
-   public void testConcurrentCreation() throws Exception
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
+   public void testMultiThreading() throws Throwable
    {
-      String id = generator.generateStringID(Long.toString(System.currentTimeMillis()));
-      if (ids.putIfAbsent(id, id) == null)
-      {
-         count.incrementAndGet();
-      }
-      else
-      {
-         throw new IllegalStateException("The id '" + id + "' already exists");
-      }
+      startSignal.await();
+      container.registerComponentInstance("ManagementProviderImpl" + sequence.incrementAndGet(), new ManagementProviderImpl());
    }
 }

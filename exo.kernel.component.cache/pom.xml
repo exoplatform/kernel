@@ -49,7 +49,12 @@
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
          <scope>test</scope>
-      </dependency>       
+      </dependency>
+      <dependency>
+         <groupId>org.databene</groupId>
+         <artifactId>contiperf</artifactId>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
    <build>
       <plugins>
@@ -82,7 +87,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </target>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -99,5 +104,4 @@
          </plugin>
       </plugins>
    </build>
-
 </project>

@@ -20,6 +20,14 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.component.BaseComponentPlugin;
@@ -32,12 +40,12 @@ import org.exoplatform.container.context.ContextManager;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapter;
 import org.exoplatform.container.spi.ComponentAdapter;
-import org.exoplatform.container.spi.ContainerException;
 import org.exoplatform.container.spi.DefinitionByName;
 import org.exoplatform.container.spi.DefinitionByQualifier;
 import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.InitParams;
+import org.junit.Test;
 import org.picocontainer.Disposable;
 import org.picocontainer.Startable;
 
@@ -62,7 +70,6 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -86,7 +93,7 @@ import javax.servlet.http.HttpSession;
  *          nicolas.filotto@exoplatform.com
  * 3 mai 2010  
  */
-public class TestExoContainer extends AbstractTestContainer
+public class TestExoContainer
 {
 
    public class CachedComponent
@@ -101,6 +108,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testHasProfile()
    {
       String oldValue = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
@@ -150,6 +158,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testRemoveComponent() throws Exception
    {
       ConcurrentContainer container = new ConcurrentContainer(RootContainer.getInstance(), null);
@@ -171,9 +180,10 @@ public class TestExoContainer extends AbstractTestContainer
       container.unregisterComponent("testKey");
    }
 
+   @Test
    public void testContainerLifecyclePlugin()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       MyCounter counter = (MyCounter)container.getComponentInstanceOfType(MyCounter.class);
       assertNotNull(counter);
       assertEquals(3, counter.init.size());
@@ -192,9 +202,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertTrue(counter.init.get(2) instanceof MyContainerLifecyclePlugin1);
    }
 
+   @Test
    public void testStackOverFlow()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       MyClass value = (MyClass)container.getComponentInstanceOfType(MyClass.class);
       assertNotNull(value);
       MyClassPlugin plugin = value.plugin_;
@@ -207,6 +218,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(value, plugin2.myClass_);
    }
 
+   @Test
    public void testStackOverFlowB() throws Exception
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
@@ -228,9 +240,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(value, plugin2.myClass_);
    }
 
+   @Test
    public void testStackOverFlow2()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       SOE1 soe1 = (SOE1)container.getComponentInstanceOfType(SOE1.class);
       assertNotNull(soe1);
       assertEquals(1, soe1.plugins.size());
@@ -241,9 +254,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(container.getComponentInstanceOfType(SOE2.class), soe1Plugin.soe2);
    }
 
+   @Test
    public void testStackOverFlow3()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       SOE2 soe2 = (SOE2)container.getComponentInstanceOfType(SOE2.class);
       assertNotNull(soe2);
       assertNotNull(soe2.soe1);
@@ -255,6 +269,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(container.getComponentInstanceOfType(SOE1.class), soe2.soe1);
    }
 
+   @Test
    public void testStackOverFlow2B() throws Exception
    {
       final URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -278,6 +293,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(container.getComponentInstanceOfType(SOE2B.class), soe1Plugin.soe2);
    }
 
+   @Test
    public void testStackOverFlow3B() throws Exception
    {
       final URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -302,9 +318,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(container.getComponentInstanceOfType(SOE1B.class), soe2.soe1);
    }
 
+   @Test
    public void testStackOverFlow2C() throws Exception
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       SOE1C soe1 = (SOE1C)container.getComponentInstanceOfType(SOE1C.class);
       assertNotNull(soe1);
       assertEquals(2, soe1.plugins.size());
@@ -315,9 +332,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(container.getComponentInstanceOfType(SOE2C.class), soe1Plugin.soe2);
    }
 
+   @Test
    public void testStackOverFlow3C() throws Exception
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       SOE2C soe2 = (SOE2C)container.getComponentInstanceOfType(SOE2C.class);
       assertNotNull(soe2);
       assertNotNull(soe2.soe1);
@@ -329,9 +347,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(container.getComponentInstanceOfType(SOE1C.class), soe2.soe1);
    }
 
+   @Test
    public void testStackOverFlow4()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml", "testStackOverflowError");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testStackOverflowError");
       MyService ms = (MyService)container.getComponentInstanceOfType(MyService.class);
       assertNotNull(ms);
       assertTrue(ms instanceof MyServiceImpl);
@@ -342,9 +361,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(mp.svc, ms);
    }
 
+   @Test
    public void testCyclicRef()
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml", "testCyclicRef");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testCyclicRef");
       A a = (A)container.getComponentInstanceOfType(A.class);
       assertNotNull(a);
       B b = (B)container.getComponentInstanceOfType(B.class);
@@ -352,6 +372,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertSame(a, b.a);
    }
 
+   @Test
    public void testContainerNameSuffix()
    {
       final URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -425,6 +446,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testStartOrder()
    {
       testStartOrder(false);
@@ -433,7 +455,7 @@ public class TestExoContainer extends AbstractTestContainer
    protected void testStartOrder(boolean checkC0NC1)
    {
       COUNTER = new AtomicInteger();
-      final RootContainer container = createRootContainer("test-exo-container.xml", "testStartOrder");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testStartOrder");
       C0 c0 = (C0)container.getComponentInstanceOfType(C0.class);
       assertNotNull(c0);
       assertTrue(c0.startOrder > 0);
@@ -472,10 +494,11 @@ public class TestExoContainer extends AbstractTestContainer
       assertTrue(c2_2.startOrder < c2_1.startOrder);
    }
 
+   @Test
    public void testStartOrder2()
    {
       COUNTER = new AtomicInteger();
-      ExoContainer container = createRootContainer("test-exo-container.xml", "testStartOrder2");
+      ExoContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testStartOrder2");
       TSO2_A a = container.getComponentInstanceOfType(TSO2_A.class);
       assertNotNull(a);
       TSO2_B b = container.getComponentInstanceOfType(TSO2_B.class);
@@ -687,10 +710,11 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testStartOrder3()
    {
       COUNTER = new AtomicInteger();
-      ExoContainer container = createRootContainer("test-exo-container.xml", "testStartOrder3");
+      ExoContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testStartOrder3");
       TSO3_A a = container.getComponentInstanceOfType(TSO3_A.class);
       assertNotNull(a);
       TSO3_B b = container.getComponentInstanceOfType(TSO3_B.class);
@@ -781,6 +805,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testCache()
    {
       URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -853,6 +878,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertNull(pcontainer.getComponentInstance("MyKey", String.class));
    }
 
+   @Test
    public void testStart()
    {
       URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -897,137 +923,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(1, ts4pc.disposed);
    }
 
-   public void testMultiThreading() throws Throwable
-   {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
-      final AtomicReference<MyMTClass> currentMyClass = new AtomicReference<MyMTClass>();
-      testMultiThreading(new Task()
-      {
 
-         public void execute()
-         {
-            MyMTClass value = (MyMTClass)container.getComponentInstance(MyMTClass.class);
-            synchronized (currentMyClass)
-            {
-               if (currentMyClass.get() == null)
-               {
-                  currentMyClass.set(value);
-               }
-            }
-            assertEquals(currentMyClass.get(), container.getComponentInstance(MyMTClass.class));
-         }
-      });
-      testMultiThreading(new Task()
-      {
-
-         public void execute()
-         {
-            MyMTClass value = (MyMTClass)container.getComponentInstanceOfType(MyMTClass.class);
-            synchronized (currentMyClass)
-            {
-               if (currentMyClass.get() == null)
-               {
-                  currentMyClass.set(value);
-               }
-            }
-            assertEquals(currentMyClass.get(), container.getComponentInstanceOfType(MyMTClass.class));
-         }
-      });
-      final AtomicReference<ComponentAdapter<?>> ar = new AtomicReference<ComponentAdapter<?>>();
-      testMultiThreading(new Task()
-      {
-         public void execute()
-         {
-            try
-            {
-               ar.compareAndSet(null, container.registerComponentInstance("a", new MyClass()));
-            }
-            catch (ContainerException e)
-            {
-               // ignore expected behavior
-            }
-         }
-      });
-      testMultiThreading(new Task()
-      {
-
-         public void execute()
-         {
-            assertEquals(ar.get(), container.getComponentAdapter("a"));
-         }
-      });
-      testMultiThreading(new Task()
-      {
-
-         public void execute()
-         {
-            container.unregisterComponent("a");
-         }
-      });
-
-      testMultiThreading(new Task()
-      {
-
-         public void execute()
-         {
-            final Object key = new Object();
-            assertNotNull(container.registerComponentInstance(key, new MyClass()));
-            assertNotNull(container.getComponentAdapter(key));
-            assertFalse(container.getComponentAdapters().isEmpty());
-            assertFalse(container.getComponentAdaptersOfType(MyClass.class).isEmpty());
-            assertNotNull(container.getComponentInstance(key));
-            assertNotNull(container.getComponentInstanceOfType(MyClass.class));
-            assertFalse(container.getComponentInstancesOfType(MyClass.class).isEmpty());
-            assertNotNull(container.unregisterComponent(key));
-         }
-      });
-   }
-
-   private void testMultiThreading(final Task task) throws Throwable
-   {
-      int threads = 50;
-      final CountDownLatch startSignal = new CountDownLatch(1);
-      final CountDownLatch doneSignal = new CountDownLatch(threads);
-      final List<Throwable> errors = Collections.synchronizedList(new ArrayList<Throwable>());
-      for (int i = 0; i < threads; i++)
-      {
-         Thread thread = new Thread()
-         {
-            public void run()
-            {
-               try
-               {
-                  startSignal.await();
-                  task.execute();
-               }
-               catch (Throwable e)
-               {
-                  errors.add(e);
-               }
-               finally
-               {
-                  doneSignal.countDown();
-               }
-            }
-         };
-         thread.start();
-      }
-      startSignal.countDown();
-      doneSignal.await();
-      if (!errors.isEmpty())
-      {
-         for (Throwable e : errors)
-         {
-            e.printStackTrace();
-         }
-         throw errors.get(0);
-      }
-   }
-
-   public interface Task
-   {
-      public void execute();
-   }
 
    public static class MyMTClass
    {
@@ -1628,6 +1524,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testLifeCycle() throws Throwable
    {
       ExoContainer container = new ExoContainer();
@@ -2012,9 +1909,10 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testStates() throws Exception
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml", "testStates");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testStates");
       TSC1 value = (TSC1)container.getComponentInstanceOfType(TSC1.class);
       assertNotNull(value);
       TSC2Plugin plugin = value.plugin;
@@ -2063,6 +1961,7 @@ public class TestExoContainer extends AbstractTestContainer
 
    private static ExoContainer parent;
 
+   @Test
    public void testContainerOwner() throws Exception
    {
       try
@@ -2112,6 +2011,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testContainers() throws Exception
    {
       final URL rootURL = getClass().getResource("test-exo-container.xml");
@@ -2212,6 +2112,7 @@ public class TestExoContainer extends AbstractTestContainer
       public SortedConstructorsF(String a, String b, String c) {}
    }
 
+   @Test
    public void testSortedConstructors()
    {
       testSortedConstructors(SortedConstructorsA.class);
@@ -2231,9 +2132,10 @@ public class TestExoContainer extends AbstractTestContainer
       assertEquals(1, constructors[2].getParameterTypes().length);
    }
 
+   @Test
    public void testJSR330() throws Exception
    {
-      RootContainer container = createRootContainer("empty-config.xml");
+      RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "empty-config.xml");
       container.registerComponentImplementation(JSR330_A.class);
       container.registerComponentImplementation(JSR330_B.class);
       container.registerComponentImplementation(JSR330_C.class);
@@ -3230,15 +3132,17 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testScopeWithNoContextManager() throws Exception
    {
-      final RootContainer container = createRootContainer("test-exo-container.xml");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml");
       ContextManager manager = container.getComponentInstanceOfType(ContextManager.class);
       assertNull(manager);
       testScope(container, manager, true);
       testScope(container, manager, false);
    }
 
+   @Test
    public void testScope() throws Exception
    {
 
@@ -3258,7 +3162,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertNull(ContainerUtil.getScope(S6.class));
       assertSame(Dependent.class, ContainerUtil.getScope(S7.class));
       assertSame(ApplicationScoped.class, ContainerUtil.getScope(S8.class));
-      final RootContainer container = createRootContainer("test-exo-container.xml", "testScope");
+      final RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container.xml", "testScope");
 
       container.registerComponentImplementation(S1.class);
       container.registerComponentImplementation(S1_DEP1.class);
@@ -4614,6 +4518,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testDefinitionByType()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
@@ -4677,6 +4582,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testDefinitionByTypeWithProvider()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
@@ -4837,6 +4743,7 @@ public class TestExoContainer extends AbstractTestContainer
       public Provider<AutoRegistration8> p;
    }
 
+   @Test
    public void testDefinitionByName()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
@@ -4923,6 +4830,7 @@ public class TestExoContainer extends AbstractTestContainer
       }
    }
 
+   @Test
    public void testDefinitionByNameWithProvider()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
@@ -5107,7 +5015,7 @@ public class TestExoContainer extends AbstractTestContainer
       public Provider<AutoRegistrationN8> p;
    }
 
-
+   @Test
    public void testDefinitionByQualifier()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
@@ -5196,6 +5104,7 @@ public class TestExoContainer extends AbstractTestContainer
       assertNull(container.getComponentInstance(AutoRegistrationBadQualifier.class, AutoRegistrationQ9.class));
    }
 
+   @Test
    public void testDefinitionByQualifierWithProvider()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");

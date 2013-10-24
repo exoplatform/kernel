@@ -66,6 +66,11 @@
          <artifactId>javassist</artifactId>
          <scope>provided</scope>
       </dependency>
+      <dependency>
+         <groupId>org.databene</groupId>
+         <artifactId>contiperf</artifactId>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
    <build>
       <plugins>

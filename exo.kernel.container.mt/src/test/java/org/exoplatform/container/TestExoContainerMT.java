@@ -18,13 +18,25 @@
  */
 package org.exoplatform.container;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.exoplatform.container.component.BaseComponentPlugin;
+import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterMT;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.picocontainer.Startable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.Callable;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,361 +49,90 @@ import javax.inject.Singleton;
  * @version $Id$
  *
  */
+@RunWith(Parameterized.class)
 public class TestExoContainerMT extends TestExoContainer
 {
-
-   public void testHasProfile()
+   private Mode[] modes;
+   public TestExoContainerMT(Mode... modes)
    {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testHasProfile();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+      this.modes = modes;
    }
 
-   public void testRemoveComponent() throws Exception
+   @Before
+   public void setUp()
    {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testRemoveComponent();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+      Mode.setModes(modes);
    }
 
-   public void testContainerLifecyclePlugin()
+   @After
+   public void tearDown()
    {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testContainerLifecyclePlugin();
-            return null;
-         }
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+      Mode.clearModes();
    }
 
-   public void testStackOverFlow()
+   @Parameters
+   public static List<Object[]> data()
    {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+      return Arrays.asList(new Object[][]{{null}, {new Mode[]{Mode.MULTI_THREADED}},
+         {new Mode[]{Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE}}, {new Mode[]{Mode.AUTO_SOLVE_DEP_ISSUES}},
+         {new Mode[]{Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES}},
+         {new Mode[]{Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE}}});
    }
 
-   public void testStackOverFlowB() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlowB();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow2()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow2();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow3()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow3();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow2B() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow2B();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow3B() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow3B();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow2C() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow2C();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow3C() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow3C();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStackOverFlow4()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStackOverFlow4();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testCyclicRef()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testCyclicRef();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
+   @Test
    public void testBadCyclicRef() throws Exception
    {
-      Callable<Void> task = new Callable<Void>()
+      RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testBadCyclicRef");
+      try
       {
-         public Void call() throws Exception
-         {
-            RootContainer container = createRootContainer("test-exo-container-mt.xml", "testBadCyclicRef");
-            try
-            {
-               container.getComponentInstanceOfType(TestExoContainer.A1.class);
-               fail("A CyclicDependencyException was expected");
-            }
-            catch (CyclicDependencyException e)
-            {
-               // expected exception
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         container.getComponentInstanceOfType(TestExoContainer.A1.class);
+         fail("A CyclicDependencyException was expected");
+      }
+      catch (CyclicDependencyException e)
+      {
+         // expected exception
+      }
    }
 
+   @Test
    public void testBadCyclicRef2() throws Exception
    {
-      Callable<Void> task = new Callable<Void>()
+      try
       {
-         public Void call() throws Exception
-         {
-            try
-            {
-               createRootContainer("test-exo-container-mt.xml", "testBadCyclicRef2");
-            }
-            catch (CyclicDependencyException e)
-            {
-               // expected exception
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testBadCyclicRef2");
+      }
+      catch (CyclicDependencyException e)
+      {
+         // expected exception
+      }
    }
 
+   @Test
    public void testBadCyclicRef3() throws Exception
    {
-      Callable<Void> task = new Callable<Void>()
+      RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testBadCyclicRef3");
+      try
       {
-         public Void call() throws Exception
-         {
-            RootContainer container = createRootContainer("test-exo-container-mt.xml", "testBadCyclicRef3");
-            try
-            {
-               container.getComponentInstanceOfType(A1.class);
-               fail("A CyclicDependencyException was expected");
-            }
-            catch (CyclicDependencyException e)
-            {
-               // expected exception
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         container.getComponentInstanceOfType(A1.class);
+         fail("A CyclicDependencyException was expected");
+      }
+      catch (CyclicDependencyException e)
+      {
+         // expected exception
+      }
    }
 
+   @Test
    public void testBadCyclicRef4() throws Exception
    {
-      Callable<Void> task = new Callable<Void>()
+      try
       {
-         public Void call() throws Exception
-         {
-            try
-            {
-               createRootContainer("test-exo-container-mt.xml", "testBadCyclicRef4");
-            }
-            catch (CyclicDependencyException e)
-            {
-               // expected exception
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testBadCyclicRef4");
+      }
+      catch (CyclicDependencyException e)
+      {
+         // expected exception
+      }
    }
 
    public static class A1
@@ -442,58 +183,32 @@ public class TestExoContainerMT extends TestExoContainer
       }
    }
 
+   @Test
    public void testBadCyclicRef5() throws Exception
    {
-      Callable<Void> task = new Callable<Void>()
+      RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testBadCyclicRef5");
+      try
       {
-         public Void call() throws Exception
-         {
-            RootContainer container = createRootContainer("test-exo-container-mt.xml", "testBadCyclicRef5");
-            try
-            {
-               container.getComponentInstanceOfType(A3.class);
-               fail("A CyclicDependencyException was expected");
-            }
-            catch (CyclicDependencyException e)
-            {
-               // expected exception
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         container.getComponentInstanceOfType(A3.class);
+         fail("A CyclicDependencyException was expected");
+      }
+      catch (CyclicDependencyException e)
+      {
+         // expected exception
+      }
    }
 
+   @Test
    public void testBadCyclicRef6() throws Exception
    {
-      Callable<Void> task = new Callable<Void>()
+      try
       {
-         public Void call() throws Exception
-         {
-            try
-            {
-               createRootContainer("test-exo-container-mt.xml", "testBadCyclicRef6");
-            }
-            catch (CyclicDependencyException e)
-            {
-               // expected exception
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testBadCyclicRef6");
+      }
+      catch (CyclicDependencyException e)
+      {
+         // expected exception
+      }
    }
 
    @Singleton
@@ -552,466 +267,40 @@ public class TestExoContainerMT extends TestExoContainer
       }
    }
 
-   public void testContainerNameSuffix()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testContainerNameSuffix();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStartOrder()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStartOrder(true);
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStartOrder2()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStartOrder2();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStartOrder3()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStartOrder3();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testCache()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testCache();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStart()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStart();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testMultiThreading() throws Throwable
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            try
-            {
-               TestExoContainerMT.super.testMultiThreading();
-            }
-            catch (Throwable e)
-            {
-               throw new Exception(e);
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testLifeCycle() throws Throwable
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            try
-            {
-               TestExoContainerMT.super.testLifeCycle();
-            }
-            catch (Throwable e)
-            {
-               throw new Exception(e);
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testStates() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testStates();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testContainerOwner() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testContainerOwner();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testContainers() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testContainers();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testSortedConstructors()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testSortedConstructors();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testJSR330() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testJSR330();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testScopeWithNoContextManager() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testScopeWithNoContextManager();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testScope() throws Exception
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testScope();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testDefinitionByType()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testDefinitionByType();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testDefinitionByTypeWithProvider()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testDefinitionByTypeWithProvider();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testDefinitionByName()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testDefinitionByName();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testDefinitionByNameWithProvider()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testDefinitionByNameWithProvider();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testDefinitionByQualifier()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testDefinitionByQualifier();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
-   public void testDefinitionByQualifierWithProvider()
-   {
-      Callable<Void> task = new Callable<Void>()
-      {
-         public Void call() throws Exception
-         {
-            TestExoContainerMT.super.testDefinitionByQualifierWithProvider();
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-   }
-
+   @Test
    public void testAutoSolveDepIssues()
    {
-      Callable<Void> task = new Callable<Void>()
+      RootContainer container = AbstractTestContainer.createRootContainer(getClass(), "test-exo-container-mt.xml", "testAutoSolveDepIssues");
+      MX4JComponentAdapterMT<ASDI_1> adapter1 =
+         (MX4JComponentAdapterMT<ASDI_1>)container.getComponentAdapterOfType(ASDI_1.class);
+      MX4JComponentAdapterMT<ASDI_2> adapter2 =
+         (MX4JComponentAdapterMT<ASDI_2>)container.getComponentAdapterOfType(ASDI_2.class);
+      MX4JComponentAdapterMT<ASDI_2_2> adapter3 =
+         (MX4JComponentAdapterMT<ASDI_2_2>)container.getComponentAdapterOfType(ASDI_2_2.class);
+      if (Mode.hasMode(Mode.AUTO_SOLVE_DEP_ISSUES))
       {
-         public Void call() throws Exception
-         {
-            RootContainer container = createRootContainer("test-exo-container-mt.xml", "testAutoSolveDepIssues");
-            MX4JComponentAdapterMT<ASDI_1> adapter1 =
-               (MX4JComponentAdapterMT<ASDI_1>)container.getComponentAdapterOfType(ASDI_1.class);
-            MX4JComponentAdapterMT<ASDI_2> adapter2 =
-               (MX4JComponentAdapterMT<ASDI_2>)container.getComponentAdapterOfType(ASDI_2.class);
-            MX4JComponentAdapterMT<ASDI_2_2> adapter3 =
-               (MX4JComponentAdapterMT<ASDI_2_2>)container.getComponentAdapterOfType(ASDI_2_2.class);
-            if (Mode.hasMode(Mode.AUTO_SOLVE_DEP_ISSUES))
-            {
-               assertEquals(2, adapter1.getCreateDependencies().size());
-               assertEquals(3, adapter1.getInitDependencies().size());
-               assertEquals(4, adapter2.getCreateDependencies().size());
-               assertEquals(4, adapter2.getInitDependencies().size());
-            }
-            else
-            {
-               assertEquals(1, adapter1.getCreateDependencies().size());
-               assertEquals(1, adapter1.getInitDependencies().size());
-               assertEquals(1, adapter2.getCreateDependencies().size());
-               assertEquals(1, adapter2.getInitDependencies().size());
-            }
-            assertEquals(3, adapter3.getCreateDependencies().size());
-            for (Dependency dep : adapter3.getCreateDependencies())
-            {
-               assertTrue(dep.isLazy());
-            }
-            assertEquals(3, adapter3.getInitDependencies().size());
-            for (Dependency dep : adapter3.getInitDependencies())
-            {
-               assertTrue(dep.isLazy());
-            }
-            return null;
-         }
-
-      };
-      execute(task, (Mode[])null);
-      execute(task, Mode.MULTI_THREADED);
-      execute(task, Mode.MULTI_THREADED, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
-      execute(task, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES);
-      execute(task, Mode.MULTI_THREADED, Mode.AUTO_SOLVE_DEP_ISSUES, Mode.DISABLE_MT_ON_STARTUP_COMPLETE);
+         assertEquals(2, adapter1.getCreateDependencies().size());
+         assertEquals(3, adapter1.getInitDependencies().size());
+         assertEquals(4, adapter2.getCreateDependencies().size());
+         assertEquals(4, adapter2.getInitDependencies().size());
+      }
+      else
+      {
+         assertEquals(1, adapter1.getCreateDependencies().size());
+         assertEquals(1, adapter1.getInitDependencies().size());
+         assertEquals(1, adapter2.getCreateDependencies().size());
+         assertEquals(1, adapter2.getInitDependencies().size());
+      }
+      assertEquals(3, adapter3.getCreateDependencies().size());
+      for (Dependency dep : adapter3.getCreateDependencies())
+      {
+         assertTrue(dep.isLazy());
+      }
+      assertEquals(3, adapter3.getInitDependencies().size());
+      for (Dependency dep : adapter3.getInitDependencies())
+      {
+         assertTrue(dep.isLazy());
+      }
    }
 
    public static class ASDI_1 implements Startable
@@ -1104,22 +393,5 @@ public class TestExoContainerMT extends TestExoContainer
    @Retention(RetentionPolicy.RUNTIME)
    @Qualifier
    public static @interface ASDI_5Qualifier {
-   }
-
-   private static void execute(Callable<Void> task, Mode... modes)
-   {
-      try
-      {
-         Mode.setModes(modes);
-         task.call();
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e);
-      }
-      finally
-      {
-         Mode.clearModes();
-      }
    }
 }

@@ -33,15 +33,26 @@ public class AbstractTestContainer extends TestCase
 {
    public RootContainer createRootContainer(String relativeConfigurationFile)
    {
-      URL url = getClass().getResource(relativeConfigurationFile);
+      return createRootContainer(getClass(), relativeConfigurationFile);
+   }
+
+   public RootContainer createRootContainer(String relativeConfigurationFile, String... profiles)
+   {
+      return createRootContainer(getClass(), relativeConfigurationFile, profiles);
+   }
+
+   public static RootContainer createRootContainer(Class<?> callerClass, String relativeConfigurationFile)
+   {
+      URL url = callerClass.getResource(relativeConfigurationFile);
       assertNotNull(url);
       return new ContainerBuilder().withRoot(url).build();
    }
-   
-   public RootContainer createRootContainer(String relativeConfigurationFile, String... profiles)
+
+   public static RootContainer createRootContainer(Class<?> callerClass, String relativeConfigurationFile,
+      String... profiles)
    {
-      URL url = getClass().getResource(relativeConfigurationFile);
+      URL url = callerClass.getResource(relativeConfigurationFile);
       assertNotNull(url);
       return new ContainerBuilder().withRoot(url).profiledBy(profiles).build();
-   }   
+   }
 }
