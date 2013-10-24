@@ -18,7 +18,9 @@
  */
 package org.exoplatform.container.context;
 
-import javax.enterprise.context.spi.AlterableContext;
+import javax.enterprise.context.ContextNotActiveException;
+import javax.enterprise.context.spi.Context;
+import javax.enterprise.context.spi.Contextual;
 
 /**
  * This interface defines all the additional methods needed to easily implement 
@@ -28,7 +30,7 @@ import javax.enterprise.context.spi.AlterableContext;
  * @version $Id$
  *
  */
-public interface AdvancedContext<K> extends AlterableContext
+public interface AdvancedContext<K> extends Context
 {
    /**
     * Registers a new key to the context
@@ -53,4 +55,14 @@ public interface AdvancedContext<K> extends AlterableContext
     * @param key the key to use to deactivate the context
     */
    void deactivate(K key);
+
+   /**
+    * <p>
+    * Destroy the existing contextual instance. If there is no existing instance, no action is taken.
+    * </p>
+    * 
+    * @param contextual the contextual type
+    * @throws ContextNotActiveException if the context is not active
+    */
+   void destroy(Contextual<?> contextual);
 }
