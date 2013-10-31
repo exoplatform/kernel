@@ -183,7 +183,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
          }
          else if (entry.getValue() == null)
          {
-            throw new IllegalArgumentException("No null cache value accepted");            
+            throw new IllegalArgumentException("No null cache value accepted");
          }
          map.put(entry.getKey(), new HashCode<V>(entry.getValue()));
       }
@@ -220,7 +220,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
 
             public long getExpireTime()
             {
-               // Cannot know: The expire time is managed by JBoss Cache itself
+               // Cannot know: The expire time is managed by eXo Cache itself
                return -1;
             }
          };
@@ -467,7 +467,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
          }
-      }      
+      }
    }
       
    /**
@@ -557,5 +557,5 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
       {
          return "HashCode [hashCode=" + hashCode + ", value=" + value + "]";
       }
-   }   
+   }
 }

@@ -40,7 +40,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
-import org.infinispan.configuration.parsing.Parser;
+import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
@@ -200,7 +200,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                Configuration config;
                try
                {
-                  Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+                  ParserRegistry parser = new ParserRegistry(Thread.currentThread().getContextClassLoader());
                   // Loads the configuration from the input stream
                   ConfigurationBuilderHolder holder = parser.parse(is);
                   configBuilder = holder.getGlobalConfigurationBuilder();
@@ -324,7 +324,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
                         // A custom configuration has been set
                         if (LOG.isInfoEnabled())
                            LOG.info("A custom configuration has been set for the cache '" + region + "'.");
-                        Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+                        ParserRegistry parser = new ParserRegistry(Thread.currentThread().getContextClassLoader());
                         // Load the configuration
                         ConfigurationBuilderHolder holder = parser.parse(configManager.getInputStream(customConfig));
                         GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();

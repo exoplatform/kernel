@@ -32,7 +32,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
-import org.infinispan.configuration.parsing.Parser;
+import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
@@ -149,7 +149,7 @@ public class DistributedCacheManager implements Startable
          {
             public EmbeddedCacheManager run() throws Exception
             {
-               Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+               ParserRegistry parser = new ParserRegistry(Thread.currentThread().getContextClassLoader());
                // Load the configuration
                ConfigurationBuilderHolder holder = parser.parse(helper.fillTemplate(configurationFile, parameters));
                GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();

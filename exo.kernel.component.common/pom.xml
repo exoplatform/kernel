@@ -165,7 +165,7 @@
                 <systemProperties>
                   <!-- Avoid the firewall -->
                   <property>
-                     <name>bind.address</name>
+                     <name>jgroups.bind_addr</name>
                      <value>127.0.0.1</value>
                   </property>
                   <property>
