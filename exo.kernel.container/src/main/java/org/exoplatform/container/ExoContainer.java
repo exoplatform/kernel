@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
@@ -33,6 +34,7 @@ import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.container.spi.InterceptorChainFactoryProvider;
 import org.exoplatform.container.util.ContainerUtil;
 import org.exoplatform.container.xml.Configuration;
+import org.exoplatform.container.xml.ExternalComponentPlugins;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -48,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -213,6 +216,16 @@ public class ExoContainer extends AbstractContainer
             LOG.warn("An error occurs with the ContainerLifecyclePlugin '" + getPluginName(plugin) + "'", e);
          }
       }
+      Collection<ExternalComponentPlugins> unusedPlugins = getExternalComponentPluginsUnused();
+      if (unusedPlugins != null)
+      {
+         for (ExternalComponentPlugins plugins : unusedPlugins)
+         {
+            LOG.warn("Some external plugins has for target '{}' which is unknown, please configure it or "
+               + "define the annotation 'DefinitionByType' to enable the auto-registration on the target",
+               plugins.getTargetComponent());
+         }
+      }
    }
 
    public synchronized void dispose()
@@ -360,6 +373,64 @@ public class ExoContainer extends AbstractContainer
    {
       ConfigurationManager cm = getComponentInstanceOfType(ConfigurationManager.class);
       return cm == null ? null : cm.getConfiguration();
+   }
+
+   /**
+    * Gives all the {@link ExternalComponentPlugins} that have not been used, <code>null</code>
+    * if there are all used.
+    */
+   protected Collection<ExternalComponentPlugins> getExternalComponentPluginsUnused()
+   {
+      Configuration configuration = getConfiguration();
+      if (configuration == null)
+         return null;
+      Collection<ExternalComponentPlugins> result = null;
+      for (Iterator<ExternalComponentPlugins> it = configuration.getExternalComponentPluginsIterator(); it.hasNext();)
+      {
+         ExternalComponentPlugins plugins = it.next();
+         boolean toAdd = false;
+         String target = plugins.getTargetComponent();
+         if (target == null)
+            toAdd = true;
+         else if (configuration.getComponent(target) == null)
+         {
+            try
+            {
+               Class<?> c = ClassLoading.loadClass(target, ExoContainer.class);
+               if (c.isAnnotation())
+               {
+                  // We assume that the target is a qualifier so we cannot know if it is normal
+                  // or not as it could be auto-registered and we don't know the bind type
+               }
+               else if (getComponentAdapterOfType(c) == null)
+               {
+                  // There is no ComponentAdapter corresponding to this
+                  // particular class even the auto-registration could
+                  // not allow to find a candidate so we can consider it
+                  // as unused
+                  toAdd = true;
+               }
+            }
+            catch (ClassNotFoundException e)
+            {
+               if (LOG.isTraceEnabled())
+                  LOG.trace("The class {} could not be found", target);
+               // We assume that the target is meant to be used with
+               // the annotation Named so we cannot know if it is normal
+               // or not as it could be auto-registered and we don't know 
+               // the bind type
+            }
+         }
+         if (toAdd)
+         {
+            if (result == null)
+            {
+               result = new ArrayList<ExternalComponentPlugins>();
+            }
+            result.add(plugins);
+         }
+      }
+      return result;
    }
 
    /**

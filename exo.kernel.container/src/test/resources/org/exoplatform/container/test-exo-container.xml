@@ -318,4 +318,12 @@
 			<type>org.exoplatform.container.component.BaseComponentPlugin</type>
 		</component-plugin>
 	</external-component-plugins>
+	<external-component-plugins profiles="testGetExternalComponentPluginsUnused">
+		<target-component>org.exoplatform.container.TestExoContainer$MyService</target-component>
+		<component-plugin>
+			<name>test.plugin</name>
+			<set-method>addPlugin</set-method>
+			<type>org.exoplatform.container.TestExoContainer$MyPlugin</type>
+		</component-plugin>
+	</external-component-plugins>
 </configuration>

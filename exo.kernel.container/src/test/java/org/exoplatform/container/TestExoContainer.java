@@ -4519,6 +4519,36 @@ public class TestExoContainer
    }
 
    @Test
+   public void testGetExternalComponentPluginsUnused()
+   {
+      final URL rootURL = getClass().getResource("empty-config.xml");
+      final URL portalURL = getClass().getResource("test-exo-container.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).build();
+      ExoContainer container = PortalContainer.getInstance();
+      assertNull(container.getExternalComponentPluginsUnused());
+
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL)
+         .profiledBy("testGetExternalComponentPluginsUnused").build();
+      container = PortalContainer.getInstance();
+      assertNotNull(container.getExternalComponentPluginsUnused());
+      assertEquals(1, container.getExternalComponentPluginsUnused().size());
+
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testAutoRegistration").build();
+      container = PortalContainer.getInstance();
+      assertNull(container.getExternalComponentPluginsUnused());
+
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL)
+         .profiledBy("testAutoRegistration", "testGetExternalComponentPluginsUnused").build();
+      container = PortalContainer.getInstance();
+
+      assertNotNull(container.getExternalComponentPluginsUnused());
+      assertEquals(1, container.getExternalComponentPluginsUnused().size());
+   }
+
+   @Test
    public void testDefinitionByType()
    {
       final URL rootURL = getClass().getResource("empty-config.xml");
