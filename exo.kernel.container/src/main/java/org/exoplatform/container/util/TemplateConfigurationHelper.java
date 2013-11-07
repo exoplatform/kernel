@@ -214,13 +214,13 @@ public class TemplateConfigurationHelper
     * Also adds "${}" to the parameter key: <br>
     * I.e. such map provided on input:
     * 
-    * "jbosscache-cache.loader":"org.exoplatform"
-    * "jbosscache-configuration":"/conf/test.xml"
+    * "foo-cache.loader":"org.exoplatform"
+    * "foo-configuration":"/conf/test.xml"
     * "max-volatile-size":"100Kb"
     * 
     * the output will be like:
     * 
-    * "${jbosscache-cache.loader}":"org.exoplatform"
+    * "${foo-cache.loader}":"org.exoplatform"
     * 
     * Other will be ignored (depending on includes/excludes lists provided in constructor).
     * 

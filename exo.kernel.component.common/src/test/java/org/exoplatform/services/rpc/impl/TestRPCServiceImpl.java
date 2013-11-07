@@ -30,6 +30,7 @@ import org.exoplatform.services.rpc.SingleMethodCallCommand;
 import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.rpc.impl.AbstractRPCService.MemberHasLeftException;
+import org.exoplatform.services.rpc.jgv3.RPCServiceImpl;
 import org.jgroups.Address;
 
 import java.io.Serializable;
