@@ -359,6 +359,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       {
          ServletContainerFactory.getServletContainer().addWebAppListener(this);
          ServletContainerFactory.getServletContainer().addAuthenticationListener(this);
+         checkDependencies();
       }
       else
       {
@@ -381,7 +382,58 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          initTasks.clear();
       }
    }
-   
+
+   /**
+    * Checks the dependencies of all the portal containers to make sure that they really exist, if not it will print a warning.
+    */
+   private void checkDependencies()
+   {
+      PortalContainerConfig config = getPortalContainerConfig();
+      if (!config.hasDefinition())
+      {
+         // No definition has been defined so we cannot check
+         return;
+      }
+      final Set<String> existingWebApp = new HashSet<String>();
+      WebAppListener listener = new WebAppListener()
+      {
+         public void onEvent(WebAppEvent event)
+         {
+            if (event instanceof WebAppLifeCycleEvent
+               && ((WebAppLifeCycleEvent)event).getType() == WebAppLifeCycleEvent.ADDED)
+            {
+               existingWebApp.add(event.getWebApp().getServletContext().getServletContextName());
+            }
+         }
+      };
+      try
+      {
+         // Collect the servlet context name of all the existing web apps.
+         ServletContainerFactory.getServletContainer().addWebAppListener(listener);
+         // Iterate over all the known portal containers
+         for (Iterator<WebAppInitContext> it = portalContexts.iterator(); it.hasNext();)
+         {
+            WebAppInitContext context = it.next();
+            String portalContainer = context.getServletContextName();
+            List<String> dependencies = config.getDependencies(portalContainer);
+            // Check if all the dependencies of the portal container exist.
+            for (String dep : dependencies)
+            {
+               if (!existingWebApp.contains(dep))
+               {
+                  LOG.warn(
+                     "The web app '{}' has been defined as a dependency of the portal container '{}' but it doesn't exist.",
+                     dep, portalContainer);
+               }
+            }
+         }
+      }
+      finally
+      {
+         ServletContainerFactory.getServletContainer().removeWebAppListener(listener);
+      }
+   }
+
    /**
     * {@inheritDoc}
     */
