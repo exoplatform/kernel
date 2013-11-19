@@ -45,7 +45,7 @@ public class CachingContainerMT extends CachingContainer
     * {@inheritDoc}
     */
    @Override
-   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
    {
       Deque<DependencyStack> stacks = dependencyStacks != null ? dependencyStacks.get() : null;
       DependencyStack stack = null;
@@ -57,7 +57,7 @@ public class CachingContainerMT extends CachingContainer
             stack = stacks.getLast();
             stack.add(new DependencyByType(componentType));
          }
-         instance = super.getComponentInstanceOfType(componentType);
+         instance = super.getComponentInstanceOfType(componentType, autoRegistration);
       }
       finally
       {
@@ -73,7 +73,8 @@ public class CachingContainerMT extends CachingContainer
     * {@inheritDoc}
     */
    @Override
-   public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration)
+      throws ContainerException
    {
       Deque<DependencyStack> stacks = dependencyStacks != null ? dependencyStacks.get() : null;
       DependencyStack stack = null;
@@ -104,7 +105,7 @@ public class CachingContainerMT extends CachingContainer
                stack = null;
             }
          }
-         instance = super.getComponentInstance(componentKey, bindType);
+         instance = super.getComponentInstance(componentKey, bindType, autoRegistration);
       }
       finally
       {

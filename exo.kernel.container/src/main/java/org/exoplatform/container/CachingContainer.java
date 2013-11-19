@@ -54,12 +54,12 @@ public class CachingContainer extends AbstractInterceptor
    private final ThreadLocal<Boolean> enabled = new ThreadLocal<Boolean>();
 
    @SuppressWarnings("unchecked")
-   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
    {
       ComponentAdapter<T> adapter = (ComponentAdapter<T>)adapterByType.get(componentType);
       if (adapter == null)
       {
-         adapter = super.getComponentAdapterOfType(componentType);
+         adapter = super.getComponentAdapterOfType(componentType, autoRegistration);
          if (adapter != null)
          {
             adapterByType.put(componentType, adapter);
@@ -110,12 +110,12 @@ public class CachingContainer extends AbstractInterceptor
       return (List<T>)instances;
    }
 
-   public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration) throws ContainerException
    {
       Object instance = instanceByKey.get(componentKey);
       if (instance == null)
       {
-         instance = super.getComponentInstance(componentKey, bindType);
+         instance = super.getComponentInstance(componentKey, bindType, autoRegistration);
          if (instance != null)
          {
             Boolean cacheEnabled = enabled.get();
@@ -136,12 +136,12 @@ public class CachingContainer extends AbstractInterceptor
       return bindType.cast(instance);
    }
 
-   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
    {
       Object instance = instanceByType.get(componentType);
       if (instance == null)
       {
-         instance = super.getComponentInstanceOfType(componentType);
+         instance = super.getComponentInstanceOfType(componentType, autoRegistration);
          if (instance != null)
          {
             Boolean cacheEnabled = enabled.get();

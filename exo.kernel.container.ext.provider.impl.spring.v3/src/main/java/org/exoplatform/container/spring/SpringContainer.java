@@ -76,9 +76,9 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      T result = super.getComponentInstance(componentKey, bindType);
+      T result = super.getComponentInstance(componentKey, bindType, autoRegistration);
       if (ctx != null && result == null)
       {
          if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
@@ -127,9 +127,9 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public <T> T getComponentInstanceOfType(final Class<T> componentType)
+   public <T> T getComponentInstanceOfType(final Class<T> componentType, boolean autoRegistration)
    {
-      T result = super.getComponentInstanceOfType(componentType);
+      T result = super.getComponentInstanceOfType(componentType, autoRegistration);
       if (ctx != null && result == null)
       {
          result = getInstanceOfType(componentType);
@@ -166,9 +166,9 @@ public class SpringContainer extends AbstractInterceptor
     */
    @SuppressWarnings("unchecked")
    @Override
-   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      ComponentAdapter<?> result = super.getComponentAdapter(componentKey, bindType);
+      ComponentAdapter<?> result = super.getComponentAdapter(componentKey, bindType, autoRegistration);
       if (ctx != null && result == null)
       {
          if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
@@ -216,9 +216,9 @@ public class SpringContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
    {
-      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
+      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType, autoRegistration);
       if (ctx != null && result == null)
       {
          result = getAdapterOfType(componentType);
@@ -308,7 +308,7 @@ public class SpringContainer extends AbstractInterceptor
    @SuppressWarnings({"rawtypes", "unchecked"})
    public void start()
    {
-      ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class);
+      ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class, false);
       // We check if the component has been defined in the configuration of the current container
       // The goal is to enable the SpringContainer only if it is needed
       Component component = cm.getComponent(ApplicationContextProvider.class);
@@ -354,7 +354,8 @@ public class SpringContainer extends AbstractInterceptor
          }
          GenericApplicationContext parentContext = new GenericApplicationContext(bf);
          parentContext.refresh();
-         ApplicationContextProvider provider = super.getComponentInstanceOfType(ApplicationContextProvider.class);
+         ApplicationContextProvider provider =
+            super.getComponentInstanceOfType(ApplicationContextProvider.class, false);
          ctx = provider.getApplicationContext(parentContext);
          LOG.info("A SpringContainer has been enabled using the ApplicationContextProvider " + provider.getClass());
       }

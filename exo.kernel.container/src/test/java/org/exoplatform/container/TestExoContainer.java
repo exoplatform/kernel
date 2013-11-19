@@ -164,14 +164,14 @@ public class TestExoContainer
       ConcurrentContainer container = new ConcurrentContainer(RootContainer.getInstance(), null);
       container.registerComponentInstance(CachedComponent.class, new CachedComponent());
 
-      assertNotNull(container.getComponentInstanceOfType(CachedComponent.class));
+      assertNotNull(container.getComponentInstanceOfType(CachedComponent.class, false));
       container.unregisterComponent(CachedComponent.class);
-      assertNull(container.getComponentInstanceOfType(CachedComponent.class));
+      assertNull(container.getComponentInstanceOfType(CachedComponent.class, false));
 
       container.registerComponent(new DummyAdapter());
       try
       {
-         container.getComponentInstanceOfType(DummyClass.class);
+         container.getComponentInstanceOfType(DummyClass.class, false);
          fail("A RuntimeException is expected");
       }
       catch (RuntimeException e)
@@ -4590,6 +4590,7 @@ public class TestExoContainer
       {
          // OK
       }
+      assertNull(container.getComponentInstanceOfType(AutoRegistration5.class, false));
       assertNotNull(container.getComponentInstanceOfType(AutoRegistration5.class));
       assertTrue(container.getComponentInstanceOfType(AutoRegistration6.class) instanceof AutoRegistration6Type);
       try
@@ -4610,6 +4611,8 @@ public class TestExoContainer
       {
          // OK
       }
+      assertNull(container.getComponentInstanceOfType(AutoRegistration9.class, false));
+      assertNotNull(container.getComponentInstanceOfType(AutoRegistration9.class));
    }
 
    @Test
@@ -4773,6 +4776,9 @@ public class TestExoContainer
       public Provider<AutoRegistration8> p;
    }
 
+   @DefinitionByType(target={RootContainer.class})
+   public static class AutoRegistration9 {}
+
    @Test
    public void testDefinitionByName()
    {
@@ -4784,6 +4790,7 @@ public class TestExoContainer
          profiledBy("testAutoRegistration").build();
       final ExoContainer container = PortalContainer.getInstance();
       assertNull(container.getComponentInstanceOfType(AutoRegistrationN1.class));
+      assertNull(container.getComponentInstance("", AutoRegistrationN1.class, false));
       assertNotNull(container.getComponentInstance("", AutoRegistrationN1.class));
       assertTrue(container.getComponentInstance("", AutoRegistrationN1.class).started);
       assertNotNull(container.getComponentInstance("", AutoRegistrationN1.class).plugin);
@@ -4828,6 +4835,7 @@ public class TestExoContainer
       {
          //ok
       }
+      assertNull(container.getComponentInstance("foo", AutoRegistrationN5.class, false));
       assertNotNull(container.getComponentInstance("foo", AutoRegistrationN5.class));
       assertNotNull(container.getComponentInstanceOfType(AutoRegistrationN5.class));
       try
@@ -4839,6 +4847,7 @@ public class TestExoContainer
       {
          //ok
       }
+      assertNull(container.getComponentInstance("foo2", AutoRegistrationN6.class, false));
       assertTrue(container.getComponentInstance("foo2", AutoRegistrationN6.class) instanceof AutoRegistrationN6Type);
       try
       {
@@ -4858,6 +4867,8 @@ public class TestExoContainer
       {
          // OK
       }
+      assertNull(container.getComponentInstance("foo4", AutoRegistrationN9.class, false));
+      assertTrue(container.getComponentInstance("foo4", AutoRegistrationN9.class) instanceof AutoRegistrationN9);
    }
 
    @Test
@@ -5045,6 +5056,9 @@ public class TestExoContainer
       public Provider<AutoRegistrationN8> p;
    }
 
+   @DefinitionByName(named = "foo4", target = {RootContainer.class})
+   public static class AutoRegistrationN9 {}
+
    @Test
    public void testDefinitionByQualifier()
    {
@@ -5056,6 +5070,7 @@ public class TestExoContainer
          profiledBy("testAutoRegistration").build();
       final ExoContainer container = PortalContainer.getInstance();
       assertNull(container.getComponentInstanceOfType(AutoRegistrationQ1.class));
+      assertNull(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class, false));
       assertNotNull(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class));
       assertTrue(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class).started);
       assertNotNull(container.getComponentInstance(AutoRegistrationQualifier1.class, AutoRegistrationQ1.class).plugin);
@@ -5101,6 +5116,7 @@ public class TestExoContainer
       {
          //ok
       }
+      assertNull(container.getComponentInstance(AutoRegistrationQualifier2.class, AutoRegistrationQ5.class, false));
       assertNotNull(container.getComponentInstance(AutoRegistrationQualifier2.class, AutoRegistrationQ5.class));
       assertNotNull(container.getComponentInstanceOfType(AutoRegistrationQ5.class));
       try
@@ -5112,6 +5128,7 @@ public class TestExoContainer
       {
          //ok
       }
+      assertNull(container.getComponentInstance(AutoRegistrationQualifier3.class, AutoRegistrationQ6.class, false));
       assertTrue(container.getComponentInstance(AutoRegistrationQualifier3.class, AutoRegistrationQ6.class) instanceof AutoRegistrationQ6Type);
       try
       {
@@ -5132,7 +5149,10 @@ public class TestExoContainer
          // OK
       }
       assertNull(container.getComponentInstance(AutoRegistrationBadQualifier.class, AutoRegistrationQ9.class));
-   }
+
+      assertNull(container.getComponentInstance(AutoRegistrationQualifier4.class, AutoRegistrationQ10.class, false));
+      assertTrue(container.getComponentInstance(AutoRegistrationQualifier4.class, AutoRegistrationQ10.class) instanceof AutoRegistrationQ10);
+}
 
    @Test
    public void testDefinitionByQualifierWithProvider()
@@ -5332,6 +5352,9 @@ public class TestExoContainer
       public Provider<AutoRegistrationQ9> p;
    }
 
+   @DefinitionByQualifier(qualifier = AutoRegistrationQualifier4.class, target = {RootContainer.class})
+   public static class AutoRegistrationQ10 {}
+
    @Retention(RetentionPolicy.RUNTIME)
    @Qualifier
    public static @interface AutoRegistrationQualifier1
@@ -5353,6 +5376,12 @@ public class TestExoContainer
    @Retention(RetentionPolicy.RUNTIME)
    @Qualifier
    public static @interface AutoRegistrationQualifier4
+   {
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Qualifier
+   public static @interface AutoRegistrationQualifier5
    {
    }
 

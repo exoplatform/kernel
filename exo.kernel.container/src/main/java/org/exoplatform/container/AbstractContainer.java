@@ -86,17 +86,17 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      return delegate.getComponentInstance(componentKey, bindType);
+      return delegate.getComponentInstance(componentKey, bindType, autoRegistration);
    }
 
    /**
     * {@inheritDoc}
     */
-   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
    {
-      return delegate.getComponentInstanceOfType(componentType);
+      return delegate.getComponentInstanceOfType(componentType, autoRegistration);
    }
 
    /**
@@ -110,17 +110,17 @@ public abstract class AbstractContainer implements Container
    /**
     * {@inheritDoc}
     */
-   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      return delegate.getComponentAdapter(componentKey, bindType);
+      return delegate.getComponentAdapter(componentKey, bindType, autoRegistration);
    }
 
    /**
     * {@inheritDoc}
     */
-   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
    {
-      return delegate.getComponentAdapterOfType(componentType);
+      return delegate.getComponentAdapterOfType(componentType, autoRegistration);
    }
 
    /**

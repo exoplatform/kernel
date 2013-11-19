@@ -108,9 +108,9 @@ public class WeldContainer extends AbstractInterceptor
     */
    @SuppressWarnings("unchecked")
    @Override
-   public <T> T getComponentInstance(final Object componentKey, Class<T> bindType)
+   public <T> T getComponentInstance(final Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      T result = super.getComponentInstance(componentKey, bindType);
+      T result = super.getComponentInstance(componentKey, bindType, autoRegistration);
       if (weld != null && result == null)
       {
          if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
@@ -144,9 +144,9 @@ public class WeldContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
    {
-      T result = super.getComponentInstanceOfType(componentType);
+      T result = super.getComponentInstanceOfType(componentType, autoRegistration);
       if (weld != null && result == null)
       {
          result = getInstanceOfType(componentType);
@@ -185,9 +185,10 @@ public class WeldContainer extends AbstractInterceptor
     */
    @SuppressWarnings("unchecked")
    @Override
-   public <T> ComponentAdapter<T> getComponentAdapter(final Object componentKey, Class<T> bindType)
+   public <T> ComponentAdapter<T> getComponentAdapter(final Object componentKey, Class<T> bindType,
+      boolean autoRegistration)
    {
-      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType);
+      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType, autoRegistration);
       if (weld != null && result == null)
       {
          if (componentKey instanceof Class<?> && !((Class<?>)componentKey).isAnnotation())
@@ -222,9 +223,9 @@ public class WeldContainer extends AbstractInterceptor
     * {@inheritDoc}
     */
    @Override
-   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
    {
-      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
+      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType, autoRegistration);
       if (weld != null && result == null)
       {
          result = getAdapterOfType(componentType);
@@ -350,7 +351,7 @@ public class WeldContainer extends AbstractInterceptor
    @Override
    public void start()
    {
-      ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class);
+      ConfigurationManager cm = super.getComponentInstanceOfType(ConfigurationManager.class, false);
       // We check if the component has been defined in the configuration of the current container
       // The goal is to enable the WeldContainer only if it is needed
       Component component = cm.getComponent(WeldContainerHelper.class);
@@ -366,7 +367,7 @@ public class WeldContainer extends AbstractInterceptor
       {
          Weld weld = new Weld();
          weld.addExtension(new WeldExtension());
-         WeldContainerHelper helper = super.getComponentInstanceOfType(WeldContainerHelper.class);
+         WeldContainerHelper helper = super.getComponentInstanceOfType(WeldContainerHelper.class, false);
          List<Extension> extensions = helper.getExtensions();
          if (extensions != null)
          {
@@ -512,7 +513,9 @@ public class WeldContainer extends AbstractInterceptor
    private static class ComponentAdapterBean<T> implements Bean<T>
    {
       private final ComponentAdapter<T> adapter;
+
       private Set<Type> types;
+
       private Set<Annotation> qualifiers;
 
       public ComponentAdapterBean(ComponentAdapter<T> adapter)

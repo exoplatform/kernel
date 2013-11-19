@@ -606,32 +606,41 @@ public class ExoContainer extends AbstractContainer
    }
 
    /**
-    * Find a component instance matching the specified type. If none can be
-    * found it will try to auto register the component according to the
-    * content of the annotation {@link org.exoplatform.container.spi.DefinitionByType}
-    *
-    * @param componentType the type of the component.
-    * @return the adapter matching the class.
+    * This method is equivalent to {@link #getComponentInstanceOfType(Class, boolean)} with <code>true</code> for the parameter
+    * <code>autoRegistration</code>
     */
    public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
-      T result = super.getComponentInstanceOfType(componentType);
-      if (result != null)
+      return getComponentInstanceOfType(componentType, true);
+   }
+
+   /**
+    * Find a component instance matching the specified type. If none can be
+    * found it will try to auto register the component according to the
+    * content of the annotation {@link org.exoplatform.container.spi.DefinitionByType} if the parameter
+    * <code>autoRegistration</code> has been set to <code>true</code>.
+    *
+    * @param componentType the type of the component.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
+    * @return the adapter matching the class.
+    */
+   public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
+   {
+      T result = super.getComponentInstanceOfType(componentType, autoRegistration);
+      if (result != null || !autoRegistration)
       {
          return result;
       }
       if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
       {
-         return super.getComponentInstanceOfType(componentType);
+         return super.getComponentInstanceOfType(componentType, false);
       }
       return result;
    }
 
    /**
-    * Find a component adapter associated with the specified type. If a component adapter cannot be found in this
-    * container, the parent container (if one exists) will be searched. If none can be
-    * found it will try to auto register the component according to the
-    * content of the annotation {@link org.exoplatform.container.spi.DefinitionByType}
+    * This method is equivalent to {@link #getComponentAdapterOfType(Class, boolean)} with <code>true</code> for the parameter
+    * <code>autoRegistration</code>
     *
     * @param componentType the type of the component.
     * @return the component adapter associated with this class, or <code>null</code> if no component has been
@@ -639,14 +648,31 @@ public class ExoContainer extends AbstractContainer
     */
    public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
    {
-      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType);
-      if (result != null)
+      return getComponentAdapterOfType(componentType, true);
+   }
+
+   /**
+    * Find a component adapter associated with the specified type. If a component adapter cannot be found in this
+    * container, the parent container (if one exists) will be searched. If none can be
+    * found it will try to auto register the component according to the
+    * content of the annotation {@link org.exoplatform.container.spi.DefinitionByType} if the parameter
+    * <code>autoRegistration</code> has been set to <code>true</code>.
+    *
+    * @param componentType the type of the component.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
+    * @return the component adapter associated with this class, or <code>null</code> if no component has been
+    *         registered for the specified key.
+    */
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
+   {
+      ComponentAdapter<T> result = super.getComponentAdapterOfType(componentType, autoRegistration);
+      if (result != null || !autoRegistration)
       {
          return result;
       }
       if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
       {
-         return super.getComponentAdapterOfType(componentType);
+         return super.getComponentAdapterOfType(componentType, false);
       }
       return result;
    }
@@ -760,8 +786,23 @@ public class ExoContainer extends AbstractContainer
    }
 
    /**
+    * This method is equivalent to {@link #getComponentInstance(Object, Class, boolean)} with <code>true</code> for the parameter
+    * <code>autoRegistration</code>
+    *
+    * @param componentKey the key that the component was registered with.
+    * @param bindType the expected type of the instance if one can be found.
+    * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
+    *         key.
+    */
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
+   {
+      return getComponentInstance(componentKey, bindType, true);
+   }
+
+   /**
     * Retrieve a component instance registered with a specific key. If a component cannot be found in this container,
-    * the parent container (if one exists) will be searched. If none can be found it will try to auto register the
+    * the parent container (if one exists) will be searched. If none can be found and the parameter
+    * <code>autoRegistration</code> has been set to <code>true</code>, it will try to auto register the
     * component according to the content of:
     * <ul>
     *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByType} if the <code>componentKey</code> is a
@@ -774,13 +815,14 @@ public class ExoContainer extends AbstractContainer
     *
     * @param componentKey the key that the component was registered with.
     * @param bindType the expected type of the instance if one can be found.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
     * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
     *         key.
     */
-   public <T> T getComponentInstance(Object componentKey, Class<T> bindType)
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      T result = super.getComponentInstance(componentKey, bindType);
-      if (result != null || Object.class.equals(bindType))
+      T result = super.getComponentInstance(componentKey, bindType, autoRegistration);
+      if (result != null || !autoRegistration || Object.class.equals(bindType))
       {
          return result;
       }
@@ -790,14 +832,14 @@ public class ExoContainer extends AbstractContainer
          Class<T> componentType = (Class<T>)componentKey;
          if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
          {
-            return super.getComponentInstanceOfType(componentType);
+            return super.getComponentInstanceOfType(componentType, false);
          }
       }
       else if (componentKey instanceof String)
       {
          if (bindType.isAnnotationPresent(DefinitionByName.class) && autoRegister(DefinitionType.NAME, componentKey, bindType))
          {
-            return super.getComponentInstance(componentKey, bindType);
+            return super.getComponentInstance(componentKey, bindType, false);
          }
       }
       else if (componentKey instanceof Class<?>)
@@ -807,15 +849,30 @@ public class ExoContainer extends AbstractContainer
          if (annotationType.isAnnotationPresent(Qualifier.class) && bindType.isAnnotationPresent(DefinitionByQualifier.class)
              && autoRegister(DefinitionType.QUALIFIER, componentKey, bindType))
          {
-            return super.getComponentInstance(componentKey, bindType);
+            return super.getComponentInstance(componentKey, bindType, false);
          }
       }
       return result;
    }
 
    /**
+    * This method is equivalent to {@link #getComponentAdapter(Object, Class, boolean)} with <code>true</code> for the parameter
+    * <code>autoRegistration</code>
+    *
+    * @param componentKey the key that the component was registered with.
+    * @param bindType the expected raw type of the adapter if one can be found.
+    * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
+    *         for the specified key.
+    */
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
+   {
+      return getComponentAdapter(componentKey, bindType, true);
+   }
+
+   /**
     * Find a component adapter associated with the specified key. If a component adapter cannot be found in this
-    * container, the parent container (if one exists) will be searched. If none can be found it will try to auto
+    * container, the parent container (if one exists) will be searched. If none can be found and the parameter
+    * <code>autoRegistration</code> has been set to <code>true</code>, it will try to auto
     * register the component according to the content of:
     * <ul>
     *    <li>The annotation {@link org.exoplatform.container.spi.DefinitionByType} if the <code>componentKey</code> is a
@@ -828,13 +885,14 @@ public class ExoContainer extends AbstractContainer
     *
     * @param componentKey the key that the component was registered with.
     * @param bindType the expected raw type of the adapter if one can be found.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
     * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
     *         for the specified key.
     */
-   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType)
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType, boolean autoRegistration)
    {
-      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType);
-      if (result != null || Object.class.equals(bindType))
+      ComponentAdapter<T> result = super.getComponentAdapter(componentKey, bindType, autoRegistration);
+      if (result != null || !autoRegistration || Object.class.equals(bindType))
       {
          return result;
       }
@@ -844,14 +902,14 @@ public class ExoContainer extends AbstractContainer
          Class<T> componentType = (Class<T>)componentKey;
          if (componentType.isAnnotationPresent(DefinitionByType.class) && autoRegister(DefinitionType.TYPE, null, componentType))
          {
-            return super.getComponentAdapterOfType(componentType);
+            return super.getComponentAdapterOfType(componentType, false);
          }
       }
       else if (componentKey instanceof String)
       {
          if (bindType.isAnnotationPresent(DefinitionByName.class) && autoRegister(DefinitionType.NAME, componentKey, bindType))
          {
-            return super.getComponentAdapter(componentKey, bindType);
+            return super.getComponentAdapter(componentKey, bindType, false);
          }
       }
       else if (componentKey instanceof Class<?>)
@@ -861,7 +919,7 @@ public class ExoContainer extends AbstractContainer
          if (annotationType.isAnnotationPresent(Qualifier.class) && bindType.isAnnotationPresent(DefinitionByQualifier.class)
             && autoRegister(DefinitionType.QUALIFIER, componentKey, bindType))
          {
-            return super.getComponentAdapter(componentKey, bindType);
+            return super.getComponentAdapter(componentKey, bindType, false);
          }
       }
       return result;

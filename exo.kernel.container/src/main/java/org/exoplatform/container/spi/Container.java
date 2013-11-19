@@ -56,18 +56,20 @@ public interface Container extends Startable, Disposable, Serializable
     * 
     * @param componentKey the key that the component was registered with.
     * @param bindType the expected type of the instance if one can be found.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
     * @return an instantiated component, or <code>null</code> if no component has been registered for the specified
     *         key.
     */
-   <T> T getComponentInstance(Object componentKey, Class<T> bindType);
+   <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration);
 
    /**
     * Find a component instance matching the specified type.
     * 
     * @param componentType the type of the component.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
     * @return the adapter matching the class.
     */
-   <T> T getComponentInstanceOfType(Class<T> componentType);
+   <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration);
 
    /**
     * Retrieve the successor of this container in the chain of {@link Interceptor}.
@@ -82,20 +84,22 @@ public interface Container extends Startable, Disposable, Serializable
     * 
     * @param componentKey the key that the component was registered with.
     * @param bindType the expected raw type of the adapter if one can be found.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
     * @return the component adapter associated with this key, or <code>null</code> if no component has been registered
     *         for the specified key.
     */
-   <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType);
+   <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType, boolean autoRegistration);
 
    /**
     * Find a component adapter associated with the specified type. If a component adapter cannot be found in this
     * container, the parent container (if one exists) will be searched.
     * 
     * @param componentType the type of the component.
+    * @param autoRegistration indicates whether the auto registration should be performed or not
     * @return the component adapter associated with this class, or <code>null</code> if no component has been
     *         registered for the specified key.
     */
-   <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType);
+   <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration);
 
    /**
     * Retrieve all the component adapters inside this container. The component adapters from the parent container are

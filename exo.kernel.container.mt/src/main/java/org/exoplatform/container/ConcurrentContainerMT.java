@@ -259,7 +259,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer implements TopExo
                         {
                            ExoContainerContext.setCurrentContainer(container);
                            Thread.currentThread().setContextClassLoader(cl);
-                           Object o = getInstance(adapter, componentType);
+                           Object o = getInstance(adapter, componentType, false);
                            if (o != null)
                               adapterToInstanceMap.put(adapter, o);
                            // This is to ensure all are added. (Indirect dependencies will be added
@@ -284,7 +284,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer implements TopExo
          }
          else if (enableMultiThreading)
          {
-            Object o = getInstance(adapter, componentType);
+            Object o = getInstance(adapter, componentType, false);
             if (o != null)
                adapterToInstanceMap.put(adapter, o);
             // This is to ensure all are added. (Indirect dependencies will be added
@@ -293,7 +293,7 @@ public class ConcurrentContainerMT extends ConcurrentContainer implements TopExo
          }
          else
          {
-            adapterToInstanceMap.put(adapter, getInstance(adapter, componentType));
+            adapterToInstanceMap.put(adapter, getInstance(adapter, componentType, false));
             // This is to ensure all are added. (Indirect dependencies will be added
             // from InstantiatingComponentAdapter).
             addOrderedComponentAdapter(adapter);

@@ -137,12 +137,13 @@ public class ConcurrentContainer extends AbstractInterceptor
    }
 
    @SuppressWarnings("unchecked")
-   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType) throws ContainerException
+   public <T> ComponentAdapter<T> getComponentAdapter(Object componentKey, Class<T> bindType, boolean autoRegistration)
+      throws ContainerException
    {
       ComponentAdapter<?> adapter = componentKeyToAdapterCache.get(componentKey);
       if (adapter == null && parent != null)
       {
-         adapter = parent.getComponentAdapter(componentKey, bindType);
+         adapter = parent.getComponentAdapter(componentKey, bindType, autoRegistration);
       }
       if (adapter != null && !bindType.isAssignableFrom(adapter.getComponentImplementation()))
       {
@@ -152,10 +153,11 @@ public class ConcurrentContainer extends AbstractInterceptor
       return (ComponentAdapter<T>)adapter;
    }
 
-   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
    {
       // See http://jira.codehaus.org/secure/ViewIssue.jspa?key=PICO-115
-      ComponentAdapter<T> adapterByKey = (ComponentAdapter<T>)getComponentAdapter(componentType, componentType);
+      ComponentAdapter<T> adapterByKey =
+         (ComponentAdapter<T>)getComponentAdapter(componentType, componentType, autoRegistration);
       if (adapterByKey != null)
       {
          return adapterByKey;
@@ -171,7 +173,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       {
          if (parent != null)
          {
-            return parent.getComponentAdapterOfType(componentType);
+            return parent.getComponentAdapterOfType(componentType, autoRegistration);
          }
          else
          {
@@ -268,7 +270,7 @@ public class ConcurrentContainer extends AbstractInterceptor
          pc.registerComponentInstance(contrivedKey, contrivedComp);
          try
          {
-            if (getComponentInstance(contrivedKey, Object.class) != null)
+            if (getComponentInstance(contrivedKey, Object.class, false) != null)
             {
                throw new ContainerException(
                   "Cannot register a container to itself. The container is already implicitly registered.");
@@ -323,7 +325,7 @@ public class ConcurrentContainer extends AbstractInterceptor
          ComponentAdapter<?> componentAdapter = iterator.next();
          if (componentType.isAssignableFrom(componentAdapter.getComponentImplementation()))
          {
-            T componentInstance = getInstance((ComponentAdapter<T>)componentAdapter, componentType);
+            T componentInstance = getInstance((ComponentAdapter<T>)componentAdapter, componentType, false);
             adapterToInstanceMap.put((ComponentAdapter<T>)componentAdapter, componentInstance);
 
             // This is to ensure all are added. (Indirect dependencies will be added
@@ -346,15 +348,16 @@ public class ConcurrentContainer extends AbstractInterceptor
       return result;
    }
 
-   public <T> T getComponentInstance(Object componentKey, Class<T> bindType) throws ContainerException
+   public <T> T getComponentInstance(Object componentKey, Class<T> bindType, boolean autoRegistration)
+      throws ContainerException
    {
-      ComponentAdapter<T> componentAdapter = getComponentAdapter(componentKey, bindType);
+      ComponentAdapter<T> componentAdapter = getComponentAdapter(componentKey, bindType, autoRegistration);
       if (componentAdapter == null)
       {
          return null;
       }
       T value = getComponentInstanceFromContext(componentAdapter, bindType);
-      return value != null ? value : getInstance(componentAdapter, bindType);
+      return value != null ? value : getInstance(componentAdapter, bindType, autoRegistration);
    }
 
    /**
@@ -366,7 +369,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       if (map != null)
       {
          CreationalContextComponentAdapter<?> result = map.get(componentAdapter.getComponentKey());
-         if (result != null && result.get() != null) 
+         if (result != null && result.get() != null)
          {
             // Don't keep in cache a component that has not been created yet
             getCache().disable();
@@ -382,13 +385,13 @@ public class ConcurrentContainer extends AbstractInterceptor
     * be found we get the instance from the {@link ComponentAdapter}.
     * @see Container#getComponentInstanceOfType(java.lang.Class)
     */
-   public <T> T getComponentInstanceOfType(Class<T> componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
    {
-      final ComponentAdapter<T> componentAdapter = getComponentAdapterOfType(componentType);
+      final ComponentAdapter<T> componentAdapter = getComponentAdapterOfType(componentType, autoRegistration);
       if (componentAdapter == null)
          return null;
       T value = getComponentInstanceFromContext(componentAdapter, componentType);
-      return value != null ? value : getInstance(componentAdapter, componentType);
+      return value != null ? value : getInstance(componentAdapter, componentType, autoRegistration);
    }
 
    /**
@@ -432,7 +435,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
    }
 
-   protected <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type)
+   protected <T> T getInstance(ComponentAdapter<T> componentAdapter, Class<T> type, boolean autoRegistration)
    {
       // check whether this is our adapter
       // we need to check this to ensure up-down dependencies cannot be followed
@@ -454,7 +457,7 @@ public class ConcurrentContainer extends AbstractInterceptor
       }
       else if (parent != null)
       {
-         return parent.getComponentInstance(componentAdapter.getComponentKey(), type);
+         return parent.getComponentInstance(componentAdapter.getComponentKey(), type, autoRegistration);
       }
 
       return null;

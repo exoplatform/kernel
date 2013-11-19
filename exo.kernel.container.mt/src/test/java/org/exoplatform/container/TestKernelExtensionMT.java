@@ -201,17 +201,17 @@ public class TestKernelExtensionMT extends TestCase
 
       @SuppressWarnings("unchecked")
       @Override
-      public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType)
+      public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> componentType, boolean autoRegistration)
       {
          if (componentType.equals(Test4.class))
          {
             return (ComponentAdapter<T>)new InstanceComponentAdapter<Test4>(Test4.class, new Test4());
          }
-         return super.getComponentAdapterOfType(componentType);
+         return super.getComponentAdapterOfType(componentType, autoRegistration);
       }
 
       @Override
-      public <T> T getComponentInstanceOfType(Class<T> componentType)
+      public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
       {
          if (componentType.equals(Test1.class))
          {
@@ -225,7 +225,7 @@ public class TestKernelExtensionMT extends TestCase
          {
             return componentType.cast(new Test4());
          }
-         return super.getComponentInstanceOfType(componentType);
+         return super.getComponentInstanceOfType(componentType, autoRegistration);
       }
    }
 
@@ -244,13 +244,13 @@ public class TestKernelExtensionMT extends TestCase
       }
 
       @Override
-      public <T> T getComponentInstanceOfType(Class<T> componentType)
+      public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
       {
          if (componentType.equals(Test2.class))
          {
             return componentType.cast(new Test2());
          }
-         return super.getComponentInstanceOfType(componentType);
+         return super.getComponentInstanceOfType(componentType, autoRegistration);
       }
    }
 
@@ -381,9 +381,13 @@ public class TestKernelExtensionMT extends TestCase
    public static class Test5
    {
       public Test0 t0;
+
       public Test1 t1;
+
       public Test2 t2;
+
       public Test3 t3;
+
       public Test4 t4;
 
       public Test5(Test0 t0, Test1 t1, Test2 t2, Test3 t3, Test4 t4)

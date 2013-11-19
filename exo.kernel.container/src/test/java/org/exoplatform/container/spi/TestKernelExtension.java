@@ -226,7 +226,7 @@ public class TestKernelExtension extends TestCase
       }
 
       @Override
-      public <T> T getComponentInstanceOfType(Class<T> componentType)
+      public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
       {
          if (componentType.equals(Test1.class))
          {
@@ -240,7 +240,7 @@ public class TestKernelExtension extends TestCase
          {
             return componentType.cast(new Test4());
          }
-         return super.getComponentInstanceOfType(componentType);
+         return super.getComponentInstanceOfType(componentType, autoRegistration);
       }
    }
 
@@ -259,13 +259,13 @@ public class TestKernelExtension extends TestCase
       }
 
       @Override
-      public <T> T getComponentInstanceOfType(Class<T> componentType)
+      public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
       {
          if (componentType.equals(Test2.class))
          {
             return componentType.cast(new Test2());
          }
-         return super.getComponentInstanceOfType(componentType);
+         return super.getComponentInstanceOfType(componentType, autoRegistration);
       }
    }
 
@@ -406,9 +406,13 @@ public class TestKernelExtension extends TestCase
    public static class Test5
    {
       public Test0 t0;
+
       public Test1 t1;
+
       public Test2 t2;
+
       public Test3 t3;
+
       public Test4 t4;
 
       public Test5(Test0 t0, Test1 t1, Test2 t2, Test3 t3, Test4 t4)
