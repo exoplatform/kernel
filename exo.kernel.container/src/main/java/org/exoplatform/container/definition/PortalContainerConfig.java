@@ -149,7 +149,12 @@ public class PortalContainerConfig implements Startable
     * Indicates if new system properties have been added
     */
    private final PropertyConfigurator pc;
-   
+
+   /**
+    * The set of path already checked that we keep in memory to prevent logging several times the same messages.
+    */
+   private Set<String> pathAlreadyChecked;
+
    /**
     * Indicates whether the unregistered webapps have to be ignored. If a webapp has not been registered as a dependency
     * of any portal containers, we will use the value of this parameter to know what to do.
@@ -984,6 +989,11 @@ public class PortalContainerConfig implements Startable
       try
       {
          URL url = null;
+         if (ConfigurationManager.LOG_DEBUG && pathAlreadyChecked == null)
+         {
+            pathAlreadyChecked = new HashSet<String>();
+         }
+
          if (path.indexOf(':') == -1)
          {
             // We first check if the file is not in eXo configuration directory
@@ -995,28 +1005,33 @@ public class PortalContainerConfig implements Startable
             {
                // The file exists so we will use it
                url = file.toURI().toURL();
-               if (ConfigurationManager.LOG_DEBUG)
+               if (ConfigurationManager.LOG_DEBUG && !pathAlreadyChecked.contains(fullPath))
                {
                   LOG.info("The external settings could be found in the directory ${exo-conf}/portal, "
                      + "it will be used as external settings of the "
                      + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
                }
             }
-            else if (ConfigurationManager.LOG_DEBUG)
+            else if (ConfigurationManager.LOG_DEBUG && !pathAlreadyChecked.contains(fullPath))
             {
                LOG.info("No external settings could be found in the directory ${exo-conf}/portal for the "
                   + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
+            }
+            if (ConfigurationManager.LOG_DEBUG)
+            {
+               pathAlreadyChecked.add(fullPath);
             }
          }
          if (url == null)
          {
             // We assume that the path is an eXo standard path
             url = cm.getURL(path);
-            if (ConfigurationManager.LOG_DEBUG)
+            if (ConfigurationManager.LOG_DEBUG && !pathAlreadyChecked.contains(path))
             {
                LOG.info("Trying to retrieve the external settings from the url '" + url
                   + "', it will be used as external settings of the "
                   + (isPath4DefaultPCD ? "default portal container" : "portal container '" + def.getName() + "'"));
+               pathAlreadyChecked.add(path);
             }
          }
          // We load the properties from the url found
@@ -1213,6 +1228,10 @@ public class PortalContainerConfig implements Startable
       this.scopes = Collections.unmodifiableMap(mScopes);
       // clear the changes
       changes.clear();
+      if (ConfigurationManager.LOG_DEBUG)
+      {
+         pathAlreadyChecked = null;
+      }
    }
 
    /**

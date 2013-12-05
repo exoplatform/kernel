@@ -19,6 +19,7 @@
 package org.exoplatform.container.monitor.jvm;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ar.Archive;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -28,6 +29,13 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.management.MBeanServer;
 
@@ -42,32 +50,43 @@ public class J2EEServerInfo
     * The logger
     */
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.J2EEServerInfo");
-   
+
    /**
     * The name of the JVM parameter that allows us to change the location of the
     * configuration directory
     */
    public static final String EXO_CONF_PARAM = "exo.conf.dir";
-   
+
    /**
     * The name of the JVM parameter that allows us to change the default name
     * of the configuration directory which is "exo-conf"
     */
    public static final String EXO_CONF_DIR_NAME_PARAM = "exo.conf.dir.name";
-   
+
+   /**
+    * The name of the JVM parameter that allows us to change
+    * the default directories where the archives are deployed
+    */
+   public static final String EXO_ARCHIVE_DIRS_PARAM = "exo.archive.dirs";
+
    private String serverName_;
 
    private String serverHome_;
 
    private String exoConfDir_;
 
-   protected String sharedLibDirecotry_;
+   private List<String> appDeployDirectories_;
 
-   protected String appDeployDirecotry_;
+   private Set<Archive> appDeployArchives_;
 
-   protected MBeanServer mbeanServer;
+   private MBeanServer mbeanServer;
 
    public J2EEServerInfo()
+   {
+      this(false);
+   }
+
+   public J2EEServerInfo(final boolean logEnabled)
    {
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
@@ -103,24 +122,25 @@ public class J2EEServerInfo
                   try
                   {
                      exoConfDir_ = new File(new File(new URI(jbossConfigUrl)), confDirName).getAbsolutePath();
+                     appDeployDirectories_ = Collections.singletonList(new File(new File(new URI(jbossConfigUrl)).getParentFile(), "deploy").getAbsolutePath());
                   }
                   catch (SecurityException e)
                   {
-                     if (LOG.isTraceEnabled())
+                     if (logEnabled && LOG.isTraceEnabled())
                      {
                         LOG.trace("An exception occurred: " + e.getMessage());
                      }
                   }
                   catch (URISyntaxException e)
                   {
-                     if (LOG.isTraceEnabled())
+                     if (logEnabled && LOG.isTraceEnabled())
                      {
                         LOG.trace("An exception occurred: " + e.getMessage());
                      }
                   }
                   catch (IllegalArgumentException e)
                   {
-                     if (LOG.isTraceEnabled())
+                     if (logEnabled && LOG.isTraceEnabled())
                      {
                         LOG.trace("An exception occurred: " + e.getMessage());
                      }
@@ -135,10 +155,11 @@ public class J2EEServerInfo
                      try
                      {
                         exoConfDir_ = new File(jbossConfigDir, confDirName).getAbsolutePath();
+                        appDeployDirectories_ = Collections.singletonList(new File(new File(jbossConfigDir).getParentFile(), "deployments").getAbsolutePath());
                      }
                      catch (SecurityException e)
                      {
-                        if (LOG.isTraceEnabled())
+                        if (logEnabled && LOG.isTraceEnabled())
                         {
                            LOG.trace("An exception occurred: " + e.getMessage());
                         }
@@ -157,17 +178,21 @@ public class J2EEServerInfo
                   // We assume that JBoss AS 7 or higher is currently used
                   // since this class has been removed starting from this version
                   // of JBoss AS
-                  LOG.debug(ignore.getLocalizedMessage(), ignore);
+                  if (logEnabled && LOG.isDebugEnabled())
+                     LOG.debug(ignore.getLocalizedMessage(), ignore);
                }
                catch (Exception ignore)
                {
-                  LOG.error(ignore.getLocalizedMessage(), ignore);
+                  if (logEnabled && LOG.isErrorEnabled())
+                     LOG.error(ignore.getLocalizedMessage(), ignore);
                }
             }
             else if (jettyHome != null)
             {
                serverName_ = "jetty";
                serverHome_ = jettyHome;
+               appDeployDirectories_ = Collections.singletonList(new File(jettyHome, "webapps").getAbsolutePath());
+               appDeployArchives_ = Collections.singleton(Archive.WAR);
             }
             else if (websphereHome != null)
             {
@@ -189,6 +214,8 @@ public class J2EEServerInfo
                // Catalina has to be processed at the end as other servers may embed it
                serverName_ = "tomcat";
                serverHome_ = catalinaHome;
+               appDeployDirectories_ = Collections.singletonList(new File(catalinaHome, "webapps").getAbsolutePath());
+               appDeployArchives_ = Collections.singleton(new Archive("war", true, false, null));
             }
             else if (testHome != null)
             {
@@ -213,11 +240,47 @@ public class J2EEServerInfo
             String exoConfHome = System.getProperty(EXO_CONF_PARAM);
             if (exoConfHome != null && exoConfHome.length() > 0)
             {
-               LOG.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome
-                  + "'");
+               if (logEnabled && LOG.isInfoEnabled())
+                  LOG.info("Override exo-conf directory '" + exoConfDir_ + "' with location '" + exoConfHome + "'");
                exoConfDir_ = exoConfHome;
             }
 
+            String archiveDirs = System.getProperty(EXO_ARCHIVE_DIRS_PARAM);
+            if (archiveDirs != null)
+            {
+               StringTokenizer st = new StringTokenizer(archiveDirs, ",");
+               if (st.hasMoreTokens())
+               {
+                  if (logEnabled && LOG.isInfoEnabled())
+                     LOG.info("The location of the archives has been set to '" + archiveDirs + "'");
+                  List<String> dirs = new ArrayList<String>();
+                  while (st.hasMoreTokens())
+                  { 
+                     String dir = st.nextToken().trim().replace('\\', '/');
+                     String path = new File(serverHome_, dir).getAbsolutePath();
+                     if (logEnabled && LOG.isDebugEnabled())
+                     {
+                        LOG.debug("Location of the archives: {}", path);
+                     }
+                     dirs.add(path);
+                  }
+                  appDeployDirectories_ = dirs;
+               }
+               else
+               {
+                  appDeployDirectories_ = null;
+               }
+            }
+
+            if (appDeployDirectories_ == null)
+            {
+               if (logEnabled && LOG.isInfoEnabled())
+                  LOG.info("No location of the archives has been set");
+            }
+            else if (appDeployArchives_ == null)
+            {
+               appDeployArchives_ = new HashSet<Archive>(Arrays.asList(Archive.EAR, Archive.WAR));
+            }
             serverHome_ = serverHome_.replace('\\', '/');
             exoConfDir_ = exoConfDir_.replace('\\', '/');
             return null;
@@ -251,14 +314,14 @@ public class J2EEServerInfo
       return exoConfDir_;
    }
 
-   public String getSharedLibDirectory()
+   public List<String> getApplicationDeployDirectories()
    {
-      return sharedLibDirecotry_;
+      return appDeployDirectories_;
    }
 
-   public String getApplicationDeployDirectory()
+   public Set<Archive> getApplicationDeployArchives()
    {
-      return appDeployDirecotry_;
+      return appDeployArchives_;
    }
 
    public boolean isJBoss()

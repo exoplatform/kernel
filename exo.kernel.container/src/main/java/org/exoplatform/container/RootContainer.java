@@ -19,9 +19,9 @@
 package org.exoplatform.container;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ar.Archive;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.container.context.ContextManagerListener;
@@ -53,6 +53,8 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -111,7 +113,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    
    private static final AtomicBoolean booting = new AtomicBoolean();
 
-   private final J2EEServerInfo serverenv_ = new J2EEServerInfo();
+   private final J2EEServerInfo serverenv_ = new J2EEServerInfo(true);
 
    private final Set<String> profiles;
    
@@ -829,23 +831,23 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       try
       {
-         final RootContainer rootContainer = new RootContainer();
-         final ConfigurationManager service = loadConfigurationManager(rootContainer, true);
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<RootContainer>()
          {
-            public Void run()
+            public RootContainer run() throws Exception
             {
+               RootContainer rootContainer = new RootContainer();
+               ConfigurationManager service = loadConfigurationManager(rootContainer, true);
                rootContainer.registerComponentInstance(ConfigurationManager.class, service);
                rootContainer.start(true);
-               return null;
+               return rootContainer;
             }
          });
-         return rootContainer;
       }
-      catch (Exception e)
+      catch (PrivilegedActionException e)
       {
-         LOG.error("Could not build root container", e);
-         LOG.error(e.getLocalizedMessage(), e);
+         Exception cause = e.getException();
+         LOG.error("Could not build root container", cause);
+         LOG.error(e.getLocalizedMessage(), cause);
          return null;
       }
    }
@@ -859,11 +861,14 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    {
       final ConfigurationManagerImpl service = new ConfigurationManagerImpl(rootContainer.profiles, logEnabled);
       service.addConfiguration(ContainerUtil.getConfigurationURL("conf/configuration.xml"));
-      if (PrivilegedSystemHelper.getProperty("maven.exoplatform.dir") != null)
+      if (System.getProperty("maven.exoplatform.dir") != null)
       {
          service.addConfiguration(ContainerUtil.getConfigurationURL("conf/test-configuration.xml"));
       }
-      String confDir = rootContainer.getServerEnvironment().getExoConfigurationDirectory();
+      J2EEServerInfo serverEnv = rootContainer.getServerEnvironment();
+      service.addConfiguration(Archive.getConfigurationURL(serverEnv.getApplicationDeployDirectories(),
+         serverEnv.getApplicationDeployArchives(), "META-INF/exo-conf/configuration.xml"));
+      String confDir = serverEnv.getExoConfigurationDirectory();
       String overrideConf = confDir + "/configuration.xml";
       File file = new File(overrideConf);
       if (PrivilegedFileHelper.exists(file))

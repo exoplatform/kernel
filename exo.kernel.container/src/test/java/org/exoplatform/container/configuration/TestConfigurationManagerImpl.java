@@ -18,6 +18,7 @@ package org.exoplatform.container.configuration;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.ar.Archive;
 import org.exoplatform.container.xml.Configuration;
 
 import java.io.File;
@@ -95,6 +96,28 @@ public class TestConfigurationManagerImpl extends TestCase
       checkURL(url);
       url = cm.getURL(sURL + "\\configuration\\empty-config-fake.xml");
       checkURL(url, true);
+      // Check relative path
+      cm.addConfiguration(cm.getURL(sURL + "/configuration/empty-config.xml"));
+      url = cm.getURL("import-configuration.xml");
+      checkURL(url);
+
+      String sArchiveURL = sURL.replace("file:", Archive.PROTOCOL + ":");
+      url = cm.getURL(sArchiveURL + "/configuration/empty-config.xml");
+      checkURL(url);
+      url = cm.getURL(sArchiveURL + "/configuration/empty-config-fake.xml");
+      checkURL(url, true);
+      url = cm.getURL(sArchiveURL + "\\configuration\\empty-config.xml");
+      checkURL(url);
+      url = cm.getURL(sArchiveURL + "\\configuration\\empty-config-fake.xml");
+      checkURL(url, true);
+      // Check relative path
+      cm.addConfiguration(cm.getURL(sArchiveURL + "/configuration/empty-config.xml"));
+      url = cm.getURL("import-configuration.xml");
+      checkURL(url);
+
+      // Clear the context path
+      cm = new ConfigurationManagerImpl();
+
       String incompleteURL = "file:/" + getClass().getResource("empty-config.xml").getPath();
       incompleteURL = incompleteURL.substring(0, incompleteURL.lastIndexOf('/'));
       url = cm.getURL(incompleteURL + "/empty-config.xml");
@@ -106,16 +129,16 @@ public class TestConfigurationManagerImpl extends TestCase
       url = cm.getURL(incompleteURL + "/empty-config.xml");
       checkURL(url);
       url = cm.getURL(incompleteURL + "/empty-config-fake.xml");
-      checkURL(url, true);     
+      checkURL(url, true);
       url = cm.getURL("org/exoplatform/container/configuration/empty-config.xml");
       assertNull(url);
       url = cm.getURL("org/exoplatform/container/configuration/empty-config-fake.xml");
       assertNull(url);
-      
+
       // CM with ClassLoader
       ConfigurationManager cm1 = new ConfigurationManagerImpl(Thread.currentThread().getContextClassLoader(), null);
       url = cm1.getURL(null);
-      assertNull(url);      
+      assertNull(url);
       url = cm1.getURL("jar:/org/exoplatform/container/configuration/empty-config.xml");
       checkURL(url);
       url = cm1.getURL("jar:/org/exoplatform/container/configuration/empty-config-fake.xml");
@@ -136,11 +159,11 @@ public class TestConfigurationManagerImpl extends TestCase
       assertNull(url);
       url = cm1.getURL("org/exoplatform/container/configuration/empty-config-fake.xml");
       assertNull(url);
-      
+
       // CM with ServletContext
       ConfigurationManager cm2 = new ConfigurationManagerImpl(new MockServletContext(), null);
       url = cm2.getURL(null);
-      assertNull(url);      
+      assertNull(url);
       url = cm2.getURL("jar:/org/exoplatform/container/configuration/empty-config.xml");
       checkURL(url);
       url = cm2.getURL("jar:/org/exoplatform/container/configuration/empty-config-fake.xml");
@@ -160,16 +183,16 @@ public class TestConfigurationManagerImpl extends TestCase
       url = cm2.getURL("org/exoplatform/container/configuration/empty-config.xml");
       assertNull(url);
       url = cm2.getURL("org/exoplatform/container/configuration/empty-config-fake.xml");
-      assertNull(url);      
-      
+      assertNull(url);
+
       // CM with Context path
       ConfigurationManager cm3 = new ConfigurationManagerImpl();
       String path = getClass().getResource("empty-config.xml").getPath();
       assertNotNull(path);
-      path = path.substring(0, path.lastIndexOf('/'));      
+      path = path.substring(0, path.lastIndexOf('/'));
       cm3.addConfiguration((new File(path)).toURI().toURL());
       url = cm3.getURL(null);
-      assertNull(url);            
+      assertNull(url);
       url = cm3.getURL("jar:/org/exoplatform/container/configuration/empty-config.xml");
       checkURL(url);
       url = cm3.getURL("jar:/org/exoplatform/container/configuration/empty-config-fake.xml");
@@ -203,11 +226,11 @@ public class TestConfigurationManagerImpl extends TestCase
       url = cm3.getURL("configuration/empty-config.xml");
       checkURL(url);
       url = cm3.getURL("configuration/empty-config-fake.xml");
-      checkURL(url, true);      
+      checkURL(url, true);
       url = cm3.getURL("configuration\\empty-config.xml");
       checkURL(url);
       url = cm3.getURL("configuration\\empty-config-fake.xml");
-      checkURL(url, true);      
+      checkURL(url, true);
    }
 
    public void testGetFileURL() throws Exception
@@ -246,7 +269,7 @@ public class TestConfigurationManagerImpl extends TestCase
       assertTrue(conf.getComponent("A").getDocumentURL().getFile().endsWith("config-manager-configuration-a.xml"));
       assertNull(conf.getComponent("B"));
       assertNull(conf.getComponent("C"));
-      
+
       // b import a
       cm = new ConfigurationManagerImpl();
       cm.addConfiguration("classpath:/org/exoplatform/container/configuration/config-manager-configuration-b.xml");
@@ -256,7 +279,7 @@ public class TestConfigurationManagerImpl extends TestCase
       assertNotNull(conf.getComponent("B"));
       assertTrue(conf.getComponent("B").getDocumentURL().getFile().endsWith("config-manager-configuration-b.xml"));
       assertNull(conf.getComponent("C"));
-      
+
       // c import b and b import a
       cm = new ConfigurationManagerImpl();
       cm.addConfiguration("classpath:/org/exoplatform/container/configuration/config-manager-configuration-c.xml");
@@ -268,12 +291,12 @@ public class TestConfigurationManagerImpl extends TestCase
       assertNotNull(conf.getComponent("C"));
       assertTrue(conf.getComponent("C").getDocumentURL().getFile().endsWith("config-manager-configuration-c.xml"));
    }
-   
+
    private void checkURL(URL url) throws Exception
    {
       checkURL(url, false);
    }
-   
+
    private void checkURL(URL url, boolean empty) throws Exception
    {
       assertNotNull(url);
@@ -288,7 +311,7 @@ public class TestConfigurationManagerImpl extends TestCase
          else
          {
             assertNotNull(is);
-            assertTrue(is.available() > 0);            
+            assertTrue(is.available() > 0);
          }
       }
       catch (IOException e)
@@ -296,7 +319,7 @@ public class TestConfigurationManagerImpl extends TestCase
          if (empty)
          {
             // OK
-         }       
+         }
          else
          {
             throw e;
@@ -317,7 +340,7 @@ public class TestConfigurationManagerImpl extends TestCase
          }
       }
    }
-   
+
    private static class MockServletContext implements ServletContext
    {
 

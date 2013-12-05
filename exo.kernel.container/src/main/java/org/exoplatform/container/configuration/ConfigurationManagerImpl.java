@@ -19,6 +19,7 @@
 package org.exoplatform.container.configuration;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ar.Archive;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.container.xml.Deserializer;
@@ -144,10 +145,10 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    private void addConfiguration(ServletContext context, URL url)
    {
-      if (logEnabled && LOG_DEBUG)
-         LOG.info("Add configuration " + url);
       if (url == null)
          return;
+      if (logEnabled && LOG_DEBUG)
+         LOG.info("Add configuration " + url);
       try
       {
          contextPath = (new File(url.toString())).getParent() + "/";
@@ -393,8 +394,14 @@ public class ConfigurationManagerImpl implements ConfigurationManager
          url = resolveFileURL(url);
          return new URL(url);
       }
+      else if (Archive.isArchiveURL(url))
+      {
+         return Archive.createArchiveURL(url);
+      }
       else if (url.indexOf(":") < 0 && contextPath != null)
       {
+         if (Archive.isArchiveURL(contextPath))
+            return Archive.createArchiveURL(contextPath + url.replace('\\', '/'));
          return new URL(contextPath + url.replace('\\', '/'));
       }
       return null;
