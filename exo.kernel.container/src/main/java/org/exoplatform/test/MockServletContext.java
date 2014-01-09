@@ -18,6 +18,9 @@
  */
 package org.exoplatform.test;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -47,6 +50,8 @@ import javax.servlet.descriptor.JspConfigDescriptor;
  */
 public class MockServletContext implements ServletContext
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.test.MockServletContext");
 
    private String name_;
 
@@ -138,7 +143,7 @@ public class MockServletContext implements ServletContext
       }
       catch (IOException e)
       {
-         e.printStackTrace();
+         LOG.error(e);
       }
       return null;
    }

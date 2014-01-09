@@ -24,6 +24,8 @@ import org.exoplatform.container.spi.After;
 import org.exoplatform.container.spi.Before;
 import org.exoplatform.container.spi.Interceptor;
 import org.exoplatform.container.spi.InterceptorChainFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,6 +48,8 @@ import java.util.ServiceLoader;
  */
 public class DefaultInterceptorChainFactory implements InterceptorChainFactory
 {
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.DefaultInterceptorChainFactory");
+
    /**
     * The list of class that will defined the {@link Interceptor} chain
     */
@@ -86,7 +90,7 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
                }
                if (isDevelopping)
                {
-                  System.out.println("The interceptor chain used is " + sb); //NOSONAR
+                  LOG.info("The interceptor chain used is " + sb);
                }
                this.chain = chain;
                return result;
@@ -107,8 +111,7 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
          }
          catch (Exception e)
          {
-            System.out.println("ERROR: Cannot instantiate inteceptor of class " + iClass + ": "
-               + e.getLocalizedMessage()); //NOSONAR
+             LOG.error("Cannot instantiate inteceptor of class " + iClass, e);
          }
       }
       return result;
@@ -183,7 +186,7 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
             // No id set
             if (PropertyManager.isDevelopping())
             {
-               System.out.println("WARN: No value set for the annotation Before of the interceptor " + it.getClass()); //NOSONAR
+               LOG.warn("No value set for the annotation Before of the interceptor " + it.getClass());
             }
             alreadyResolved.add(it);
             iter.remove();
@@ -212,8 +215,8 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
          {
             if (PropertyManager.isDevelopping())
             {
-               System.out.println("WARN: Could not find the interceptor of " + id + " required by the interceptor "
-                  + it.getClass()); //NOSONAR
+                LOG.warn("Could not find the interceptor of " + id + " required by the interceptor "
+                        + it.getClass());
             }
             alreadyResolved.add(it);
             iter.remove();
@@ -230,7 +233,7 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
             // No id set
             if (PropertyManager.isDevelopping())
             {
-               System.out.println("WARN: No value set for the annotation After of the interceptor " + it.getClass()); //NOSONAR
+                LOG.warn("No value set for the annotation After of the interceptor " + it.getClass());
             }
             alreadyResolved.add(it);
             iter.remove();
@@ -252,8 +255,8 @@ public class DefaultInterceptorChainFactory implements InterceptorChainFactory
          {
             if (PropertyManager.isDevelopping())
             {
-               System.out.println("WARN: Could not find the interceptor of " + id + " required by the interceptor "
-                  + it.getClass()); //NOSONAR
+                LOG.warn("Could not find the interceptor of " + id + " required by the interceptor "
+                        + it.getClass());
             }
             alreadyResolved.add(it);
             iter.remove();
