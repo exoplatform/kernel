@@ -411,7 +411,7 @@ public class WeldContainer extends AbstractInterceptor
                LOG.debug("Could not shutdown the weld container properly", e);
             }
          }
-         if (!currentContainer.equals(weldContainer))
+         if (currentContainer != weldContainer) //NOSONAR
          {
             // Clean up manually the container in case the current container is not the container corresponding to the container of this weld container
             weldContainer.cleanup();
