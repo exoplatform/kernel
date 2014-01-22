@@ -181,6 +181,9 @@ public class TestAbstractExoCache extends TestCase
       assertTrue(values.contains("a"));
       assertTrue(values.contains("b"));
       assertTrue(values.contains("c"));
+      cache.clearCache();
+      values = cache.getCachedObjects();
+      assertEquals(0, values.size());
    }
 
    public void testRemoveCachedObjects() throws Exception
@@ -222,6 +225,10 @@ public class TestAbstractExoCache extends TestCase
       };
       cache.select(selector);
       assertEquals(3, count.intValue());
+      count.set(0);
+      cache.clearCache();
+      cache.select(selector);
+      assertEquals(0, count.intValue());
    }
 
    public void testGetHitsNMisses() throws Exception
