@@ -704,6 +704,10 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          hasChanged = true;
          ConfigurationManagerImpl cService = new ConfigurationManagerImpl(pcontainer.getPortalContext(), profiles);
 
+         if (ConfigurationManager.LOG_DEBUG)
+         {
+            showDependencies(portalContainerName);
+         }
          // add configs from services
          try
          {
@@ -803,6 +807,39 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          }
       }
    }
+
+   /**
+    * Prints the list of dependencies of a given portal container
+    * @param portalContainerName the name of the portal container for which we want the dependencies
+    */
+   private void showDependencies(final String portalContainerName)
+   {
+      PortalContainerConfig config = getPortalContainerConfig();
+      List<String> dependencies = config == null ? null : config.getDependencies(portalContainerName);
+      if (dependencies == null || dependencies.isEmpty())
+      {
+         LOG.info("No dependencies have been defined for the portal container '{}'", portalContainerName);
+      }
+      else
+      {
+         StringBuilder listDep = new StringBuilder();
+         boolean first = true;
+         for (String dep : dependencies)
+         {
+            if (first)
+            {
+               first = false;
+            }
+            else
+            {
+               listDep.append(", ");
+            }
+            listDep.append(dep);
+         }
+         LOG.info("The dependencies ordered by priority of the portal container '{}' are: {}", portalContainerName, listDep.toString());
+      }
+   }
+
    /**
     * Removes the portal container
     * @param servletContext the servlet context
