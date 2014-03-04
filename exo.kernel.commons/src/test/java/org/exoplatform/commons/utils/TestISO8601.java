@@ -33,31 +33,31 @@ public class TestISO8601 extends TestCase
    {
       String dateStr = "1997";
       Calendar date = ISO8601.parseEx(dateStr);
-      assertEquals(dateStr + "-01-01T00:00:00.000Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith(dateStr + "-01-01T00:00:00.000"));
 
       dateStr = "1997-07";
       date = ISO8601.parseEx(dateStr);
-      assertEquals(dateStr + "-01T00:00:00.000Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith(dateStr + "-01T00:00:00.000"));
 
       dateStr = "1997-07-16";
       date = ISO8601.parseEx(dateStr);
-      assertEquals(dateStr + "T00:00:00.000Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith(dateStr + "T00:00:00.000"));
 
       dateStr = "1997-07-16T19:20";
       date = ISO8601.parseEx(dateStr);
-      assertEquals(dateStr + ":00.000Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith(dateStr + ":00.000"));
 
       dateStr = "1997-07-16T19:20:30";
       date = ISO8601.parseEx(dateStr);
-      assertEquals(dateStr + ".000Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith(dateStr + ".000"));
 
       dateStr = "1997-07-16T19:20:30.45";
       date = ISO8601.parseEx(dateStr);
-      assertEquals("1997-07-16T19:20:30.045Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith("1997-07-16T19:20:30.045"));
 
       dateStr = "1997-07-16T19:20:30.450";
       date = ISO8601.parseEx(dateStr);
-      assertEquals(dateStr + "Z", ISO8601.format(date));
+      assertTrue(ISO8601.format(date).startsWith(dateStr));
 
       dateStr = "1997-07-16T19:20:30.450+01:00";
       date = ISO8601.parseEx(dateStr);
