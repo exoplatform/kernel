@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko
@@ -71,13 +72,13 @@ public class ISO8601
    public static final String COMPLETE_DATE_FORMAT = "yyyy-MM-dd";
 
    /**
-    * NON ISO STANDARD. Simple date plus hours and minutes, wothout timezone:
+    * NON ISO STANDARD. Simple date plus hours and minutes, without time zone:
     * YYYY-MM-DDThh:mm (eg 1997-07-16T19:20)
     */
    public static final String SIMPLE_DATEHOURSMINUTES_FORMAT = "yyyy-MM-dd'T'HH:mm";
 
    /**
-    * NON ISO STANDARD. Complete date plus hours and minutes, with timezone by
+    * NON ISO STANDARD. Complete date plus hours and minutes, with time zone by
     * RFC822: YYYY-MM-DDThh:mmZ (eg 1997-07-16T19:20+0100)
     */
    public static final String COMPLETE_DATEHOURSMINUTESZRFC822_FORMAT = "yyyy-MM-dd'T'HH:mmZ";
@@ -89,14 +90,14 @@ public class ISO8601
    public static final String COMPLETE_DATEHOURSMINUTESZ_FORMAT = "yyyy-MM-dd'T'HH:mm" + TZD;
 
    /**
-    * NON ISO STANDARD. Simple date plus hours, minutes and seconds, wothout
-    * timezone: YYYY-MM-DDThh:mm:ss (eg 1997-07-16T19:20:30)
+    * NON ISO STANDARD. Simple date plus hours, minutes and seconds, without
+    * time zone: YYYY-MM-DDThh:mm:ss (eg 1997-07-16T19:20:30)
     */
    public static final String SIMPLE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 
    /**
     * NON ISO STANDARD. Complete date plus hours, minutes and seconds, with
-    * timezone by RFC822: YYYY-MM-DDThh:mm:ssZ (eg 1997-07-16T19:20:30+0100)
+    * time zone by RFC822: YYYY-MM-DDThh:mm:ssZ (eg 1997-07-16T19:20:30+0100)
     */
    public static final String COMPLETE_DATETIMEZRFC822_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
@@ -108,14 +109,14 @@ public class ISO8601
 
    /**
     * NON ISO STANDARD. Simple date plus hours, minutes, seconds and a decimal
-    * fraction of a second, wothout timezone YYYY-MM-DDThh:mm:ss.s (eg
+    * fraction of a second, without time zone YYYY-MM-DDThh:mm:ss.s (eg
     * 1997-07-16T19:20:30.45)
     */
    public static final String SIMPLE_DATETIMEMS_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
    /**
     * Complete date plus hours, minutes, seconds and a decimal fraction of a
-    * second, with timezone by RFC822 YYYY-MM-DDThh:mm:ss.sZ (eg
+    * second, with time zone by RFC822 YYYY-MM-DDThh:mm:ss.sZ (eg
     * 1997-07-16T19:20:30.45+0100)
     */
    public static final String COMPLETE_DATETIMEMSZRFC822_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
@@ -157,28 +158,40 @@ public class ISO8601
 
          Date isoDate = null;
 
-         if (dateString.length() >= 16 && isoTZ)
+         TimeZone timeZone = null;
+         if (dateString.length() >= 16)
          {
-            // need fix TZ from ISO 8601 (+01:00) to RFC822 (+0100)
-            if (dateString.endsWith("Z"))
+            if (isoTZ)
             {
-               dateString = dateString.substring(0, dateString.length() - 1) + "+0000";
-            }
-            else
-            {
-               int tzsindex = dateString.length() - 6;
-               char tzsign = dateString.charAt(tzsindex); // sixth char from the end
-               if (tzsign == '+' || tzsign == '-')
+               // need fix TZ from ISO 8601 (+01:00) to RFC822 (+0100)
+               if (dateString.endsWith("Z"))
                {
-                  dateString = dateString.substring(0, tzsindex) + dateString.substring(tzsindex).replaceAll(":", "");
+                  dateString = dateString.substring(0, dateString.length() - 1) + "+0000";
+               }
+               else
+               {
+                  int tzsindex = dateString.length() - 6;
+                  char tzsign = dateString.charAt(tzsindex); // sixth char from the end
+                  if (tzsign == '+' || tzsign == '-')
+                  {
+                     dateString = dateString.substring(0, tzsindex) + dateString.substring(tzsindex).replaceAll(":", "");
+                  }
                }
             }
+            int index = dateString.lastIndexOf('-');
+            if (index >= 16 || (index = dateString.lastIndexOf('+')) >= 16)
+            {
+               String timeZoneStr = dateString.substring(index);
+               timeZone = TimeZone.getTimeZone("GMT" + timeZoneStr);
+               formater.setTimeZone(timeZone);
+            }
          }
-
          isoDate = formater.parse(dateString);
 
          Calendar isoCalendar = Calendar.getInstance();
          isoCalendar.setTime(isoDate);
+         if (timeZone != null)
+            isoCalendar.setTimeZone(timeZone);
 
          return isoCalendar;
       }
