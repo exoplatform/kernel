@@ -34,7 +34,7 @@ import javax.servlet.ServletException;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto
  *          nicolas.filotto@exoplatform.com
- * 21 aožt 2009  
+ * 21 aout 2009  
  */
 public abstract class AbstractFilter implements Filter
 {
