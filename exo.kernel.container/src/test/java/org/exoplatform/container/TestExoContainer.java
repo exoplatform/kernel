@@ -5389,4 +5389,49 @@ public class TestExoContainer
    public static @interface AutoRegistrationBadQualifier
    {
    }
+
+   public static class SerializationRecursivity1
+   {
+      private SerializationRecursivity2 sr2;
+
+      public SerializationRecursivity1(InitParams params)
+      {
+         sr2 = (SerializationRecursivity2)params.getObjectParam("SerializationRecursivity2").getObject();
+      }
+   }
+
+   public static class SerializationRecursivity2
+   {
+      @SuppressWarnings("unused")
+      private SerializationRecursivity3 sr3;
+   }
+
+   public static class SerializationRecursivity3
+   {
+      
+   }
+
+   @Test
+   public void testSerializationRecursivity()
+   {
+      URL rootURL = getClass().getResource("test-exo-container.xml");
+      URL portalURL = getClass().getResource("empty-config.xml");
+      assertNotNull(rootURL);
+      assertNotNull(portalURL);
+      //
+      new ContainerBuilder().withRoot(rootURL).withPortal(portalURL).profiledBy("testSerializationRecursivity").build();
+
+      final RootContainer container = RootContainer.getInstance();
+      String xmlConfig = container.getConfigurationXML();
+      SerializationRecursivity1 sr1 =
+         container.getComponentInstanceOfType(SerializationRecursivity1.class);
+      sr1.sr2.sr3 = container.getComponentInstanceOfType(SerializationRecursivity3.class);
+      assertEquals(xmlConfig,container.getConfigurationXML());
+
+      final PortalContainer pcontainer = PortalContainer.getInstance();
+      xmlConfig = pcontainer.getConfigurationXML();
+      sr1 = container.getComponentInstanceOfType(SerializationRecursivity1.class);
+      sr1.sr2.sr3 = container.getComponentInstanceOfType(SerializationRecursivity3.class);
+      assertEquals(xmlConfig,pcontainer.getConfigurationXML());
+   }
 }

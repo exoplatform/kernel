@@ -153,6 +153,19 @@
 		<key>org.exoplatform.container.TestExoContainer$MyService</key>
 		<type>org.exoplatform.container.TestExoContainer$MyServiceImpl</type>
 	</component>
+	<component profiles="testSerializationRecursivity">
+		<type>org.exoplatform.container.TestExoContainer$SerializationRecursivity1</type>
+		<init-params>
+			<object-param>
+				<name>SerializationRecursivity2</name>
+				<object type="org.exoplatform.container.TestExoContainer$SerializationRecursivity2">
+				</object>
+			</object-param>
+		</init-params>
+	</component>
+	<component profiles="testSerializationRecursivity">
+		<type>org.exoplatform.container.TestExoContainer$SerializationRecursivity3</type>
+	</component>
 	<component profiles="testStates">
 		<type>org.exoplatform.container.TestExoContainer$TSC1</type>
 		<component-plugins>

@@ -49,6 +49,11 @@ public class Configuration implements Cloneable
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.Configuration");
 
+   /**
+    * We need this thread local to be able to detect the normal objects from the components while serializing the configuration
+    */
+   private static final ThreadLocal<Configuration> CURRENT_CONFIG_TO_SERIALIZE = new ThreadLocal<Configuration>();
+
    private Map<String, ContainerLifecyclePlugin> containerLifecyclePlugin_ =
       new HashMap<String, ContainerLifecyclePlugin>();
 
@@ -65,9 +70,9 @@ public class Configuration implements Cloneable
    private List<String> removeConfiguration_;
 
    private int currentSize;
-   
+
    private int currentHash;
-   
+
    public Collection<ContainerLifecyclePlugin> getContainerLifecyclePlugins()
    {
       List<ContainerLifecyclePlugin> plugins =
@@ -303,12 +308,26 @@ public class Configuration implements Cloneable
    }
 
    /**
+    * Indicates whether or not the given key has been registered has a component within the current
+    * configuration if and only if we have a configuration currently defined. If no configuration
+    * has been defined it will always return <code>false</code>
+    */
+   public static boolean hasComponent(String key)
+   {
+      Configuration config = CURRENT_CONFIG_TO_SERIALIZE.get();
+      if (config == null)
+         return false;
+      return config.getComponent(key) != null;
+   }
+
+   /**
     * Dumps the configuration in XML format into the given {@link Writer}
     */
    public void toXML(Writer w)
    {
       try
       {
+         CURRENT_CONFIG_TO_SERIALIZE.set(this);
          IBindingFactory bfact = BindingDirectory.getFactory(Configuration.class);
          IMarshallingContext mctx = bfact.createMarshallingContext();
          mctx.setIndent(2);
@@ -317,6 +336,10 @@ public class Configuration implements Cloneable
       catch (Exception e)
       {
          LOG.warn("Couldn't dump the runtime configuration in XML Format", e);
+      }
+      finally
+      {
+         CURRENT_CONFIG_TO_SERIALIZE.remove();
       }
    }
 
