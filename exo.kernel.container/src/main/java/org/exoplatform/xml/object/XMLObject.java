@@ -20,6 +20,7 @@ package org.exoplatform.xml.object;
 
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.xml.Configuration;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
@@ -77,6 +78,12 @@ public class XMLObject
       {
          Field field = (Field)i.next();
          Object value = field.get(obj);
+         if (value == null
+            || (!value.getClass().isPrimitive() && Configuration.hasComponent(field.getType().getName())))
+         {
+            // The current field is a component so we ignore it or its value is null
+            continue;
+         }
          addField(new XMLField(field.getName(), field.getType(), value));
       }
    }
