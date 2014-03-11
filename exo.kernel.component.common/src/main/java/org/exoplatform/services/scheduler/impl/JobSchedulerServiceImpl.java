@@ -44,6 +44,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
 import org.quartz.JobListener;
 import org.quartz.Matcher;
+import org.quartz.ObjectAlreadyExistsException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
@@ -83,11 +84,14 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final QueueTasks qtasks_;
 
+   private final boolean jobStoreSupportsPersistence;
+
    public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks)
    {
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
+      jobStoreSupportsPersistence = isJobStoreSupportsPersistence();
    }
 
    /**
@@ -101,6 +105,25 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
+      jobStoreSupportsPersistence = isJobStoreSupportsPersistence();
+   }
+
+   /**
+    * Indicates whether or not the job store supports the persistence. If we cannot know, we assume that it is not
+    * supported.
+    */
+   private boolean isJobStoreSupportsPersistence()
+   {
+      try
+      {
+         return scheduler_.getMetaData().isJobStoreSupportsPersistence();
+      }
+      catch (SchedulerException e)
+      {
+         LOG.error("Cannot know if the job store supports the persistence, we assume by default that it is not supported: "
+            + e.getMessage());
+      }
+      return false;
    }
 
    public void queueTask(Task task)
@@ -108,11 +131,81 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       qtasks_.add(task);
    }
 
+   /**
+    * Add the given <code>{@link org.quartz.JobDetail}</code> to the
+    * Scheduler, and associate the given <code>{@link Trigger}</code> with
+    * it.
+    * 
+    * <p>
+    * If the given Trigger does not reference any <code>Job</code>, then it
+    * will be set to reference the Job passed with it into this method.
+    * </p>
+    * 
+    * @throws SchedulerException
+    *           if the Job or Trigger cannot be added to the Scheduler, or
+    *           there is an internal Scheduler error.
+    */
+   private void scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException
+   {
+      if (registerJob(jobDetail))
+      {
+         scheduler_.scheduleJob(jobDetail, trigger);
+      }
+      else
+      {
+         LOG.debug("The exact same Job has already been registered with the id '{}'.", jobDetail.getKey());
+      }
+   }
+
+   /**
+    * Always returns <code>true</code> in case the persistence is disabled otherwise, it will check first
+    * if a job with the same key exists, if not it will return <code>true</code> otherwise it will
+    * return <code>false</code> if and only if the persisted job is the exact same job as the provided one
+    * otherwise it will raise a {@link SchedulerException}
+    */
+   private boolean registerJob(JobDetail jobDetail) throws SchedulerException
+   {
+      if (!jobStoreSupportsPersistence)
+         return true;
+      JobDetail existingJob = scheduler_.getJobDetail(jobDetail.getKey());
+      if (existingJob == null)
+         return true;
+      if (equals(existingJob, jobDetail))
+         return false;
+      throw new ObjectAlreadyExistsException(jobDetail);
+   }
+
+   /**
+    * Indicates whether the {@link JobDetail} are equals
+    */
+   private static boolean equals(JobDetail jobDetail1, JobDetail jobDetail2)
+   {
+      if (jobDetail1.getJobClass() == null)
+      {
+         if (jobDetail2.getJobClass() != null)
+            return false;
+      }
+      else if (!jobDetail1.getJobClass().equals(jobDetail2.getJobClass()))
+      {
+         return false;
+      }
+      if (jobDetail1.getJobDataMap() == null)
+      {
+         if (jobDetail2.getJobDataMap() != null)
+            return false;
+      }
+      else if (!jobDetail1.getJobDataMap().equals(jobDetail2.getJobDataMap()))
+      {
+         return false;
+      }
+      return true;
+   }
+
    public void addJob(JobDetail job, Trigger trigger) throws Exception
    {
       String gname = getGroupName(job.getKey().getGroup());
       trigger = trigger.getTriggerBuilder().withIdentity(job.getKey().getName(), gname).build();
-      scheduler_.scheduleJob(job.getJobBuilder().withIdentity(job.getKey().getName(), gname).build(), trigger);
+      scheduleJob(job.getJobBuilder().withIdentity(job.getKey().getName(), gname).build(), trigger);
    }
 
    public void addJob(JobInfo jinfo, Trigger trigger) throws Exception
@@ -122,7 +215,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addJob(JobInfo jinfo, Date date) throws Exception
@@ -134,7 +227,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, int repeatCount, long period) throws Exception
@@ -158,7 +251,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo) throws Exception
@@ -184,7 +277,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(ComponentPlugin plugin) throws Exception
@@ -212,8 +305,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.addJob(job, true);
-      scheduler_.scheduleJob(trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addCronJob(ComponentPlugin plugin) throws Exception
@@ -242,8 +334,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
-      scheduler_.addJob(job, true);
-      scheduler_.scheduleJob(trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo, JobDataMap jdatamap) throws Exception
@@ -270,7 +361,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public boolean removeJob(JobInfo jinfo) throws Exception
@@ -496,7 +587,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       Trigger trigger = TriggerBuilder.newTrigger().withIdentity(jname, getGroupName(jgroup)).startNow().build();
       JobBuilder jb = JobBuilder.newJob().withIdentity(jname, getGroupName(jgroup));
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public Trigger[] getTriggersOfJob(String jobName, String groupName) throws Exception
