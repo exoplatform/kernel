@@ -21,7 +21,6 @@ package org.exoplatform.services.cache.concurrent;
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CachedObjectSelector;
 import org.exoplatform.services.cache.ExoCache;
-import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.services.log.Log;
 
 import java.io.Serializable;
@@ -255,8 +254,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
       {
          K key = entry.getKey();
          ObjectRef<K, V> info = entry.getValue();
-         ObjectCacheInfo<V> bilto = null;
-         if (selector.select(key, bilto))
+         if (selector.select(key, info))
          {
             selector.onSelect(this, key, info);
          }
