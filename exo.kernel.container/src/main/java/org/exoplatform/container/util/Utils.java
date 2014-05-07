@@ -73,4 +73,23 @@ public class Utils
          }
       }
    }
+
+   /**
+    * Extracts the path section of the given full path which syntax is [path][?query][#fragment]
+    * @param fullPath the full path from which we need to extract the path section
+    * @return the path section
+    */
+   public static String getPathOnly(String fullPath)
+   {
+      if (fullPath == null || fullPath.isEmpty())
+         return fullPath;
+      int index = fullPath.indexOf('?');
+      if (index == -1)
+      {
+         index = fullPath.indexOf('#');
+         return index == -1 ? fullPath : fullPath.substring(0, index);
+      }
+      return fullPath.substring(0, index);
+
+   }
 }

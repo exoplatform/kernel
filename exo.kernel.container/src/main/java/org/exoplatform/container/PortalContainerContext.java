@@ -18,6 +18,8 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.util.Utils;
+
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -241,7 +243,7 @@ class PortalContainerContext implements ServletContext
       for (int i = contexts.length - 1; i >= 0; i--)
       {
          final ServletContext context = contexts[i].getServletContext();
-         final InputStream is = context.getResourceAsStream(path);
+         final InputStream is = context.getResourceAsStream(Utils.getPathOnly(path));
          if (is != null)
          {
             // The resource exists within this servlet context
