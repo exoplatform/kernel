@@ -35,6 +35,10 @@
    <name>eXo Kernel :: Component :: Command Service</name>
    <description>Implementation of Command Service of Exoplatform SAS 'eXo Kernel' project.</description>
 
+   <properties>
+      <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+   </properties>
+
    <dependencies>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
@@ -78,13 +82,6 @@
    </dependencies>
    <build>
       <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
-            </configuration>
-         </plugin>
          <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
