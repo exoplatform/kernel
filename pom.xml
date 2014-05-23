@@ -71,6 +71,13 @@
       <dependencies>
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
+            <artifactId>kernel-parent</artifactId>
+            <version>${project.version}</version>
+            <classifier>source-release</classifier>
+            <type>zip</type>
+         </dependency>
+         <dependency>
+            <groupId>org.exoplatform.kernel</groupId>
             <artifactId>exo.kernel.container</artifactId>
             <version>${project.version}</version>
          </dependency>
