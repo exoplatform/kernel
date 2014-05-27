@@ -21,108 +21,37 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
    <modelVersion>4.0.0</modelVersion>
-
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
       <version>2.4.x-SNAPSHOT</version>
    </parent>
-
-   <artifactId>exo.kernel.component.common</artifactId>
-
-   <name>eXo Kernel :: Component :: Common Service</name>
-   <description>Implementation of Common Service of Exoplatform SAS 'eXo Kernel' project.</description>
-
-   <properties>
-      <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
-   </properties>
-
+   <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
+   <name>eXo Kernel :: RPC Service Extension :: JGroups 3 Implementation</name>
+   <description>JGroups 3 Implementation of RPC Service Extension for Exoplatform SAS 'eXo Kernel' project.</description>
    <dependencies>
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons.test</artifactId>
+         <scope>test</scope>
+      </dependency>        
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.component.common</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons.test</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>javax.activation</groupId>
-         <artifactId>activation</artifactId>
-         <scope>runtime</scope>
+         <groupId>org.jgroups</groupId>
+         <artifactId>jgroups</artifactId>
+         <version>3.0.14.Final</version>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
-         <scope>test</scope>
-      </dependency>      
-      <dependency>
-         <groupId>org.ow2.jotm</groupId>
-         <artifactId>jotm-core</artifactId>
-         <scope>provided</scope>
-         <exclusions>
-            <exclusion>
-               <groupId>javax.resource</groupId>
-               <artifactId>connector</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>javax.servlet</groupId>
-               <artifactId>servlet-api</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging-api</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>javax.resource</groupId>
-         <artifactId>connector-api</artifactId>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.quartz-scheduler</groupId>
-         <artifactId>quartz</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-api</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>javax.mail</groupId>
-         <artifactId>mail</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>javax.activation</groupId>
-               <artifactId>activation</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>org.jgroups</groupId>
-         <artifactId>jgroups</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>com.atomikos</groupId>
-         <artifactId>transactions-jta</artifactId>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.subethamail</groupId>
-         <artifactId>subethasmtp</artifactId>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -132,10 +61,11 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+               <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                 <systemProperties>
                   <!-- Avoid the firewall -->
                   <property>
-                     <name>bind.address</name>
+                     <name>jgroups.bind_addr</name>
                      <value>127.0.0.1</value>
                   </property>
                   <property>
