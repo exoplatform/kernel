@@ -118,7 +118,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    {
       String gname = getGroupName(job.getKey().getGroup());
       trigger = trigger.getTriggerBuilder().withIdentity(job.getKey().getName(), gname).build();
-      scheduler_.scheduleJob(job.getJobBuilder().withIdentity(job.getKey().getName(), gname).build(), trigger);
+      scheduleJob(job.getJobBuilder().withIdentity(job.getKey().getName(), gname).build(), trigger);
    }
 
    public void addJob(JobInfo jinfo, Trigger trigger) throws Exception
@@ -128,7 +128,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addJob(JobInfo jinfo, Date date) throws Exception
@@ -140,7 +140,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, int repeatCount, long period) throws Exception
@@ -164,7 +164,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo) throws Exception
@@ -190,7 +190,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(ComponentPlugin plugin) throws Exception
@@ -218,8 +218,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription()).build();
-      scheduler_.addJob(job, true);
-      scheduler_.scheduleJob(trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addCronJob(ComponentPlugin plugin) throws Exception
@@ -248,8 +247,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
-      scheduler_.addJob(job, true);
-      scheduler_.scheduleJob(trigger);
+      scheduleJob(job, trigger);
    }
 
    public void addPeriodJob(JobInfo jinfo, PeriodInfo pinfo, JobDataMap jdatamap) throws Exception
@@ -276,7 +274,11 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
             .withDescription(jinfo.getDescription());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
-      scheduler_.scheduleJob(job, trigger);
+      scheduleJob(job, trigger);
+   }
+   
+   protected void scheduleJob(JobDetail job, Trigger trigger) throws SchedulerException{
+     scheduler_.scheduleJob(job, trigger);
    }
 
    public boolean removeJob(JobInfo jinfo) throws Exception
