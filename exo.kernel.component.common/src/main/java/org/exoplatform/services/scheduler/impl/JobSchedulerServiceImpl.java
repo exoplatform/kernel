@@ -18,9 +18,19 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.exoplatform.container.BaseContainerLifecyclePlugin;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
+import org.exoplatform.container.multitenancy.Tenant;
 import org.exoplatform.container.multitenancy.TenantsService;
+import org.exoplatform.container.multitenancy.TenantsStateListener;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -58,10 +68,6 @@ import org.quartz.TriggerListener;
 import org.quartz.impl.matchers.EverythingMatcher;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.matchers.KeyMatcher;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS
@@ -75,7 +81,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.JobSchedulerServiceImpl");
-
+   
    static final String STANDALONE_CONTAINER_NAME = "$Standalone";
 
    private final Scheduler scheduler_;
@@ -85,14 +91,26 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    private final QueueTasks qtasks_;
 
    private final TenantsService tenantsService;
+   
+   protected final Tenant        jobTenant;
 
    public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks,
-      TenantsService tService)
+      TenantsService tService, ExoContainerContext context)
    {
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
       this.tenantsService = tService;
+      Tenant tenant;
+      try {
+        tenant = tenantsService.getCurrentTanant();
+      } catch (CurrentTenantNotSetException e) {
+        tenant = null;
+      }
+      this.jobTenant = tenant;
+      if (jobTenant != null){
+        addTenantStartingTriggerListener(context);
+      }
    }
 
    /**
@@ -107,8 +125,43 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
       tenantsService = null;
+      this.jobTenant = null;
    }
 
+   private void addTenantStartingTriggerListener(ExoContainerContext context){
+     //Add trigger listener for all starting tenant's jobs
+     try {
+       TenantStartingTriggerListener listener = new TenantStartingTriggerListener(jobTenant.getName());
+       addGlobalTriggerListener(listener);
+       LOG.debug("Add trigger listener for starting tenant {}",jobTenant.getName());
+     } catch (Exception e1) {
+       LOG.warn("Can't add trigger listener for {}",jobTenant.getName());
+     }
+     
+     //Remove trigger listener when tenant is online, all components are created
+     context.getContainer().addContainerLifecylePlugin(new BaseContainerLifecyclePlugin()
+     {       
+        @Override
+        public void startContainer(ExoContainer container) throws Exception
+        {
+          LOG.debug("Remove trigger listener for online tenant {}",jobTenant.getName());
+          removeGlobaTriggerListener(TenantStartingTriggerListener.createName(jobTenant.getName()));
+        }        
+     });
+   }
+   
+   protected boolean isTenantJob(JobDetail jobDetail) {
+     if (jobTenant != null) {
+       String tenantName = jobTenant.getName();
+
+       String[] elements = jobDetail.getKey().getGroup().split(":");
+       if (elements.length == 3 && tenantName.equals(elements[1])) {
+         return true;
+       }
+     }
+     return false;
+   }
+   
    public void queueTask(Task task)
    {
       qtasks_.add(task);
@@ -628,4 +681,5 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       return gname.toString();
    }
+
 }
