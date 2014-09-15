@@ -157,6 +157,15 @@ public class CacheServiceImpl implements CacheService
       return null;
    }
 
+   /**
+    * Unregisters the cache instance corresponding to the given region
+    * @param region the region for which we want to unregister the cache instance
+    */
+   protected void unregisterCacheInstance(String region)
+   {
+     cacheMap_.remove(region);
+   }
+
    @SuppressWarnings({"rawtypes", "unchecked"})
    private ExoCache<? extends Serializable, ?> createCacheInstance(String region) throws Exception
    {
