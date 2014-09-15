@@ -44,6 +44,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -124,7 +125,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       if (name == null)
       {
          return null;
-      }      
+      }
       final V result = cache.get(name);
       if (result == null)
       {
@@ -250,7 +251,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
     */
    protected void putOnly(K key, V value)
    {
-      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
    }
 
    /**
@@ -268,21 +269,24 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             throw new IllegalArgumentException("No null cache key accepted");
          }
-      }      
+      }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
 
          @Override
          public Void run()
          {
+            // Start transaction
             cache.startBatch();
             try
             {
-               // Start transaction
+               // Make sure that the key and the value are valid
+               Map<K, V> map = new LinkedHashMap<K, V>();
                for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
                {
-                  putOnly(entry.getKey(), entry.getValue());
+                  map.put(entry.getKey(), entry.getValue());
                }
+               cache.putAll(map);
                cache.endBatch(true);
                // End transaction
                for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
@@ -309,7 +313,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       if (name == null)
       {
          throw new IllegalArgumentException("No null cache key accepted");
-      }      
+      }
       V result = SecurityHelper.doPrivilegedAction(new PrivilegedAction<V>()
       {
 
@@ -341,14 +345,15 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       if (selector == null)
       {
          throw new IllegalArgumentException("No null selector");
-      }      
-      for (K key : cache.keySet())
+      }
+      for (Map.Entry<? extends K, ? extends V> entry : cache.entrySet())
       {
+         K key = entry.getKey();
          if (key == null)
          {
             continue;
          }
-         final V value = cache.withFlags(Flag.SKIP_LOCKING).get(key);
+         final V value = entry.getValue();
          ObjectCacheInfo<V> info = new ObjectCacheInfo<V>()
          {
             public V get()
@@ -518,7 +523,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          {
             for (Map.Entry<K, V> entry : evt.getEntries().entrySet())
             {
-               onExpire(entry.getKey(), entry.getValue());               
+               onExpire(entry.getKey(), entry.getValue());
             }
          }
       }
@@ -545,7 +550,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          }
       }
    }
-   
+
    private static class ListenerContext<K extends Serializable, V> implements CacheListenerContext, CacheInfo
    {
 

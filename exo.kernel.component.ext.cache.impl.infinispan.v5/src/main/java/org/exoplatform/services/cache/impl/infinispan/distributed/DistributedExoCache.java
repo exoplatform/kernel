@@ -58,6 +58,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -119,7 +120,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    {
       return cache;
    }
-   
+
    /**
     * @return the fullName
     */
@@ -203,8 +204,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          @Override
          public Void run()
          {
-            MapReduceTask<CacheKey<K>, V, Void, Void> task =
-               new MapReduceTask<CacheKey<K>, V, Void, Void>(cache);
+            MapReduceTask<CacheKey<K>, V, Void, Void> task = new MapReduceTask<CacheKey<K>, V, Void, Void>(cache);
             task.mappedWith(new ClearCacheMapper<K, V>(fullName)).reducedWith(new ClearCacheReducer());
             task.execute();
             return null;
@@ -390,7 +390,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
     */
    protected void putOnly(K key, V value)
    {
-      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).put(new CacheKey<K>(fullName, key), value);
+      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(new CacheKey<K>(fullName, key), value);
    }
 
    /**
@@ -415,14 +415,18 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
          @Override
          public Void run()
          {
+            // Start transaction
             cache.startBatch();
             try
             {
-               // Start transaction
+               // Wrap the key into a CacheKey and make sure that the key and the value
+               // are valid
+               Map<CacheKey<K>, V> map = new LinkedHashMap<CacheKey<K>, V>();
                for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
                {
-                  putOnly(entry.getKey(), entry.getValue());
+                  map.put(new CacheKey<K>(fullName, entry.getKey()), entry.getValue());
                }
+               cache.putAll(map);
                cache.endBatch(true);
                // End transaction
                for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
