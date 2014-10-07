@@ -18,15 +18,17 @@
  */
 package org.exoplatform.container;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.PicoException;
 import org.picocontainer.defaults.ComponentAdapterFactory;
 import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * TenantsContainer separate generally used components from ones what should be instantiated,
@@ -100,18 +102,41 @@ public class TenantsContainer extends CachingContainer
    @Override
    public List getComponentAdaptersOfType(Class componentType)
    {
-      List result = new ArrayList();
-      result.addAll(super.getComponentAdaptersOfType(componentType));
+      List result = null;
 
       if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType))
       {
          List adapters = tenantsContainerContext.getComponentAdaptersOfType(componentType);
-         if (adapters != null)
+         if (adapters != null && !adapters.isEmpty())
          {
-            result.addAll(adapters);
+            result = adapters;
          }
       }
-      return result;
+      if (result == null)
+      {
+         return super.getComponentAdaptersOfType(componentType);
+      }
+      else
+      {
+         List<ComponentAdapter> adapters = super.getComponentAdaptersOfType(componentType);
+         if (adapters == null || adapters.isEmpty())
+            return result;
+         Map<Object, ComponentAdapter> mapAdapters = new LinkedHashMap<Object, ComponentAdapter>();
+         // Put first the adapters found in the main container 
+         for (int i = 0, length = adapters.size(); i < length; i++)
+         {
+            ComponentAdapter adapter = adapters.get(i);
+            mapAdapters.put(adapter.getComponentKey(), adapter);
+         }
+         // Replace all adapters whose key has already been added to the map
+         // to avoid duplicates and add undefined adapters
+         for (int i = 0, length = result.size(); i < length; i++)
+         {
+            ComponentAdapter adapter = (ComponentAdapter)result.get(i);
+            mapAdapters.put(adapter.getComponentKey(), adapter);
+         }
+         return new ArrayList(mapAdapters.values());
+      }
    }
 
    /**
@@ -121,19 +146,41 @@ public class TenantsContainer extends CachingContainer
    @Override
    public List getComponentInstancesOfType(Class componentType) throws PicoException
    {
-      // XXX: order of components in the list broken as we taking it from two sources
-      List result = new ArrayList();
-      result.addAll(super.getComponentInstancesOfType(componentType));
+      List result = null;
 
       if (tenantsContainerContext != null && tenantsContainerContext.accept(componentType))
       {
          List instances = tenantsContainerContext.getComponentInstancesOfType(componentType);
-         if (instances != null)
+         if (instances != null && !instances.isEmpty())
          {
-            result.addAll(instances);
+            result = instances;
          }
       }
-      return result;
+      if (result == null)
+      {
+         return super.getComponentInstancesOfType(componentType);
+      }
+      else
+      {
+         List instances = super.getComponentInstancesOfType(componentType);
+         if (instances == null || instances.isEmpty())
+            return result;
+         Map<String, Object> mapInstances = new LinkedHashMap<String, Object>();
+         // Put first the instances found in the main container 
+         for (int i = 0, length = instances.size(); i < length; i++)
+         {
+            Object instance = instances.get(i);
+            mapInstances.put(instance.getClass().getName(), instance);
+         }
+         // Replace all instances whose class name has already been added to the map
+         // to avoid duplicates and add undefined instances
+         for (int i = 0, length = result.size(); i < length; i++)
+         {
+            Object instance = result.get(i);
+            mapInstances.put(instance.getClass().getName(), instance);
+         }
+         return new ArrayList(mapInstances.values());
+      }
    }
 
    /**
