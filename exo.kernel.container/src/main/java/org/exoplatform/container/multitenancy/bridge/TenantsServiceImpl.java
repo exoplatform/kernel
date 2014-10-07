@@ -19,6 +19,8 @@
 package org.exoplatform.container.multitenancy.bridge;
 
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.component.ThreadContext;
+import org.exoplatform.container.component.ThreadContextHolder;
 import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
 import org.exoplatform.container.multitenancy.Tenant;
 import org.exoplatform.container.multitenancy.TenantsService;
@@ -44,7 +46,7 @@ import java.util.List;
  * @author <a href="mailto:pnedonosko@exoplatform.com">Peter Nedonosko</a>
  * 
  */
-public class TenantsServiceImpl implements TenantsService
+public class TenantsServiceImpl implements TenantsService, ThreadContextHolder
 {
 
    protected static final Log LOG = ExoLogger.getLogger(TenantsServiceImpl.class);
@@ -145,5 +147,31 @@ public class TenantsServiceImpl implements TenantsService
       }
 
       return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public ThreadContext getThreadContext()
+   {
+      List<ThreadContext> tcs = null;
+      for (CurrentTenantLookup l : lookups)
+      {
+         if (l instanceof ThreadContextHolder)
+         {
+            ThreadContextHolder holder = (ThreadContextHolder)l;
+            ThreadContext tc = holder.getThreadContext();
+            if (tc != null) 
+            {
+               if (tcs == null)
+               {
+                  tcs = new ArrayList<ThreadContext>();
+               }
+               tcs.add(tc);
+            }
+         }
+      }
+      return tcs == null ? null : ThreadContext.merge(tcs);
    }
 }
