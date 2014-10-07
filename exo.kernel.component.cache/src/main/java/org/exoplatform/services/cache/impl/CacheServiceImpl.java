@@ -163,13 +163,34 @@ public class CacheServiceImpl implements CacheService
     */
    protected void unregisterCacheInstance(String region)
    {
-     cacheMap_.remove(region);
+      LOG.info("Unregisters the cache {}", region);
+      FutureExoCacheCreationTask task = cacheMap_.remove(region);
+      if (task != null && managed != null)
+      {
+         try
+         {
+            LOG.info("Tries to unregister the cache {}", region);
+            managed.unregisterCache(task.get());
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not unregister the cache " + region + ": " + e.getMessage());
+         }
+      }
+   }
+
+   /**
+    * Gives the configuration id from the name of the region 
+    */
+   protected String getConfigId(String region)
+   {
+      return region;
    }
 
    @SuppressWarnings({"rawtypes", "unchecked"})
    private ExoCache<? extends Serializable, ?> createCacheInstance(String region) throws Exception
    {
-      ExoCacheConfig config = configs_.get(region);
+      ExoCacheConfig config = configs_.get(getConfigId(region));
       if (config == null)
          config = defaultConfig_;
 

@@ -28,6 +28,8 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.Serializable;
+
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
@@ -44,7 +46,7 @@ public class CacheServiceManaged implements ManagementAware
    private ManagementContext context;
 
    /** . */
-   private CacheServiceImpl cacheService;
+   protected CacheServiceImpl cacheService;
 
    public CacheServiceManaged(CacheServiceImpl cacheService)
    {
@@ -54,6 +56,7 @@ public class CacheServiceManaged implements ManagementAware
       cacheService.managed = this;
    }
 
+   @SuppressWarnings("unchecked")
    @Managed
    @ManagedDescription("Clear all registered cache instances")
    public void clearCaches()
@@ -62,7 +65,7 @@ public class CacheServiceManaged implements ManagementAware
       {
          try
          {
-            ((ExoCache)o).clearCache();
+            ((ExoCache<? extends Serializable, ?>)o).clearCache();
          }
          catch (Exception wtf)
          {
@@ -79,11 +82,19 @@ public class CacheServiceManaged implements ManagementAware
       this.context = context;
    }
 
-   void registerCache(ExoCache cache)
+   void registerCache(ExoCache<? extends Serializable, ?> cache)
    {
       if (context != null)
       {
          context.register(cache);
+      }
+   }
+
+   void unregisterCache(ExoCache<? extends Serializable, ?> cache)
+   {
+      if (context != null)
+      {
+         context.unregister(cache);
       }
    }
 }
