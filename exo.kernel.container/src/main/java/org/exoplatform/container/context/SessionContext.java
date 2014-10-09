@@ -63,11 +63,6 @@ public class SessionContext extends SharedContext<HttpSession>
    {
 
       /**
-       * The prefix of all the attributes stored into the request
-       */
-      private static final String PREFIX = "#SCS@";
-
-      /**
        * The session in which we will store the content
        */
       private final HttpSession session;
