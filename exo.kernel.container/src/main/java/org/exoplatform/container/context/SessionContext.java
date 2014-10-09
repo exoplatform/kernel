@@ -19,9 +19,11 @@
 package org.exoplatform.container.context;
 
 import java.lang.annotation.Annotation;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.context.SessionScoped;
 import javax.servlet.http.HttpSession;
@@ -36,6 +38,10 @@ import javax.servlet.http.HttpSession;
  */
 public class SessionContext extends SharedContext<HttpSession>
 {
+   /**
+    * The id of the attribute in which it will store the objects
+    */
+   private static final String ATTRIBUTE_ID = SessionContext.class.getName();
 
    /**
     * {@inheritDoc}
@@ -59,7 +65,7 @@ public class SessionContext extends SharedContext<HttpSession>
       /**
        * The prefix of all the attributes stored into the request
        */
-      private static final String PREFIX = SessionContextStorage.class.getPackage().getName();
+      private static final String PREFIX = "#SCS@";
 
       /**
        * The session in which we will store the content
@@ -71,14 +77,6 @@ public class SessionContext extends SharedContext<HttpSession>
          this.session = session;
       }
 
-      private String getFullId(String id)
-      {
-         StringBuilder sb = new StringBuilder(PREFIX);
-         sb.append('#');
-         sb.append(id);
-         return sb.toString();
-      }
-
       /**
        * {@inheritDoc}
        */
@@ -88,18 +86,41 @@ public class SessionContext extends SharedContext<HttpSession>
       }
 
       /**
+       * Gives the map of objects that we currently have in the session
+       * @param create indicates whether it should be created if it doesn't exist yet
+       */
+      @SuppressWarnings("unchecked")
+      private Map<String, Object> getObjects(boolean create)
+      {
+         Map<String, Object> map = (Map<String, Object>)session.getAttribute(ATTRIBUTE_ID);
+         if (map == null && create)
+         {
+            synchronized (this)
+            {
+               map = (Map<String, Object>)session.getAttribute(ATTRIBUTE_ID);
+               if (map == null)
+               {
+                  map = new ConcurrentHashMap<String, Object>();
+                  session.setAttribute(ATTRIBUTE_ID, map);
+               }
+            }
+         }
+         return map;
+      }
+
+      /**
        * {@inheritDoc}
        */
       public <T> T setInstance(String id, CreationContext<T> creationContext)
       {
-         String fullId = getFullId(id);
+         Map<String, Object> map = getObjects(true);
          @SuppressWarnings("unchecked")
-         CreationContext<T> currentValue = (CreationContext<T>)session.getAttribute(fullId);
+         CreationContext<T> currentValue = (CreationContext<T>)map.get(id);
          if (currentValue != null && currentValue.getInstance() != null)
          {
             return currentValue.getInstance();
          }
-         session.setAttribute(fullId, creationContext);
+         map.put(id, creationContext);
          return creationContext.getInstance();
       }
 
@@ -109,8 +130,8 @@ public class SessionContext extends SharedContext<HttpSession>
       @SuppressWarnings("unchecked")
       public <T> CreationContext<T> getCreationContext(String id)
       {
-         String fullId = getFullId(id);
-         return (CreationContext<T>)session.getAttribute(fullId);
+         Map<String, Object> map = getObjects(false);
+         return map == null ? null : (CreationContext<T>)map.get(id);
       }
 
       /**
@@ -118,8 +139,17 @@ public class SessionContext extends SharedContext<HttpSession>
        */
       public void removeInstance(String id)
       {
-         String fullId = getFullId(id);
-         session.removeAttribute(fullId);
+         Map<String, Object> map = getObjects(false);
+         if (map != null && map.remove(id) != null && map.isEmpty())
+         {
+            synchronized (this)
+            {
+               if (map.isEmpty())
+               {
+                  session.removeAttribute(ATTRIBUTE_ID);
+               }
+            }
+         }
       }
 
       /**
@@ -127,18 +157,8 @@ public class SessionContext extends SharedContext<HttpSession>
        */
       public Set<String> getAllIds()
       {
-         Enumeration<String> enumeration = session.getAttributeNames();
-         Set<String> ids = new HashSet<String>();
-         while (enumeration.hasMoreElements())
-         {
-            String id = enumeration.nextElement();
-            if (id.startsWith(PREFIX))
-            {
-               // Remove the prefix
-               ids.add(id.substring(PREFIX.length() + 1));
-            }
-         }
-         return ids;
+         Map<String, Object> map = getObjects(false);
+         return map == null ? Collections.<String>emptySet() : new HashSet<String>(map.keySet());
       }
    }
 }

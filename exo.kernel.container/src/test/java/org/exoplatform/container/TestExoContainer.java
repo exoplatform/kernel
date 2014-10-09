@@ -3326,7 +3326,7 @@ public class TestExoContainer
       manager.<ServletRequest> getContext(RequestScoped.class).activate(req1);
       S1 s1 = container.getComponentInstanceOfType(S1.class);
       int s1Id = s1.getId();
-      assertEquals(2, mapReq1.size());
+      assertEquals(1, mapReq1.size());
       assertNotNull(s1);
       assertSame(s1, container.getComponentInstanceOfType(S1.class));
       assertEquals(s1Id, container.getComponentInstanceOfType(S1.class).getId());

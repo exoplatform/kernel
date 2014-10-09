@@ -21,6 +21,8 @@ package org.exoplatform.container.context;
 import org.exoplatform.container.component.ThreadContext;
 import org.exoplatform.container.component.ThreadContextHolder;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
@@ -40,22 +42,26 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
 {
 
    /**
-    * The thread local in which we keep the current storage
+    * The thread local in which we keep the current context
     */
-   private final ThreadLocal<CreationContextStorage> storage = new ThreadLocal<CreationContextStorage>();
+   private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<ThreadLocalData>();
 
    /**
     * {@inheritDoc}
     */
    public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext)
    {
-      if (!isActive())
+      ThreadLocalData tld = data.get();
+      if (tld == null)
       {
          throw new ContextNotActiveException();
       }
       String id = getId(contextual);
+      T result = getFromCache(tld, id);
+      if (result != null)
+         return result;
       CreationContextStorage storage = getStorage();
-      T result = getInstance(storage, id);
+      result = getInstance(storage, id);
       if (result == null)
       {
          if (creationalContext == null)
@@ -72,6 +78,7 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
                   result =
                      storage.setInstance(id,
                         new CreationContext<T>(contextual, creationalContext, contextual.create(creationalContext)));
+                  putInCache(tld, id, result);
                }
             }
             finally
@@ -84,6 +91,7 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
             result =
                storage.setInstance(id,
                   new CreationContext<T>(contextual, creationalContext, contextual.create(creationalContext)));
+            putInCache(tld, id, result);
          }
       }
       return result;
@@ -125,7 +133,7 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
     */
    public boolean isActive()
    {
-      return storage.get() != null;
+      return data.get() != null;
    }
 
    /**
@@ -199,7 +207,8 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
     */
    protected CreationContextStorage getStorage()
    {
-      return storage.get();
+      ThreadLocalData tld =  data.get();
+      return tld == null ? null : tld.storage;
    }
 
    /**
@@ -210,11 +219,11 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
    {
       if (storage == null)
       {
-         this.storage.remove();
+         this.data.remove();
       }
       else
       {
-         this.storage.set(storage);
+         this.data.set(new ThreadLocalData(storage));
       }
    }
 
@@ -272,10 +281,61 @@ public abstract class AbstractContext<K> implements AdvancedContext<K>, ThreadCo
    }
 
    /**
+    * Gets the component from the cache if it has already been registered
+    * @param data the data corresponding to the current context
+    * @param id the id of the component
+    * @return the corresponding component if is already in the cache
+    */
+   @SuppressWarnings("unchecked")
+   protected <T> T getFromCache(ThreadLocalData data, String id)
+   {
+      Map<String, Object> map = data.cache;
+      return map == null ? null : (T)map.get(id);
+   }
+
+   /**
+    * Puts in the cache a given object instance corresponding to the given id
+    * @param data the data corresponding to the current context
+    * @param id the id of the component
+    * @param o the corresponding instance
+    */
+   protected void putInCache(ThreadLocalData data, String id, Object o)
+   {
+      Map<String, Object> map = data.cache;
+      if (map == null)
+      {
+         map = new HashMap<String, Object>();
+         data.cache = map;
+      }
+      map.put(id, o);
+   }
+ 
+   /**
     * {@inheritDoc}
     */
    public ThreadContext getThreadContext()
    {
-      return new ThreadContext(storage);
+      return new ThreadContext(data);
+   }
+
+   /**
+    * This class encapsulates all the data stored into the {@link ThreadLocal} variable
+    */
+   protected static class ThreadLocalData
+   {
+      /**
+       * The storage
+       */
+      protected final CreationContextStorage storage;
+
+      /**
+       * The local cache
+       */
+      protected Map<String, Object> cache;
+
+      private ThreadLocalData(CreationContextStorage storage)
+      {
+         this.storage = storage;
+      }
    }
 }

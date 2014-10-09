@@ -549,16 +549,7 @@ public class ContainerUtil
                ProxyFactory factory = new ProxyFactory();
                factory.setSuperclass(superClass);
                factory.setFilter(MethodFilterHolder.METHOD_FILTER);
-               MethodHandler handler = new MethodHandler()
-               {
-                  public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable
-                  {
-                     if ((!Modifier.isPublic(m.getModifiers()) || !Modifier.isPublic(m.getDeclaringClass()
-                        .getModifiers())) && !m.isAccessible())
-                        m.setAccessible(true);
-                     return m.invoke(provider.get(), args);
-                  }
-               };
+               MethodHandler handler = new ProxyMethodHandler<T>(provider);
                return superClass.cast(factory.create(new Class<?>[0], new Object[0], handler));
             }
             catch (Exception e)
@@ -608,5 +599,29 @@ public class ContainerUtil
             result = result.substring(0, index);
       }
       return result;
+   }
+
+   /**
+    * The method handler used for the dynamic Proxies 
+    */
+   private static class ProxyMethodHandler<T> implements MethodHandler
+   {
+      private final Provider<T> provider;
+      
+      public ProxyMethodHandler(Provider<T> provider)
+      {
+         this.provider = provider;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable
+      {
+         if (!m.isAccessible())
+            m.setAccessible(true);
+         return m.invoke(provider.get(), args);
+      }
+      
    }
 }

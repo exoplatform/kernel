@@ -19,8 +19,10 @@
 package org.exoplatform.container.context;
 
 import java.lang.annotation.Annotation;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
@@ -35,6 +37,10 @@ import javax.servlet.ServletRequest;
  */
 public class RequestContext extends UnSharedContext<ServletRequest>
 {
+   /**
+    * The id of the attribute in which it will store the objects
+    */
+   private static final String ATTRIBUTE_ID = RequestContext.class.getName();
 
    /**
     * {@inheritDoc}
@@ -56,11 +62,6 @@ public class RequestContext extends UnSharedContext<ServletRequest>
    {
 
       /**
-       * The prefix of all the attributes stored into the request
-       */
-      private static final String PREFIX = RequestContextStorage.class.getPackage().getName();
-
-      /**
        * The request in which we will store the content
        */
       private final ServletRequest request;
@@ -68,14 +69,6 @@ public class RequestContext extends UnSharedContext<ServletRequest>
       public RequestContextStorage(ServletRequest request)
       {
          this.request = request;
-      }
-
-      private String getFullId(String id)
-      {
-         StringBuilder sb = new StringBuilder(PREFIX);
-         sb.append('#');
-         sb.append(id);
-         return sb.toString();
       }
 
       /**
@@ -87,18 +80,34 @@ public class RequestContext extends UnSharedContext<ServletRequest>
       }
 
       /**
+       * Gives the map of objects that we currently have in the request
+       * @param create indicates whether it should be created if it doesn't exist yet
+       */
+      private Map<String, Object> getObjects(boolean create)
+      {
+         @SuppressWarnings("unchecked")
+         Map<String, Object> map = (Map<String, Object>)request.getAttribute(ATTRIBUTE_ID);
+         if (map == null && create)
+         {
+            map = new HashMap<String, Object>();
+            request.setAttribute(ATTRIBUTE_ID, map);
+         }
+         return map;
+      }
+
+      /**
        * {@inheritDoc}
        */
       public <T> T setInstance(String id, CreationContext<T> creationContext)
       {
-         String fullId = getFullId(id);
+         Map<String, Object> map = getObjects(true);
          @SuppressWarnings("unchecked")
-         CreationContext<T> currentValue = (CreationContext<T>)request.getAttribute(fullId);
+         CreationContext<T> currentValue = (CreationContext<T>)map.get(id);
          if (currentValue != null && currentValue.getInstance() != null)
          {
             return currentValue.getInstance();
          }
-         request.setAttribute(fullId, creationContext);
+         map.put(id, creationContext);
          return creationContext.getInstance();
       }
 
@@ -108,8 +117,8 @@ public class RequestContext extends UnSharedContext<ServletRequest>
       @SuppressWarnings("unchecked")
       public <T> CreationContext<T> getCreationContext(String id)
       {
-         String fullId = getFullId(id);
-         return (CreationContext<T>)request.getAttribute(fullId);
+         Map<String, Object> map = getObjects(false);
+         return map == null ? null : (CreationContext<T>)map.get(id);
       }
 
       /**
@@ -117,8 +126,11 @@ public class RequestContext extends UnSharedContext<ServletRequest>
        */
       public void removeInstance(String id)
       {
-         String fullId = getFullId(id);
-         request.removeAttribute(fullId);
+         Map<String, Object> map = getObjects(false);
+         if (map != null && map.remove(id) != null && map.isEmpty())
+         {
+            request.removeAttribute(ATTRIBUTE_ID);
+         }
       }
 
       /**
@@ -126,18 +138,8 @@ public class RequestContext extends UnSharedContext<ServletRequest>
        */
       public Set<String> getAllIds()
       {
-         Enumeration<String> enumeration = request.getAttributeNames();
-         Set<String> ids = new HashSet<String>();
-         while (enumeration.hasMoreElements())
-         {
-            String id = enumeration.nextElement();
-            if (id.startsWith(PREFIX))
-            {
-               // Remove the prefix
-               ids.add(id.substring(PREFIX.length() + 1));
-            }
-         }
-         return ids;
+         Map<String, Object> map = getObjects(false);
+         return map == null ? Collections.<String>emptySet() : new HashSet<String>(map.keySet());
       }
    }
 }
