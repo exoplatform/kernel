@@ -24,7 +24,6 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ar.Archive;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
-import org.exoplatform.container.context.ContextManagerListener;
 import org.exoplatform.container.definition.PortalContainerConfig;
 import org.exoplatform.container.definition.PortalContainerDefinition;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
@@ -780,9 +779,6 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          //
          executeInitTasks(pcontainer, PortalContainerPostInitTask.TYPE);
          executeInitTasks(pcontainer, PortalContainerPostCreateTask.TYPE);
-
-         // Register the listener if needed
-         ContextManagerListener.registerIfNeeded(pcontainer, context);
 
          LOG.info("The portal container '" + portalContainerName + "' has been created successfully");
       }

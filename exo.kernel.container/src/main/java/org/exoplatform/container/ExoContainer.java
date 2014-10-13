@@ -589,7 +589,7 @@ public class ExoContainer extends AbstractContainer
       {
          if (ctxManagerLoaded.get())
             return ctxManager;
-         ctxManager = getComponentInstanceOfType(ContextManager.class);
+         ctxManager = getComponentInstanceOfType(ContextManager.class, false);
          ctxManagerLoaded.set(true);
       }
       return ctxManager;
