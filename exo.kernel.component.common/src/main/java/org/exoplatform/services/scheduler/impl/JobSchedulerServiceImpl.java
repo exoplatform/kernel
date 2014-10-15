@@ -23,14 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.exoplatform.container.BaseContainerLifecyclePlugin;
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.ComponentPlugin;
-import org.exoplatform.container.multitenancy.CurrentTenantNotSetException;
-import org.exoplatform.container.multitenancy.Tenant;
-import org.exoplatform.container.multitenancy.TenantsService;
-import org.exoplatform.container.multitenancy.TenantsStateListener;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -71,8 +64,8 @@ import org.quartz.impl.matchers.KeyMatcher;
 
 /**
  * Created by The eXo Platform SAS
- * Author : Hoa Pham
- * hoapham@exoplatform.com
+ * Author : Hoa  Pham
+ *          hoapham@exoplatform.com
  * Oct 5, 2005
  * 
  * @version $Id: JobSchedulerServiceImpl.java 34394 2009-07-23 09:23:31Z dkatayev $
@@ -86,31 +79,15 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final Scheduler scheduler_;
 
-   private final String containerName_;
+   protected final String containerName_;
 
    private final QueueTasks qtasks_;
 
-   private final TenantsService tenantsService;
-   
-   protected final Tenant        jobTenant;
-
-   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks,
-      TenantsService tService, ExoContainerContext context)
+   public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks)
    {
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
-      this.tenantsService = tService;
-      Tenant tenant;
-      try {
-        tenant = tenantsService.getCurrentTanant();
-      } catch (CurrentTenantNotSetException e) {
-        tenant = null;
-      }
-      this.jobTenant = tenant;
-      if (jobTenant != null){
-        addTenantStartingTriggerListener(context);
-      }
    }
 
    /**
@@ -124,42 +101,6 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
-      tenantsService = null;
-      this.jobTenant = null;
-   }
-
-   private void addTenantStartingTriggerListener(ExoContainerContext context){
-     //Add trigger listener for all starting tenant's jobs
-     try {
-       TenantStartingTriggerListener listener = new TenantStartingTriggerListener(jobTenant.getName());
-       addGlobalTriggerListener(listener);
-       LOG.debug("Add trigger listener for starting tenant {}",jobTenant.getName());
-     } catch (Exception e1) {
-       LOG.warn("Can't add trigger listener for {}",jobTenant.getName());
-     }
-     
-     //Remove trigger listener when tenant is online, all components are created
-     context.getContainer().addContainerLifecylePlugin(new BaseContainerLifecyclePlugin()
-     {       
-        @Override
-        public void startContainer(ExoContainer container) throws Exception
-        {
-          LOG.debug("Remove trigger listener for online tenant {}",jobTenant.getName());
-          removeGlobaTriggerListener(TenantStartingTriggerListener.createName(jobTenant.getName()));
-        }        
-     });
-   }
-   
-   protected boolean isTenantJob(JobDetail jobDetail) {
-     if (jobTenant != null) {
-       String tenantName = jobTenant.getName();
-
-       String[] elements = jobDetail.getKey().getGroup().split(":");
-       if (elements.length == 3 && tenantName.equals(elements[1])) {
-         return true;
-       }
-     }
-     return false;
    }
    
    public void queueTask(Task task)
@@ -617,12 +558,17 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          // Ensure that only one JobEnvironmentConfigListener will be registered
          while (removeGlobalJobListener(JobEnvironmentConfigListener.NAME));
          // Add the unique instance of JobEnvironmentConfigListener
-         scheduler_.getListenerManager().addJobListener(new JobEnvironmentConfigListener());
+         scheduler_.getListenerManager().addJobListener(getJobEnvironmentConfigListenerInstance());
       }
       catch (Exception e)
       {
          LOG.warn("Could not remove the GlobalJobListener " + JobEnvironmentConfigListener.NAME, e);
       }
+   }
+
+   protected JobEnvironmentConfigListener getJobEnvironmentConfigListenerInstance()
+   {
+      return new JobEnvironmentConfigListener();
    }
 
    public void stop()
@@ -652,34 +598,14 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       return scheduler_.getJobDetail(JobKey.jobKey(innerJobInfo.getJobName(), innerJobInfo.getGroupName()));
    }
 
-   private String getGroupName(String initialGroupName)
+   protected String getGroupName(String initialGroupName)
    {
-      StringBuilder gname = new StringBuilder();
-      gname.append(containerName_);
-
-      if (tenantsService != null)
-      {
-         try
-         {
-            String tenantName = tenantsService.getCurrentTanant().getName();
-            gname.append(":");
-            gname.append(tenantName);
-         }
-         catch (CurrentTenantNotSetException e)
-         {
-            if (LOG.isDebugEnabled())
-            {
-               LOG.debug("Cannot append current tenant name: " + e.getMessage());
-            }
-         }
-      }
-
-      if (initialGroupName != null && !(initialGroupName = initialGroupName.trim()).isEmpty())
-      {
-         gname.append(":");
-         gname.append(initialGroupName);
-      }
-      return gname.toString();
+      String gname;
+      if (initialGroupName == null || (initialGroupName = initialGroupName.trim()).isEmpty())
+         gname = containerName_;
+      else
+         gname = containerName_ + ":" + initialGroupName;
+      return gname;
    }
 
 }

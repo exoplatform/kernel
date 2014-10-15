@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
-import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
