@@ -31,7 +31,7 @@
    <name>eXo Kernel :: Container Extension :: Guice Implementation</name>
    <description>A component provider based on Guice.</description>
    <properties>
-      <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+      <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
    </properties>
    <dependencies>
       <dependency>
