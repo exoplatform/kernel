@@ -8,6 +8,7 @@ grant codeBase "@MAIN_CLASSES@-"{
 
 grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "modifyPermisssion";
+   permission java.security.SecurityPermission "createAccessControlContext";
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{
