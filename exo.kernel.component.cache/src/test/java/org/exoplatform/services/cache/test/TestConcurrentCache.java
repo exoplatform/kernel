@@ -22,6 +22,9 @@ import junit.framework.TestCase;
 
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
+import org.exoplatform.services.cache.CachedObjectSelector;
+import org.exoplatform.services.cache.ExoCache;
+import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache;
 
 import java.io.Serializable;
@@ -210,6 +213,28 @@ public class TestConcurrentCache extends TestCase
       expectedSet.add(v2);
       expectedSet.add(v3);
       assertEquals(expectedSet, cachedSet);
+   }
+
+   public void testSelect() throws Exception
+   {
+      CacheHelper<String, Object> cache = new CacheHelper<String, Object>(4);
+      cache.put("Foo", v1);
+      assertEquals(1, cache.getCacheSize());
+      cache.select(new CachedObjectSelector<String, Object>()
+      {
+
+         public boolean select(String key, ObjectCacheInfo<? extends Object> ocinfo)
+         {
+            return "Foo".equals(key) && v1.equals(ocinfo.get());
+         }
+
+         public void onSelect(ExoCache<? extends String, ? extends Object> cache,
+            String key, ObjectCacheInfo<? extends Object> ocinfo) throws Exception
+         {
+            cache.remove(key);
+         }
+      });
+      assertEquals(0, cache.getCacheSize());
    }
 
    private void waitFor(long millis)

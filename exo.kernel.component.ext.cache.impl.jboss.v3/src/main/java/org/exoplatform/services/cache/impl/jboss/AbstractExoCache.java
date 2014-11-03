@@ -176,7 +176,10 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    public List<V> getCachedObjects()
    {
       final LinkedList<V> list = new LinkedList<V>();
-      for (Node<K, V> node : cache.getNode(rootFqn).getChildren())
+      NodeSPI<K, V> rootNode = cache.getNode(rootFqn);
+      if (rootNode == null)
+         return list;
+      for (Node<K, V> node : rootNode.getChildren())
       {
          if (node == null)
          {
@@ -339,8 +342,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       if (selector == null)
       {
          throw new IllegalArgumentException("No null selector");
-      }      
-      for (Node<K, V> node : cache.getNode(rootFqn).getChildren())
+      }
+      NodeSPI<K, V> rootNode = cache.getNode(rootFqn);
+      if (rootNode == null)
+         return;
+      for (Node<K, V> node : rootNode.getChildren())
       {
          if (node == null)
          {
