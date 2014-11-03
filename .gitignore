@@ -44,3 +44,4 @@ pom.xml.versionsBackup
 
 # Misc
 *.swp
+.java-version
