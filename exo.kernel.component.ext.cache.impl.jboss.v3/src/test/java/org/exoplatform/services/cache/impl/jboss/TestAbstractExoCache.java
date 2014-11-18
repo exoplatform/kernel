@@ -28,6 +28,7 @@ import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ExoCacheFactory;
 import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.test.BasicTestCase;
+import org.jgroups.Version;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,8 +37,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -232,7 +233,7 @@ public class TestAbstractExoCache extends BasicTestCase
    @SuppressWarnings("unchecked")
    public void testDistributedCache() throws Exception
    {
-      System.out.println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = " + System.getProperty("java.net.preferIPv4Stack"));
+      System.out.println("WARNING: For Linux distributions the following JVM parameter must be set to true, java.net.preferIPv4Stack = " + System.getProperty("java.net.preferIPv4Stack") + " JGroups Version " + Version.description);
       ExoCacheConfig config = new ExoCacheConfig();
       config.setName("MyCacheDistributed");
       config.setMaxSize(5);
