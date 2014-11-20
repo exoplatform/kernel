@@ -54,7 +54,7 @@ public class TestMimeTypeResolver extends TestCase
       assertEquals("application/msword", resolver.getMimeType("my.doc"));
       assertEquals("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
          resolver.getMimeType("my.docx"));
-      assertEquals("application/xls", resolver.getMimeType("my.xls"));
+      assertEquals("application/vnd.ms-excel", resolver.getMimeType("my.xls"));
       assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", resolver.getMimeType("my.xlsx"));
       assertEquals("application/pdf", resolver.getMimeType("my.pdf"));
       assertEquals("image/jpeg", resolver.getMimeType("my.jpg"));
@@ -125,7 +125,7 @@ public class TestMimeTypeResolver extends TestCase
       assertEquals("application/msword", resolver.getMimeType("MY.DOC"));
       assertEquals("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
          resolver.getMimeType("MY.DOCX"));
-      assertEquals("application/xls", resolver.getMimeType("MY.XLS"));
+      assertEquals("application/vnd.ms-excel", resolver.getMimeType("MY.XLS"));
       assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", resolver.getMimeType("MY.XLSX"));
       assertEquals("application/pdf", resolver.getMimeType("MY.PDF"));
       assertEquals("image/jpeg", resolver.getMimeType("MY.JPG"));
