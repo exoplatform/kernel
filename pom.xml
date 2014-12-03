@@ -33,7 +33,7 @@
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.4.x-SNAPSHOT</version>
+   <version>2.4.11-GA</version>
    <packaging>pom</packaging>
 
    <name>eXo Kernel</name>
