@@ -194,7 +194,7 @@ public interface ExoCache<K extends Serializable, V>
 
    /**
     * Returns a list of cached object that are considered as valid when the method is called. Any non valid
-    * object will not be returnted.
+    * object will not be returned.
     *
     * @return the list of cached objects
     * @throws Exception any exception
