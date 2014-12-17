@@ -85,6 +85,10 @@ class CacheState<K extends Serializable, V>
             config.onExpire(entry.name, o);
          }
       }
+      else
+      {
+         config.misses.incrementAndGet();
+      }
       return null;
    }
 

@@ -215,6 +215,27 @@ public class TestConcurrentCache extends TestCase
       assertEquals(expectedSet, cachedSet);
    }
 
+   public void testHitRatio()
+   {
+      CacheHelper<String, Object> cache = new CacheHelper<String, Object>();
+      cache.setLiveTimeMillis(5);
+      assertEquals(0, cache.getCacheHit());
+      assertEquals(0, cache.getCacheMiss());
+      cache.put("Foo", v1);
+      assertEquals(0, cache.getCacheHit());
+      assertEquals(0, cache.getCacheMiss());
+      assertEquals(v1, cache.get("Foo"));
+      assertEquals(1, cache.getCacheHit());
+      assertEquals(0, cache.getCacheMiss());
+      waitFor(10);
+      assertNull(cache.get("Foo"));
+      assertEquals(1, cache.getCacheHit());
+      assertEquals(1, cache.getCacheMiss());
+      assertNull(cache.get("Foo"));
+      assertEquals(1, cache.getCacheHit());
+      assertEquals(2, cache.getCacheMiss());
+   }
+
    public void testSelect() throws Exception
    {
       CacheHelper<String, Object> cache = new CacheHelper<String, Object>(4);
