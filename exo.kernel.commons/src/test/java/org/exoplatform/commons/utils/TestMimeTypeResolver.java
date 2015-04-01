@@ -60,6 +60,29 @@ public class TestMimeTypeResolver extends TestCase
       assertEquals("image/jpeg", resolver.getMimeType("my.jpg"));
       assertEquals("application/vnd.oasis.opendocument.text", resolver.getMimeType("my.odt"));
 
+      assertEquals("application/vnd.ms-word.document.macroenabled.12", resolver.getMimeType("my.docm"));
+      assertEquals("application/msword", resolver.getMimeType("my.dot"));
+      assertEquals("application/vnd.ms-word.template.macroenabled.12", resolver.getMimeType("my.dotm"));
+      assertEquals("application/vnd.openxmlformats-officedocument.wordprocessingml.template", resolver.getMimeType("my.dotx"));
+
+      assertEquals("application/vnd.ms-powerpoint.presentation.macroenabled.12", resolver.getMimeType("my.pptm"));
+      assertEquals("application/vnd.openxmlformats-officedocument.presentationml.slideshow", resolver.getMimeType("my.ppsx"));
+      assertEquals("application/vnd.ms-powerpoint.slideshow.macroenabled.12", resolver.getMimeType("my.ppsm"));
+      assertEquals("application/vnd.ms-powerpoint", resolver.getMimeType("my.pps"));
+      assertEquals("application/vnd.ms-powerpoint.addin.macroenabled.12", resolver.getMimeType("my.ppam"));
+      assertEquals("application/vnd.ms-powerpoint", resolver.getMimeType("my.ppa"));
+      assertEquals("application/vnd.openxmlformats-officedocument.presentationml.template", resolver.getMimeType("my.potx"));
+      assertEquals("application/vnd.ms-powerpoint.template.macroenabled.12", resolver.getMimeType("my.potm"));
+      assertEquals("application/vnd.ms-powerpoint", resolver.getMimeType("my.pot"));
+
+      assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.template", resolver.getMimeType("my.xltx"));
+      assertEquals("application/vnd.ms-excel.template.macroenabled.12", resolver.getMimeType("my.xltm"));
+      assertEquals("application/vnd.ms-excel", resolver.getMimeType("my.xlt"));
+      assertEquals("application/vnd.ms-excel.sheet.macroenabled.12", resolver.getMimeType("my.xlsm"));
+      assertEquals("application/vnd.ms-excel.sheet.binary.macroenabled.12", resolver.getMimeType("my.xlsb"));
+      assertEquals("application/vnd.ms-excel.addin.macroenabled.12", resolver.getMimeType("my.xlam"));
+      assertEquals("application/vnd.ms-excel", resolver.getMimeType("my.xla"));
+      assertEquals("application/vnd.ms-excel", resolver.getMimeType("my.xll"));
    }
 
    /**
