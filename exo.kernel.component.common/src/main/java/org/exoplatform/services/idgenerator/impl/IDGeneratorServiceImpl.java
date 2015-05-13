@@ -18,12 +18,14 @@
  */
 package org.exoplatform.services.idgenerator.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.idgenerator.IDGeneratorService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.Random;
 
@@ -40,8 +42,28 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
    private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.IDGeneratorServiceImpl");
 
    private static String hexServerIP_;
+
+   private static IntegerFormatter integerFormatter;
+
    static
    {
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            if ("IBM Corporation".equals(System.getProperty("java.vendor"))
+               && "1.8.0".equals(System.getProperty("java.version")))
+            {
+               //IBM JDK 8 workaround KER-308
+               integerFormatter = new J9IntegerFormatter();
+            }
+            else
+            {
+               integerFormatter = new IntegerFormatter();
+            }
+            return null;
+         }
+      });
       InetAddress localInetAddress = null;
       try
       {
@@ -121,7 +143,7 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
 
    private static void addHexFormat(StringBuilder buffer, int i, int j)
    {
-      String s = Integer.toHexString(i);
+      String s = integerFormatter.toHexString(i);
       addPadHex(buffer, s, j);
       buffer.append(s);
    }
@@ -134,6 +156,31 @@ public class IDGeneratorServiceImpl implements IDGeneratorService
          for (int j = 0; j < i - length; j++)
          {
             buffer.append('0');
+         }
+      }
+   }
+
+   private static class IntegerFormatter
+   {
+      public String toHexString(int i)
+      {
+         return Integer.toHexString(i);
+      }
+   }
+
+   private static class J9IntegerFormatter extends IntegerFormatter
+   {
+      public String toHexString(int i)
+      {
+         final String hex = Integer.toHexString(i);
+         final int lastNul = hex.lastIndexOf('\u0000');
+         if (lastNul >= 0)
+         {
+            return hex.substring(lastNul + 1);
+         }
+         else
+         {
+            return hex;
          }
       }
    }
