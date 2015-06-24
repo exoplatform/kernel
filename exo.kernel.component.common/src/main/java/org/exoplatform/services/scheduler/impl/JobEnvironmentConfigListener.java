@@ -23,6 +23,7 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.component.ComponentRequestLifecycle;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.quartz.JobExecutionContext;
@@ -50,17 +51,18 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
       {
          if (containerName.equals(JobSchedulerServiceImpl.STANDALONE_CONTAINER_NAME))
          {
-            container = ExoContainerContext.getTopContainer();            
+            container = ExoContainerContext.getTopContainer();
          }
          else
          {
             RootContainer rootContainer = RootContainer.getInstance();
-            container = (ExoContainer)rootContainer.getComponentInstance(containerName);            
+            container = (ExoContainer)rootContainer.getComponentInstance(containerName);
          }
       }
       if (container != null)
       {
-         ExoContainerContext.setCurrentContainer(container);            
+         ExoContainerContext.setCurrentContainer(container); 
+         RequestLifeCycle.begin(container);           
          List<ComponentRequestLifecycle> components = container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
          for (ComponentRequestLifecycle component : components)
          {
@@ -86,12 +88,12 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
       {
          if (containerName.equals(JobSchedulerServiceImpl.STANDALONE_CONTAINER_NAME))
          {
-            container = ExoContainerContext.getTopContainer();            
+            container = ExoContainerContext.getTopContainer();
          }
          else
          {
             RootContainer rootContainer = RootContainer.getInstance();
-            container = (ExoContainer)rootContainer.getComponentInstance(containerName);            
+            container = (ExoContainer)rootContainer.getComponentInstance(containerName);
          }
       }
       if (container != null)
@@ -105,7 +107,8 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
                LOG.warn("Error ending request of " + component, e);
             }
          }
-         ExoContainerContext.setCurrentContainer(null);            
+         RequestLifeCycle.end();
+         ExoContainerContext.setCurrentContainer(null);
       }
    }
 

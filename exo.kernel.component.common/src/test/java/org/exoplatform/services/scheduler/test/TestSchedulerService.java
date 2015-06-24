@@ -24,6 +24,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
+import org.exoplatform.container.component.ComponentRequestLifecycle;
 import org.exoplatform.services.scheduler.JobInfo;
 import org.exoplatform.services.scheduler.JobSchedulerService;
 import org.exoplatform.services.scheduler.PeriodInfo;
@@ -264,19 +265,22 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       {
          if (oldProfileList == null)
          {
-            System.clearProperty(PropertyManager.RUNTIME_PROFILES);            
+            System.clearProperty(PropertyManager.RUNTIME_PROFILES);
          }
          else
          {
-            System.setProperty(PropertyManager.RUNTIME_PROFILES, oldProfileList);            
+            System.setProperty(PropertyManager.RUNTIME_PROFILES, oldProfileList);
          }
          PropertyManager.refresh();
       }
       assertEquals("myJob1", component.name);
       assertEquals(container, component.container);
+      assertTrue(component.endRequest > 0);
+      assertFalse(component.endRequestFailed);
       assertEquals("myJob2", component2.name);
       assertEquals(container2, component2.container);
-      
+      assertTrue(component2.endRequest > 0);
+      assertFalse(component2.endRequestFailed);
    }
    
    public void testSeviceWithGlobalListener() throws Exception
@@ -388,14 +392,17 @@ public class TestSchedulerService extends SchedulerServiceTestBase
       }
    }
    
-   public static class MyComponent
+   public static class MyComponent implements ComponentRequestLifecycle
    {
       public ExoContainer container;
       public String name;
       public boolean started;
       public final CountDownLatch doneSignal = new CountDownLatch(1);
       public Boolean result;
-      
+      public int endRequest;
+      public boolean endRequestFailed;
+      private ExoContainer startRequestContainer;
+
       public void doSomething()
       {
          if (started)
@@ -404,7 +411,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
          }
          else
          {
-            result = Boolean.FALSE;            
+            result = Boolean.FALSE;
          }
          doneSignal.countDown();
       }
@@ -414,13 +421,28 @@ public class TestSchedulerService extends SchedulerServiceTestBase
          doneSignal.await(2, TimeUnit.SECONDS);
          return result;
       }
+
+      @Override
+      public void startRequest(ExoContainer container)
+      {
+         this.startRequestContainer = container;
+      }
+
+      @Override
+      public void endRequest(ExoContainer container)
+      {
+         if (container.equals(this.container) && this.container.equals(startRequestContainer))
+            endRequest++;
+         else if (this.container != null)
+            endRequestFailed = true;
+      }
    }
    
    public static class MyJobWithNonStartedServices implements Job
    {
 
       public void execute(JobExecutionContext context) throws JobExecutionException
-      {         
+      {
          MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
          component.doSomething();
       }
@@ -429,10 +451,10 @@ public class TestSchedulerService extends SchedulerServiceTestBase
    {
 
       public void execute(JobExecutionContext context) throws JobExecutionException
-      {         
+      {
          MyComponent component = (MyComponent)PortalContainer.getInstance().getComponentInstanceOfType(MyComponent.class);
          component.name = context.getJobDetail().getKey().getName();
          component.container = PortalContainer.getInstance();
       }
-   }   
+   }
 }

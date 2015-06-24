@@ -64,7 +64,7 @@ public class PortalContainerConfig implements Startable
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.PortalContainerConfig");
+   private static final Log LOG = ExoLogger.getLogger("exo.kernel.container.PortalContainerConfig");// NOSONAR
 
    /**
     * The name of the setting corresponding to the portal container name
@@ -886,7 +886,7 @@ public class PortalContainerConfig implements Startable
          if (path != null && (path = path.trim()).length() > 0)
          {
             final Map<String, String> props =
-               loadExternalSettings(path, defaultDefinition == null || pcd == defaultDefinition, def);
+               loadExternalSettings(path, defaultDefinition == null || pcd == defaultDefinition, def);// NOSONAR
             if (props != null && !props.isEmpty())
             {
                externalSettings.putAll(props);
@@ -1022,7 +1022,7 @@ public class PortalContainerConfig implements Startable
          // We load the properties from the url found
          return ContainerUtil.loadProperties(url, false);
       }
-      catch (Exception e)
+      catch (Exception e)// NOSONAR
       {
          LOG.error("Cannot load property file " + path, e);
       }
@@ -1090,7 +1090,7 @@ public class PortalContainerConfig implements Startable
                   // First we check if the method exists
                   m = oldValue.getClass().getMethod("valueOf", String.class);
                }
-               catch (Exception e)
+               catch (Exception e)// NOSONAR
                {
                   if (LOG.isDebugEnabled())
                   {
@@ -1111,7 +1111,7 @@ public class PortalContainerConfig implements Startable
                   {
                      propertyValue = m.invoke(null, propertyValue);
                   }
-                  catch (Exception e)
+                  catch (Exception e)// NOSONAR
                   {
                      LOG.error("Cannot convert the value '" + propertyValue + "' to an Object of type "
                         + oldValue.getClass(), e);
@@ -1233,7 +1233,7 @@ public class PortalContainerConfig implements Startable
                   // Secure access to definition's info
                   change.apply(new SafePortalContainerDefinition(definition, defaultDefinition));
                }
-               catch (Exception e)
+               catch (Exception e)// NOSONAR
                {
                   LOG.warn("Cannot apply the change " + change, e);
                }
