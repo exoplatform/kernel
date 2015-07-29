@@ -61,17 +61,8 @@ public class JobEnvironmentConfigListener implements JobListener, ComponentPlugi
       }
       if (container != null)
       {
-         ExoContainerContext.setCurrentContainer(container); 
-         RequestLifeCycle.begin(container);           
-         List<ComponentRequestLifecycle> components = container.getComponentInstancesOfType(ComponentRequestLifecycle.class);
-         for (ComponentRequestLifecycle component : components)
-         {
-            try {
-               component.startRequest(container);
-            } catch(Throwable e) {
-               LOG.warn("Error starting request of " + component, e);
-            }
-         }
+         ExoContainerContext.setCurrentContainer(container);
+         RequestLifeCycle.begin(container);
       }
    }
 
