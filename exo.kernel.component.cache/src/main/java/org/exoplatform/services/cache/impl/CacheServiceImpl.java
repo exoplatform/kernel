@@ -63,7 +63,7 @@ public class CacheServiceImpl implements CacheService
 
    private final ConcurrentHashMap<String, FutureExoCacheCreationTask> cacheMap_ =
       new ConcurrentHashMap<String, FutureExoCacheCreationTask>();
-   
+
    private final ExoCacheConfig defaultConfig_;
 
    private final LoggingCacheListener loggingListener_;
@@ -73,7 +73,7 @@ public class CacheServiceImpl implements CacheService
    CacheServiceManaged managed;
 
    /**
-    * 
+    *
     */
    public CacheServiceImpl(InitParams params) throws Exception
    {
@@ -157,10 +157,40 @@ public class CacheServiceImpl implements CacheService
       return null;
    }
 
+   /**
+    * Unregisters the cache instance corresponding to the given region
+    * @param region the region for which we want to unregister the cache instance
+    */
+   protected void unregisterCacheInstance(String region)
+   {
+      LOG.info("Unregisters the cache {}", region);
+      FutureExoCacheCreationTask task = cacheMap_.remove(region);
+      if (task != null && managed != null)
+      {
+         try
+         {
+            LOG.info("Tries to unregister the cache {}", region);
+            managed.unregisterCache(task.get());
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not unregister the cache " + region + ": " + e.getMessage());
+         }
+      }
+   }
+
+   /**
+    * Gives the configuration id from the name of the region 
+    */
+   protected String getConfigId(String region)
+   {
+      return region;
+   }
+
    @SuppressWarnings({"rawtypes", "unchecked"})
    private ExoCache<? extends Serializable, ?> createCacheInstance(String region) throws Exception
    {
-      ExoCacheConfig config = configs_.get(region);
+      ExoCacheConfig config = configs_.get(getConfigId(region));
       if (config == null)
          config = defaultConfig_;
 
@@ -168,7 +198,7 @@ public class CacheServiceImpl implements CacheService
       final ExoCacheConfig safeConfig = config.clone();
       // Set the region as name 
       safeConfig.setName(region);
-      
+
       ExoCache simple = null;
       if (factory_ != DEFAULT_FACTORY && safeConfig.getClass().isAssignableFrom(ExoCacheConfig.class) //NOSONAR
          && safeConfig.getImplementation() != null)
@@ -178,12 +208,12 @@ public class CacheServiceImpl implements CacheService
          try
          {
             // We check if the given implementation is a known class
-            Class<?> implClass = ClassLoading.loadClass(safeConfig.getImplementation(), this); 
+            Class<?> implClass = ClassLoading.loadClass(safeConfig.getImplementation(), this);
             // Implementation is an existing class
             if (ExoCache.class.isAssignableFrom(implClass))
             {
                // The implementation is a sub class of eXo Cache so we use the default factory
-               simple = DEFAULT_FACTORY.createCache(safeConfig);               
+               simple = DEFAULT_FACTORY.createCache(safeConfig);
             }
          }
          catch (ClassNotFoundException e)
@@ -199,7 +229,7 @@ public class CacheServiceImpl implements CacheService
          // We use the configured cache factory
          simple = factory_.createCache(safeConfig);
       }
-      
+
       if (managed != null)
       {
          managed.registerCache(simple);
@@ -213,7 +243,7 @@ public class CacheServiceImpl implements CacheService
 
    public Collection<ExoCache<? extends Serializable, ?>> getAllCacheInstances()
    {
-      Collection<ExoCache<? extends Serializable, ?>> caches = 
+      Collection<ExoCache<? extends Serializable, ?>> caches =
          new ArrayList<ExoCache<? extends Serializable,?>>(cacheMap_.size());
       for (FutureTask<ExoCache<? extends Serializable,?>> task : cacheMap_.values())
       {
@@ -245,7 +275,7 @@ public class CacheServiceImpl implements CacheService
          }
          if (cache != null)
          {
-            caches.add(cache);            
+            caches.add(cache);
          }
       }
       return caches;
@@ -326,7 +356,7 @@ public class CacheServiceImpl implements CacheService
          }
       }
    }
-   
+
    /**
     * This class is used to reduce the contention when the cache is already created
     */
@@ -334,7 +364,7 @@ public class CacheServiceImpl implements CacheService
    {
 
       private volatile ExoCache<? extends Serializable, ?> cache;
-      
+
       /**
        * @param callable
        */

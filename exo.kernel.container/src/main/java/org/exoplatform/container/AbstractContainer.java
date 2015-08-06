@@ -18,6 +18,7 @@
  */
 package org.exoplatform.container;
 
+import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.Container;
 import org.exoplatform.container.spi.ContainerException;
@@ -49,6 +50,8 @@ public abstract class AbstractContainer implements Container
    private static final long serialVersionUID = -426600082255394067L;
 
    protected Interceptor delegate;
+
+   protected TenantsContainerContext tenantsContainerContext;
 
    protected AbstractContainer()
    {

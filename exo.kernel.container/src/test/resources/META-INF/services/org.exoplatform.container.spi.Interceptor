@@ -7,3 +7,4 @@ org.exoplatform.container.spi.TestKernelExtension$MockInterceptor6
 org.exoplatform.container.spi.TestKernelExtension$MockInterceptor7
 org.exoplatform.container.spi.TestKernelExtension$MockInterceptor8
 org.exoplatform.container.spi.TestKernelExtension$MockInterceptor9
+org.exoplatform.container.TenantsContainer

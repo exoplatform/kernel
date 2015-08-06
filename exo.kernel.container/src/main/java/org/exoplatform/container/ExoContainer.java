@@ -24,6 +24,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentLifecyclePlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.context.ContextManager;
+import org.exoplatform.container.multitenancy.bridge.TenantsContainerContext;
 import org.exoplatform.container.security.ContainerPermissions;
 import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.container.spi.Container;
@@ -202,6 +203,13 @@ public class ExoContainer extends AbstractContainer
    protected void initContainerInternal()
    {
       ConfigurationManager manager = getComponentInstanceOfType(ConfigurationManager.class);
+
+      // Initialize tenants context from configuration
+      tenantsContainerContext = ContainerUtil.createTenantsContext(this, manager);
+      if (tenantsContainerContext != null)
+      {
+         registerComponentInstance(TenantsContainerContext.class, tenantsContainerContext);
+      }
       ContainerUtil.addContainerLifecyclePlugin(this, manager);
       ContainerUtil.addComponentLifecyclePlugin(this, manager);
       ContainerUtil.addComponents(this, manager);
