@@ -66,12 +66,10 @@ public class TestConfigurationManagerImpl extends TestCase
       url = cm.getURL("classpath:/org/exoplatform/container/configuration/empty-config-fake.xml");
       assertNull(url);
 
-      //test with wrong classpath prefix
       url = cm.getURL("classpath:org/exoplatform/container/configuration/empty-config.xml");
       assertTrue(url.getPath().endsWith("org/exoplatform/container/configuration/empty-config.xml"));
       checkURL(url);
 
-      //test with wrong jar prefix
       url = cm.getURL("jar:org/exoplatform/container/configuration/empty-config.xml");
       assertTrue(url.getPath().endsWith("org/exoplatform/container/configuration/empty-config.xml"));
       checkURL(url);
