@@ -186,21 +186,11 @@ public class TenantsContainer extends AbstractInterceptor
 
       if (holder.tenantsContainerContext != null && holder.tenantsContainerContext.accept(componentAdapter))
       {
-         ComponentAdapter<T> contextAdapter = holder.tenantsContainerContext.registerComponent(componentAdapter);
-         // check if the same adapter returned, if not - register the new in the super also
-         if (contextAdapter == componentAdapter)
-         {
-            return componentAdapter;
-         }
-         else
-         {
-            return (ComponentAdapter<T>)delegate.registerComponentImplementation(contextAdapter.getComponentKey(), contextAdapter.getComponentImplementation());
-         }
-      }
-      else
-      {
+         componentAdapter = holder.tenantsContainerContext.registerComponent(componentAdapter);
          return componentAdapter;
       }
+
+      return componentAdapter;
    }
 
    /**
@@ -211,23 +201,12 @@ public class TenantsContainer extends AbstractInterceptor
    {
       ComponentAdapter<T> componentAdapter = delegate.registerComponentInstance(componentKey, componentInstance);
 
-      if (holder.tenantsContainerContext != null && holder.tenantsContainerContext.accept(componentAdapter))
+      if (holder.tenantsContainerContext != null && holder.tenantsContainerContext.accept(componentKey))
       {
-         ComponentAdapter<T> contextAdapter = holder.tenantsContainerContext.registerComponent(componentAdapter);
-         // check if the same adapter returned, if not - register the new in the super also
-         if (contextAdapter == componentAdapter)
-         {
-            return componentAdapter;
-         }
-         else
-         {
-            return delegate.registerComponentInstance(contextAdapter.getComponentKey(), contextAdapter.getComponentInstance());
-         }
-      }
-      else
-      {
+         componentAdapter = holder.tenantsContainerContext.registerComponent(componentAdapter);
          return componentAdapter;
       }
+      return componentAdapter;
    }
 
    /**
