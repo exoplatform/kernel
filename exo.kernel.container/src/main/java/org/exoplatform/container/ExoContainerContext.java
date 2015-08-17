@@ -36,7 +36,7 @@ import java.util.Set;
  * @LevelAPI Platform
  */
 @SuppressWarnings("serial")
-public final class ExoContainerContext implements java.io.Serializable
+public class ExoContainerContext implements java.io.Serializable
 {
 
    private static ThreadLocal<WeakReference<ExoContainer>> currentContainer = new ThreadLocal<WeakReference<ExoContainer>>();

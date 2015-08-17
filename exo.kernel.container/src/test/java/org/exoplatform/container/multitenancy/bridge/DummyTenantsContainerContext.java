@@ -38,19 +38,19 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
    }
 
 
-   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<?> componentType)
+   public <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType)
    {
       lastGetListKey = componentType;
       return null;
    }
 
-   public <T> List<T> getComponentInstancesOfType(Class<?> componentType)
+   public <T> List<T> getComponentInstancesOfType(Class<T> componentType)
    {
       lastGetListKey = componentType;
       return null;
    }
 
-   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<?> key)
+   public <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> key)
    {
       lastGetKey = key;
       return null;
@@ -62,7 +62,7 @@ public class DummyTenantsContainerContext implements TenantsContainerContext
       return null;
    }
 
-   public <T> T getComponentInstanceOfType(Class<?> componentType)
+   public <T> T getComponentInstanceOfType(Class<T> componentType)
    {
       lastGetKey = componentType;
       return null;

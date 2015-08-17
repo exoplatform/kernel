@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.management.annotations.Managed;
@@ -58,17 +63,12 @@ import org.quartz.impl.matchers.EverythingMatcher;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.matchers.KeyMatcher;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Created by The eXo Platform SAS
  * Author : Hoa  Pham
  *          hoapham@exoplatform.com
  * Oct 5, 2005
- * 
+ *
  * @version $Id: JobSchedulerServiceImpl.java 34394 2009-07-23 09:23:31Z dkatayev $
  */
 public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
@@ -80,7 +80,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final Scheduler scheduler_;
 
-   private final String containerName_;
+   protected final String containerName_;
 
    private final QueueTasks qtasks_;
 
@@ -96,7 +96,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    /**
     * For run in Standalone container
-    * 
+    *
     * @param quartzSchduler
     * @param qtasks
     */
@@ -135,12 +135,12 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
     * Add the given <code>{@link org.quartz.JobDetail}</code> to the
     * Scheduler, and associate the given <code>{@link Trigger}</code> with
     * it.
-    * 
+    *
     * <p>
     * If the given Trigger does not reference any <code>Job</code>, then it
     * will be set to reference the Job passed with it into this method.
     * </p>
-    * 
+    *
     * @throws SchedulerException
     *           if the Job or Trigger cannot be added to the Scheduler, or
     *           there is an internal Scheduler error.
@@ -647,12 +647,17 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          // Ensure that only one JobEnvironmentConfigListener will be registered
          while (removeGlobalJobListener(JobEnvironmentConfigListener.NAME));
          // Add the unique instance of JobEnvironmentConfigListener
-         scheduler_.getListenerManager().addJobListener(new JobEnvironmentConfigListener());
+         scheduler_.getListenerManager().addJobListener(getJobEnvironmentConfigListenerInstance());
       }
       catch (Exception e)
       {
          LOG.warn("Could not remove the GlobalJobListener " + JobEnvironmentConfigListener.NAME, e);
       }
+   }
+
+   protected JobEnvironmentConfigListener getJobEnvironmentConfigListenerInstance()
+   {
+      return new JobEnvironmentConfigListener();
    }
 
    public void stop()
@@ -682,7 +687,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       return scheduler_.getJobDetail(JobKey.jobKey(innerJobInfo.getJobName(), innerJobInfo.getGroupName()));
    }
 
-   private String getGroupName(String initialGroupName)
+   protected String getGroupName(String initialGroupName)
    {
       String gname;
       if (initialGroupName == null || (initialGroupName = initialGroupName.trim()).isEmpty())

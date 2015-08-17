@@ -39,10 +39,10 @@ public interface TenantsContainerContext
    /**
     * Return list of component adapters regarding the given Class key and Current Tenant.
     *
-    * @param componentType {@link Class} type of a components 
+    * @param componentType {@link Class} type of a components
     * @return list of component adapters, an empty list if nothing found.
     */
-   <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<?> componentType);
+   <T> List<ComponentAdapter<T>> getComponentAdaptersOfType(Class<T> componentType);
 
    /**
     * Return list of component instances regarding the given Class key and Current Tenant.
@@ -50,7 +50,7 @@ public interface TenantsContainerContext
     * @param componentType {@link Class} type of instances 
     * @return list of components, an empty list if nothing found.
     */
-   <T> List<T> getComponentInstancesOfType(Class<?> componentType);
+   <T> List<T> getComponentInstancesOfType(Class<T> componentType);
 
    /**
     * Return component adapter regarding the given Class key and Current Tenant.
@@ -58,7 +58,7 @@ public interface TenantsContainerContext
     * @param key {@link Class} type of a component
     * @return {@link ComponentAdapter} of a component or <code>null</code> if nothing found in Current Tenant.
     */
-   <T> ComponentAdapter<T> getComponentAdapterOfType(Class<?> key);
+   <T> ComponentAdapter<T> getComponentAdapterOfType(Class<T> key);
 
    /**
     * Return component instance regarding the given key (String in most cases) and Current Tenant.
@@ -74,7 +74,7 @@ public interface TenantsContainerContext
     * @param componentType {@link Class} type of a component
     * @return a component instance or <code>null</code> if nothing found in Current Tenant.
     */
-   <T> T getComponentInstanceOfType(Class<?> componentType);
+   <T> T getComponentInstanceOfType(Class<T> componentType);
 
    /**
     * Answers if given component should be regarded as per-tenant service and can be registered (and

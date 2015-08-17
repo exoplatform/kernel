@@ -109,7 +109,7 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
    protected transient final ExoContainer exocontainer;
 
    /** . */
-   private transient final ConcurrentContainer container;
+   protected transient final ConcurrentContainer container;
 
    public MX4JComponentAdapter(ExoContainer holder, ConcurrentContainer container, Object key, Class<T> implementation)
    {
@@ -669,6 +669,16 @@ public class MX4JComponentAdapter<T> extends AbstractComponentAdapter<T> impleme
          }
       }
       return isSingleton;
+   }
+
+   public ExoContainer getHolder()
+   {
+      return exocontainer;
+   }
+
+   public ConcurrentContainer getContainer()
+   {
+      return container;
    }
 
    @Scope

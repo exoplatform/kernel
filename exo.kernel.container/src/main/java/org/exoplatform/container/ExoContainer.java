@@ -158,7 +158,7 @@ public class ExoContainer extends AbstractContainer
 
    private final List<ContainerLifecyclePlugin> containerLifecyclePlugin_ = new ArrayList<ContainerLifecyclePlugin>();
 
-   protected final ExoContainerContext context;
+   protected ExoContainerContext context;
 
    protected final ExoContainer parent;
 

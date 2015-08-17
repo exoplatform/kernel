@@ -67,7 +67,7 @@ public class TenantsContainer extends AbstractInterceptor
    {
       if (holder.tenantsContainerContext != null && holder.tenantsContainerContext.accept(componentKey))
       {
-         return holder.tenantsContainerContext.getComponentAdapterOfType(componentKey.getClass());
+         return (ComponentAdapter<T>)holder.tenantsContainerContext.getComponentAdapterOfType((componentKey.getClass()));
       }
       return delegate.getComponentAdapter(componentKey, bindType, autoRegistration);
    }
