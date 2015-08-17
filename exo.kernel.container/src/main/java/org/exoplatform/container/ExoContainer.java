@@ -160,7 +160,7 @@ public class ExoContainer extends AbstractContainer
 
    protected ExoContainerContext context;
 
-   protected final ExoContainer parent;
+   protected  ExoContainer parent;
 
    public ExoContainer()
    {
