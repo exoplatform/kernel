@@ -51,19 +51,28 @@ public class MockConfigurationManagerImpl extends ConfigurationManagerImpl
    {
       if (uri.startsWith("jar:"))
       {
-         final String path = removePrefix("jar:/", uri);
+         String path = removePrefix("jar:", uri);
+         if (path.startsWith("/"))
+         {
+            path = path.substring(1);
+         }
          final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         final String finalPath = path;
          return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
          {
             public URL run()
             {
-               return cl.getResource(path);
+               return cl.getResource(finalPath);
             }
          });
       }
       else if (uri.startsWith("classpath:"))
       {
-         String path = removePrefix("classpath:/", uri);
+         String path = removePrefix("classpath:", uri);
+         if (path.startsWith("/"))
+         {
+            path = path.substring(1);
+         }
          return PrivilegedSystemHelper.getResource(path);
       }
       else if (uri.startsWith("war:"))

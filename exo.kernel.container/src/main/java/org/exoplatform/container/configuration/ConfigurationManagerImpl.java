@@ -335,25 +335,35 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       }
       else if (url.startsWith("jar:"))
       {
-         final String path = removePrefix("jar:/", url);
+         String path = removePrefix("jar:", url);
+         if (path.startsWith("/"))
+         {
+            path = path.substring(1);
+         }
          final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         final String finalPath = path;
          return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
          {
             public URL run()
             {
-               return cl.getResource(path);
+               return cl.getResource(finalPath);
             }
          });
       }
       else if (url.startsWith("classpath:"))
       {
-         final String path = removePrefix("classpath:/", url);
+         String path = removePrefix("classpath:", url);
+         if (path.startsWith("/"))
+         {
+            path = path.substring(1);
+         }
          final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         final String finalPath = path;
          return SecurityHelper.doPrivilegedAction(new PrivilegedAction<URL>()
          {
             public URL run()
             {
-               return cl.getResource(path);
+               return cl.getResource(finalPath);
             }
          });
       }
