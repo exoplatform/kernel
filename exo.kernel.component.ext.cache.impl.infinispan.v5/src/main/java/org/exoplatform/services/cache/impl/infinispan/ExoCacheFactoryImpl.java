@@ -387,7 +387,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
             cacheManager = this.cacheManager;
             // No custom configuration has been found, a configuration template will be used 
             if (LOG.isInfoEnabled())
-               LOG.info("The configuration template will be used for the the cache '" + region + "'.");
+               LOG.info("The configuration template will be used for the cache '" + region + "'.");
             confBuilder.read(cacheManager.getDefaultCacheConfiguration());
             if (!config.isRepicated())
             {
@@ -503,7 +503,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          {
             // No creator can be found, we will use the default creator
             if (LOG.isInfoEnabled())
-               LOG.info("No cache creator has been found for the the cache '" + config.getName()
+               LOG.info("No cache creator has been found for the cache '" + config.getName()
                   + "', the default one will be used.");
             return defaultCreator;
          }
