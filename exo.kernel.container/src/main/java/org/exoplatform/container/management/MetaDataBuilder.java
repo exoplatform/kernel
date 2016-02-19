@@ -39,7 +39,7 @@ import java.util.Set;
 
 /**
  * <p>A class that build the management view meta data of a specified class.</p>
- * <p>The following rules do apply to the class from which meta data are constructed:
+ * The following rules do apply to the class from which meta data are constructed:
  * <ul>
  * <li>The class must be annotated by {@link org.exoplatform.management.annotations.Managed}</li>
  * <li>The class may be annoated by {@link org.exoplatform.management.annotations.ManagedDescription}</li>
@@ -64,7 +64,6 @@ import java.util.Set;
  * <li>Any method argument annotated by {@link org.exoplatform.management.annotations.ManagedDescription} 
  * defines the management description of the corresponding operation parameter</li>
  * </ul>
- * </p>
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$

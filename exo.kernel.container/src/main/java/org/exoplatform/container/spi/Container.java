@@ -147,7 +147,7 @@ public interface Container extends Startable, Disposable, Serializable
     * @return the ComponentAdapter that has been associated with this component. In the majority of cases, this return
     *         value can be safely ignored, as one of the <code>getXXX()</code> methods of the
     *         {@link Container} interface can be used to retrieve a reference to the component later on.
-    * @throws ContainerExceptio if registration of the component fails.
+    * @throws ContainerException if registration of the component fails.
     */
    <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
       throws ContainerException;
@@ -156,7 +156,7 @@ public interface Container extends Startable, Disposable, Serializable
     * Register an arbitrary object as a component in the container. This is handy when other components in the same
     * container have dependencies on this kind of object, but where letting the container manage and instantiate it is
     * impossible.
-    * <p/>
+    * <br>
     * Beware that too much use of this method is an <a href="http://docs.codehaus.org/display/PICO/Instance+Registration">antipattern</a>.
     *
     * @param componentKey      a key that identifies the component. Must be unique within the container. The type of the

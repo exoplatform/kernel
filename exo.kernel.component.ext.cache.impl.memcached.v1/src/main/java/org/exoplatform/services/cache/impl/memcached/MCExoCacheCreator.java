@@ -26,7 +26,7 @@ import org.exoplatform.services.cache.ExoCacheInitException;
 import java.io.Serializable;
 
 /**
- * The implementation of an {@link ExoCacheCreator} based on the LRU expiration algorithm
+ * The implementation of an ExoCacheCreator based on the LRU expiration algorithm
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$

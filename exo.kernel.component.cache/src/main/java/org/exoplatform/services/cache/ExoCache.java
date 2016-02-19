@@ -207,7 +207,6 @@ public interface ExoCache<K extends Serializable, V>
     * object will not be returned.
     *
     * @return the list of cached objects
-    * @throws Exception any exception
     */
    public List<? extends V> removeCachedObjects();
 

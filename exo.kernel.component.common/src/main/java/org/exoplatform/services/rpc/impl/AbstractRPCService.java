@@ -188,7 +188,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    private final List<TopologyChangeListener> listeners = new CopyOnWriteArrayList<TopologyChangeListener>();
 
    /**
-    * Current State of the {@link RPCServiceImpl}
+    * Current State of the {@link org.exoplatform.services.rpc.jgv3.RPCServiceImpl}
     */
    private volatile State state;
 
@@ -292,8 +292,8 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * {@link RPCException} will be thrown.
     *
     * @param command The command to execute on each cluster node
-    * @param synchronous if true, sets group request mode to {@link org.jgroups.blocks.GroupRequest#GET_ALL},
-    *  and if false sets it to {@link org.jgroups.blocks.GroupRequest#GET_NONE}.
+    * @param synchronous if true, sets group request mode to org.jgroups.blocks.GroupRequest#GET_ALL,
+    *  and if false sets it to org.jgroups.blocks.GroupRequest#GET_NONE.
     * @param timeout a timeout after which to throw a replication exception.
     * @param args an array of {@link Serializable} objects corresponding to parameters of the command 
     * to execute remotely
@@ -331,8 +331,8 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * {@link RPCException} will be thrown.
     *
     * @param command The command to execute on the coordinator node
-    * @param synchronous if true, sets group request mode to {@link org.jgroups.blocks.GroupRequest#GET_ALL}, 
-    * and if false sets it to {@link org.jgroups.blocks.GroupRequest#GET_NONE}.
+    * @param synchronous if true, sets group request mode to org.jgroups.blocks.GroupRequest#GET_ALL,
+    * and if false sets it to org.jgroups.blocks.GroupRequest#GET_NONE.
     * @param timeout a timeout after which to throw a replication exception.
     * @param args an array of {@link Serializable} objects corresponding to parameters of the command 
     * to execute remotely
@@ -385,8 +385,8 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * Execute the command on all the nodes corresponding to the list of destinations.
     * @param dests the list of members on which the command needs to be executed
     * @param command the command to execute
-    * @param synchronous if true, sets group request mode to {@link org.jgroups.blocks.GroupRequest#GET_ALL}, and if false sets 
-    * it to {@link org.jgroups.blocks.GroupRequest#GET_NONE}.
+    * @param synchronous if true, sets group request mode to org.jgroups.blocks.GroupRequest#GET_ALL, and if false sets
+    * it to org.jgroups.blocks.GroupRequest#GET_NONE.
     * @param timeout a timeout after which to throw a replication exception.
     * @param args the list of parameters
     * @return a list of responses from all the targeted members of the cluster.
@@ -797,7 +797,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    /**
     * Returns the channel's own address. The result of calling this method on an unconnected
     * channel is implementation defined (may return null). Calling this method on a closed
-    * channel returns null. Successor to {@link #getAddress()}. Addresses can be used as destination
+    * channel returns null. Successor to #getAddress(). Addresses can be used as destination
     * in the <code>send()</code> operation.
     * @return The channel's address (opaque) or null if it cannot be found
     */
@@ -1020,7 +1020,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    }
 
    /**
-    * All the potential states of the {@link RPCServiceImpl}
+    * All the potential states of the {@link org.exoplatform.services.rpc.jgv3.RPCServiceImpl}
     */
    public enum State
    {

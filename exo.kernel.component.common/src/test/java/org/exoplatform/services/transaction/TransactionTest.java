@@ -28,7 +28,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 /**
- * Created by The eXo Platform SAS .<br/> Prerequisites: default-context-factory
+ * Created by The eXo Platform SAS .<br> Prerequisites: default-context-factory
  * = org.exoplatform.services.naming.impl.SimpleContextFactory
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>

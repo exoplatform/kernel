@@ -24,7 +24,7 @@ package org.picocontainer;
  * {@link Startable#stop()}. The {@link Startable#stop()} method must be called at the end of the component lifecycle,
  * and can further be called after every {@link Startable#start()}. If a component implements the {@link Disposable}
  * interface as well, {@link Startable#stop()} should be called before {@link Disposable#dispose()}.</p>
- * <p/>
+ * <br>
  * <p>For more advanced and pluggable lifecycle support, see the functionality offered by the nanocontainer-proxytoys
  * subproject.</p>
  * 

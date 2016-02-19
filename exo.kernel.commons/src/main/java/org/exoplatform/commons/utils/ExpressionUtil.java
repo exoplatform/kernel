@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
  * Jul 18, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ExpressionUtil.java,v 1.1 2004/07/21 19:59:11 tuan08 Exp $
  */
 public class ExpressionUtil

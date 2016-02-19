@@ -24,7 +24,7 @@ import javax.enterprise.context.spi.Contextual;
 
 /**
  * This interface defines all the additional methods needed to easily implement 
- * an {@link AlterableContext}
+ * an AlterableContext
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$

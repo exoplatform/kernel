@@ -52,7 +52,6 @@ public class PrivilegedSystemHelper
    /**
     * Gets system properties in privileged mode.
     * 
-    * @param key
     * @return
     */
    public static Properties getProperties()
@@ -71,7 +70,6 @@ public class PrivilegedSystemHelper
     * Gets system property in privileged mode.
     * 
     * @param key
-    * @return
     */
    public static void setProperty(final String key, final String value)
    {
@@ -108,8 +106,7 @@ public class PrivilegedSystemHelper
    /**
     * Get resource in privileged mode.
     * 
-    * @param key
-    * @param def
+    * @param name
     * @return
     */
    public static URL getResource(final String name)
@@ -127,8 +124,7 @@ public class PrivilegedSystemHelper
    /**
     * Get resource as stream in privileged mode.
     * 
-    * @param key
-    * @param def
+    * @param name
     * @return
     */
    public static InputStream getResourceAsStream(final String name)

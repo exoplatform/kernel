@@ -29,7 +29,7 @@ import java.util.Properties;
 /**
  * Created by The eXo Platform SAS. 
  * 
- * <br/> Log4J configurator. The properties are the same as log4j.properties file's name value pairs.
+ * <br> Log4J configurator. The properties are the same as log4j.properties file's name value pairs.
  *  
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: Log4JConfigurator.java 34394 2009-07-23 09:23:31Z dkatayev $

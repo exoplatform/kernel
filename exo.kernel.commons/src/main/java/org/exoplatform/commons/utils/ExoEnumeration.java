@@ -20,7 +20,6 @@ package org.exoplatform.commons.utils;
 
 /** * Jul 11, 2004 
  * @author: Tuan Nguyen
- * @email:   tuan08@users.sourceforge.net
  * @version: $Id: ExoEnumeration.java,v 1.3 2004/07/13 02:46:19 tuan08 Exp $
  */
 

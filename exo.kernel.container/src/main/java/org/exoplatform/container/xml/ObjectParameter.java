@@ -24,7 +24,6 @@ import org.exoplatform.xml.object.XMLObject;
  * Jul 19, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ObjectParameter.java 5799 2006-05-28 17:55:42Z geaz $
  */
 public class ObjectParameter extends Parameter

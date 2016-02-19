@@ -35,7 +35,6 @@ import java.net.URL;
  * @author: Tuan Nguyen
  * @version: $Id: IOUtil.java,v 1.4 2004/09/14 02:41:19 tuan08 Exp $
  * @since: 0.0
- * @email: tuan08@yahoo.com
  */
 public class IOUtil
 {
@@ -97,7 +96,7 @@ public class IOUtil
    }
 
    /**
-    * Returns the content of the specified file as a string using the <code>UTF-8<code> charset.
+    * Returns the content of the specified file as a string using the <code>UTF-8</code> charset.
     *
     * @param fileName the file name
     * @return the content

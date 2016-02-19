@@ -27,7 +27,6 @@ import java.util.Set;
  * Jul 20, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ExoProperties.java,v 1.1 2004/09/11 14:08:53 tuan08 Exp $
  */
 public class ExoProperties extends LinkedHashMap<String, String>

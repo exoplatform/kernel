@@ -54,7 +54,6 @@ import javax.management.ObjectName;
  * @author: Tuan Nguyen
  * @version: $Id: TestCacheService.java 5799 2006-05-28 17:55:42Z geaz $
  * @since: 0.0
- * @email: tuan08@yahoo.com
  */
 public class TestCacheService extends TestCase
 {

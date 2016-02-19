@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 /**
- * Builds configuration from template using map of template-variables <--> value.
+ * Builds configuration from template using map of template-variables -- value.
  * Class provides extra functionality for filtering parameters by pattern, excluding 
  * unnecessary parameters. 
  * 
@@ -66,7 +66,7 @@ public class TemplateConfigurationHelper
     * 
     * @param includes Array with string representation of include reg-exp patterns
     * @param excludes Array with string representation of exclude reg-exp patterns
-    * @param ConfigurationManager instance for looking up resources
+    * @param cfm instance for looking up resources
     */
    public TemplateConfigurationHelper(String[] includes, String[] excludes, ConfigurationManager cfm)
    {

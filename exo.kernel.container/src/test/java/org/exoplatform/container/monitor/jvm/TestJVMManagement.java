@@ -31,7 +31,6 @@ import java.lang.management.ThreadMXBean;
  * @author: Tuan Nguyen
  * @version: $Id: TestJVMManagement.java 5799 2006-05-28 17:55:42Z geaz $
  * @since: 0.0
- * @email: tuan08@yahoo.com
  */
 public class TestJVMManagement extends TestCase
 {

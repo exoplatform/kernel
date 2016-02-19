@@ -21,7 +21,7 @@
  * 
  * Java source file for TestCompressData usecase.
  * 
- * <br/>Date: 13.04.2009
+ * <br>Date: 13.04.2009
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: ZipService.java 111 2008-11-11 11:11:11Z pnedonosko $

@@ -21,7 +21,7 @@ package org.exoplatform.services.log;
 import java.util.Properties;
 
 /**
- * Created by The eXo Platform SAS. <br/> An interface for log system
+ * Created by The eXo Platform SAS. <br> An interface for log system
  * configuration
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady

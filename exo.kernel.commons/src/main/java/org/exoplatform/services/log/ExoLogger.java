@@ -27,7 +27,7 @@ import org.exoplatform.services.log.impl.SimpleExoLogFactory;
  * <p>
  *
  * ExoLogger it's wrapping factory for different Log factories existing in runtime for eXo.
- * <br/>
+ * <br>
  *  
  * The logger implements the {@link org.exoplatform.services.log.Log} interface
  * for backward compatibility purpose.
@@ -37,7 +37,6 @@ import org.exoplatform.services.log.impl.SimpleExoLogFactory;
  * static methods {@link #getExoLogger(String)} and {@link #getExoLogger(Class)}
  * .
  * </p>
- * <p>
  * The factory methods delegates to an instance of
  * {@link org.exoplatform.services.log.ExoLogFactory} that is determined by
  * the following rules
@@ -52,7 +51,6 @@ import org.exoplatform.services.log.impl.SimpleExoLogFactory;
  * {@link org.exoplatform.services.log.impl.SimpleExoLogFactory} is used for
  * fail over.</li>
  * </ul>
- * </p>
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>

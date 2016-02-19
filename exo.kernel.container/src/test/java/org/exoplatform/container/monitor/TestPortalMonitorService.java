@@ -30,7 +30,6 @@ import org.exoplatform.container.monitor.jvm.JVMRuntimeInfo;
  * @author: Tuan Nguyen
  * @version: $Id: TestPortalMonitorService.java 5799 2006-05-28 17:55:42Z geaz $
  * @since: 0.0
- * @email: tuan08@yahoo.com
  */
 public class TestPortalMonitorService extends TestCase
 {

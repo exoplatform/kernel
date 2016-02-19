@@ -31,14 +31,12 @@ import javax.sql.DataSource;
 
 
 /**
- * @Created by The eXo Platform SAS
- * @Author : aboughzela@exoplatform.com
- * @Date: Feb 14, 2014 Time: 1:12:22 PM
+ * @author aboughzela@exoplatform.com
  */
 public class HikariDataSourceFactory implements ObjectFactory
 {
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
    {

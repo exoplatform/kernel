@@ -31,7 +31,7 @@ import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
 /**
- * Created by The eXo Platform SAS.<br/> InitialContextInitializer's Component
+ * Created by The eXo Platform SAS.<br> InitialContextInitializer's Component
  * Plugin for binding reference to JNDI naming context
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady

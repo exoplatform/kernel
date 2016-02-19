@@ -25,7 +25,7 @@ import javax.transaction.UserTransaction;
 import javax.transaction.xa.XAResource;
 
 /**
- * Created by The eXo Platform SAS.<br/> The transaction service
+ * Created by The eXo Platform SAS.<br> The transaction service
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>

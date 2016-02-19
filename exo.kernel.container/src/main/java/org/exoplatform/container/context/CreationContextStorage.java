@@ -43,7 +43,6 @@ public interface CreationContextStorage
     * Stores an instance for the given {@link Contextual} id
     * @param id the id of the contextual for which we want to set a value
     * @param creationContext the {@link CreationContext} used for the instance creation
-    * @param instance the value to set
     * @return the instance that has been effectively set.
     */
    <T> T setInstance(String id, CreationContext<T> creationContext);

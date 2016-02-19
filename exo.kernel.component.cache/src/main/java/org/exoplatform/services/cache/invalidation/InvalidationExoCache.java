@@ -92,7 +92,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    /**
     * @param delegate the underneath eXo cache instance, we assume that the eXo cache
     * implementation behind is fully functional.
-    * @concurrencyLevel the estimated number of concurrently
+    * @param concurrencyLevel the estimated number of concurrently
     * updating threads. The implementation performs internal sizing
     * to try to accommodate this many threads.  
     */

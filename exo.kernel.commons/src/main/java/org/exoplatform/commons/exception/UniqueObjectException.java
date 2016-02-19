@@ -22,7 +22,6 @@ package org.exoplatform.commons.exception;
  * @author: Tuan Nguyen
  * @version: $Id: UniqueObjectException.java,v 1.1 2004/10/21 15:23:40 tuan08 Exp $
  * @since: 0.0
- * @email: tuan08@yahoo.com
  */
 public class UniqueObjectException extends ExoMessageException
 {

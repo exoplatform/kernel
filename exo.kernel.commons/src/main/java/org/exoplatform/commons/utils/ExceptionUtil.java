@@ -22,7 +22,6 @@ package org.exoplatform.commons.utils;
  * Jul 8, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ExceptionUtil.java,v 1.2 2004/10/05 14:40:47 tuan08 Exp $
  */
 public class ExceptionUtil

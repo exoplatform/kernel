@@ -28,7 +28,6 @@ import java.security.SecureRandom;
  * Jul 19, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: IdentifierUtil.java,v 1.1 2004/07/20 12:22:42 tuan08 Exp $
  */
 public class IdentifierUtil

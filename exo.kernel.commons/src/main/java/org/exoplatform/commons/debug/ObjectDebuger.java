@@ -31,7 +31,6 @@ import java.util.Map;
  * Jul 29, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ObjectDebuger.java,v 1.4 2004/09/21 00:04:43 tuan08 Exp $
  */
 public class ObjectDebuger

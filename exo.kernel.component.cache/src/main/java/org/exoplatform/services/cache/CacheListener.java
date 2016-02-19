@@ -25,7 +25,7 @@ import java.io.Serializable;
  * The cache listener allows to be aware of various events that occurs for a cache. For performance reason
  * a listener must perform short time lived operations or should consider to perform jobs asynchronously.
  *
- * @author <a href="tuan08@users.sourceforge.net "> Tuan Nguyen</a>
+ * @author tuan08@users.sourceforge.net Tuan Nguyen
  * @LevelAPI Platform
  */
 public interface CacheListener<K extends Serializable, V>

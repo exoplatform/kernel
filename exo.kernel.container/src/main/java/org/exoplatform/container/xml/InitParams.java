@@ -27,7 +27,6 @@ import java.util.List;
  * Jul 19, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: InitParams.java 5799 2006-05-28 17:55:42Z geaz $
  */
 public class InitParams extends HashMap<String, Parameter>

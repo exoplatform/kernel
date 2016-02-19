@@ -44,7 +44,6 @@ import javax.servlet.ServletContext;
  * Jul 19, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ConfigurationServiceImpl.java,v 1.8 2004/10/30 02:29:51 tuan08
  *           Exp $
  */

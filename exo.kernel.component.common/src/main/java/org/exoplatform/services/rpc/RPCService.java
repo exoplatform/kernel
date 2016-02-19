@@ -41,8 +41,8 @@ public interface RPCService
     * {@link RPCException} will be thrown.
     *
     * @param command The command to execute on each cluster node
-    * @param synchronous if true, sets group request mode to {@link org.jgroups.blocks.GroupRequest#GET_ALL},
-    *  and if false sets it to {@link org.jgroups.blocks.GroupRequest#GET_NONE}.
+    * @param synchronous if true, sets group request mode to org.jgroups.blocks.GroupRequest#GET_ALL,
+    *  and if false sets it to org.jgroups.blocks.GroupRequest#GET_NONE.
     * @param args an array of {@link Serializable} objects corresponding to parameters of the command 
     * to execute remotely
     * @return a list of responses from all the members of the cluster. If we met an exception on a given node, 
@@ -77,8 +77,8 @@ public interface RPCService
     * {@link RPCException} will be thrown.
     *
     * @param command The command to execute on the coordinator node
-    * @param synchronous if true, sets group request mode to {@link org.jgroups.blocks.GroupRequest#GET_ALL}, 
-    * and if false sets it to {@link org.jgroups.blocks.GroupRequest#GET_NONE}.
+    * @param synchronous if true, sets group request mode to org.jgroups.blocks.GroupRequest#GET_ALL,
+    * and if false sets it to org.jgroups.blocks.GroupRequest#GET_NONE.
     * @param args an array of {@link Serializable} objects corresponding to parameters of the command 
     * to execute remotely
     * @return the response of the coordinator.

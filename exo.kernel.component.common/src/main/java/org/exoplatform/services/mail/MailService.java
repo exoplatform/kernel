@@ -29,7 +29,7 @@ import javax.mail.internet.MimeMessage;
  * configuration data retrieval. Defines synchronous and asynchronous methods
  * responsible for sending mail message. They can receive parameters of different types
  * to create a mail send. You can pass {@link Message}, {@link MimeMessage}
- * or specify mail message data explicitly via {@String} parameters.
+ * or specify mail message data explicitly via String parameters.
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)
  * @since Oct 13, 2004
  * @version $Id: MailService.java 5332 2006-04-29 18:32:44Z geaz $

@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by The eXo Platform SAS. <br/> The component for commons based
+ * Created by The eXo Platform SAS. <br> The component for commons based
  * logging configuration initialization. There are 3 optional initialization
  * parameters: logger - a logger class implemented
  * org.exoplatform.services.log.Log configurator - a log system configurator

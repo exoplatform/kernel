@@ -29,7 +29,7 @@ import java.util.logging.LogManager;
 /**
  * Created by The eXo Platform SAS.
  * 
- *<br/> JDK's log system configurator. See $JAVA_HOME/jre/lib/logging.properties for details.
+ *<br> JDK's log system configurator. See $JAVA_HOME/jre/lib/logging.properties for details.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: Jdk14Configurator.java 34394 2009-07-23 09:23:31Z dkatayev $

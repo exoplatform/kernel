@@ -383,7 +383,7 @@ public class ConcurrentContainer extends AbstractInterceptor
     * If no {@link ComponentAdapter} can be found it returns <tt>null</tt> otherwise
     * it first try to get it from the dependency resolution context if it still cannot
     * be found we get the instance from the {@link ComponentAdapter}.
-    * @see Container#getComponentInstanceOfType(java.lang.Class)
+    * @see Container#getComponentInstanceOfType(Class, boolean)
     */
    public <T> T getComponentInstanceOfType(Class<T> componentType, boolean autoRegistration)
    {

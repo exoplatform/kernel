@@ -34,7 +34,7 @@ import javax.management.modelmbean.ModelMBeanInfo;
 import javax.management.modelmbean.RequiredModelMBean;
 
 /**
- * A convenient subclass of {@link RequiredModelMBean) that routes the invocation of the interface
+ * A convenient subclass of {@link RequiredModelMBean} that routes the invocation of the interface
  * {@link MBeanRegistration} to the managed resource when it implements the method. 
  *
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>

@@ -29,7 +29,7 @@ import java.util.ServiceLoader;
  * if none can be found it will provide a default one.
  * 
  * It will try to load the {@link InterceptorChainFactory} using the
- * current thread's {@linkplain java.lang.Thread#getContextClassLoade context class loader}. By default it will use the 
+ * current thread's {@linkplain Thread#getContextClassLoader()} context class loader. By default it will use the
  * {@link DefaultInterceptorChainFactory}
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>

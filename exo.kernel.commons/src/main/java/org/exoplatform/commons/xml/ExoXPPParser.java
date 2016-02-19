@@ -25,7 +25,6 @@ import org.xmlpull.v1.XmlPullParser;
  * Jul 8, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ExoXPPParser.java,v 1.4 2004/10/20 20:58:27 tuan08 Exp $
  */
 public class ExoXPPParser extends MXParserCachingStrings

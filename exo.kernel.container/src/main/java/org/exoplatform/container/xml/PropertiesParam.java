@@ -29,7 +29,6 @@ import java.util.Map;
  * Jul 19, 2004
  * 
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: PropertiesParam.java 5799 2006-05-28 17:55:42Z geaz $
  */
 public class PropertiesParam extends Parameter

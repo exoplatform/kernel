@@ -36,7 +36,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 /**
- * Created by The eXo Platform SAS.<br/> JOTM based implementation of
+ * Created by The eXo Platform SAS.<br> JOTM based implementation of
  * TransactionService
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady

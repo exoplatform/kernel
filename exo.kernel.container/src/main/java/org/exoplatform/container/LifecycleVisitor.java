@@ -150,7 +150,7 @@ public class LifecycleVisitor implements ContainerVisitor
 
    /**
     * Invoke the standard Container lifecycle for {@link Startable#start()}.
-    * @param node The node to start the traversal.
+    * @param container The node to start the traversal.
     */
    public static void start(Container container)
    {
@@ -159,7 +159,7 @@ public class LifecycleVisitor implements ContainerVisitor
 
    /**
     * Invoke the standard Container lifecycle for {@link Startable#stop()}.
-    * @param node The node to start the traversal.
+    * @param container The node to start the traversal.
     */
    public static void stop(Container container)
    {
@@ -168,7 +168,7 @@ public class LifecycleVisitor implements ContainerVisitor
 
    /**
     * Invoke the standard Container lifecycle for {@link Disposable#dispose()}.
-    * @param node The node to start the traversal.
+    * @param container The node to start the traversal.
     */
    public static void dispose(Container container)
    {

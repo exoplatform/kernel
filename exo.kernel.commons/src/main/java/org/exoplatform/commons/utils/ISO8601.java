@@ -258,7 +258,8 @@ public class ISO8601
     * 
     * @param dateString - date string
     * @return - calendar
-    * @throws ParseException, NumberFormatException
+    * @throws ParseException
+    * @throws NumberFormatException
     */
    public static Calendar parseEx(String dateString) throws ParseException, NumberFormatException
    {

@@ -37,7 +37,6 @@ import java.net.URL;
  * @author: Tuan Nguyen
  * @version: $Id: TestConfigurationService.java 5799 2006-05-28 17:55:42Z geaz $
  * @since: 0.0
- * @email: tuan08@yahoo.com
  */
 public class TestConfigurationService extends TestCase
 {

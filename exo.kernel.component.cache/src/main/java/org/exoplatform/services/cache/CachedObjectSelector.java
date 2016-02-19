@@ -25,7 +25,7 @@ import java.io.Serializable;
  *
  * CachedObjectSelector interface provides a way to perform action on selected keys.
  *
- * @author : <a href="Thuannd nhudinhthuan@yahoo.com">Thuannd</a>.
+ * @author Thuannd nhudinhthuan@yahoo.com
  * @LevelAPI Platform
  */
 public interface CachedObjectSelector<K extends Serializable, V>

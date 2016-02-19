@@ -47,7 +47,6 @@ import java.util.Collection;
  * Please note that it works also for other prefixes</li>
  * </ul>
  * @author: Tuan Nguyen
- * @email: tuan08@users.sourceforge.net
  * @version: $Id: ConfigurationManager.java 5799 2006-05-28 17:55:42Z geaz $
  */
 public interface ConfigurationManager

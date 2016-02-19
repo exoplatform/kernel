@@ -80,7 +80,7 @@ public class SecurityHelper
     * @param <E>
     * @param action
     * @return
-    * @throws IOException
+    * @throws NamingException
     */
    public static <E> E doPrivilegedNamingExceptionAction(PrivilegedExceptionAction<E> action) throws NamingException
    {
@@ -112,7 +112,7 @@ public class SecurityHelper
     * @param <E>
     * @param action
     * @return
-    * @throws IOException
+    * @throws SQLException
     */
    public static <E> E doPrivilegedSQLExceptionAction(PrivilegedExceptionAction<E> action) throws SQLException
    {
@@ -144,7 +144,8 @@ public class SecurityHelper
     * @param <E>
     * @param action
     * @return
-    * @throws IOException
+    * @throws ParserConfigurationException
+    * @throws SAXException
     */
    public static <E> E doPrivilegedParserConfigurationOrSAXExceptionAction(PrivilegedExceptionAction<E> action)
       throws ParserConfigurationException, SAXException
@@ -181,7 +182,7 @@ public class SecurityHelper
     * @param <E>
     * @param action
     * @return
-    * @throws IOException
+    * @throws ParserConfigurationException
     */
    public static <E> E doPrivilegedParserConfigurationAction(PrivilegedExceptionAction<E> action)
       throws ParserConfigurationException
@@ -214,7 +215,7 @@ public class SecurityHelper
     * @param <E>
     * @param action
     * @return
-    * @throws IOException
+    * @throws SAXException
     */
    public static <E> E doPrivilegedSAXExceptionAction(PrivilegedExceptionAction<E> action) throws SAXException
    {
@@ -246,7 +247,7 @@ public class SecurityHelper
     * @param <E>
     * @param action
     * @return
-    * @throws IOException
+    * @throws MalformedURLException
     */
    public static <E> E doPrivilegedMalformedURLExceptionAction(PrivilegedExceptionAction<E> action)
       throws MalformedURLException

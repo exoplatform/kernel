@@ -32,7 +32,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
 /**
- * Created by The eXo Platform SAS.<br/> The plugin for configuring
+ * Created by The eXo Platform SAS.<br> The plugin for configuring
  * command/chain catalog using "native" Apache Commons Chain's XML file
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady

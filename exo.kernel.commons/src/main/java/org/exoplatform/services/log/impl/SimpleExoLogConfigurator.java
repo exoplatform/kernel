@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by The eXo Platform SAS. <br/> Simple commons configurator. See
+ * Created by The eXo Platform SAS. <br> Simple commons configurator. See
  * org.apache.commons.logging.impl.SimpleLog javadoc for details.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady

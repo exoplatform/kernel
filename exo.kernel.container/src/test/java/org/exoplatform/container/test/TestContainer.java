@@ -29,7 +29,7 @@ import org.exoplatform.mocks.PriorityService;
 import java.util.List;
 
 /**
- * Created by the Exo Development team.<br/> 
+ * Created by the Exo Development team.<br>
  * Author : Mestrallet Benjamin benjamin.mestrallet@exoplatform.com
  * @version $Id: TestContainer.java 34394 2009-07-23 09:23:31Z dkatayev $
  */

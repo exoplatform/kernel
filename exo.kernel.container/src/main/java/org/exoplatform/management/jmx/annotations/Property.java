@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * </p>A property is made of a key and a value. Values can either be litterals or expanded values.
+ * <p>A property is made of a key and a value. Values can either be litterals or expanded values.
  * Expanded values are denoted by curly braces, any such property value will be dereferenced against the instance of
  * the annotated class and used.</p>
  *
