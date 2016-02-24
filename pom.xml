@@ -49,7 +49,7 @@
       <commons-digester.version>2.1</commons-digester.version>
       <org.slf4j.version>1.7.5</org.slf4j.version>
       <mime-util.version>2.1.3</mime-util.version>
-      <quartz.version>2.2.0</quartz.version>
+      <quartz.version>2.2.2</quartz.version>
       <contiperf.version>2.2.0</contiperf.version>
       <javax.mail.version>1.4.7</javax.mail.version>
       <javax.transaction.version>1.1</javax.transaction.version>
@@ -113,7 +113,7 @@
             <artifactId>exo.kernel.container</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>
-         </dependency>         
+         </dependency>
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
             <artifactId>exo.kernel.commons</artifactId>
@@ -268,7 +268,7 @@
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
-         </dependency>         
+         </dependency>
          <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
