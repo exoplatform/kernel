@@ -57,7 +57,7 @@ import javax.servlet.ServletContext;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto
  *          nicolas.filotto@exoplatform.com
- * 26 ao�t 2009  
+ * 26 Aout 2009  
  */
 public class PortalContainerConfig implements Startable
 {
