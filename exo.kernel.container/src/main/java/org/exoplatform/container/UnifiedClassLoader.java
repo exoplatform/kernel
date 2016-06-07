@@ -19,14 +19,15 @@
 package org.exoplatform.container;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-
 import java.io.IOException;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is used to merge different {@link ClassLoader} to create one single one.
@@ -50,6 +51,11 @@ class UnifiedClassLoader extends ClassLoader
     * The list of all the {@link ClassLoader} to merge together
     */
    private final ClassLoader[] cls;
+
+   /**
+    * The list of resources URL mapped by name.
+    */
+   private Map resourcesCache = new ConcurrentHashMap<String,Set<URL>>();
 
    /**
     * @param cls the list of all the {@link ClassLoader} to merge ordered by priority. The last 
@@ -102,13 +108,24 @@ class UnifiedClassLoader extends ClassLoader
    {
       final ClassLoader[] cls = getClassLoaders();
       final Set<URL> urls = new LinkedHashSet<URL>();
-      for (int i = 0, length = cls.length; i < length; i++)
+      if(name != null && resourcesCache.get(name) != null)
       {
-         Enumeration<URL> eUrls = cls[i].getResources(name);
-         if (eUrls != null && eUrls.hasMoreElements())
+         urls.addAll((Set<URL>) resourcesCache.get(name));
+      }
+      else
+      {
+         for (int i = 0, length = cls.length; i < length; i++)
          {
-            // Prevent duplicates
-            urls.addAll(Collections.list(eUrls));
+            Enumeration<URL> eUrls = cls[i].getResources(name);
+            if (eUrls != null && eUrls.hasMoreElements())
+            {
+               // Prevent duplicates
+               urls.addAll(Collections.list(eUrls));
+            }
+         }
+         if(name != null)
+         {
+            resourcesCache.put(name, urls);
          }
       }
       return Collections.enumeration(urls);
