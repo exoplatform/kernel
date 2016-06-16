@@ -18,10 +18,12 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
+import java.util.Properties;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.BaseContainerLifecyclePlugin;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
@@ -45,10 +47,23 @@ public class QuartzSheduler implements Startable
    
    private final Scheduler scheduler_;
 
-   public QuartzSheduler(ExoContainerContext ctx) throws Exception
+   public QuartzSheduler(ExoContainerContext ctx, InitParams params) throws Exception
    {
-      final SchedulerFactory sf = new StdSchedulerFactory();
+      final SchedulerFactory sf;
 
+      if (params != null && !params.isEmpty())
+      {
+         final Properties props = new Properties();
+         for (String key : params.keySet())
+         {
+            props.setProperty(key, params.getValueParam(key).getValue());
+         }
+         sf = new StdSchedulerFactory(props);
+      }
+      else
+      {
+         sf = new StdSchedulerFactory();
+      }
       try
       {
          scheduler_ = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Scheduler>()
