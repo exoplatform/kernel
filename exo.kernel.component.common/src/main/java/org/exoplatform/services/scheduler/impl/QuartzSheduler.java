@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.scheduler.impl;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.Properties;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.BaseContainerLifecyclePlugin;
@@ -32,6 +35,9 @@ import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
@@ -43,8 +49,18 @@ import java.security.PrivilegedExceptionAction;
  */
 public class QuartzSheduler implements Startable
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.QuartzSheduler");
-   
+   private static final Log    LOG                        = ExoLogger.getLogger("exo.kernel.component.common.QuartzSheduler");
+
+   private static final String defaultDriverDelegateClass = "org.quartz.impl.jdbcjobstore.StdJDBCDelegate";
+
+   private static final String PGSQLDriverDelegateClass   = "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate";
+
+   private static final String MSSQLlDriverDelegateClass  = "org.quartz.impl.jdbcjobstore.MSSQLDelegate";
+
+   private static final String datasourceProperty         = "org.quartz.dataSource.quartzDS.jndiURL";
+
+   private static final String delegateClassProperty      = "org.quartz.jobStore.driverDelegateClass";
+
    private final Scheduler scheduler_;
 
    public QuartzSheduler(ExoContainerContext ctx, InitParams params) throws Exception
@@ -58,8 +74,24 @@ public class QuartzSheduler implements Startable
          {
             props.setProperty(key, params.getValueParam(key).getValue());
          }
+         String oldValue = props.getProperty(delegateClassProperty);
+         if (oldValue== null || oldValue.isEmpty() || oldValue.equals(defaultDriverDelegateClass))
+         {
+           String datasourceName = props.getProperty(datasourceProperty);
+           if (datasourceName != null && !datasourceName.isEmpty())
+           {
+             try (Connection conn = getConnection(datasourceName);)
+             {
+               DatabaseMetaData meta = conn.getMetaData();
+               String newValue = getDriverDelegateClass(meta);
+               props.setProperty(delegateClassProperty, newValue);
+             }
+           }
+         }
          sf = new StdSchedulerFactory(props);
       }
+      /*Use default quartz configuration (utilizes RAM as its storage device,
+           exo.quartz.jobStore.class=org.quartz.simpl.RAMJobStore).*/
       else
       {
          sf = new StdSchedulerFactory();
@@ -125,5 +157,52 @@ public class QuartzSheduler implements Startable
       {
          LOG.warn("Could not shutdown the scheduler", ex);
       }
+   }
+
+   /**
+    * Opens connection to quartz database.
+    */
+   private Connection getConnection(String dsName) throws Exception
+   {
+     final DataSource dsF = (DataSource) new InitialContext().lookup(dsName);
+     Connection jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+     {
+       public Connection run() throws Exception
+       {
+         return dsF.getConnection();
+       }
+     });
+     return jdbcConn;
+   }
+
+    /**
+     * Auto detect DriverDelegateClass  according to database name.
+     */
+   private String getDriverDelegateClass(final DatabaseMetaData metaData) throws Exception
+   {
+     String databaseName = (String) SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction()
+     {
+       public String run() throws Exception
+       {
+         return metaData.getDatabaseProductName();
+       }
+     });
+     if(databaseName == null || databaseName.isEmpty())
+     {
+         LOG.warn("The database name cannot be retrieve, the default DriverDelegateClass will be used for Quartz.");
+         return defaultDriverDelegateClass;
+     }
+     if (databaseName.startsWith("Microsoft SQL Server"))
+     {
+        return MSSQLlDriverDelegateClass;
+     }
+     else if (databaseName.startsWith("PostgreSQL"))
+     {
+        return PGSQLDriverDelegateClass;
+     }
+     else
+     {
+        return defaultDriverDelegateClass;
+     }
    }
 }
