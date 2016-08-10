@@ -293,7 +293,7 @@ public class TestSchedulerService extends SchedulerServiceTestBase
 
       // Test addJob(JobInfo, Date startTime) and GlobalTriggerListener()
       resetTestEnvironment();
-      jinfo = new JobInfo("TestAddJob", null/* default group */, AJob.class);
+      jinfo = new JobInfo("TestAddJob", null/* default group */, AJob.class, "false");
       AJob.expectExecuteTime_ = startTime;
       service_.addGlobalTriggerListener(new GlobalTriggerListener());
       service_.addJob(jinfo, startTime);

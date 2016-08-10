@@ -30,6 +30,8 @@ public class JobInfo
 
    private String description_;
 
+   private boolean shouldRecover;
+
    private Class job_;
 
    public JobInfo(Class job)
@@ -45,6 +47,19 @@ public class JobInfo
       else
          jobName_ = jobName;
       groupName_ = groupName;
+   }
+
+   public JobInfo(String jobName_, String groupName_, Class job_, String shouldRecover)
+   {
+      this(jobName_, groupName_, job_);
+      if(shouldRecover == null)
+      {
+         this.shouldRecover= true;
+      }
+      else
+      {
+         this.shouldRecover = Boolean.valueOf(shouldRecover);
+      }
    }
 
    public String getJobName()
@@ -82,4 +97,11 @@ public class JobInfo
       return job_;
    }
 
+   public boolean isShouldRecover() {
+      return shouldRecover;
+   }
+
+   public void setShouldRecover(boolean shouldRecover) {
+      this.shouldRecover = shouldRecover;
+   }
 }

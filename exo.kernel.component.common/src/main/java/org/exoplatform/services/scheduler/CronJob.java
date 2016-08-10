@@ -41,8 +41,9 @@ public class CronJob extends BaseComponentPlugin
       String jobName = props.getProperty("jobName");
       String jobGroup = props.getProperty("groupName");
       String jobClass = props.getProperty("job");
+      String shouldRecover = props.getProperty("shouldRecover");
       Class<?> clazz = ClassLoading.forName(jobClass, this);
-      jinfo_ = new JobInfo(jobName, jobGroup, clazz);
+      jinfo_ = new JobInfo(jobName, jobGroup, clazz, shouldRecover);
 
       expression_ = props.getProperty("expression");
    }

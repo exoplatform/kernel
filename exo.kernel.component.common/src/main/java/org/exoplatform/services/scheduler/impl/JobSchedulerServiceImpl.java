@@ -214,7 +214,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       trigger = trigger.getTriggerBuilder().withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).build();
       @SuppressWarnings("unchecked")
       JobDetail job =
-         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).build();
+         JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName()).requestRecovery(jobinfo.isShouldRecover()).build();
       scheduleJob(job, trigger);
    }
 
@@ -226,7 +226,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
-            .withDescription(jinfo.getDescription()).build();
+            .withDescription(jinfo.getDescription()).requestRecovery(jinfo.isShouldRecover()).build();
       scheduleJob(job, trigger);
    }
 
@@ -250,7 +250,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
-            .withDescription(jinfo.getDescription()).build();
+            .withDescription(jinfo.getDescription()).requestRecovery(jinfo.isShouldRecover()).build();
       scheduleJob(job, trigger);
    }
 
@@ -276,7 +276,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
-            .withDescription(jinfo.getDescription()).build();
+            .withDescription(jinfo.getDescription()).requestRecovery(jinfo.isShouldRecover()).build();
       scheduleJob(job, trigger);
    }
 
@@ -304,7 +304,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobDetail job =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
-            .withDescription(jinfo.getDescription()).build();
+            .withDescription(jinfo.getDescription()).requestRecovery(jinfo.isShouldRecover()).build();
       scheduleJob(job, trigger);
    }
 
@@ -332,7 +332,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobBuilder jb =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
-            .withDescription(jinfo.getDescription());
+            .withDescription(jinfo.getDescription()).requestRecovery(jinfo.isShouldRecover());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
       scheduleJob(job, trigger);
    }
@@ -359,7 +359,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       @SuppressWarnings("unchecked")
       JobBuilder jb =
          JobBuilder.newJob(jobinfo.getJob()).withIdentity(jobinfo.getJobName(), jobinfo.getGroupName())
-            .withDescription(jinfo.getDescription());
+            .withDescription(jinfo.getDescription()).requestRecovery(jinfo.isShouldRecover());
       JobDetail job = jdatamap == null ? jb.build() : jb.usingJobData(jdatamap).build();
       scheduleJob(job, trigger);
    }
@@ -569,6 +569,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       String gname = getGroupName(jinfo.getGroupName());
       JobInfo jobInfo = new JobInfo(jinfo.getJobName(), gname, jinfo.getJob());
       jobInfo.setDescription(jinfo.getDescription());
+      jobInfo.setShouldRecover(jinfo.isShouldRecover());
       return jobInfo;
    }
 
