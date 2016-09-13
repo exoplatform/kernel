@@ -32,7 +32,7 @@
 
    <artifactId>exo.kernel.component.common</artifactId>
 
-   <name>eXo Kernel :: Component :: Common Service</name>
+   <name>eXo PLF:: Kernel :: Component :: Common Service</name>
    <description>Implementation of Common Service of Exoplatform SAS 'eXo Kernel' project.</description>
 
    <properties>

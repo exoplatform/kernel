@@ -28,7 +28,7 @@
 		<version>2.6.x-SNAPSHOT</version>
 	</parent>
 	<artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
-	<name>eXo Kernel :: Cache Extension :: Infinispan Implementation</name>
+	<name>eXo PLF:: Kernel :: Cache Extension :: Infinispan Implementation</name>
 	<description>Infinispan Implementation of Cache Service for Exoplatform SAS 'eXo Kernel' project.</description>
     <properties>
         <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>

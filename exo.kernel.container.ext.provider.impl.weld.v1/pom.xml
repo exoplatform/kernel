@@ -28,7 +28,7 @@
       <version>2.6.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.kernel.container.ext.provider.impl.weld.v1</artifactId>
-   <name>eXo Kernel :: Container Extension :: Weld 1 Implementation</name>
+   <name>eXo PLF:: Kernel :: Container Extension :: Weld 1 Implementation</name>
    <description>A component provider based on Weld 1.</description>
    <properties>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>

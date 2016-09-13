@@ -28,7 +28,7 @@
       <version>2.6.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.kernel.component.ext.cache.impl.memcached.v1</artifactId>
-   <name>eXo Kernel :: Cache Extension :: Memcached Implementation</name>
+   <name>eXo PLF:: Kernel :: Cache Extension :: Memcached Implementation</name>
    <description>Memcached Implementation of Cache Service for Exoplatform SAS 'eXo Kernel' project.</description>
    <properties>
       <!-- We don't want to compile them here -->

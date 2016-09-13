@@ -32,7 +32,7 @@
 
    <artifactId>exo.kernel.component.command</artifactId>
 
-   <name>eXo Kernel :: Component :: Command Service</name>
+   <name>eXo PLF:: Kernel :: Component :: Command Service</name>
    <description>Implementation of Command Service of Exoplatform SAS 'eXo Kernel' project.</description>
 
    <properties>

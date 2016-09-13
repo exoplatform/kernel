@@ -28,7 +28,7 @@
       <version>2.6.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.kernel.container</artifactId>
-   <name>eXo Kernel :: Container</name>
+   <name>eXo PLF:: Kernel :: Container</name>
    <description>Implementation of Container for Exoplatform SAS 'eXo Kernel' project.</description>
    <properties>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>

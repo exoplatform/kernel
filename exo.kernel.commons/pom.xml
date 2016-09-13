@@ -32,7 +32,7 @@
 
    <artifactId>exo.kernel.commons</artifactId>
 
-   <name>eXo Kernel :: Commons Utils</name>
+   <name>eXo PLF:: Kernel :: Commons Utils</name>
    <description>Implementation of Commons Utils of Exoplatform SAS 'eXo Kernel' project.</description>
 
    <properties>

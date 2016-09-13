@@ -28,7 +28,7 @@
       <version>2.6.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.kernel.container.mt</artifactId>
-   <name>eXo Kernel :: Container Multi-Threaded</name>
+   <name>eXo PLF:: Kernel :: Container Multi-Threaded</name>
    <description>Implementation of Container Multi-Threaded for Exoplatform SAS 'eXo Kernel' project.</description>
    <properties>
       <debug.opts />

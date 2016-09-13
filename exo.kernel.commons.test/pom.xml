@@ -32,7 +32,7 @@
 
    <artifactId>exo.kernel.commons.test</artifactId>
 
-   <name>eXo Kernel :: Commons :: Test Util</name>
+   <name>eXo PLF:: Kernel :: Commons :: Test Util</name>
    <description>Tests of Commons Utils of Exoplatform SAS 'eXo Kernel' project.</description>
 
 </project>
