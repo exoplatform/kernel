@@ -24,36 +24,11 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.scheduler.AddJobListenerComponentPlugin;
-import org.exoplatform.services.scheduler.AddTriggerListenerComponentPlugin;
-import org.exoplatform.services.scheduler.CronJob;
-import org.exoplatform.services.scheduler.JobInfo;
-import org.exoplatform.services.scheduler.JobSchedulerService;
-import org.exoplatform.services.scheduler.PeriodInfo;
-import org.exoplatform.services.scheduler.PeriodJob;
-import org.exoplatform.services.scheduler.QueueTasks;
-import org.exoplatform.services.scheduler.Task;
+import org.exoplatform.services.scheduler.*;
 import org.picocontainer.Startable;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.InterruptableJob;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
+import org.quartz.*;
 import org.quartz.JobKey;
-import org.quartz.JobListener;
-import org.quartz.Matcher;
-import org.quartz.ObjectAlreadyExistsException;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.TriggerBuilder;
-import org.quartz.TriggerKey;
-import org.quartz.TriggerListener;
 import org.quartz.impl.matchers.EverythingMatcher;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.matchers.KeyMatcher;
@@ -86,12 +61,20 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
 
    private final boolean jobStoreSupportsPersistence;
 
+   /*Store the list of persisted job keys*/
+   private List<JobKey> persistedJobKeyList = new ArrayList<>();
+
    public JobSchedulerServiceImpl(PortalContainerInfo pinfo, QuartzSheduler quartzSchduler, QueueTasks qtasks)
    {
       scheduler_ = quartzSchduler.getQuartzSheduler();
       containerName_ = pinfo.getContainerName();
       qtasks_ = qtasks;
       jobStoreSupportsPersistence = isJobStoreSupportsPersistence();
+      //Persisted Mode Activated
+      if (jobStoreSupportsPersistence){
+         //init the list of persisted job keys
+         loadAllJobKeys();
+      }
    }
 
    /**
@@ -106,6 +89,11 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       containerName_ = STANDALONE_CONTAINER_NAME;
       qtasks_ = qtasks;
       jobStoreSupportsPersistence = isJobStoreSupportsPersistence();
+      //Persisted Mode Activated
+      if (jobStoreSupportsPersistence){
+         //init the list of persisted job keys
+         loadAllJobKeys();
+      }
    }
 
    /**
@@ -147,7 +135,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
     */
    private void scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException
    {
-      if (registerJob(jobDetail))
+      if (registerJob(jobDetail,trigger))
       {
          scheduler_.scheduleJob(jobDetail, trigger);
       }
@@ -163,16 +151,32 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
     * return <code>false</code> if and only if the persisted job is the exact same job as the provided one
     * otherwise it will raise a {@link SchedulerException}
     */
-   private boolean registerJob(JobDetail jobDetail) throws SchedulerException
+   private boolean registerJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException
    {
-      if (!jobStoreSupportsPersistence)
+      if (!jobStoreSupportsPersistence) {
          return true;
+      }
+      //remove the job key, to ensure that the job exist with same key.
+      persistedJobKeyList.remove(jobDetail.getKey());
+
       JobDetail existingJob = scheduler_.getJobDetail(jobDetail.getKey());
-      if (existingJob == null)
+      Trigger existingTrigger = scheduler_.getTrigger(trigger.getKey());
+      //new job added
+      if (existingJob == null) {
          return true;
-      if (equals(existingJob, jobDetail))
+      }
+      //Compare job configuration with persisted value
+      if (equals(existingJob, jobDetail) && equals(existingTrigger, trigger)) {
          return false;
-      throw new ObjectAlreadyExistsException(jobDetail);
+      }
+      //update only cron job expression or Period Job period time
+      if(equals(existingJob, jobDetail) && !equals(existingTrigger, trigger)){
+         scheduler_.rescheduleJob(trigger.getKey(), trigger);
+         return false;
+      }
+      //remove persisted jobs (to update configuration)
+      scheduler_.deleteJob(jobDetail.getKey());
+      return true;
    }
 
    /**
@@ -199,6 +203,25 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
          return false;
       }
       return true;
+   }
+
+   /**
+    * Indicates whether the {@link Trigger} are equals
+    * @param jobTrigger1 persisted  configuration job Trigger
+    * @param jobTrigger2 new configuration job Trigger
+    */
+   private static boolean equals(Trigger jobTrigger1, Trigger jobTrigger2) {
+       if (jobTrigger1 instanceof CronTrigger && jobTrigger2 instanceof CronTrigger) { //Compare Cron Job Trigger
+           if (!((CronTrigger) jobTrigger1).getCronExpression().equalsIgnoreCase(((CronTrigger) jobTrigger2).getCronExpression())) {
+               return false;
+           }
+       } else if (jobTrigger1 instanceof SimpleTrigger && jobTrigger2 instanceof SimpleTrigger) {//Compare Period Job Trigger
+           if (((SimpleTrigger) jobTrigger1).getRepeatCount() != ((SimpleTrigger) jobTrigger2).getRepeatCount()
+                   || ((SimpleTrigger) jobTrigger1).getRepeatInterval() != ((SimpleTrigger) jobTrigger2).getRepeatInterval())
+               return false;
+       }
+
+       return true;
    }
 
    public void addJob(JobDetail job, Trigger trigger) throws Exception
@@ -367,6 +390,7 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    public boolean removeJob(JobInfo jinfo) throws Exception
    {
       JobInfo jobinfo = getJobInfo(jinfo);
+      persistedJobKeyList.remove(JobKey.jobKey(jobinfo.getJobName(), jobinfo.getGroupName()));
       return scheduler_.deleteJob(JobKey.jobKey(jobinfo.getJobName(), jobinfo.getGroupName()));
    }
 
@@ -645,6 +669,10 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
    {
       try
       {
+         //Remove the list persisted jobs (jobs removed from the conf)
+         for (JobKey jobKey : persistedJobKeyList ){
+            scheduler_.deleteJob(jobKey);
+         }
          // Ensure that only one JobEnvironmentConfigListener will be registered
          while (removeGlobalJobListener(JobEnvironmentConfigListener.NAME));
          // Add the unique instance of JobEnvironmentConfigListener
@@ -691,5 +719,21 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       else
          gname = containerName_ + ":" + initialGroupName;
       return gname;
+   }
+
+   /**
+    * Return the list of existed jobs key
+    */
+   private void loadAllJobKeys() {
+      try {
+         List<String> jgroups = scheduler_.getJobGroupNames();
+         for (String jobGroupName : jgroups)
+         {
+            Set<JobKey> jobGroupNames = scheduler_.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
+            persistedJobKeyList.addAll(jobGroupNames);
+         }
+      } catch (Exception e) {
+         LOG.warn("Error during fetching all job keys ", e);
+      }
    }
 }
