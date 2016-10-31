@@ -18,8 +18,10 @@
  */
 package org.exoplatform.commons.utils;
 
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * A property manager that acts as a facade of the system properties. The manager has a cache that is only disabled
@@ -89,6 +91,32 @@ public class PropertyManager
       {
          return PrivilegedSystemHelper.getProperty(propertyName);
       }
+   }
+
+   /**
+    * Returns the system properties from the provided property name pattern.
+    *
+    * @param propertyPattern the property name pattern
+    * @return the list of  property keys
+    */
+   public static Properties getPropertiesByPattern(String propertyPattern)
+   {
+      Properties props = new Properties();
+      Map<String, String> map = (PrivilegedSystemHelper.getProperties().entrySet()).stream().filter(p -> p.getKey().toString().matches(propertyPattern)).collect(Collectors.toMap(p -> p.getKey().toString(), p -> p.getValue().toString()));
+      map.forEach((k,v)->{
+         props.setProperty(k,v);
+      });
+      return props;
+   }
+
+   /**
+    * Returns all system  properties.
+    *
+    * @return the list of  property keys
+    */
+   public static Properties getProperties()
+   {
+      return PrivilegedSystemHelper.getProperties();
    }
 
    /**

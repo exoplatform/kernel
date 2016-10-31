@@ -20,6 +20,8 @@ package org.exoplatform.commons.utils;
 
 import junit.framework.TestCase;
 
+import java.util.Properties;
+
 /**
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
@@ -33,6 +35,32 @@ public class TestPropertyManager extends TestCase
       _testDeveloppingIsTrue();
       _testDeveloppingIsFalse();
       _testDeveloppingIsMaybe();
+   }
+
+   public void testGetPropertiesByPattern()
+   {
+      System.setProperty("exodev.prop1.enabled", "value1");
+      System.setProperty("exodev.prop2.disabled", "value2");
+      System.setProperty("my.prop3.enabled", "value3");
+      System.setProperty("my.exodev.enabled", "value1");
+
+      PropertyManager.refresh();
+      assertTrue(PropertyManager.getUseCache());
+      assertFalse(PropertyManager.isDevelopping());
+
+      Properties result = PropertyManager.getPropertiesByPattern("^exodev\\..*$");
+      assertNotNull(result);
+      assertEquals(result.size(),2);
+
+      result.forEach((k,v)->{
+         assertTrue(k.toString().startsWith("exodev"));
+      });
+
+      result = PropertyManager.getPropertiesByPattern("exodev\\..*\\.enabled");
+      assertNotNull(result);
+      assertEquals(result.size(),1);
+
+      assertTrue("exodev.prop1.enabled".equals(result.propertyNames().nextElement()));
    }
 
    private void _testDeveloppingIsNull()
