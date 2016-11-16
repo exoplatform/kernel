@@ -94,6 +94,8 @@ public class PortalContainer extends ExoContainer
 
    private volatile boolean started_;
 
+   private volatile boolean initialized_;
+
    private PortalContainerInfo pinfo_;
 
    /**
@@ -632,8 +634,17 @@ public class PortalContainer extends ExoContainer
    @Override
    public void start()
    {
-      super.start();
-      started_ = true;
+     if (initialized_) {
+       super.start();
+     } else {
+       // The startup of PortalContainer should invoke
+       // the container lifecycle listeners
+       initialized_ = true;
+       // the start(true) method will call again this method  start()
+       // after listeners injections, so the flag initialized_ should be turned on
+       super.start(true);
+     }
+     started_ = true;
    }
 
    @Override
