@@ -207,12 +207,13 @@ public class Deserializer
       boolean properties = false;
       int state = NORMAL;
       int start = 0;
+      boolean precedingBackslash = false;
       for (int i = 0; i < chars.length; ++i)
       {
          char c = chars[i];
          if (c == '$' && state != IN_BRACKET)
             state = SEEN_DOLLAR;
-         else if (c == '{' && state == SEEN_DOLLAR)
+         else if (c == '{' && state == SEEN_DOLLAR && !precedingBackslash)
          {
             buffer.append(input.substring(start, i - 1));
             state = IN_BRACKET;
@@ -220,7 +221,7 @@ public class Deserializer
          }
          else if (state == SEEN_DOLLAR)
             state = NORMAL;
-         else if (c == '}' && state == IN_BRACKET)
+         else if (c == '}' && state == IN_BRACKET && !precedingBackslash)
          {
             if (start + 2 == i)
             {
@@ -235,6 +236,10 @@ public class Deserializer
                if (index > -1)
                {
                   defaultValue = key.substring(index + 1);
+                  if(defaultValue != null && !defaultValue.isEmpty())
+                  {
+                     defaultValue = defaultValue.replace("\\{","{").replace("\\}","}");
+                  }
                   key = key.substring(0, index);
                }
                if (key.equals(Deserializer.EXO_CONTAINER_PROP_NAME))
@@ -288,6 +293,11 @@ public class Deserializer
             }
             start = i + 1;
             state = NORMAL;
+         }
+         if (c == '\\') {
+            precedingBackslash = !precedingBackslash;
+         } else {
+            precedingBackslash = false;
          }
       }
       if (properties == false)

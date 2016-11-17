@@ -174,4 +174,19 @@ public class TestPropertyManagerConfigurator extends TestCase
       assertEquals("${property_3}", additions.get("property_3"));
       assertEquals("property_value_1-property_value_2", additions.get("property_4"));
    }
+
+   public void testFromPropertiesSkipBracket() throws Exception
+   {
+      reset();
+      URL propertiesURL = TestPropertyManagerConfigurator.class.getResource("property-configurator.properties");
+      assertNotNull(propertiesURL);
+      System.setProperty(PropertyManager.PROPERTIES_URL, propertiesURL.toString());
+      PropertiesParam propertiesParam = new PropertiesParam();
+      InitParams params = new InitParams();
+      params.put("properties", propertiesParam);
+      new PropertyConfigurator(params, new ConfigurationManagerImpl(new HashSet<String>()));
+      Map<String, String> additions = reset();
+      assertEquals("property {0} value {1}", additions.get("property_5"));
+      assertEquals("property_value_1-property {0} value {1}", additions.get("property_6"));
+   }
 }
