@@ -70,6 +70,9 @@
       <ws-commons-util.version>1.0.1</ws-commons-util.version>
       <spring-context.version>3.2.4.RELEASE</spring-context.version>
       <HikariCP.version>1.3.0</HikariCP.version>
+      <Hsql.version>2.3.3</Hsql.version>
+      <common.dbcp.version>1.4</common.dbcp.version>
+      <common.pool.version>1.6</common.pool.version>
    </properties>
 
    <scm>
@@ -300,6 +303,21 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${HikariCP.version}</version>
+         </dependency>
+         <dependency>
+            <artifactId>hsqldb</artifactId>
+            <groupId>org.hsqldb</groupId>
+            <version>${Hsql.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>${common.dbcp.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>${common.pool.version}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

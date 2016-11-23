@@ -158,8 +158,19 @@ public class JobSchedulerServiceImpl implements JobSchedulerService, Startable
       }
       //remove the job key, to ensure that the job exist with same key.
       persistedJobKeyList.remove(jobDetail.getKey());
-
-      JobDetail existingJob = scheduler_.getJobDetail(jobDetail.getKey());
+      JobDetail existingJob = null;
+      try {
+         existingJob = scheduler_.getJobDetail(jobDetail.getKey());
+      } catch (JobPersistenceException ex) {
+         //Cannot retrieve JobClass on classloader
+         if (ex.getCause() instanceof ClassNotFoundException) {
+            //remove persisted jobs (to update configuration)
+            scheduler_.deleteJob(jobDetail.getKey());
+            return true;
+         } else {
+            throw ex;
+         }
+      }
       Trigger existingTrigger = scheduler_.getTrigger(trigger.getKey());
       //new job added
       if (existingJob == null) {

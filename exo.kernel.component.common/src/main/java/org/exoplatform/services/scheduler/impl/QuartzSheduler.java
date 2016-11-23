@@ -20,7 +20,6 @@ package org.exoplatform.services.scheduler.impl;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.Properties;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.BaseContainerLifecyclePlugin;
@@ -36,7 +35,6 @@ import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;

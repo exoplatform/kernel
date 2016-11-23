@@ -177,8 +177,41 @@
          <artifactId>contiperf</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <artifactId>hsqldb</artifactId>
+         <groupId>org.hsqldb</groupId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>commons-dbcp</groupId>
+         <artifactId>commons-dbcp</artifactId>
+         <scope>runtime</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>xerces</groupId>
+               <artifactId>xercesImpl</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>commons-pool</groupId>
+               <artifactId>commons-pool</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>commons-pool</groupId>
+         <artifactId>commons-pool</artifactId>
+         <scope>runtime</scope>
+      </dependency>
    </dependencies>
    <build>
+      <resources>
+         <resource>
+            <directory>src/test/resources</directory>
+            <includes>
+               <include>*.sql</include>
+            </includes>
+         </resource>
+      </resources>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
