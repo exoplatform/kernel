@@ -18,15 +18,6 @@
  */
 package org.exoplatform.services.mail.impl;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.services.mail.Attachment;
-import org.exoplatform.services.mail.MailService;
-import org.exoplatform.services.mail.Message;
-
 import java.io.InputStream;
 import java.security.PrivilegedAction;
 import java.util.Date;
@@ -48,6 +39,15 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.mail.util.ByteArrayDataSource;
+
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.mail.Attachment;
+import org.exoplatform.services.mail.MailService;
+import org.exoplatform.services.mail.Message;
 
 /**
  * Basically this is {@link MailService} implementation build on top of javax.mail package.
@@ -170,6 +170,9 @@ public class MailServiceImpl implements MailService
       if (FROM != null && !FROM.equals(""))
       {
          InternetAddress sentFrom = new InternetAddress(FROM);
+         if(sentFrom.getPersonal() != null) {
+           sentFrom.setPersonal(sentFrom.getPersonal(), "UTF-8");
+         }
          mimeMessage.setFrom(sentFrom);
       }
       // set To to the message
@@ -177,6 +180,9 @@ public class MailServiceImpl implements MailService
       for (int i = 0; i < getArrs(TO).length; i++)
       {
          sendTo[i] = new InternetAddress(getArrs(TO)[i]);
+         if(sendTo[i].getPersonal() != null) {
+           sendTo[i].setPersonal(sendTo[i].getPersonal(), "UTF-8");
+         }
       }
       mimeMessage.setRecipients(javax.mail.Message.RecipientType.TO, sendTo);
       // set CC to the message
@@ -186,6 +192,9 @@ public class MailServiceImpl implements MailService
          for (int i = 0; i < getArrs(CC).length; i++)
          {
             copyTo[i] = new InternetAddress(getArrs(CC)[i]);
+            if(copyTo[i].getPersonal() != null) {
+              copyTo[i].setPersonal(copyTo[i].getPersonal(), "UTF-8");
+            }
          }
          mimeMessage.setRecipients(javax.mail.Message.RecipientType.CC, copyTo);
       }
@@ -196,6 +205,9 @@ public class MailServiceImpl implements MailService
          for (int i = 0; i < getArrs(BCC).length; i++)
          {
             bccTo[i] = new InternetAddress(getArrs(BCC)[i]);
+            if(bccTo[i].getPersonal() != null) {
+              bccTo[i].setPersonal(bccTo[i].getPersonal(), "UTF-8");
+            }
          }
          mimeMessage.setRecipients(javax.mail.Message.RecipientType.BCC, bccTo);
       }
