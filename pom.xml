@@ -27,13 +27,13 @@
    <parent>
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
-      <version>15-RC02</version>
+      <version>16.x-SNAPSHOT</version>
       <relativePath />
    </parent>
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>2.7.x-SNAPSHOT</version>
+   <version>5.0.x-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo PLF:: Kernel</name>
@@ -43,6 +43,9 @@
       <exo.product.name>exo-kernel</exo.product.name>
       <exo.product.specification>2.5</exo.product.specification>
       <forkMode>always</forkMode>
+      <!-- PLF project dependencies -->
+      <org.exoplatform.gatein.wci.version>5.0.x-SNAPSHOT</org.exoplatform.gatein.wci.version>
+      <!-- 3rd party libraries versions -->
       <org.ogce.xpp3.version>1.1.6</org.ogce.xpp3.version>
       <commons-beanutils.version>1.8.3</commons-beanutils.version>
       <commons-chain.version>1.2</commons-chain.version>
@@ -62,7 +65,6 @@
       <ow2-jta-1.1-spec.version>1.0.13</ow2-jta-1.1-spec.version>
       <transactions-jta.version>3.8.0</transactions-jta.version>
       <subethasmtp.version>3.1.7</subethasmtp.version>
-      <wci-wci.version>2.3.1.Final</wci-wci.version>
       <guice.version>3.0</guice.version>
       <cdi-api.version>1.0-SP4</cdi-api.version>
       <javassist.version>3.18.0-GA</javassist.version>
@@ -254,9 +256,9 @@
             <version>${subethasmtp.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.gatein.wci</groupId>
+            <groupId>org.exoplatform.gatein.wci</groupId>
             <artifactId>wci-wci</artifactId>
-            <version>${wci-wci.version}</version>
+            <version>${org.exoplatform.gatein.wci.version}</version>
          </dependency>
          <dependency>
             <groupId>com.google.inject</groupId>
