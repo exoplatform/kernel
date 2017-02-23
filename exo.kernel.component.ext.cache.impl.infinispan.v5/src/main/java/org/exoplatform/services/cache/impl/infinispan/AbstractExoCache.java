@@ -30,6 +30,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
@@ -233,6 +234,23 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          // ignore null values
          return;
       }
+      if(LOG.isDebugEnabled() && cache.getDataContainer().containsKey(key)) {
+        InternalCacheEntry internalCacheEntry = cache.getDataContainer().get(key);
+        if(internalCacheEntry != null) {
+          Object oldValue = internalCacheEntry.getValue();
+          if(oldValue != null) {
+            if(oldValue.equals(value)) {
+              LOG.debug("Need to optimize top layer cache management propably (depends on ValueClass.equals method pertinence). The same value putted into cache, cache = " + cache.getName() + ", key : class= " + key.getClass() + ", hashcode= " + key.hashCode() + "/ old hashcode: " + internalCacheEntry.getKey().hashCode());
+            } else {
+              try {
+                value.getClass().getDeclaredMethod("equals");
+              } catch (NoSuchMethodException e) {
+                LOG.debug("Need to implement equals method in " + value.getClass().getCanonicalName() + ". cache = " + cache.getName() + ", key : class= " + key.getClass() + ", hashcode= " + key.hashCode() + "/ old hashcode: " + internalCacheEntry.getKey().hashCode());
+              }
+            }
+          }
+        }
+      }
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
 
@@ -277,7 +295,9 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          public Void run()
          {
             // Start transaction
-            cache.startBatch();
+            if(cache.getTransactionManager() != null) {
+              cache.startBatch();
+            }
             try
             {
                // Make sure that the key and the value are valid
@@ -287,7 +307,9 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
                   map.put(entry.getKey(), entry.getValue());
                }
                cache.putAll(map);
-               cache.endBatch(true);
+               if(cache.getTransactionManager() != null) {
+                 cache.endBatch(true);
+               }
                // End transaction
                for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
                {
@@ -296,7 +318,9 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
             }
             catch (Exception e) //NOSONAR
             {
-               cache.endBatch(false);
+               if(cache.getTransactionManager() != null) {
+                 cache.endBatch(false);
+               }
                LOG.warn("An error occurs while executing the putMap method", e);
             }
             return null;
