@@ -518,7 +518,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     */
    protected void resetConfiguration(ConfigurationBuilder confBuilder)
    {
-      confBuilder.invocationBatching().enable().eviction().strategy(EvictionStrategy.NONE).maxEntries(-1).expiration()
+      confBuilder.eviction().strategy(EvictionStrategy.NONE).maxEntries(-1).expiration()
          .lifespan(-1L).maxIdle(-1L).wakeUpInterval(60000L);
    }
 }
