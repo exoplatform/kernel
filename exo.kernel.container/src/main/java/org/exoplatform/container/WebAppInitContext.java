@@ -39,6 +39,11 @@ public class WebAppInitContext
    private final ServletContext servletContext;
 
    /**
+    * The servlet context name of the web application
+    */
+   private final String servletContextName;
+
+   /**
     * The class loader of the web application;
     */
    private final ClassLoader webappClassLoader;
@@ -47,6 +52,7 @@ public class WebAppInitContext
    {
       this.servletContext = servletContext;
       this.webappClassLoader = Thread.currentThread().getContextClassLoader();
+      this.servletContextName = ContainerUtil.getServletContextName(servletContext);
    }
 
    public ServletContext getServletContext()
@@ -56,7 +62,7 @@ public class WebAppInitContext
 
    public String getServletContextName()
    {
-      return ContainerUtil.getServletContextName(servletContext);
+      return servletContextName;
    }
 
    public ClassLoader getWebappClassLoader()
