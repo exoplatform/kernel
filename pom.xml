@@ -33,7 +33,7 @@
 
    <groupId>org.exoplatform.kernel</groupId>
    <artifactId>kernel-parent</artifactId>
-   <version>5.0.x-SNAPSHOT</version>
+   <version>5.0.0-M03</version>
    <packaging>pom</packaging>
 
    <name>eXo PLF:: Kernel</name>
@@ -81,7 +81,7 @@
       <connection>scm:git:git://github.com/exoplatform/kernel.git</connection>
       <developerConnection>scm:git:git@github.com:exoplatform/kernel.git</developerConnection>
       <url>https://fisheye.exoplatform.org/browse/kernel-dev</url>
-     <tag>HEAD</tag>
+     <tag>5.0.0-M03</tag>
   </scm>
 
    <modules>
