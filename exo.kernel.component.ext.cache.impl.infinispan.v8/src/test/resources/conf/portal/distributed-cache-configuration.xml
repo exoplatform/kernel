@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2017 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<infinispan
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
+        xmlns="urn:infinispan:config:8.0">
+   <jgroups>
+      <stack-file name="udp" path="udp.xml"/>
+   </jgroups>
+   <threads>
+      <thread-factory  name="listener-factory" group-name="infinispan" thread-name-pattern="AsyncListenerThread"/>
+      <blocking-bounded-queue-thread-pool name="listener" thread-factory="listener-factory" max-threads="5" queue-length="10000"/>
+      <thread-factory name="transport-factory" group-name="infinispan" thread-name-pattern="AsyncSerializationThread"/>
+      <blocking-bounded-queue-thread-pool name="transport" thread-factory="transport-factory" max-threads="25" queue-length="10000"/>
+      <thread-factory name="expiration-factory" group-name="infinispan" thread-name-pattern="ExpirationThread"/>
+      <scheduled-thread-pool name="expiration" thread-factory="expiration-factory" />
+      <thread-factory name="replication-queue-factory" group-name="infinispan" thread-name-pattern="ReplicationQueueThread"/>
+      <scheduled-thread-pool name="replication-queue" thread-factory="replication-queue-factory" />
+   </threads>
+
+   <cache-container default-cache="default" shutdown-hook="DEFAULT" listener-executor="listener">
+      <jmx domain="exo" duplicate-domains="true" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
+      <transport cluster="Infinispan-cluster" stack="udp"/>
+      <distributed-cache-configuration   name="default" statistics="true" owners="1" mode="SYNC">
+         <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.GenericTransactionManagerLookup"
+                      mode="BATCH" protocol="DEFAULT" locking="OPTIMISTIC" />
+         <locking isolation="READ_COMMITTED" acquire-timeout="10000" concurrency-level="500" striping="false"/>
+      </distributed-cache-configuration>
+      <distributed-cache name="eXoCache"  configuration="default"/>
+   </cache-container>
+</infinispan>
