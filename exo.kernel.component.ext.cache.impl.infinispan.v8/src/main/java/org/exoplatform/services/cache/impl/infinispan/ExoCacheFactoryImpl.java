@@ -80,6 +80,11 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    private static final String CACHE_CONFIG_TEMPLATE_KEY = "cache.config.template";
 
    /**
+    * The initial parameter key that defines the full path of the optional async configuration template
+    */
+   private static final String CACHE_ASYNC_TEMPLATE_KEY  = "cache.async.config.template";
+
+   /**
     * The cache manager for the distributed cache
     */
    private final DistributedCacheManager distributedCacheManager;
@@ -96,9 +101,14 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    private final ConfigurationManager configManager;
 
    /**
-    * The {@link DefaultCacheManager} used for all the cache regions
+    * The {@link DefaultCacheManager} used for all sync cache regions
     */
    private final DefaultCacheManager cacheManager;
+
+   /**
+    * The {@link DefaultCacheManager} used for all async cache regions
+    */
+   private  DefaultCacheManager asyncCacheManager = null;
 
    /**
     * The mapping between the configuration types and the creators
@@ -115,6 +125,11 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
     * The mapping between the cache names and the configuration paths
     */
    private final Map<String, String> mappingCacheNameConfig = new HashMap<String, String>();
+
+   /**
+    * The async cache template path
+    */
+   private final String asyncCacheTemplate;
 
    /**
     * The mapping between the cluster name and the cache managers
@@ -138,22 +153,16 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    public ExoCacheFactoryImpl(ExoContainerContext ctx, InitParams params, ConfigurationManager configManager)
       throws ExoCacheInitException
    {
-      this(ctx, params, configManager, null);
-   }
-
-   ExoCacheFactoryImpl(ExoContainerContext ctx, String cacheConfigTemplate, ConfigurationManager configManager)
-      throws ExoCacheInitException
-   {
-      this(ctx, cacheConfigTemplate, configManager, null);
+      this(ctx, getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), getValueParam(params, CACHE_ASYNC_TEMPLATE_KEY), configManager, null);
    }
 
    public ExoCacheFactoryImpl(ExoContainerContext ctx, InitParams params, ConfigurationManager configManager,
       DistributedCacheManager dcm) throws ExoCacheInitException
    {
-      this(ctx, getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), configManager, dcm);
+      this(ctx, getValueParam(params, CACHE_CONFIG_TEMPLATE_KEY), getValueParam(params, CACHE_ASYNC_TEMPLATE_KEY), configManager, dcm);
    }
 
-   public ExoCacheFactoryImpl(ExoContainerContext ctx, String cacheConfigTemplate, ConfigurationManager configManager,
+   public ExoCacheFactoryImpl(ExoContainerContext ctx, String cacheConfigTemplate, String cacheAsyncConfigTemplate, ConfigurationManager configManager,
       DistributedCacheManager dcm) throws ExoCacheInitException
    {
       this.distributedCacheManager = dcm;
@@ -165,6 +174,8 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       }
       // Initialize the main cache manager
       this.cacheManager = initCacheManager(cacheConfigTemplate);
+
+      this.asyncCacheTemplate = cacheAsyncConfigTemplate;
    }
 
    /**
@@ -305,7 +316,13 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
    public ExoCache<Serializable, Object> createCache(final ExoCacheConfig config) throws ExoCacheInitException
    {
       final String region = config.getName();
-      final String customConfig = mappingCacheNameConfig.get(region);
+      String CacheConfig = mappingCacheNameConfig.get(region);
+      if(CacheConfig == null && config.isAsync() && asyncCacheTemplate !=null && asyncCacheManager == null)
+      {
+         //use async template if cache use async mode
+         this.asyncCacheManager = initCacheManager(asyncCacheTemplate);
+      }
+      final String customConfig =  CacheConfig;
       final ExoCache<Serializable, Object> eXoCache;
       final DefaultCacheManager cacheManager;
       try
@@ -383,7 +400,7 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
          }
          else
          {
-            cacheManager = this.cacheManager;
+            cacheManager = (config.isAsync() && asyncCacheManager != null) ? this.asyncCacheManager : this.cacheManager;
             // No custom configuration has been found, a configuration template will be used 
             if (LOG.isInfoEnabled())
                LOG.info("The configuration template will be used for the cache '" + region + "'.");

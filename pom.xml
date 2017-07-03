@@ -48,6 +48,7 @@
       <!-- 3rd party libraries versions -->
       <org.ogce.xpp3.version>1.1.6</org.ogce.xpp3.version>
       <commons-beanutils.version>1.8.3</commons-beanutils.version>
+      <commons-long.version>2.6</commons-long.version>
       <commons-chain.version>1.2</commons-chain.version>
       <commons-digester.version>2.1</commons-digester.version>
       <org.slf4j.version>1.7.5</org.slf4j.version>
@@ -220,11 +221,16 @@
             <artifactId>infinispan-core</artifactId>
             <version>${infinispan.version}</version>
          </dependency>
-          <dependency>
+         <dependency>
               <groupId>org.infinispan</groupId>
               <artifactId>infinispan-commons</artifactId>
               <version>${infinispan.version}</version>
-          </dependency>
+         </dependency>
+         <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons-long.version}</version>
+         </dependency>
          <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-bind</artifactId>

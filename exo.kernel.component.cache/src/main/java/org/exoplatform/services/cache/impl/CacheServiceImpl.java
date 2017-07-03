@@ -22,13 +22,8 @@ import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.management.annotations.ManagedBy;
-import org.exoplatform.services.cache.CacheService;
-import org.exoplatform.services.cache.ExoCache;
-import org.exoplatform.services.cache.ExoCacheConfig;
-import org.exoplatform.services.cache.ExoCacheConfigPlugin;
-import org.exoplatform.services.cache.ExoCacheFactory;
-import org.exoplatform.services.cache.ExoCacheInitException;
-import org.exoplatform.services.cache.SimpleExoCache;
+import org.exoplatform.services.cache.*;
+import org.exoplatform.services.cache.invalidation.AsyncInvalidationExoCache;
 import org.exoplatform.services.cache.invalidation.InvalidationExoCache;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -71,10 +66,7 @@ public class CacheServiceImpl implements CacheService
    private final ExoCacheFactory factory_;
 
    CacheServiceManaged managed;
-
-   /**
-    * 
-    */
+   
    public CacheServiceImpl(InitParams params) throws Exception
    {
       this(params, null);
@@ -170,7 +162,7 @@ public class CacheServiceImpl implements CacheService
       safeConfig.setName(region);
       
       ExoCache simple = null;
-      if (factory_ != DEFAULT_FACTORY && safeConfig.getClass().isAssignableFrom(ExoCacheConfig.class) //NOSONAR
+      if (factory_ != DEFAULT_FACTORY && !safeConfig.isInvalidated() && safeConfig.getClass().isAssignableFrom(ExoCacheConfig.class) //NOSONAR
          && safeConfig.getImplementation() != null)
       {
          // The implementation exists and the config is not a sub class of ExoCacheConfig
@@ -202,13 +194,31 @@ public class CacheServiceImpl implements CacheService
       
       if (managed != null)
       {
-         managed.registerCache(simple);
+         if(! (safeConfig.getCacheMode() == CacheMode.ASYNCINVALIDATION))
+         {
+            managed.registerCache(simple);
+         }
       }
-      // If the flag avoid value replication is enabled and the cache is replicated
-      // or distributed we wrap the eXo cache instance into an InvalidationExoCache 
+      // If the flag avoid value replication (sync invalidation) or async invalidation is enabled and the
+      // cache is replicated we wrap the eXo cache instance into an InvalidationExoCache
       // to enable the invalidation
-      return safeConfig.avoidValueReplication() && (safeConfig.isRepicated() || safeConfig.isDistributed())
-         ? new InvalidationExoCache(simple) : simple;
+
+      if(safeConfig.isInvalidated() && safeConfig.getCacheMode().isSync())
+      {
+         return safeConfig.getImplementation() != null ?
+                 getCustomInstance(safeConfig.getImplementation(), safeConfig) : new InvalidationExoCache(simple);
+      }
+      else if (safeConfig.isInvalidated() && !safeConfig.getCacheMode().isSync())
+      {
+         ExoCache exoCache = safeConfig.getImplementation() != null ?
+                 getCustomInstance(safeConfig.getImplementation(), safeConfig) :new AsyncInvalidationExoCache(simple);
+         if (managed != null)
+         {
+            managed.registerCache(exoCache);
+         }
+         return exoCache;
+      }
+      return simple;
    }
 
    public Collection<ExoCache<? extends Serializable, ?>> getAllCacheInstances()
@@ -352,5 +362,20 @@ public class CacheServiceImpl implements CacheService
          }
          return cache = super.get();
       }
+   }
+
+   /**
+    *  Creates a new instance of the custom exo Cache implementation
+    */
+   private ExoCache<? extends Serializable, ?> getCustomInstance(String clazz, ExoCacheConfig config) throws Exception
+   {
+      // We check if the given implementation is a known class
+      Class<?> implClass = ClassLoading.loadClass(clazz, this);
+      if (implClass != null && ExoCache.class.isAssignableFrom(implClass))
+      {
+         return (ExoCache<? extends Serializable, ?>)
+                 implClass.getConstructor(ExoCacheConfig.class).newInstance(config);
+      }
+      return null;
    }
 }

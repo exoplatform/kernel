@@ -102,6 +102,12 @@ public class ConcurrentGetWhenPutTestCase extends TestCase
             failure = new AssertionFailedError();
          }
       }
+
+      @Override
+      protected void putOnly(String key, String value)
+      {
+         put(key, value);
+      }
    };
 
    /** . */

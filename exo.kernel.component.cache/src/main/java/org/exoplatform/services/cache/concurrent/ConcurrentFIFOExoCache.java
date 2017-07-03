@@ -24,6 +24,7 @@ import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.log.Log;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -209,7 +210,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
       }
    }
 
-   public V remove(Serializable name)
+    public V remove(Serializable name)
    {
       if (name == null)
       {
@@ -297,38 +298,43 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
 
    //
 
-   void onExpire(K key, V obj)
+   public void onExpire(K key, V obj)
    {
       if (!listeners.isEmpty())
          for (ListenerContext<K, V> context : listeners)
             context.onExpire(key, obj);
    }
 
-   void onRemove(K key, V obj)
+   public void onRemove(K key, V obj)
    {
       if (!listeners.isEmpty())
          for (ListenerContext<K, V> context : listeners)
             context.onRemove(key, obj);
    }
 
-   void onPut(K key, V obj)
+   public void onPut(K key, V obj)
    {
       if (!listeners.isEmpty())
          for (ListenerContext<K, V> context : listeners)
             context.onPut(key, obj);
    }
 
-   void onGet(K key, V obj)
+   public void onGet(K key, V obj)
    {
       if (!listeners.isEmpty())
          for (ListenerContext<K, V> context : listeners)
             context.onGet(key, obj);
    }
 
-   void onClearCache()
+   public void onClearCache()
    {
       if (!listeners.isEmpty())
          for (ListenerContext<K, V> context : listeners)
             context.onClearCache();
    }
+
+   public List<ListenerContext<K, V>> getListeners() {
+      return listeners;
+   }
+
 }

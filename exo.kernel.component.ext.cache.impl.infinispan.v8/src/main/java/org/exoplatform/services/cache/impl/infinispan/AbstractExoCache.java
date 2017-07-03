@@ -222,6 +222,12 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       return replicated;
    }
 
+   private void putOnlyAsync(K key, V value)
+   {
+      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).putAsync(key, value);
+   }
+
+
    /**
     * {@inheritDoc}
     */
@@ -259,7 +265,32 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          @Override
          public Void run()
          {
-            putOnly(key, value);
+            putOnly(key, value, false);
+            return null;
+         }
+      });
+      onPut(key, value);
+   }
+
+   @Override
+   public void putLocal(final K key, final V value) throws IllegalArgumentException {
+      if (key == null)
+      {
+         throw new IllegalArgumentException("No null cache key accepted");
+      }
+      else if (value == null)
+      {
+         // ignore null values
+         return;
+      }
+
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+
+         @Override
+         public Void run()
+         {
+            putOnly(key, value,  true);
             return null;
          }
       });
@@ -269,9 +300,16 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * Only puts the data into the cache nothing more
     */
-   protected void putOnly(K key, V value)
+   protected void putOnly(K key, V value, boolean isLocal)
    {
-      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+      if (isLocal)
+      {
+         cache.withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+      }
+      else
+      {
+         cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+      }
    }
 
    /**
@@ -333,10 +371,56 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings("unchecked")
-   public V remove(final Serializable name) throws NullPointerException
+   public void putAsyncMap(final Map<? extends K, ? extends V> objs) throws IllegalArgumentException
    {
-      if (name == null)
+      if (objs == null)
+      {
+         throw new IllegalArgumentException("No null map accepted");
+      }
+      for (Serializable name : objs.keySet())
+      {
+         if (name == null)
+         {
+            throw new IllegalArgumentException("No null cache key accepted");
+         }
+      }
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+
+         @Override
+         public Void run()
+         {
+            try
+            {
+               // Make sure that the key and the value are valid
+               Map<K, V> map = new LinkedHashMap<K, V>();
+               for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
+               {
+                  map.put(entry.getKey(), entry.getValue());
+               }
+               cache.putAllAsync(map);
+               // End transaction
+               for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
+               {
+                  onPut(entry.getKey(), entry.getValue());
+               }
+            }
+            catch (Exception e) //NOSONAR
+            {
+               LOG.warn("An error occurs while executing the putMap method", e);
+            }
+            return null;
+         }
+      });
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @SuppressWarnings("unchecked")
+   public V remove(final Serializable key) throws NullPointerException
+   {
+      if (key == null)
       {
          throw new IllegalArgumentException("No null cache key accepted");
       }
@@ -346,11 +430,34 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          @Override
          public V run()
          {
-            return cache.remove(name);
+            return cache.remove(key);
          }
       });
-      onRemove((K)name, result);
+      onRemove((K)key, result);
       return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @SuppressWarnings("unchecked")
+   public void removeLocal(final Serializable key) throws NullPointerException
+   {
+      if (key == null)
+      {
+         throw new IllegalArgumentException("No null cache key accepted");
+      }
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+
+         @Override
+         public Void run()
+         {
+            cache.withFlags(Flag.CACHE_MODE_LOCAL).removeAsync(key);
+            return null;
+         }
+      });
+      onRemove((K)key, null);
    }
 
    /**
@@ -440,7 +547,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       this.replicated = replicated;
    }
 
-   void onExpire(K key, V obj)
+   public void onExpire(K key, V obj)
    {
       if (listeners.isEmpty())
       {
@@ -460,7 +567,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       }
    }
 
-   void onRemove(K key, V obj)
+   public void onRemove(K key, V obj)
    {
       if (listeners.isEmpty())
       {
@@ -480,7 +587,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       }
    }
 
-   void onPut(K key, V obj)
+   public void onPut(K key, V obj)
    {
       if (listeners.isEmpty())
       {
@@ -498,7 +605,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          }
    }
 
-   void onGet(K key, V obj)
+   public void onGet(K key, V obj)
    {
       if (listeners.isEmpty())
       {
@@ -516,7 +623,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          }
    }
 
-   void onClearCache()
+   public void onClearCache()
    {
       if (listeners.isEmpty())
       {

@@ -360,7 +360,6 @@ public class TestCacheService extends TestCase
        */
       public void put(Serializable key, V value) throws NullPointerException
       {
-
       }
 
       /**
