@@ -22,13 +22,10 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.rpc.impl.AbstractRPCService;
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.View;
+import org.jgroups.*;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
+import org.jgroups.stack.IpAddress;
 import org.jgroups.util.RspList;
 
 import java.util.List;
@@ -56,6 +53,29 @@ public class RPCServiceImpl extends AbstractRPCService
    protected Address getLocalAddress()
    {
       return channel.getAddress();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getHostAddress()
+   {
+      String address = null;
+      org.jgroups.Address jgAddress = channel.getAddress() ;
+      if (!(jgAddress instanceof IpAddress))
+      {
+         // this is the only way of getting physical address.
+         jgAddress = (org.jgroups.Address)channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, jgAddress));
+      }
+      if (jgAddress instanceof IpAddress)
+      {
+         address = ((IpAddress)jgAddress).getIpAddress().getHostAddress();
+      }
+      else
+      {
+         LOG.error("Unsupported Address object : " + jgAddress.getClass().getName());
+      }
+      return address;
    }
    
    /**
