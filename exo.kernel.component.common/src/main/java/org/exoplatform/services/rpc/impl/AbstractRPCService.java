@@ -77,7 +77,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    /**
     * Connection logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.RPCServiceImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.kernel.component.common.RPCServiceImpl");
    
    /**
     * The name of the parameter for the location of the JGroups configuration.
@@ -802,6 +802,12 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * @return The channel's address (opaque) or null if it cannot be found
     */
    protected abstract Address getLocalAddress();
+
+   /**
+    * Returns the IP address of current channel.
+    * @return The Host's address or null if it cannot be found
+    */
+   public  abstract String getHostAddress();
    
    /**
     * Cast a message to all the given members
