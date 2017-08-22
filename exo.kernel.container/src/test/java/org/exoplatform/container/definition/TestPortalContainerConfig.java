@@ -21,6 +21,7 @@ import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.jmx.AbstractTestContainer;
 import org.exoplatform.container.monitor.jvm.J2EEServerInfo;
 
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1093,7 +1094,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       assertTrue(names.contains("myPortal"));
    }
 
-   public void testSettings()
+   public void testSettings() throws Exception
    {
       // Without settings, without portal definition and without default values
       RootContainer rootContainer = createRootContainer("portal-container-config-with-no-default-values.xml");
@@ -1450,6 +1451,7 @@ public class TestPortalContainerConfig extends AbstractTestContainer
       String path =
          TestPortalContainerConfig.class.getResource(
             "portal-container-config-with-default-values-and-with-external-settings2.xml").getPath();
+      path = URLDecoder.decode(path, "UTF-8");
       path = path.substring(0, path.lastIndexOf('/'));
       String oldPath = System.getProperty(J2EEServerInfo.EXO_CONF_PARAM);
 
