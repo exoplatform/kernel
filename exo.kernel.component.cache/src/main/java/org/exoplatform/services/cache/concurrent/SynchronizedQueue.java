@@ -177,28 +177,22 @@ public class SynchronizedQueue<I extends Item> implements Queue<I>
          try
          {
             queueLock.lock();
-            try
+            if (queueSize > size)
             {
-               if (queueSize > size)
+               ArrayList<I> evictedItems = new ArrayList<I>(queueSize - size);
+               while (queueSize > size)
                {
-                  ArrayList<I> evictedItems = new ArrayList<I>(queueSize - size);
-                  while (queueSize > size)
-                  {
-                     I last = (I)tail.previous;
-                     remove(last);
-                     evictedItems.add(last);
-                  }
-                  return evictedItems;
+                  I last = (I)tail.previous;
+                  remove(last);
+                  evictedItems.add(last);
                }
-            }
-            finally
-            {
-               queueLock.unlock();
+               return evictedItems;
             }
          }
          finally
          {
             trimming.set(false);
+            queueLock.unlock();
          }
       }
 
