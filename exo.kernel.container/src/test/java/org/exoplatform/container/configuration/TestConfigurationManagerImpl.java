@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Map;
@@ -93,6 +94,7 @@ public class TestConfigurationManagerImpl extends TestCase
          // ok;
       }
       String sURL = getClass().getResource("empty-config.xml").toString();
+      sURL = URLDecoder.decode(sURL, "UTF-8");
       assertNotNull(sURL);
       assertTrue("the expected path should starts with file:", sURL.startsWith("file:"));
       sURL = sURL.substring(0, sURL.lastIndexOf('/'));
@@ -197,6 +199,7 @@ public class TestConfigurationManagerImpl extends TestCase
       // CM with Context path
       ConfigurationManager cm3 = new ConfigurationManagerImpl();
       String path = getClass().getResource("empty-config.xml").getPath();
+      path = URLDecoder.decode(path, "UTF-8");
       assertNotNull(path);
       path = path.substring(0, path.lastIndexOf('/'));
       cm3.addConfiguration((new File(path)).toURI().toURL());
