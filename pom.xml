@@ -72,7 +72,7 @@
       <ws-commons-util.version>1.0.1</ws-commons-util.version>
       <spring-context.version>3.2.4.RELEASE</spring-context.version>
       <HikariCP.version>1.3.0</HikariCP.version>
-      <Hsql.version>2.3.3</Hsql.version>
+      <Hsql.version>2.4.0</Hsql.version>
       <common.dbcp.version>1.4</common.dbcp.version>
       <common.pool.version>1.6</common.pool.version>
    </properties>
