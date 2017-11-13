@@ -286,7 +286,7 @@ public class ContainerUtil
          }
       });
 
-      Map<String, URL> map = new HashMap<String, URL>();
+      Map<String, URL> map = new LinkedHashMap<>();
       Iterator i = c.iterator();
       String forbiddenSuffix = "WEB-INF/" + configuration;
       while (i.hasNext())
@@ -312,11 +312,6 @@ public class ContainerUtil
          map.put(key, url);
       }
 
-      i = map.values().iterator();
-      // while(i.hasNext()) {
-      // URL url = (URL) i.next() ;
-      // System.out.println("==> Add " + url);
-      // }
       return map.values();
    }
 
