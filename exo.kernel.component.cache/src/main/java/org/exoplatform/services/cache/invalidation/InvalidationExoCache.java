@@ -26,10 +26,6 @@ import org.exoplatform.services.cache.ObjectCacheInfo;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -57,7 +53,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  */
 public class InvalidationExoCache<K extends Serializable, V> implements ExoCache<K, V>,
-   CacheListener<K, InvalidationExoCache.HashCode<V>>
+   CacheListener<K, HashCode<V>>
 {
    /**
     * Logger.
@@ -158,11 +154,30 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    }
 
    /**
+    * @see org.exoplatform.services.cache.ExoCache#remove(java.io.Serializable)
+    */
+   public void removeLocal(Serializable key) throws NullPointerException
+   {
+      localCache.get(key);
+      delegate.removeLocal(key);
+   }
+
+   /**
     * @see org.exoplatform.services.cache.ExoCache#put(java.io.Serializable, java.lang.Object)
     */
    public void put(K key, V value) throws NullPointerException
    {
-      delegate.put(key, new HashCode<V>(value));
+      HashCode hashCode = new HashCode<V>(value);
+      LOG.info(getName() + " PUT KEY " + key+ " hash "+ hashCode.hashCode());
+      delegate.put(key, hashCode);
+   }
+
+   @Override
+   public void putLocal(K key, V value) throws NullPointerException
+   {
+      HashCode hashCode = new HashCode<V>(value);
+      LOG.info(getName() + " PUT LOCAL KEY " + key+ " hash "+ hashCode.hashCode());
+      delegate.putLocal(key, hashCode);
    }
 
    /**
@@ -398,11 +413,15 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
          V currentValue = localCache.get(key);
          if (currentValue != null && obj != null && currentValue.hashCode() == obj.hashCode())
          {
+            LOG.info(getName() + " ON PUT equal KEY " + key+ " hash "+ obj.hashCode());
+
             // We assume that it is the same value so we don't change the value in the cache
             value = currentValue;
          }
          else
          {
+            LOG.info(getName() + " ON PUT not equal KEY " + key+ " hash "+ obj.hashCode());
+
             // A new value has been added to the cache so we invalidate the local one
             value = null;
             localCache.remove(key);
@@ -467,95 +486,6 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
             if (LOG.isWarnEnabled())
                LOG.warn("Cannot execute the CacheListener properly", e);
          }
-      }
-   }
-      
-   /**
-    * We use this class to propagate the hash code of the value efficiently over the network
-    */
-   public static class HashCode<V> implements Externalizable
-   {
-      /**
-       * The hash code of the value
-       */
-      private int hashCode;
-      
-      /**
-       * The corresponding value
-       */
-      private V value;
-      
-      public HashCode() {}
-      
-      public HashCode(V value)
-      {
-         this.hashCode = value.hashCode();
-         this.value = value;
-      }
-      
-      /**
-       * @return the value
-       */
-      public V getValue()
-      {
-         return value;
-      }
-
-      /**
-       * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-       */
-      public void writeExternal(ObjectOutput out) throws IOException
-      {
-         out.writeInt(hashCode);
-      }
-
-      /**
-       * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-       */
-      public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-      {
-         this.hashCode = in.readInt();
-      }
-
-      /**
-       * @see java.lang.Object#hashCode()
-       */
-      @Override
-      public int hashCode()
-      {
-         return hashCode;
-      }
-
-      /**
-       * @see java.lang.Object#equals(java.lang.Object)
-       */
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj)
-            return true;
-         if (obj == null)
-            return false;
-         if (getClass() != obj.getClass())
-            return false;
-         @SuppressWarnings("rawtypes")
-         HashCode other = (HashCode)obj;
-         if (hashCode != other.hashCode)
-            return false;
-         if (value != null && other.value != null)
-         {
-            return value.equals(other.value);
-         }
-         return true;
-      }
-
-      /**
-       * @see java.lang.Object#toString()
-       */
-      @Override
-      public String toString()
-      {
-         return "HashCode [hashCode=" + hashCode + ", value=" + value + "]";
       }
    }
 }

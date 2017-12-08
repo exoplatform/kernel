@@ -52,11 +52,13 @@ public class ExoCacheConfig implements Cloneable
    /**
     * Indicates if the cache is distributed
     */
+   @Deprecated
    private boolean distributed;
 
    /**
     * Indicates if the cache is replicated
     */
+   @Deprecated
    private boolean replicated;
 
    /**
@@ -73,6 +75,17 @@ public class ExoCacheConfig implements Cloneable
     * Indicates whether or not the replication of the values should be avoided
     */
    public boolean avoidValueReplication;
+
+   /**
+    * The cache topology
+    */
+   private String cacheMode;
+
+   /**
+    * The cache mode
+    */
+   private CacheMode topology;
+
    /**
     * Returns the cache name
     *
@@ -82,6 +95,7 @@ public class ExoCacheConfig implements Cloneable
    {
       return name;
    }
+
    /**
     * Sets the cache name
     *
@@ -91,6 +105,7 @@ public class ExoCacheConfig implements Cloneable
    {
       name = s;
    }
+
    /**
     * Returns the cache label
     *
@@ -100,6 +115,7 @@ public class ExoCacheConfig implements Cloneable
    {
       return label;
    }
+
    /**
     * Sets the cache label
     *
@@ -109,6 +125,7 @@ public class ExoCacheConfig implements Cloneable
    {
       label = s;
    }
+
    /**
     * Returns the maximum amount of entries allowed in the cache
     *
@@ -118,6 +135,7 @@ public class ExoCacheConfig implements Cloneable
    {
       return maxSize;
    }
+
    /**
     * Sets the maximum amount of entries allowed in the cache
     *
@@ -127,6 +145,7 @@ public class ExoCacheConfig implements Cloneable
    {
       maxSize = size;
    }
+
    /**
     * Returns the amount of time (in seconds) a cache entry is not written
     * or read before it is evicted
@@ -137,6 +156,7 @@ public class ExoCacheConfig implements Cloneable
    {
       return liveTime;
    }
+
    /**
     * Sets the amount of time (in seconds) a cache entry is not written
     * or read before it is evicted
@@ -147,6 +167,7 @@ public class ExoCacheConfig implements Cloneable
    {
       liveTime = period;
    }
+
    /**
     * Indicates if the cache is distributed or not.
     *
@@ -154,8 +175,9 @@ public class ExoCacheConfig implements Cloneable
     */
    public boolean isDistributed()
    {
-      return distributed;
+      return distributed || getCacheMode().isDistributed();
    }
+
    /**
     * Sets distributed state
     *
@@ -172,8 +194,9 @@ public class ExoCacheConfig implements Cloneable
     */
    public boolean isRepicated()
    {
-      return replicated;
+      return  (replicated || !getCacheMode().isLocal());
    }
+
    /**
     * Sets replicated state
     *
@@ -183,6 +206,27 @@ public class ExoCacheConfig implements Cloneable
    {
       replicated = b;
    }
+
+   /**
+    * Indicates if the cache is async or not.
+    *
+    * @return flag that indicates if the cache is async or not.
+    */
+   public boolean isAsync()
+   {
+      return !getCacheMode().isSync() && !getCacheMode().isLocal();
+   }
+
+   /**
+    * Indicates if the cache is invalidate or not.
+    *
+    * @return flag that indicates if the cache is invalidate or not.
+    */
+   public boolean isInvalidated()
+   {
+      return getCacheMode().isInvalidated();
+   }
+
    /**
     * Returns the full qualified name of the cache implementation to use.
     *
@@ -213,19 +257,21 @@ public class ExoCacheConfig implements Cloneable
    }
  
    /**
-    * @return the avoidValueReplication
+    * @return the avoidValueReplication (synchronised invalidation)
     */
    public boolean avoidValueReplication()
    {
-      return avoidValueReplication;
+      return avoidValueReplication || getCacheMode() == CacheMode.SYNCINVALIDATION;
    }
 
-   /**
-    * @param avoidValueReplication the avoidValueReplication to set
-    */
-   public void setAvoidValueReplication(boolean avoidValueReplication)
+   public void setCacheMode(CacheMode cacheMode)
    {
-      this.avoidValueReplication = avoidValueReplication;
+      this.topology = cacheMode;
+   }
+
+   public CacheMode getCacheMode()
+   {
+      return initCacheMode();
    }
 
    /**
@@ -235,5 +281,37 @@ public class ExoCacheConfig implements Cloneable
    public ExoCacheConfig clone() throws CloneNotSupportedException
    {
       return (ExoCacheConfig)super.clone();
+   }
+
+   private CacheMode initCacheMode()
+   {
+      try
+      {
+         if(cacheMode == null)
+         {
+            if(replicated)
+            {
+               this.topology = CacheMode.REPLICATION;
+            }
+            else  if (distributed)
+            {
+               this.topology = CacheMode.DISTRIBUTED;
+            }
+            else if(avoidValueReplication)
+            {
+               this.topology = CacheMode.SYNCINVALIDATION;
+            }
+            else
+            {
+               this.topology = CacheMode.LOCAL;
+            }
+         }
+         this.topology = CacheMode.valueOf(cacheMode.toUpperCase());
+      }
+      catch (Exception e)
+      {
+         this.topology = CacheMode.LOCAL;
+      }
+      return topology;
    }
 }

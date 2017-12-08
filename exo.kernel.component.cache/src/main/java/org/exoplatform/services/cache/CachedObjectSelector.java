@@ -42,7 +42,9 @@ public interface CachedObjectSelector<K extends Serializable, V>
     * Action to perform on selected keys
     *
     * @param cache the exo cache
+    * @param key cache entry key
     * @param ocinfo the cache info instance
+    * @throws Exception Exception
     */
    public void onSelect(ExoCache<? extends K, ? extends V> cache, K key, ObjectCacheInfo<? extends V> ocinfo)
       throws Exception;

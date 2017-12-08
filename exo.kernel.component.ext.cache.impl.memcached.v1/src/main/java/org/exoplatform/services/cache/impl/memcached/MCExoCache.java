@@ -579,7 +579,7 @@ public class MCExoCache<K extends Serializable, V> implements ExoCache<K, V>
    }
 
    @SuppressWarnings({"rawtypes", "unchecked"})
-   void onExpire(K key, V obj)
+   public void onExpire(K key, V obj)
    {
       List<ListenerContext> listeners = getListeners();
       if (listeners == null || listeners.isEmpty())
@@ -601,7 +601,7 @@ public class MCExoCache<K extends Serializable, V> implements ExoCache<K, V>
    }
 
    @SuppressWarnings({"rawtypes", "unchecked"})
-   void onRemove(K key, V obj)
+   public void onRemove(K key, V obj)
    {
       List<ListenerContext> listeners = getListeners();
       if (listeners == null || listeners.isEmpty())
@@ -623,7 +623,7 @@ public class MCExoCache<K extends Serializable, V> implements ExoCache<K, V>
    }
 
    @SuppressWarnings({"rawtypes", "unchecked"})
-   void onPut(K key, V obj)
+   public void onPut(K key, V obj)
    {
       List<ListenerContext> listeners = getListeners();
       if (listeners == null || listeners.isEmpty())
@@ -645,7 +645,7 @@ public class MCExoCache<K extends Serializable, V> implements ExoCache<K, V>
    }
 
    @SuppressWarnings({"rawtypes", "unchecked"})
-   void onGet(K key, V obj)
+   public void onGet(K key, V obj)
    {
       List<ListenerContext> listeners = getListeners();
       if (listeners == null || listeners.isEmpty())
@@ -667,7 +667,7 @@ public class MCExoCache<K extends Serializable, V> implements ExoCache<K, V>
    }
 
    @SuppressWarnings("rawtypes")
-   void onClearCache()
+   public void onClearCache()
    {
       List<ListenerContext> listeners = getListeners();
       if (listeners == null || listeners.isEmpty())

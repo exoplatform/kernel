@@ -60,6 +60,8 @@ public abstract class FutureCache<K, V, C>
 
    protected abstract void put(K key, V value);
 
+   protected abstract void putOnly(K key, V value);
+
    /**
     * Perform a cache lookup for the specified key within the specified context.
     * When the value cannot be loaded (because it does not exist or it failed or anything else that
@@ -90,7 +92,7 @@ public abstract class FutureCache<K, V, C>
                if (value != null)
                {
                   // Cache it, it is made available to other threads (unless someone removes it)
-                  put(key, value);
+                  putOnly(key, value);
 
                   // Return value
                   return value;

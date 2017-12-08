@@ -221,8 +221,8 @@ public class TestAbstractExoCache extends TestCase
    {
       PortalContainer pc = PortalContainer.getInstance();
       return new ExoCacheFactoryImpl((ExoContainerContext)pc.getComponentInstanceOfType(ExoContainerContext.class),
-         "jar:/conf/portal/cache-configuration-template.xml", (ConfigurationManager)pc
-            .getComponentInstanceOfType(ConfigurationManager.class));
+         "jar:/conf/portal/cache-configuration-template.xml", null, (ConfigurationManager)pc
+            .getComponentInstanceOfType(ConfigurationManager.class), null);
    }
 
    public void testMultiThreading() throws Exception

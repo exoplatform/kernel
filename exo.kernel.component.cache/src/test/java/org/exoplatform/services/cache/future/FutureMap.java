@@ -51,4 +51,10 @@ public class FutureMap<C> extends FutureCache<String, String, C>
    {
       data.put(key, value);
    }
+
+   @Override
+   protected void putOnly(String key, String value)
+   {
+      put(key, value);
+   }
 }

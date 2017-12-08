@@ -558,7 +558,7 @@ public class TestDistributedExoCache extends TestCase
       DistributedExoCache<Serializable, Object> cache2 =
          (DistributedExoCache<Serializable, Object>)new ExoCacheFactoryImpl(
             (ExoContainerContext)pc.getComponentInstanceOfType(ExoContainerContext.class),
-            "jar:/conf/portal/cache-configuration-template.xml", cm, dcm2).createCache(config);
+            "jar:/conf/portal/cache-configuration-template.xml", null, cm, dcm2).createCache(config);
       KeyAffinityService kas1 =
          KeyAffinityServiceFactory.newLocalKeyAffinityService(cache1.getCache(),
             new MyKeyGenerator(cache1.getFullName()), Executors.newSingleThreadExecutor(), 100);

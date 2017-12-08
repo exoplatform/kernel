@@ -617,7 +617,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
       onPut(key.getFullName(), key.getKey(), obj);
    }
 
-   void onPut(K key, V obj)
+   public void onPut(K key, V obj)
    {
       onPut(fullName, key, obj);
    }
@@ -667,7 +667,7 @@ public class DistributedExoCache<K extends Serializable, V> implements ExoCache<
    }
 
    @SuppressWarnings("rawtypes")
-   void onClearCache()
+   public void onClearCache()
    {
       List<ListenerContext> listeners = getListeners(fullName);
       if (listeners == null || listeners.isEmpty())

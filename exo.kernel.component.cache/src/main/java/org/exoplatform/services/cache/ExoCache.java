@@ -93,6 +93,16 @@ public interface ExoCache<K extends Serializable, V>
    public V remove(Serializable key) throws NullPointerException;
 
    /**
+    * Removes an entry from the cache local mode (avoid replication).
+    *
+    * @param key the cache key
+    * @throws NullPointerException if the provided key is null
+    */
+   public default void removeLocal(Serializable key) throws NullPointerException {
+      remove(key);
+   }
+
+   /**
     * Performs a put in the cache.
     *
     * @param key the cache key
@@ -102,6 +112,17 @@ public interface ExoCache<K extends Serializable, V>
    public void put(K key, V value) throws NullPointerException;
 
    /**
+    * Performs a put in the cache local mode (avoid replication).
+    *
+    * @param key the cache key
+    * @param value the cached value
+    * @throws NullPointerException if the key is null
+    */
+   public default void putLocal(K key, V value) throws NullPointerException {
+      put(key, value);
+   }
+
+   /**
     * Performs a put of all the entries provided by the map argument.
     *
     * @param objs the objects to put
@@ -109,6 +130,18 @@ public interface ExoCache<K extends Serializable, V>
     * @throws IllegalArgumentException if the provided map contains a null key
     */
    public void putMap(Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException;
+
+   /**
+    * Performs a put of all the entries provided by the map argument on asynchronous mode.
+    *
+    * @param objs the objects to put
+    * @throws NullPointerException if the provided argument is null
+    * @throws IllegalArgumentException if the provided map contains a null key
+    * @throws UnsupportedOperationException if async put operation is not supported
+    */
+   public default void putAsyncMap(Map<? extends K, ? extends V> objs) throws NullPointerException, IllegalArgumentException {
+      throw new UnsupportedOperationException();
+   }
 
    /**
     * Clears the cache.
@@ -217,6 +250,39 @@ public interface ExoCache<K extends Serializable, V>
     * @throws NullPointerException if the listener is null
     */
    public void addCacheListener(CacheListener<? super K, ? super V> listener) throws NullPointerException;
+
+   /**
+    * On get entry event
+    * @param key entry key
+    * @param obj value
+    */
+   public default void onGet(K key, V obj){}
+
+   /**
+    * On expire entry event
+    * @param key entry key
+    * @param obj value
+    */
+   public  default void onExpire(K key, V obj){}
+
+   /**
+    * On remove entry event
+    * @param key entry key
+    * @param obj value
+    */
+   public default  void onRemove(K key, V obj){}
+
+   /**
+    * On put entry event
+    * @param key entry key
+    * @param obj value
+    */
+   public default void onPut(K key, V obj){}
+
+   /**
+    * on clear cache event
+    */
+   public default void onClearCache(){}
 
    public boolean isLogEnabled();
 

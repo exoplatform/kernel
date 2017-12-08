@@ -70,7 +70,7 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       return cache.getCacheSize();
    }
 
-   void onExpire(K key, V obj)
+   public void onExpire(K key, V obj)
    {
       try
       {
@@ -85,7 +85,7 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
    }
 
-   void onRemove(K key, V obj)
+   public void onRemove(K key, V obj)
    {
       try
       {
@@ -100,7 +100,7 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
    }
 
-   void onPut(K key, V obj)
+   public void onPut(K key, V obj)
    {
       try
       {
@@ -115,7 +115,7 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
    }
 
-   void onGet(K key, V obj)
+   public void onGet(K key, V obj)
    {
       try
       {
@@ -130,7 +130,7 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
    }
 
-   void onClearCache()
+   public void onClearCache()
    {
       try
       {
