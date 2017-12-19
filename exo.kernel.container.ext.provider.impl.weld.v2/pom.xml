@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>5.0.x-SNAPSHOT</version>
+      <version>5.1.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.kernel.container.ext.provider.impl.weld.v2</artifactId>
    <name>eXo PLF:: Kernel :: Container Extension :: Weld 2 Implementation</name>
