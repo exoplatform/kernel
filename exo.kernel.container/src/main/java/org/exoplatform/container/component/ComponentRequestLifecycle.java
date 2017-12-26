@@ -25,4 +25,14 @@ public interface ComponentRequestLifecycle
    public void startRequest(ExoContainer container);
 
    public void endRequest(ExoContainer container);
+
+   /**
+    * Check component Lifecycle status
+    * @param container Current exo container
+    * @return true is Component is started otherwise false
+    */
+   public default boolean isStarted(ExoContainer container)
+   {
+      return true;
+   }
 }

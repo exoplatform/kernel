@@ -34,14 +34,28 @@ public class ComponentWithRequestLifeCycle implements ComponentRequestLifecycle,
    /** . */
    private final LinkedList<LifeCycle> lifeCycles = new LinkedList<LifeCycle>();
 
+   private boolean isTransactionStarted;
+
    public void startRequest(ExoContainer container)
    {
       lifeCycles.addLast(new LifeCycle(true, container));
+      isTransactionStarted = true;
    }
 
    public void endRequest(ExoContainer container)
    {
       lifeCycles.addLast(new LifeCycle(false, container));
+      isTransactionStarted = false;
+   }
+
+   public boolean isStarted(ExoContainer container)
+   {
+      return isTransactionStarted;
+   }
+
+   public void setStarted(boolean started)
+   {
+      isTransactionStarted = started;
    }
 
    public void start()
