@@ -167,4 +167,34 @@ public class RequestLifeCycle
       }
       return result;
    }
+
+   /**
+    * Check Component Request Lifecycle status
+    *
+    * @throws IllegalStateException if the life cycle is null
+    * @return  true if ComponentRequestLifecycle is started otherwise false
+    */
+   public static boolean isStarted(ComponentRequestLifecycle lifeCycle) {
+      if (lifeCycle == null)
+      {
+         throw new IllegalArgumentException("The lifeCycle cannot be null");
+      }
+      RequestLifeCycleStack lf = current.get();
+      return lf == null ? false : lf.isStarted(lifeCycle);
+   }
+
+   /**
+    * Check all Components Request Lifecycle status
+    *
+    * @throws IllegalStateException if the container is null
+    * @return  true if all ComponentRequestLifecycle is started otherwise false
+    */
+   public static boolean isStarted(ExoContainer container, boolean local){
+      if (container == null)
+      {
+         throw new IllegalArgumentException("The container cannot be null");
+      }
+      RequestLifeCycleStack lf = current.get();
+      return  lf== null ? false : lf.isStarted(container, local);
+   }
 }

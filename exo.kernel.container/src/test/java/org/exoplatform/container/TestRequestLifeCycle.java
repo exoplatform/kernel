@@ -234,4 +234,58 @@ public class TestRequestLifeCycle extends AbstractTestContainer
       a.assertLifeCycle(false, parent);
       b.assertEmpty();
    }
+
+   public void testIsStartedLifeCycleOnContainer()
+   {
+      //Transaction not started
+      assertFalse(a.isStarted(child));
+      assertFalse(b.isStarted(child));
+      assertFalse(RequestLifeCycle.isStarted(child, false));
+
+      //Begin Request == > Transaction started
+      RequestLifeCycle.begin(child, false);
+      assertTrue(RequestLifeCycle.isStarted(child, false));
+      assertTrue(a.isStarted(child));
+      assertTrue(b.isStarted(child));
+
+      //Stop Transaction == > Transaction not started
+      a.setStarted(false);
+      assertFalse(a.isStarted(child));
+      assertTrue(b.isStarted(child));
+
+      //Start new Request lifecycle == > Transaction started
+      RequestLifeCycle.begin(child, false);
+      assertTrue(a.isStarted(child));
+      assertTrue(b.isStarted(child));
+
+      RequestLifeCycle.end();
+      assertTrue(a.isStarted(child));
+      assertTrue(b.isStarted(child));
+
+      RequestLifeCycle.end();
+      assertFalse(a.isStarted(child));
+      assertFalse(b.isStarted(child));
+   }
+
+   public void testIsStartedLifeCycle()
+   {
+      assertFalse(a.isStarted(child));
+      assertFalse(RequestLifeCycle.isStarted(a));
+      RequestLifeCycle.begin(a);
+      assertTrue(RequestLifeCycle.isStarted(a));
+      assertTrue(a.isStarted(child));
+
+      //Stop Transaction == > Transaction not started
+      a.setStarted(false);
+      assertFalse(a.isStarted(child));
+
+      RequestLifeCycle.begin(a);
+      assertTrue(a.isStarted(child));
+
+      RequestLifeCycle.end();
+      assertTrue(a.isStarted(child));
+
+      RequestLifeCycle.end();
+      assertFalse(a.isStarted(child));
+   }
 }

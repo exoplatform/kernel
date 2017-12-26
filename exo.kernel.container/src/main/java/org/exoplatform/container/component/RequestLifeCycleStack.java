@@ -48,6 +48,12 @@ class RequestLifeCycleStack
    {
       if (allComponents.contains(lifeCycle))
       {
+         //If the current ComponentRequestLifecycle  is registered and is not started
+         //Try to restart it a gain
+         if(! lifeCycle.isStarted(null))
+         {
+            lifeCycle.startRequest(null);
+         }
          addLast(new RequestLifeCycle(null, Collections.<ComponentRequestLifecycle> emptyList()));
       }
       else
@@ -62,19 +68,15 @@ class RequestLifeCycleStack
    void begin(ExoContainer container, boolean local)
    {
       // Need to make a copy as modifying the list is cached by the container
-      List<ComponentRequestLifecycle> components =
-               new ArrayList<ComponentRequestLifecycle>((List<ComponentRequestLifecycle>) container
-                        .getComponentInstancesOfType(ComponentRequestLifecycle.class));
+      List<ComponentRequestLifecycle> components = getAllComponentsRequestLifecycle(container, local);
 
-      //
-      if (!local)
+      //check if list of RequestLifecycle already registered is still started
+      for(ComponentRequestLifecycle c : allComponents)
       {
-         for (ExoContainer current = container.getParent(); current != null; current = current.getParent())
+         if(!c.isStarted(container))
          {
-            components.addAll((List<ComponentRequestLifecycle>) current
-                     .getComponentInstancesOfType(ComponentRequestLifecycle.class));
+            c.startRequest(container);
          }
-
       }
 
       // Remove components that have already started their life cycle
@@ -105,5 +107,43 @@ class RequestLifeCycleStack
 
       //
       return result;
+   }
+
+    boolean isStarted(ExoContainer container, boolean local)
+    {
+      List<ComponentRequestLifecycle> components =  getAllComponentsRequestLifecycle(container, local);
+
+      for(ComponentRequestLifecycle c : components)
+      {
+         if(! isStarted(c))
+         {
+            return false;
+         }
+      }
+
+      return true;
+   }
+
+   boolean isStarted(ComponentRequestLifecycle lifeCycle)
+   {
+      return allComponents.contains(lifeCycle) && lifeCycle.isStarted(null);
+   }
+
+   private List<ComponentRequestLifecycle> getAllComponentsRequestLifecycle(ExoContainer container, boolean local)
+   {
+      List<ComponentRequestLifecycle> components =
+              new ArrayList<ComponentRequestLifecycle>((List<ComponentRequestLifecycle>) container
+                      .getComponentInstancesOfType(ComponentRequestLifecycle.class));
+
+      if (!local)
+      {
+         for (ExoContainer current = container.getParent(); current != null; current = current.getParent())
+         {
+            components.addAll((List<ComponentRequestLifecycle>) current
+                    .getComponentInstancesOfType(ComponentRequestLifecycle.class));
+         }
+
+      }
+      return components;
    }
 }
