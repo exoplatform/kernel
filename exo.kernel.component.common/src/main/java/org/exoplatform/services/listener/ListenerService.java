@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.listener;
 
+import org.picocontainer.Startable;
+
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -47,12 +49,12 @@ import java.util.concurrent.Executors;
  * @LevelAPI Platform
  */
 @DefinitionByType
-public class ListenerService
+public class ListenerService implements Startable
 {
    /** 
     * This executor used for asynchronously event broadcast. 
     */
-   private final Executor executor;
+   private final ExecutorService executor;
 
    /**
     * Listeners by name map.
@@ -335,4 +337,13 @@ public class ListenerService
          }
       }
    }
+
+  @Override
+  public void start() {
+  }
+
+  @Override
+  public void stop() {
+    executor.shutdown();
+  }
 }
