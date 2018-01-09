@@ -1396,6 +1396,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
    public void stop()
    {
       super.stop();
+      super.dispose();
       ExoContainerContext.setTopContainer(null);
    }
 
