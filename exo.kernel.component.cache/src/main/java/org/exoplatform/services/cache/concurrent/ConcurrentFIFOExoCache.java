@@ -186,7 +186,20 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
       if (liveTimeMillis != 0)
       {
          long expirationTime = liveTimeMillis > 0 ? System.currentTimeMillis() + liveTimeMillis : Long.MAX_VALUE;
-         state.put(expirationTime, name, obj);
+         state.put(expirationTime, name, obj, false);
+      }
+   }
+
+   public void putLocal(K name, V obj)
+   {
+      if (name == null)
+      {
+         throw new IllegalArgumentException("No null cache key accepted");
+      }
+      if (liveTimeMillis != 0)
+      {
+         long expirationTime = liveTimeMillis > 0 ? System.currentTimeMillis() + liveTimeMillis : Long.MAX_VALUE;
+         state.put(expirationTime, name, obj, true);
       }
    }
 
@@ -206,7 +219,7 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
       }
       for (Map.Entry<? extends K, ? extends V> entry : objs.entrySet())
       {
-         state.put(expirationTime, entry.getKey(), entry.getValue());
+         state.put(expirationTime, entry.getKey(), entry.getValue(), false);
       }
    }
 
@@ -317,6 +330,13 @@ public class ConcurrentFIFOExoCache<K extends Serializable, V> implements ExoCac
       if (!listeners.isEmpty())
          for (ListenerContext<K, V> context : listeners)
             context.onPut(key, obj);
+   }
+
+   public void onPutLocal(K key, V obj)
+   {
+      if (!listeners.isEmpty())
+         for (ListenerContext<K, V> context : listeners)
+            context.onPutLocal(key, obj);
    }
 
    public void onGet(K key, V obj)

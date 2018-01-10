@@ -280,6 +280,13 @@ public interface ExoCache<K extends Serializable, V>
    public default void onPut(K key, V obj){}
 
    /**
+    * On put entry event
+    * @param key entry key
+    * @param obj value
+    */
+   public default void onPutLocal(K key, V obj){}
+
+   /**
     * on clear cache event
     */
    public default void onClearCache(){}
