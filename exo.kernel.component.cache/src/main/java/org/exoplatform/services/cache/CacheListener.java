@@ -62,6 +62,18 @@ public interface CacheListener<K extends Serializable, V>
    public void onPut(CacheListenerContext context, K key, V obj) throws Exception;
 
    /**
+    * An entry is inserted in the cache (local mode without replication).
+    *
+    * @param context the listener context
+    * @param key     the entry key
+    * @param obj     the entry value
+    * @throws Exception any exception
+    */
+   public default void onPutLocal(CacheListenerContext context, K key, V obj) throws Exception {
+      onPut(context, key, obj);
+   }
+
+   /**
     * An entry is retrieved from the cache.
     *
     * @param context the listener context

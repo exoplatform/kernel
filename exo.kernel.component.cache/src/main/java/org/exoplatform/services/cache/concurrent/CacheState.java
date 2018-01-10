@@ -109,7 +109,7 @@ class CacheState<K extends Serializable, V>
     * @param name the cache key
     * @param obj the cached value
     */
-   void put(long expirationTime, K name, V obj)
+   void put(long expirationTime, K name, V obj, boolean local)
    {
       boolean trace = isTraceEnabled();
       ObjectRef<K, V> nextRef = new SimpleObjectRef<K, V>(expirationTime, name, obj);
@@ -149,7 +149,14 @@ class CacheState<K extends Serializable, V>
       }
 
       // Put callback
-      config.onPut(name, obj);
+      if (local)
+      {
+         config.onPutLocal(name, obj);
+      }
+      else
+      {
+         config.onPut(name, obj);
+      }
    }
 
    public V remove(Serializable name)

@@ -115,6 +115,21 @@ public class ListenerContext<K, V> implements CacheListenerContext, CacheInfo
       }
    }
 
+   public void onPutLocal(K key, V obj)
+   {
+      try
+      {
+         listener.onPutLocal(this, key, obj);
+      }
+      catch (Exception ignore)
+      {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ignore.getMessage());
+         }
+      }
+   }
+
    public void onGet(K key, V obj)
    {
       try

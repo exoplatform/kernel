@@ -294,7 +294,7 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
             return null;
          }
       });
-      onPut(key, value);
+      onPutLocal(key, value);
    }
 
    /**
@@ -605,6 +605,24 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
          }
    }
 
+   public void onPutLocal(K key, V value)
+   {
+      if (listeners.isEmpty())
+      {
+         return;
+      }
+      for (ListenerContext<K, V> context : listeners)
+         try
+         {
+            context.onPutLocal(key, value);
+         }
+         catch (Exception e)//NOSONAR
+         {
+            if (LOG.isWarnEnabled())
+               LOG.warn("Cannot execute the CacheListener properly", e);
+         }
+   }
+
    public void onGet(K key, V obj)
    {
       if (listeners.isEmpty())
@@ -747,6 +765,11 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       void onPut(K key, V obj) throws Exception
       {
          listener.onPut(this, key, obj);
+      }
+
+      void onPutLocal(K key, V obj) throws Exception
+      {
+         listener.onPutLocal(this, key, obj);
       }
 
       void onGet(K key, V obj) throws Exception
