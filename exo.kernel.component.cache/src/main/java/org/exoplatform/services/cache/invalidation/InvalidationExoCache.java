@@ -168,7 +168,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    public void put(K key, V value) throws NullPointerException
    {
       HashCode hashCode = new HashCode<V>(value);
-      LOG.info(getName() + " PUT KEY " + key+ " hash "+ hashCode.hashCode());
+      LOG.debug("Cache: {} PUT KEY: {}, hash: {} ", getName(), key, hashCode.hashCode());
       delegate.put(key, hashCode);
    }
 
@@ -176,7 +176,7 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
    public void putLocal(K key, V value) throws NullPointerException
    {
       HashCode hashCode = new HashCode<V>(value);
-      LOG.info(getName() + " PUT LOCAL KEY " + key+ " hash "+ hashCode.hashCode());
+      LOG.debug("Cache: {} PUT LOCAL KEY: {}, hash: {} ", getName(), key, hashCode.hashCode());
       delegate.putLocal(key, hashCode);
    }
 
@@ -413,15 +413,14 @@ public class InvalidationExoCache<K extends Serializable, V> implements ExoCache
          V currentValue = localCache.get(key);
          if (currentValue != null && obj != null && currentValue.hashCode() == obj.hashCode())
          {
-            LOG.info(getName() + " ON PUT equal KEY " + key+ " hash "+ obj.hashCode());
+            LOG.debug("Cache: {} ON PUT equal KEY: {}, hash: {} ", getName(), key, obj.hashCode());
 
             // We assume that it is the same value so we don't change the value in the cache
             value = currentValue;
          }
          else
          {
-            LOG.info(getName() + " ON PUT not equal KEY " + key+ " hash "+ obj.hashCode());
-
+            LOG.debug("Cache: {} ON PUT not equal KEY: {}, hash: {} ", getName(), key, obj.hashCode());
             // A new value has been added to the cache so we invalidate the local one
             value = null;
             localCache.remove(key);
