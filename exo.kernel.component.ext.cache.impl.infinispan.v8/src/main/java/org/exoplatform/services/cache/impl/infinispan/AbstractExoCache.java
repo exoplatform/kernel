@@ -22,10 +22,12 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.cache.CacheInfo;
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
+import org.exoplatform.services.cache.CacheMode;
 import org.exoplatform.services.cache.CachedObjectSelector;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfig;
 import org.exoplatform.services.cache.ObjectCacheInfo;
+import org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
@@ -80,6 +82,8 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
 
    private boolean replicated;
 
+   private boolean asynchronous;
+
    private boolean logEnabled;
 
    private final CopyOnWriteArrayList<ListenerContext<K, V>> listeners;
@@ -95,6 +99,8 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       setName(config.getName());
       setLogEnabled(config.isLogEnabled());
       setReplicated(config.isRepicated());
+      CacheMode cacheMode = config.getCacheMode();
+      setAsynchronous(cacheMode != null && !cacheMode.isSync());
       cache.addListener(new CacheEventListener());
    }
 
@@ -222,9 +228,17 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
       return replicated;
    }
 
+   public void setAsynchronous(boolean asynchronous) {
+     this.asynchronous = asynchronous;
+   }
+
+   public boolean isAsynchronous() {
+     return asynchronous;
+   }
+
    private void putOnlyAsync(K key, V value)
    {
-      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).putAsync(key, value);
+      cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES, Flag.FORCE_ASYNCHRONOUS).putAsync(key, value);
    }
 
 
@@ -304,11 +318,19 @@ public abstract class AbstractExoCache<K extends Serializable, V> implements Exo
    {
       if (isLocal)
       {
-         cache.withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+         if(isAsynchronous()) {
+           cache.withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES, Flag.FORCE_ASYNCHRONOUS).putAsync(key, value);
+         } else {
+           cache.withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+         }
       }
       else
       {
-         cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+        if(isAsynchronous()) {
+          cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES, Flag.FORCE_ASYNCHRONOUS).putAsync(key, value);
+        } else {
+          cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+        }
       }
    }
 
