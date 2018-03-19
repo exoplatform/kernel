@@ -19,7 +19,9 @@
 package org.exoplatform.commons.utils;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -42,7 +44,7 @@ import java.util.TimeZone;
  * is also accepted: For formatting, the RFC 822 4-digit time zone format is
  * used: RFC822TimeZone: Sign TwoDigitHours Minutes TwoDigitHours: Digit Digit
  * like -8000
- * 
+ *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
  *         Nedonosko</a>
  * @version $Id: ISO8601.java 34394 2009-07-23 09:23:31Z dkatayev $
@@ -112,6 +114,13 @@ public class ISO8601
     * fraction of a second, without time zone YYYY-MM-DDThh:mm:ss.s (eg
     * 1997-07-16T19:20:30.45)
     */
+   public static final String SIMPLE_DATETIMEMS_FORMAT_1 = "yyyy-MM-dd'T'HH:mm:ss.SS";
+
+   /**
+    * NON ISO STANDARD. Simple date plus hours, minutes, seconds and a decimal
+    * fraction of a second, without time zone YYYY-MM-DDThh:mm:ss.s (eg
+    * 1997-07-16T19:20:30.450)
+    */
    public static final String SIMPLE_DATETIMEMS_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
    /**
@@ -119,28 +128,41 @@ public class ISO8601
     * second, with time zone by RFC822 YYYY-MM-DDThh:mm:ss.sZ (eg
     * 1997-07-16T19:20:30.45+0100)
     */
+   public static final String COMPLETE_DATETIMEMSZRFC822_FORMAT_1 = "yyyy-MM-dd'T'HH:mm:ss.SSZ";
+
+   /**
+    * Complete date plus hours, minutes, seconds and a decimal fraction of a
+    * second, with time zone by RFC822 YYYY-MM-DDThh:mm:ss.sZ (eg
+    * 1997-07-16T19:20:30.450+0100)
+    */
    public static final String COMPLETE_DATETIMEMSZRFC822_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
+   /**
+    * Complete date plus hours, minutes, seconds and a decimal fraction of a
+    * second YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.450+01:00)
+    */
+   public static final String COMPLETE_DATETIMEMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS" + TZD;
 
    /**
     * Complete date plus hours, minutes, seconds and a decimal fraction of a
     * second YYYY-MM-DDThh:mm:ss.sTZD (eg 1997-07-16T19:20:30.45+01:00)
     */
-   public static final String COMPLETE_DATETIMEMSZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS" + TZD;
+   public static final String COMPLETE_DATETIMEMSZ_FORMAT_1 = "yyyy-MM-dd'T'HH:mm:ss.SS" + TZD;
 
    /**
     * Possible formats list. ISO 8601, RFC822 + simple formats in order of
     * priority of parse
     */
    public static final String[] FORMATS =
-      {COMPLETE_DATETIMEMSZ_FORMAT, COMPLETE_DATETIMEMSZRFC822_FORMAT, SIMPLE_DATETIMEMS_FORMAT,
-         COMPLETE_DATETIMEZ_FORMAT, COMPLETE_DATETIMEZRFC822_FORMAT, SIMPLE_DATETIME_FORMAT,
+      {COMPLETE_DATETIMEMSZ_FORMAT, COMPLETE_DATETIMEMSZ_FORMAT_1, COMPLETE_DATETIMEMSZRFC822_FORMAT, COMPLETE_DATETIMEMSZRFC822_FORMAT_1, SIMPLE_DATETIMEMS_FORMAT,
+         SIMPLE_DATETIMEMS_FORMAT_1, COMPLETE_DATETIMEZ_FORMAT, COMPLETE_DATETIMEZRFC822_FORMAT, SIMPLE_DATETIME_FORMAT,
          COMPLETE_DATEHOURSMINUTESZ_FORMAT, COMPLETE_DATEHOURSMINUTESZRFC822_FORMAT, SIMPLE_DATEHOURSMINUTES_FORMAT,
          COMPLETE_DATE_FORMAT, YEARMONTH_FORMAT, YEAR_FORMAT};
 
    protected static class ISODateFormat
    {
 
-      private final SimpleDateFormat formater;
+      private final DateTimeFormatter formater;
 
       private final String format;
 
@@ -150,14 +172,13 @@ public class ISO8601
       {
          this.isoTZ = format.endsWith(TZD);
          this.format = this.isoTZ ? format.substring(0, format.length() - TZD.length()) + "Z" : format;
-         this.formater = new SimpleDateFormat(this.format, Locale.US);
+         this.formater = this.format.equals(YEARMONTH_FORMAT) || this.format.equals(YEAR_FORMAT) ? DateTimeFormatter.ofPattern(COMPLETE_DATE_FORMAT, Locale.US)
+                 :  DateTimeFormatter.ofPattern(this.format, Locale.US);
       }
 
       public Calendar parse(String dateString) throws ParseException, NumberFormatException
       {
-
-         Date isoDate = null;
-
+         Instant instant = null;
          TimeZone timeZone = null;
          if (dateString.length() >= 16)
          {
@@ -182,14 +203,63 @@ public class ISO8601
             if (index >= 16 || (index = dateString.lastIndexOf('+')) >= 16)
             {
                String timeZoneStr = dateString.substring(index);
+               if(timeZoneStr.length()==3)
+               {
+                  timeZoneStr = timeZoneStr.concat("00");
+                  dateString = dateString.concat("00");
+               }
                timeZone = TimeZone.getTimeZone("GMT" + timeZoneStr);
-               formater.setTimeZone(timeZone);
+               formater.withZone(timeZone.toZoneId());
             }
          }
-         isoDate = formater.parse(dateString);
-
          Calendar isoCalendar = Calendar.getInstance();
-         isoCalendar.setTime(isoDate);
+         boolean isNegativeDate = false;
+         if(dateString.startsWith("-"))
+         {
+            isNegativeDate = true;
+            dateString = dateString.substring(1, dateString.length());
+         }
+         if(dateString.length()==4 && ISO8601.YEAR_FORMAT.equals(format))
+         {
+            LocalDate localDate= LocalDate.parse(dateString+"-01-01", formater);
+            if (isNegativeDate)
+            {
+               localDate.withYear(-localDate.getYear());
+            }
+            instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+         }
+         else if(dateString.length()==7 && ISO8601.YEARMONTH_FORMAT.equals(format))
+         {
+            LocalDate localDate= LocalDate.parse(dateString+"-01", formater);
+            if (isNegativeDate)
+            {
+               localDate.withYear(-localDate.getYear());
+            }
+            instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+         }
+         else if(ISO8601.COMPLETE_DATE_FORMAT.equals(format))
+         {
+            LocalDate localDate= LocalDate.parse(dateString, formater);
+            if (isNegativeDate)
+            {
+               localDate.withYear(-localDate.getYear());
+            }
+            instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+         }
+         else if(timeZone != null)
+         {
+            ZonedDateTime zonedDateTime =ZonedDateTime.parse(dateString,formater);
+            if (isNegativeDate)
+            {
+               zonedDateTime.withYear(-zonedDateTime.getYear());
+            }
+            instant = zonedDateTime.toInstant();
+         }
+         else
+         {
+            instant = LocalDateTime.parse(dateString, formater).atZone(ZoneId.systemDefault()).toInstant();
+         }
+         isoCalendar.setTime(Date.from(instant));
          if (timeZone != null)
             isoCalendar.setTimeZone(timeZone);
 
@@ -200,8 +270,8 @@ public class ISO8601
       {
          if (isoTZ)
          {
-            formater.setTimeZone(source.getTimeZone());
-            String formatedDate = formater.format(source.getTime());
+            String formatedDate = ZonedDateTime.ofInstant(source.getTime().toInstant(),
+                    source.getTimeZone().toZoneId()).format(formater);
 
             if (formatedDate.endsWith("0000"))
             {
@@ -219,14 +289,14 @@ public class ISO8601
 
          }
          else
-            return formater.format(source);
+            return formater.format(source.toInstant());
       }
    }
 
    /**
     * Format date using format: complete date plus hours, minutes, seconds and a
     * decimal fraction of a second.
-    * 
+    *
     * @param date
     * @return
     */
@@ -279,7 +349,7 @@ public class ISO8601
    {
       StringBuilder problems = new StringBuilder();
 
-      int errOffset = 0;
+      int errorIndex = 0;
       for (String format : formats)
       {
          try
@@ -287,21 +357,21 @@ public class ISO8601
             Calendar isoDate = new ISODateFormat(format).parse(dateString);
             return isoDate; // done
          }
-         catch (ParseException e)
+         catch (DateTimeParseException e)
          {
-            if (errOffset == 0)
-               errOffset = e.getErrorOffset();
+            if (errorIndex == 0)
+               errorIndex = e.getErrorIndex();
 
             problems.append(format);
             problems.append(" - ");
             problems.append(e.getMessage());
-            problems.append(", error offset ");
-            problems.append(e.getErrorOffset());
+            problems.append(", error index ");
+            problems.append(e.getErrorIndex());
             problems.append(" \n");
          }
          catch (NumberFormatException e)
          {
-            errOffset = 0;
+            errorIndex = 0;
 
             problems.append(format);
             problems.append(" - ");
@@ -310,6 +380,6 @@ public class ISO8601
          }
       }
 
-      throw new ParseException("Can not parse " + dateString + " as Date. " + problems.toString(), errOffset);
+      throw new ParseException("Can not parse " + dateString + " as Date. " + problems.toString(), errorIndex);
    }
 }
