@@ -159,6 +159,11 @@ public class ISO8601
          COMPLETE_DATEHOURSMINUTESZ_FORMAT, COMPLETE_DATEHOURSMINUTESZRFC822_FORMAT, SIMPLE_DATEHOURSMINUTES_FORMAT,
          COMPLETE_DATE_FORMAT, YEARMONTH_FORMAT, YEAR_FORMAT};
 
+   /**
+    * Unknown Time Zone ID
+    */
+   private final static String UNKNOWN_TIME_ZONE = "Unknown";
+
    protected static class ISODateFormat
    {
 
@@ -270,8 +275,10 @@ public class ISO8601
       {
          if (isoTZ)
          {
-            String formatedDate = ZonedDateTime.ofInstant(source.getTime().toInstant(),
-                    source.getTimeZone().toZoneId()).format(formater);
+            TimeZone timeZone = source.getTimeZone();
+            ZoneId zoneId = (timeZone != null && !UNKNOWN_TIME_ZONE.equalsIgnoreCase(timeZone.getID())) ? source.getTimeZone().toZoneId() :
+                    ZoneId.systemDefault();
+            String formatedDate = ZonedDateTime.ofInstant(source.getTime().toInstant(), zoneId).format(formater);
 
             if (formatedDate.endsWith("0000"))
             {
@@ -289,7 +296,7 @@ public class ISO8601
 
          }
          else
-            return formater.format(source.toInstant());
+            return LocalDateTime.ofInstant(source.toInstant(), ZoneId.systemDefault()).format(formater);
       }
    }
 
