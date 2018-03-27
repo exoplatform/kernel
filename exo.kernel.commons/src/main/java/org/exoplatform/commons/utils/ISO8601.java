@@ -19,6 +19,7 @@
 package org.exoplatform.commons.utils;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -158,6 +159,11 @@ public class ISO8601
          SIMPLE_DATETIMEMS_FORMAT_1, COMPLETE_DATETIMEZ_FORMAT, COMPLETE_DATETIMEZRFC822_FORMAT, SIMPLE_DATETIME_FORMAT,
          COMPLETE_DATEHOURSMINUTESZ_FORMAT, COMPLETE_DATEHOURSMINUTESZRFC822_FORMAT, SIMPLE_DATEHOURSMINUTES_FORMAT,
          COMPLETE_DATE_FORMAT, YEARMONTH_FORMAT, YEAR_FORMAT};
+
+   public static final String[] LEGACY_FORMATS =
+           {COMPLETE_DATETIMEMSZ_FORMAT, COMPLETE_DATETIMEMSZRFC822_FORMAT, SIMPLE_DATETIMEMS_FORMAT, COMPLETE_DATETIMEZ_FORMAT,
+                   COMPLETE_DATETIMEZRFC822_FORMAT, SIMPLE_DATETIME_FORMAT, COMPLETE_DATEHOURSMINUTESZ_FORMAT, COMPLETE_DATEHOURSMINUTESZRFC822_FORMAT,
+                   SIMPLE_DATEHOURSMINUTES_FORMAT, COMPLETE_DATE_FORMAT, YEARMONTH_FORMAT, YEAR_FORMAT};
 
    /**
     * Unknown Time Zone ID
@@ -309,7 +315,16 @@ public class ISO8601
     */
    public static String format(Calendar date)
    {
-      return new ISODateFormat(COMPLETE_DATETIMEMSZ_FORMAT).format(date);
+      //Try to parse date text with new date format
+      try
+      {
+         return new ISODateFormat(COMPLETE_DATETIMEMSZ_FORMAT).format(date);
+      }
+      //Try to parse date text with old date format
+      catch (Exception e)
+      {
+         return new LegacyISODateFormat(COMPLETE_DATETIMEMSZ_FORMAT).format(date);
+      }
    }
 
    /**
@@ -322,7 +337,7 @@ public class ISO8601
    {
       try
       {
-         return parse(dateString, FORMATS);
+         return parseEx(dateString);
       }
       catch (ParseException e)
       {
@@ -332,7 +347,7 @@ public class ISO8601
 
    /**
     * Parse string using possible formats list.
-    * 
+    *
     * @param dateString - date string
     * @return - calendar
     * @throws ParseException
@@ -340,7 +355,30 @@ public class ISO8601
     */
    public static Calendar parseEx(String dateString) throws ParseException, NumberFormatException
    {
-      return parse(dateString, FORMATS);
+      //Try to parse date text with new date format
+      try
+      {
+         return parse(dateString, FORMATS);
+      }
+      //Try to parse date text with old date format
+      catch (Exception e)
+      {
+         return parse(dateString, LEGACY_FORMATS, true);
+      }
+   }
+
+   /**
+    * Parse string using given formats list.
+    *
+    * @param dateString
+    * @param formats
+    * @return
+    * @throws ParseException
+    * @throws NumberFormatException
+    */
+   public static Calendar parse(String dateString, String[] formats) throws ParseException, NumberFormatException
+   {
+      return parse(dateString, formats, false);
    }
 
    /**
@@ -348,11 +386,12 @@ public class ISO8601
     * 
     * @param dateString
     * @param formats
+    * @param isLegacyParser
     * @return
     * @throws ParseException
     * @throws NumberFormatException
     */
-   public static Calendar parse(String dateString, String[] formats) throws ParseException
+   private static Calendar parse(String dateString, String[] formats, boolean isLegacyParser) throws ParseException
    {
       StringBuilder problems = new StringBuilder();
 
@@ -361,7 +400,7 @@ public class ISO8601
       {
          try
          {
-            Calendar isoDate = new ISODateFormat(format).parse(dateString);
+            Calendar isoDate = isLegacyParser ? new LegacyISODateFormat(format).parse(dateString) : new ISODateFormat(format).parse(dateString);
             return isoDate; // done
          }
          catch (DateTimeParseException e)
@@ -369,12 +408,14 @@ public class ISO8601
             if (errorIndex == 0)
                errorIndex = e.getErrorIndex();
 
-            problems.append(format);
-            problems.append(" - ");
-            problems.append(e.getMessage());
-            problems.append(", error index ");
-            problems.append(e.getErrorIndex());
-            problems.append(" \n");
+            appendError(problems, format, e.getErrorIndex(), e.getMessage());
+         }
+         catch (ParseException e)
+         {
+            if (errorIndex == 0)
+               errorIndex = e.getErrorOffset();
+
+            appendError(problems, format, e.getErrorOffset(), e.getMessage());
          }
          catch (NumberFormatException e)
          {
@@ -388,5 +429,102 @@ public class ISO8601
       }
 
       throw new ParseException("Can not parse " + dateString + " as Date. " + problems.toString(), errorIndex);
+   }
+
+   /**
+    * Old Date format implementation 
+    */
+   private static class LegacyISODateFormat
+   {
+
+      private final SimpleDateFormat formater;
+
+      private final String format;
+
+      private final boolean isoTZ;
+
+      LegacyISODateFormat(String format)
+      {
+         this.isoTZ = format.endsWith(TZD);
+         this.format = this.isoTZ ? format.substring(0, format.length() - TZD.length()) + "Z" : format;
+         this.formater = new SimpleDateFormat(this.format, Locale.US);
+      }
+
+      public Calendar parse(String dateString) throws ParseException, NumberFormatException
+      {
+         Date isoDate = null;
+         TimeZone timeZone = null;
+         if (dateString.length() >= 16)
+         {
+            if (isoTZ)
+            {
+               // need fix TZ from ISO 8601 (+01:00) to RFC822 (+0100)
+               if (dateString.endsWith("Z"))
+               {
+                  dateString = dateString.substring(0, dateString.length() - 1) + "+0000";
+               }
+               else
+               {
+                  int tzsindex = dateString.length() - 6;
+                  char tzsign = dateString.charAt(tzsindex); // sixth char from the end
+                  if (tzsign == '+' || tzsign == '-')
+                  {
+                     dateString = dateString.substring(0, tzsindex) + dateString.substring(tzsindex).replaceAll(":", "");
+                  }
+               }
+            }
+            int index = dateString.lastIndexOf('-');
+            if (index >= 16 || (index = dateString.lastIndexOf('+')) >= 16)
+            {
+               String timeZoneStr = dateString.substring(index);
+               timeZone = TimeZone.getTimeZone("GMT" + timeZoneStr);
+               formater.setTimeZone(timeZone);
+            }
+         }
+         isoDate = formater.parse(dateString);
+
+         Calendar isoCalendar = Calendar.getInstance();
+         isoCalendar.setTime(isoDate);
+         if (timeZone != null)
+            isoCalendar.setTimeZone(timeZone);
+
+         return isoCalendar;
+      }
+
+      public String format(Calendar source)
+      {
+         if (isoTZ)
+         {
+            formater.setTimeZone(source.getTimeZone());
+            String formatedDate = formater.format(source.getTime());
+
+            if (formatedDate.endsWith("0000"))
+            {
+               return formatedDate.substring(0, formatedDate.length() - 5) + "Z"; // GMT
+               // (
+               // UTC
+               // )
+            }
+            else
+            {
+               int dindex = formatedDate.length() - 2;
+               return formatedDate.substring(0, dindex) + ":" + formatedDate.substring(dindex); // GMT
+               // offset
+            }
+
+         }
+         else
+            return formater.format(source);
+      }
+   }
+
+   private static void appendError(StringBuilder problems, String format, int index, String message)
+   {
+      problems.append(format);
+      problems.append(" - ");
+      problems.append(message);
+      problems.append(", error index ");
+      problems.append(index);
+      problems.append(" \n");
    }
 }

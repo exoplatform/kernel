@@ -130,6 +130,18 @@ public class TestISO8601 extends TestCase
       dateStr = "1997-07-16T19:20:30.45-01:00";
       date = ISO8601.parseEx(dateStr);
       assertEquals(dateStr.substring(0, dateStr.length() - 8) + "450-01:00", ISO8601.format(date));
+
+      dateStr = "2012-04-13T10:31:18.798 01:00";
+      date = ISO8601.parseEx(dateStr);
+      assertEquals(dateStr.substring(0, dateStr.length() - 6) , ISO8601.format(date).substring(0, dateStr.length() - 6));
+
+      dateStr = "2012-04-13T10:31:18.798+07:00";
+      date = ISO8601.parseEx(dateStr);
+      assertEquals(dateStr.substring(0, dateStr.length() - 6)+ "+07:00" , ISO8601.format(date));
+
+      dateStr = "2012-04-13T10:31:18.798+07:00--true;1;1;Asia/Ho_Chi_Minh";
+      date = ISO8601.parseEx(dateStr);
+      assertEquals(dateStr.substring(0, dateStr.length() - 33)+ "Z" , ISO8601.format(date));
    }
 
 }
