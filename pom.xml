@@ -27,7 +27,7 @@
    <parent>
       <groupId>org.exoplatform</groupId>
       <artifactId>foundation-parent</artifactId>
-      <version>17-SNAPSHOT</version>
+      <version>17-M01</version>
       <relativePath />
    </parent>
 
