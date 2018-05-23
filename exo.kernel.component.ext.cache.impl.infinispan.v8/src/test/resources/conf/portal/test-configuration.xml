@@ -61,8 +61,8 @@
         <object type="org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig">
           <field name="name"><string>test-multi-threading</string></field>
           <field name="strategy"><string>NONE</string></field>
-          <field name="maxEntries"><int>-1</int></field>
-          <field name="lifespan"><long>-1</long></field>
+          <field name="maxSize"><int>-1</int></field>
+          <field name="liveTime"><long>-1</long></field>
         </object>        
       </object-param>      
       <object-param>
@@ -103,68 +103,6 @@
           <field  name="liveTime"><long>2</long></field>
         </object>
       </object-param>
-<!--       <object-param>-->
-<!--        <name>test-fifo-with-old-config</name>-->
-<!--        <description>The default cache configuration</description>-->
-<!--        <object type="org.exoplatform.services.cache.ExoCacheConfig">-->
-<!--          <field name="name"><string>test-fifo-with-old-config</string></field>-->
-<!--          <field name="maxSize"><int>5</int></field>-->
-<!--          <field name="liveTime"><long>1</long></field>-->
-<!--          <field name="implementation"><string>FIFO</string></field>-->
-<!--        </object>-->
-<!--      </object-param>      -->
-<!--       <object-param>-->
-<!--        <name>test-fifo</name>-->
-<!--        <description>The default cache configuration</description>-->
-<!--        <object type="org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig">-->
-<!--          <field name="name"><string>test-fifo</string></field>-->
-<!--          <field name="strategy"><string>FIFO</string></field>-->
-<!--          <field name="maxEntries"><int>5</int></field>-->
-<!--          <field name="lifespan"><long>1000</long></field>-->
-<!--        </object>-->
-<!--      </object-param>    -->
-<!--      <object-param>-->
-<!--        <name>test-lru-with-old-config</name>-->
-<!--        <description>The default cache configuration</description>-->
-<!--        <object type="org.exoplatform.services.cache.ExoCacheConfig">-->
-<!--          <field name="name"><string>test-lru-with-old-config</string></field>-->
-<!--          <field name="maxSize"><int>4</int></field>-->
-<!--          <field name="liveTime"><long>1</long></field>-->
-<!--          <field name="implementation"><string>LRU</string></field>-->
-<!--        </object>-->
-<!--      </object-param> -->
-<!--       <object-param>-->
-<!--        <name>test-lru</name>-->
-<!--        <description>The default cache configuration</description>-->
-<!--        <object type="org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig">-->
-<!--          <field name="name"><string>test-lru</string></field>-->
-<!--          <field name="strategy"><string>LRU</string></field>-->
-<!--          <field name="maxEntries"><int>4</int></field>-->
-<!--          <field name="lifespan"><long>1000</long></field>-->
-<!--          <field name="maxIdle"><long>-1</long></field>-->
-<!--        </object>-->
-<!--      </object-param>    -->
-<!--       <object-param>-->
-<!--        <name>test-ea-with-old-config</name>-->
-<!--        <description>The default cache configuration</description>-->
-<!--        <object type="org.exoplatform.services.cache.ExoCacheConfig">-->
-<!--          <field name="name"><string>test-ea-with-old-config</string></field>-->
-<!--          <field name="maxSize"><int>5</int></field>-->
-<!--          <field name="liveTime"><long>1</long></field>-->
-<!--          <field name="implementation"><string>NONE</string></field>-->
-<!--        </object>-->
-<!--      </object-param> -->
-<!--       <object-param>-->
-<!--        <name>test-ea</name>-->
-<!--        <description>The default cache configuration</description>-->
-<!--        <object type="org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig">-->
-<!--          <field name="name"><string>test-ea</string></field>-->
-<!--          <field name="strategy"><string>NONE</string></field>-->
-<!--          <field name="maxEntries"><int>5</int></field>-->
-<!--          <field name="maxIdle"><long>1000</long></field>-->
-<!--          <field name="lifespan"><long>2000</long></field>-->
-<!--        </object>-->
-<!--      </object-param>                                   -->
     </init-params>	
   </component>  
   <component>

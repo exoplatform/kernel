@@ -32,11 +32,7 @@ public class GenericExoCacheConfig extends ExoCacheConfig
 {
 
    private String strategy;
-   
-   private int maxEntries;
-   
-   private long lifespan;
-   
+
    private long maxIdle;
 
    private long wakeUpInterval;
@@ -71,38 +67,6 @@ public class GenericExoCacheConfig extends ExoCacheConfig
    public void setWakeUpInterval(long wakeUpInterval)
    {
       this.wakeUpInterval = wakeUpInterval;
-   }
-
-   /**
-    * @return the maxEntries
-    */
-   public int getMaxEntries()
-   {
-      return maxEntries;
-   }
-
-   /**
-    * @param maxEntries the maxEntries to set
-    */
-   public void setMaxEntries(int maxEntries)
-   {
-      this.maxEntries = maxEntries;
-   }
-
-   /**
-    * @return the lifespan
-    */
-   public long getLifespan()
-   {
-      return lifespan;
-   }
-
-   /**
-    * @param lifespan the lifespan to set
-    */
-   public void setLifespan(long lifespan)
-   {
-      this.lifespan = lifespan;
    }
 
    /**

@@ -74,6 +74,7 @@ public class ExoCacheConfig implements Cloneable
    /**
     * Indicates whether or not the replication of the values should be avoided
     */
+   @Deprecated
    public boolean avoidValueReplication;
 
    /**

@@ -269,12 +269,12 @@ public class TestCacheService extends TestCase
       }
       assertTrue(infoMap.containsKey("Name"));
       assertTrue(infoMap.containsKey("Size"));
-      assertTrue(infoMap.containsKey("Capacity"));
+      assertTrue(infoMap.containsKey("MaxNodes"));
       assertTrue(infoMap.containsKey("TimeToLive"));
       assertTrue(infoMap.containsKey("HitCount"));
       assertTrue(infoMap.containsKey("MissCount"));
       assertEquals(6, infoMap.size());
-      assertEquals(5, server.getAttribute(name, "Capacity"));
+      assertEquals(5, server.getAttribute(name, "MaxNodes"));
       assertEquals(size + 7, service_.getAllCacheInstances().size());
    }
 

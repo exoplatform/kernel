@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.cache.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
@@ -33,11 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 
 /**
  * Created by The eXo Platform SAS. Author : Tuan Nguyen
@@ -162,17 +159,29 @@ public class CacheServiceImpl implements CacheService
       safeConfig.setName(region);
       
       ExoCache simple = null;
-      if (factory_ != DEFAULT_FACTORY && !safeConfig.isInvalidated() && safeConfig.getClass().isAssignableFrom(ExoCacheConfig.class) //NOSONAR
-         && safeConfig.getImplementation() != null)
+      if (factory_ != DEFAULT_FACTORY && !safeConfig.isInvalidated())
       {
          // The implementation exists and the config is not a sub class of ExoCacheConfig
          // we assume that we expect to use the default cache factory
          try
          {
             // We check if the given implementation is a known class
-            Class<?> implClass = ClassLoading.loadClass(safeConfig.getImplementation(), this); 
+            Class<?> implClass = null;
+            if(safeConfig.getClass().isAssignableFrom(ExoCacheConfig.class) && safeConfig.getImplementation() != null)
+            {
+               implClass = ClassLoading.loadClass(safeConfig.getImplementation(), this);
+            }
+            else if (safeConfig.getCacheMode().isLocal() && defaultConfig_!= null &&
+                    StringUtils.isNotBlank(defaultConfig_.getImplementation()) )
+            {
+               implClass = ClassLoading.loadClass(defaultConfig_.getImplementation() , this);
+               if(implClass != null)
+               {
+                  safeConfig.setImplementation(defaultConfig_.getImplementation());
+               }
+            }
             // Implementation is an existing class
-            if (ExoCache.class.isAssignableFrom(implClass))
+            if (implClass != null && ExoCache.class.isAssignableFrom(implClass))
             {
                // The implementation is a sub class of eXo Cache so we use the default factory
                simple = DEFAULT_FACTORY.createCache(safeConfig);               

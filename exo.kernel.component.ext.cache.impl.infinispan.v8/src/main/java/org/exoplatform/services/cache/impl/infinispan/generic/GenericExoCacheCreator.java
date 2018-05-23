@@ -90,8 +90,8 @@ public class GenericExoCacheCreator implements ExoCacheCreator
       if (config instanceof GenericExoCacheConfig)
       {
          final GenericExoCacheConfig gConfig = (GenericExoCacheConfig)config;
-         return create(config, confBuilder, cacheGetter, gConfig.getStrategy(), gConfig.getMaxEntries(),
-            gConfig.getLifespan(), gConfig.getMaxIdle() == 0 ? defaultMaxIdle : gConfig.getMaxIdle(),
+         return create(config, confBuilder, cacheGetter, gConfig.getStrategy(), gConfig.getMaxSize(),
+            gConfig.getLiveTime(), gConfig.getMaxIdle() == 0 ? defaultMaxIdle : gConfig.getMaxIdle(),
             gConfig.getWakeUpInterval() == 0 ? defaultWakeUpInterval : gConfig.getWakeUpInterval());
       }
       else
@@ -151,16 +151,11 @@ public class GenericExoCacheCreator implements ExoCacheCreator
          throw new UnsupportedOperationException("The configuration of the cache cannot not be modified");
       }
 
-      @ManagedName("MaxEntries")
-      @ManagedDescription("Maximum number of entries in a cache instance. -1 means no limit.")
       public int getMaxSize()
       {
          return Math.toIntExact(cache.getCacheConfiguration().eviction().maxEntries());
       }
 
-      @ManagedName("Lifespan")
-      @ManagedDescription("Maximum lifespan of a cache entry, after which the entry is expired cluster-wide."
-         + " -1 means the entries never expire.")
       public long getLiveTime()
       {
          return cache.getCacheConfiguration().expiration().lifespan();

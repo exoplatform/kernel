@@ -174,8 +174,8 @@ public interface ExoCache<K extends Serializable, V>
     * @return the maximum capacity
     */
    @Managed
-   @ManagedName("Capacity")
-   @ManagedDescription("The maximum capacity")
+   @ManagedName("MaxNodes")
+   @ManagedDescription("Maximum number of entries in a cache instance. -1 means no limit.")
    public int getMaxSize();
 
    /**
