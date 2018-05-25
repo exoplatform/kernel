@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>5.1.x-SNAPSHOT</version>
+      <version>5.1.0-M06</version>
    </parent>
    <artifactId>exo.kernel.container</artifactId>
    <name>eXo PLF:: Kernel :: Container</name>
