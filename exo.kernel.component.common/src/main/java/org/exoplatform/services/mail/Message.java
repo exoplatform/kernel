@@ -36,6 +36,8 @@ public class Message
 
    private String BCC = "";
 
+   private String replyTo = "";
+
    private String subject = "";
 
    private String body = "";
@@ -92,6 +94,14 @@ public class Message
    public void setBCC(String value)
    {
       BCC = value;
+   }
+
+   public String getReplyTo() {
+      return replyTo;
+   }
+
+   public void setReplyTo(String replyTo) {
+      this.replyTo = replyTo;
    }
 
    public String getBody()
