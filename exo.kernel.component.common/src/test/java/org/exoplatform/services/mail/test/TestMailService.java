@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -72,6 +73,10 @@ public class TestMailService extends TestCase
     * Mime-type corresponding to html documents
     */
    static private String TEXT_HTML = "text/html";
+   /**
+    * Default Reply-To mail address for testing
+    */
+   static private String REPLY_TO = "reply-to@exoplatform.com";
 
    /**
     * Time we assume to be enough to wait for server to receive sent emails
@@ -144,6 +149,7 @@ public class TestMailService extends TestCase
       message.setTo(generateRandomEmailRecipient());
       message.setCC(generateRandomEmailRecipient() + "," + generateRandomEmailRecipient());
       message.setBCC(generateRandomEmailRecipient() + "," + generateRandomEmailRecipient());
+      message.setReplyTo(REPLY_TO);
       message.setSubject(MAIL_SUBJECT);
       message.setBody(MAIL_CONTENTS);
       message.setMimeType(TEXT_HTML);
@@ -156,8 +162,11 @@ public class TestMailService extends TestCase
       assertFalse(isEmailMessageSent(MAIL_SUBJECT));
       service.sendMessage(message);
       Thread.sleep(ONE_SECOND);
-      assertEquals("SMTP server should have one message", 5, mailServer.getMessages().size());
+      assertEquals("SMTP server should have five messages (One message by recipient)", 5, mailServer.getMessages().size());
       assertTrue(isEmailMessageSent(MAIL_SUBJECT));
+      // All 5 messages are similar except the receiver part. We can check the reply-to safely
+      Address[] replyTos = mailServer.getMessages().get(0).getMimeMessage().getReplyTo();
+      assertEquals("The reply-to header should be equal to " + REPLY_TO, REPLY_TO, replyTos[0].toString());
    }
 
    public void testSendSimplMessage() throws Exception
