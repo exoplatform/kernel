@@ -165,6 +165,7 @@ public class MailServiceImpl implements MailService
       String subject = message.getSubject();
       String mimeType = message.getMimeType();
       String body = message.getBody();
+      String replyTo = message.getReplyTo();
       List<Attachment> attachment = message.getAttachment();
       // set From to the message
       if (FROM != null && !FROM.equals(""))
@@ -210,6 +211,19 @@ public class MailServiceImpl implements MailService
             }
          }
          mimeMessage.setRecipients(javax.mail.Message.RecipientType.BCC, bccTo);
+      }
+      // set the Reply-To to the message
+      if ((getArrs(replyTo) != null) && (getArrs(replyTo).length > 0))
+      {
+         InternetAddress[] replyToArray = new InternetAddress[getArrs(replyTo).length];
+         for (int i = 0; i < getArrs(replyTo).length; i++)
+         {
+            replyToArray[i] = new InternetAddress(getArrs(replyTo)[i]);
+            if(replyToArray[i].getPersonal() != null) {
+               replyToArray[i].setPersonal(replyToArray[i].getPersonal(), "UTF-8");
+            }
+         }
+         mimeMessage.setReplyTo(replyToArray);
       }
       // set Subject to the message
       mimeMessage.setSubject(subject);
