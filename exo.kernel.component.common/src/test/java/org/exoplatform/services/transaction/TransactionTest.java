@@ -20,7 +20,7 @@ package org.exoplatform.services.transaction;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.container.*;
 
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
@@ -43,6 +43,11 @@ public class TransactionTest extends TestCase
 
    public void setUp() throws Exception
    {
+
+      ExoContainer topContainer = ExoContainerContext.getTopContainer();
+      if(topContainer != null) {
+         topContainer.stop();
+      }
 
       StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-configuration.xml");
 

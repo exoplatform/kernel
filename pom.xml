@@ -42,7 +42,6 @@
    <properties>
       <exo.product.name>exo-kernel</exo.product.name>
       <exo.product.specification>2.5</exo.product.specification>
-      <forkMode>always</forkMode>
       <!-- PLF project dependencies -->
       <org.exoplatform.gatein.wci.version>5.2.x-SNAPSHOT</org.exoplatform.gatein.wci.version>
       <!-- 3rd party libraries versions -->

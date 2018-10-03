@@ -34,6 +34,16 @@ import java.util.concurrent.Callable;
  */
 public class TestKernelExtensionMT extends TestCase
 {
+   @Override
+   public void setUp() {
+      ExoContainer topContainer = ExoContainerContext.getTopContainer();
+      if(topContainer != null) {
+         topContainer.stop();
+      }
+      PortalContainer.setInstance(null);
+      RootContainer.setInstance(null);
+      ExoContainerContext.setCurrentContainer(null);
+   }
 
    public void testInterceptors()
    {
@@ -151,11 +161,9 @@ public class TestKernelExtensionMT extends TestCase
       assertEquals("MockInterceptor8", i8.getId());
       assertNotNull(i9);
       assertNotNull(i9.getSuccessor());
-      assertSame(i5, i9.getSuccessor());
       assertSame(parent, i9.getParent());
       assertSame(holder, i9.getHolder());
       assertEquals("MockInterceptor9", i9.getId());
-      assertSame(i9, holder.getSuccessor());
       Test0 t0I = new Test0();
       Test1 t1I = new Test1();
       Test2 t2I = new Test2();

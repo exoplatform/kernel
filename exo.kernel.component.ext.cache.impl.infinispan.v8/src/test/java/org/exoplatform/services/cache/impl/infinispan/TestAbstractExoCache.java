@@ -20,8 +20,10 @@ package org.exoplatform.services.cache.impl.infinispan;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.cache.CacheListener;
 import org.exoplatform.services.cache.CacheListenerContext;
@@ -40,7 +42,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class TestAbstractExoCache extends TestCase
 {
+   PortalContainer container;
 
    CacheService service;
 
@@ -64,7 +66,16 @@ public class TestAbstractExoCache extends TestCase
 
    public void setUp() throws Exception
    {
-      this.service = (CacheService)PortalContainer.getInstance().getComponentInstanceOfType(CacheService.class);
+      ExoContainer topContainer = ExoContainerContext.getTopContainer();
+      if(topContainer != null) {
+        topContainer.stop();
+      }
+      PortalContainer.setInstance(null);
+      RootContainer.setInstance(null);
+      ExoContainerContext.setCurrentContainer(null);
+
+      this.container = PortalContainer.getInstance();
+      this.service = container.getComponentInstanceOfType(CacheService.class);
       this.cache = (AbstractExoCache<Serializable, Object>)service.getCacheInstance("myCache");
    }
 

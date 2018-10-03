@@ -31,6 +31,7 @@
    <name>eXo PLF:: Kernel :: Container Extension :: Spring Implementation</name>
    <description>A component provider based on Spring.</description>
    <properties>
+      <exo.test.coverage.ratio>0.79</exo.test.coverage.ratio>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
    </properties>
    <dependencies>

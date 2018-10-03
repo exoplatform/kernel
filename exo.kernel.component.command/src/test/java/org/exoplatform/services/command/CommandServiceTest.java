@@ -19,10 +19,10 @@
 package org.exoplatform.services.command;
 
 import junit.framework.TestCase;
-
 import org.apache.commons.chain.Catalog;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.apache.commons.chain.impl.ContextBase;
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.command.impl.CommandService;
@@ -49,6 +49,11 @@ public class CommandServiceTest extends TestCase
       StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-configuration.xml");
 
       container = StandaloneContainer.getInstance();
+   }
+
+   public void tearDown() {
+      CatalogFactoryBase.clear();
+      container.stop();
    }
 
    public void testPluginConf() throws Exception

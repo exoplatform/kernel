@@ -44,6 +44,7 @@ import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
+import org.picocontainer.Startable;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -66,7 +67,7 @@ import javax.management.MBeanServer;
  * @version $Id$
  *
  */
-public class ExoCacheFactoryImpl implements ExoCacheFactory
+public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable
 {
 
    /**
@@ -176,6 +177,23 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       this.cacheManager = initCacheManager(cacheConfigTemplate);
 
       this.asyncCacheTemplate = cacheAsyncConfigTemplate;
+   }
+
+   @Override
+   public void start() {
+   }
+
+   @Override
+   public void stop() {
+      if(this.cacheManager != null) {
+         this.cacheManager.stop();
+      }
+      if(this.asyncCacheManager != null) {
+         this.asyncCacheManager.stop();
+      }
+      if(this.distributedCacheManager != null) {
+         this.distributedCacheManager.stop();
+      }
    }
 
    /**

@@ -19,7 +19,7 @@
 package org.exoplatform.services.command;
 
 import junit.framework.TestCase;
-
+import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.command.impl.CommandService;
 
@@ -53,6 +53,11 @@ public class MultiConfigServiceTest extends TestCase
       StandaloneContainer.setConfigurationPath("src/test/resources/conf/standalone/test-multi-configuration.xml");
 
       container = StandaloneContainer.getInstance();
+   }
+
+   public void tearDown() {
+      CatalogFactoryBase.clear();
+      container.stop();
    }
 
    /**
