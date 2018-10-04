@@ -27,14 +27,6 @@ import junit.framework.TestCase;
  */
 public class TestStandaloneContainer extends TestCase
 {
-   @Override
-   public void setUp() {
-      ExoContainer topContainer = ExoContainerContext.getTopContainer();
-      if(topContainer != null) {
-         topContainer.stop();
-      }
-      ExoContainerContext.setCurrentContainer(null);
-   }
 
    public void testHotDeploy() throws Exception
    {

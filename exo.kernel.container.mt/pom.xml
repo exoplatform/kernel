@@ -31,7 +31,6 @@
    <name>eXo PLF:: Kernel :: Container Multi-Threaded</name>
    <description>Implementation of Container Multi-Threaded for Exoplatform SAS 'eXo Kernel' project.</description>
    <properties>
-      <exo.test.coverage.ratio>0.82</exo.test.coverage.ratio>
       <debug.opts />
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
    </properties>

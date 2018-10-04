@@ -31,7 +31,6 @@
 	<name>eXo PLF:: Kernel :: Cache Extension :: Infinispan Implementation</name>
 	<description>Infinispan Implementation of Cache Service for Exoplatform SAS 'eXo Kernel' project.</description>
     <properties>
-        <exo.test.coverage.ratio>0.68</exo.test.coverage.ratio>
         <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
     </properties>
 	<dependencies>

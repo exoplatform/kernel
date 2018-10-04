@@ -7,7 +7,6 @@ grant codeBase "@MAIN_CLASSES@-"{
 };
 
 grant codeBase "@TEST_CLASSES@-"{
-   permission java.lang.RuntimePermission "manageContainer";
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.kernel.commons.test/-"{
