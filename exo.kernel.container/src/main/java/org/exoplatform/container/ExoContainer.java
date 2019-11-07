@@ -217,7 +217,7 @@ public class ExoContainer extends AbstractContainer
          }
       }
       Collection<ExternalComponentPlugins> unusedPlugins = getExternalComponentPluginsUnused();
-      if (unusedPlugins != null)
+      if (unusedPlugins != null && PropertyManager.isDevelopping())
       {
          for (ExternalComponentPlugins plugins : unusedPlugins)
          {
