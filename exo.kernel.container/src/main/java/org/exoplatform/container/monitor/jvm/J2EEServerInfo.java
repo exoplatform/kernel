@@ -328,4 +328,11 @@ public class J2EEServerInfo
    {
       return "jboss".equals(serverName_);
    }
+
+   public String getEdition() throws Exception
+   {
+     Class<?> c = Class.forName("org.exoplatform.platform.edition.PlatformEdition");
+     Method getEditionMethod = c.getMethod("getEdition");
+     return (String) getEditionMethod.invoke(null);
+   }
 }

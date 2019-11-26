@@ -165,6 +165,16 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          profiles.add(envProfile);
       }
 
+      // Add the profile defined by the platform edition
+      try {
+        String editionProfile = serverenv_.getEdition();
+        if (editionProfile != null) {
+          profiles.add(editionProfile);
+        }
+      } catch (Exception e) {
+        LOG.info("No product edition was found");
+      }
+
       // Obtain profile list by runtime properties
       profiles.addAll(ExoContainer.getProfiles());
 
