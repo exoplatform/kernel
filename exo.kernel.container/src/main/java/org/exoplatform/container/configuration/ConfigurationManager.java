@@ -19,12 +19,14 @@
 package org.exoplatform.container.configuration;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.xml.Component;
 import org.exoplatform.container.xml.Configuration;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * The {@link ConfigurationManager} is the component allowing to access to the configuration of a given
@@ -148,4 +150,11 @@ public interface ConfigurationManager
     * This method is equivalent to {@link #getResource(String)}
     */
    URL getURL(String uri) throws Exception;
+
+   /**
+    * @return a {@link Set} of profiles used to parse configuration entries
+    */
+   default Set<String> getProfiles() {
+     return ExoContainer.getProfiles();
+   }
 }

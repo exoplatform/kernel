@@ -123,6 +123,20 @@ public class ExoContainer extends AbstractContainer
    }
 
    /**
+    * @return current container profiles, else return default profiles retrieved
+    *         by {@link ExoContainer#getProfiles()}
+    */
+   public static Set<String> getCurrentProfiles() {
+     ExoContainer currentContainer = ExoContainerContext.getCurrentContainer();
+     if (currentContainer == null) {
+       LOG.warn("No container detected in current thread, return default containers profiles");
+       return getProfiles();
+     }
+     ConfigurationManager manager = currentContainer.getComponentInstanceOfType(ConfigurationManager.class);
+     return manager.getProfiles();
+   }
+
+   /**
     * Indicates whether or not a given profile exists
     * @param profileName the name of the profile to check
     * @return <code>true</code> if the profile exists, <code>false</code> otherwise.

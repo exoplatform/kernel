@@ -16,6 +16,8 @@
  */
 package org.exoplatform.container.definition;
 
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.container.xml.InitParams;
@@ -46,7 +48,13 @@ public class PortalContainerDefinitionChangePlugin extends BaseComponentPlugin
     * Indicates whether the changes have to be applied to the default portal container or not. 
     */
    private boolean bDefault;
-   
+
+   /**
+   * Profiles to inject to {@link RootContainer} before start parsing
+   * configurations of {@link PortalContainer}
+   */
+   private List<String> profiles;
+
    /**
     * A set of specific portal container names on which we want to apply the changes.
     */
@@ -57,7 +65,6 @@ public class PortalContainerDefinitionChangePlugin extends BaseComponentPlugin
     */
    private List<PortalContainerDefinitionChange> changes;
    
-   @SuppressWarnings("unchecked")
    public PortalContainerDefinitionChangePlugin(InitParams params)
    {
       ValueParam vp = params.getValueParam("apply.all");
@@ -73,7 +80,7 @@ public class PortalContainerDefinitionChangePlugin extends BaseComponentPlugin
       ValuesParam vsp = params.getValuesParam("apply.specific");
       if (vsp != null && !vsp.getValues().isEmpty())
       {
-         this.names = new HashSet<String>(vsp.getValues().size());
+         this.names = new HashSet<>(vsp.getValues().size());
          List<String> lnames = vsp.getValues();
          for (String name : lnames)
          {
@@ -81,6 +88,12 @@ public class PortalContainerDefinitionChangePlugin extends BaseComponentPlugin
          }
       }
       this.changes = params.getObjectParamValues(PortalContainerDefinitionChange.class);
+
+      ValuesParam profilesParameters = params.getValuesParam("add.profiles");
+      if (profilesParameters != null && !profilesParameters.getValues().isEmpty()) {
+        this.profiles = profilesParameters.getValues();
+        RootContainer.addProfiles(this.profiles);
+      }
    }
 
    public boolean isAll()

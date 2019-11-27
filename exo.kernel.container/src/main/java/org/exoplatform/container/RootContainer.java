@@ -114,8 +114,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
 
    private final J2EEServerInfo serverenv_ = new J2EEServerInfo(true);
 
-   private final Set<String> profiles;
-   
+   private static Set<String> profiles;
+
    private final Thread hook = new ShutdownThread(this);
    
    private final AtomicBoolean reloading = new AtomicBoolean();
@@ -156,7 +156,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
 
    public RootContainer()
    {
-      Set<String> profiles = new HashSet<String>();
+      profiles = new HashSet<>();
 
       // Add the profile defined by the server name
       String envProfile = serverenv_.getServerName();
@@ -178,9 +178,6 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       // Obtain profile list by runtime properties
       profiles.addAll(ExoContainer.getProfiles());
 
-      // Lof the active profiles
-      LOG.info("Active profiles " + profiles);
-
       //
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
@@ -190,7 +187,10 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
             return null;
          }
       });
-      this.profiles = profiles;
+
+      // Log the active profiles
+      LOG.info("Active profiles for Root container: " + profiles);
+
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
@@ -711,6 +711,9 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          // Set the full classloader of the portal container
          Thread.currentThread().setContextClassLoader(pcontainer.getPortalClassLoader());
          hasChanged = true;
+
+         LOG.info("Active profiles for Portal container '{}': {}", pcontainer.getName(), profiles);
+
          ConfigurationManagerImpl cService = new ConfigurationManagerImpl(pcontainer.getPortalContext(), profiles);
 
          if (ConfigurationManager.LOG_DEBUG)
@@ -1632,7 +1635,16 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          }
       }
    }
-   
+
+   /**
+    * Add profiles to portal containers profiles.
+    * 
+    * @param newProfiles profiles to add
+    */
+   public static void addProfiles(Collection<String> newProfiles) {
+     profiles.addAll(newProfiles);
+   }
+
    private static class WeakHttpSession extends WeakReference<HttpSession>
    {
       public WeakHttpSession(HttpSession session)
@@ -1676,4 +1688,5 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          return session == null ? 0 : session.getId().hashCode();
       }
    }
+
 }
