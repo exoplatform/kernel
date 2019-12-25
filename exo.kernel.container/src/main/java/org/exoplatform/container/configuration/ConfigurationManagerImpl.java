@@ -115,7 +115,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager
 
    @Override
    public Set<String> getProfiles() {
-    return profiles;
+     return profiles;
    }
 
    public void addConfiguration(ServletContext context, String url) throws Exception
