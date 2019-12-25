@@ -170,7 +170,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
       }
 
       // Obtain profile list by runtime properties
-      profiles.addAll(ExoContainer.getProfiles());
+      profiles.addAll(ExoContainer.getProfilesFromProperty());
 
       //
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()

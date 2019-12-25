@@ -109,40 +109,41 @@ public class TestExoContainer
    }
 
    @Test
-   public void testHasProfile()
+   public void testHasProfileInProperty()
    {
       String oldValue = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
       try
       {
          System.clearProperty(PropertyManager.RUNTIME_PROFILES);
          PropertyManager.refresh();
-         assertFalse(ExoContainer.hasProfile(null));
-         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertFalse(ExoContainer.hasProfileInProperty(null));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+
          PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo1");
-         assertFalse(ExoContainer.hasProfile(null));
-         assertFalse(ExoContainer.hasProfile("foo0"));
-         assertTrue(ExoContainer.hasProfile("foo1"));
+         assertFalse(ExoContainer.hasProfileInProperty(null));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+         assertTrue(ExoContainer.hasProfileInProperty("foo1"));
          System.clearProperty(PropertyManager.RUNTIME_PROFILES);
          PropertyManager.refresh();
-         assertFalse(ExoContainer.hasProfile("foo0"));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
          PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo1, foo2, foo3");
-         assertFalse(ExoContainer.hasProfile("foo0"));
-         assertTrue(ExoContainer.hasProfile("foo1"));
-         assertTrue(ExoContainer.hasProfile("foo2"));
-         assertTrue(ExoContainer.hasProfile("foo3"));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+         assertTrue(ExoContainer.hasProfileInProperty("foo1"));
+         assertTrue(ExoContainer.hasProfileInProperty("foo2"));
+         assertTrue(ExoContainer.hasProfileInProperty("foo3"));
          PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "  \tfoo   ");
-         assertFalse(ExoContainer.hasProfile("foo0"));
-         assertTrue(ExoContainer.hasProfile("foo"));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+         assertTrue(ExoContainer.hasProfileInProperty("foo"));
          PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, ",foo   ");
-         assertFalse(ExoContainer.hasProfile("foo0"));
-         assertTrue(ExoContainer.hasProfile("foo"));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+         assertTrue(ExoContainer.hasProfileInProperty("foo"));
          PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo, bar, \t baz \t");
-         assertFalse(ExoContainer.hasProfile("foo0"));
-         assertTrue(ExoContainer.hasProfile("baz"));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+         assertTrue(ExoContainer.hasProfileInProperty("baz"));
          PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, "foo1, bar, \t baz1 \t");
-         assertFalse(ExoContainer.hasProfile("foo0"));
-         assertFalse(ExoContainer.hasProfile("baz"));
-         assertTrue(ExoContainer.hasProfile("bar"));
+         assertFalse(ExoContainer.hasProfileInProperty("foo0"));
+         assertFalse(ExoContainer.hasProfileInProperty("baz"));
+         assertTrue(ExoContainer.hasProfileInProperty("bar"));
       }
       finally
       {

@@ -155,6 +155,6 @@ public interface ConfigurationManager
     * @return a {@link Set} of profiles used to parse configuration entries
     */
    default Set<String> getProfiles() {
-     return ExoContainer.getProfiles();
+     return ExoContainer.getProfilesFromProperty();
    }
 }
