@@ -29,13 +29,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import javax.management.MBeanServer;
 
@@ -327,12 +321,5 @@ public class J2EEServerInfo
    public boolean isJBoss()
    {
       return "jboss".equals(serverName_);
-   }
-
-   public String getEdition() throws Exception
-   {
-     Class<?> c = Class.forName("org.exoplatform.platform.edition.PlatformEdition");
-     Method getEditionMethod = c.getMethod("getEdition");
-     return (String) getEditionMethod.invoke(null);
    }
 }

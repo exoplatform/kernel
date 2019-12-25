@@ -54,16 +54,8 @@ import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -165,12 +157,14 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          profiles.add(envProfile);
       }
 
-      // Add the profile defined by the platform edition
       try {
-        String editionProfile = serverenv_.getEdition();
-        if (editionProfile != null) {
-          profiles.add(editionProfile);
-        }
+        ServiceLoader<ExoProfileExtension> profilesServiceLoader = ServiceLoader.load(ExoProfileExtension.class);
+        profilesServiceLoader.forEach(profileExtension -> {
+          Set<String> additionalProfiles = profileExtension.getProfiles();
+          if (additionalProfiles != null) {
+            profiles.addAll(additionalProfiles);
+          }
+        });
       } catch (Exception e) {
         LOG.info("No product edition was found");
       }
