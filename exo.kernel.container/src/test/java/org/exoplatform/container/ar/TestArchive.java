@@ -419,14 +419,14 @@ public class TestArchive
       String content = getContent(url);
       assertNotNull(content);
       assertFalse(content.isEmpty());
-      assertEquals(contentRef, content);
+      assertEquals(linearize(contentRef), linearize(content));
 
       path = root + "/ar-with-dir-and-ar-with-config-dir.zip!/ar-without-dir.zip!/foo/config.xml";
       url = Archive.parse(path);
       content = getContent(url);
       assertNotNull(content);
       assertFalse(content.isEmpty());
-      assertEquals(contentRef, content);
+      assertEquals(linearize(contentRef), linearize(content));
    }
 
    private static String getContent(URL url) throws Exception
@@ -449,5 +449,9 @@ public class TestArchive
             is.close();
       }
       return new String(baos.toByteArray(), "ISO-8859-1");
+   }
+
+   private String linearize(String content) {
+     return content.replaceAll("\\s*[\\r\\n]+\\s*", "").trim();
    }
 }
