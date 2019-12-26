@@ -104,41 +104,51 @@
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>kernel-parent</artifactId>
             <version>${project.version}</version>
             <classifier>source-release</classifier>
             <type>zip</type>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.container</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.container</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.commons</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.commons.test</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.component.common</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.component.cache</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v8</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exo.kernel.component.command</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
