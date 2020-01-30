@@ -54,16 +54,8 @@ import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -114,8 +106,8 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
 
    private final J2EEServerInfo serverenv_ = new J2EEServerInfo(true);
 
-   private final Set<String> profiles;
-   
+   private static Set<String> profiles;
+
    private final Thread hook = new ShutdownThread(this);
    
    private final AtomicBoolean reloading = new AtomicBoolean();
@@ -156,7 +148,7 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
 
    public RootContainer()
    {
-      Set<String> profiles = new HashSet<String>();
+      profiles = new HashSet<>();
 
       // Add the profile defined by the server name
       String envProfile = serverenv_.getServerName();
@@ -165,11 +157,20 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          profiles.add(envProfile);
       }
 
-      // Obtain profile list by runtime properties
-      profiles.addAll(ExoContainer.getProfiles());
+      try {
+        ServiceLoader<ExoProfileExtension> profilesServiceLoader = ServiceLoader.load(ExoProfileExtension.class);
+        profilesServiceLoader.forEach(profileExtension -> {
+          Set<String> additionalProfiles = profileExtension.getProfiles();
+          if (additionalProfiles != null) {
+            profiles.addAll(additionalProfiles);
+          }
+        });
+      } catch (Exception e) {
+        LOG.info("No product edition was found");
+      }
 
-      // Lof the active profiles
-      LOG.info("Active profiles " + profiles);
+      // Obtain profile list by runtime properties
+      profiles.addAll(ExoContainer.getProfilesFromProperty());
 
       //
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
@@ -180,7 +181,10 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
             return null;
          }
       });
-      this.profiles = profiles;
+
+      // Log the active profiles
+      LOG.info("Active profiles for Root container: " + profiles);
+
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
@@ -701,6 +705,9 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          // Set the full classloader of the portal container
          Thread.currentThread().setContextClassLoader(pcontainer.getPortalClassLoader());
          hasChanged = true;
+
+         LOG.info("Active profiles for Portal container '{}': {}", pcontainer.getName(), profiles);
+
          ConfigurationManagerImpl cService = new ConfigurationManagerImpl(pcontainer.getPortalContext(), profiles);
 
          if (ConfigurationManager.LOG_DEBUG)
@@ -1622,7 +1629,16 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          }
       }
    }
-   
+
+   /**
+    * Add profiles to portal containers profiles.
+    * 
+    * @param newProfiles profiles to add
+    */
+   public static void addProfiles(Collection<String> newProfiles) {
+     profiles.addAll(newProfiles);
+   }
+
    private static class WeakHttpSession extends WeakReference<HttpSession>
    {
       public WeakHttpSession(HttpSession session)
@@ -1666,4 +1682,5 @@ public class RootContainer extends ExoContainer implements WebAppListener, Authe
          return session == null ? 0 : session.getId().hashCode();
       }
    }
+
 }

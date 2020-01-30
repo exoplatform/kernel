@@ -105,7 +105,7 @@ public class ExoContainer extends AbstractContainer
     *
     * @return the set of profiles
     */
-   public static Set<String> getProfiles()
+   public static Set<String> getProfilesFromProperty()
    {
       String profiles = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
       if ((profiles == null && PROFILES != null) || (profiles != null && !profiles.equals(PROFILES)))
@@ -123,13 +123,40 @@ public class ExoContainer extends AbstractContainer
    }
 
    /**
+    * @return current container profiles, else return default profiles retrieved
+    *         by {@link ExoContainer#getProfilesFromProperty()}
+    */
+   public static Set<String> getProfiles() {
+     ExoContainer currentContainer = ExoContainerContext.getCurrentContainer();
+     if (currentContainer == null) {
+       LOG.warn("No container detected in current thread, return default containers profiles");
+       return getProfilesFromProperty();
+     }
+     ConfigurationManager manager = currentContainer.getComponentInstanceOfType(ConfigurationManager.class);
+     return manager.getProfiles();
+   }
+
+   /**
     * Indicates whether or not a given profile exists
     * @param profileName the name of the profile to check
     * @return <code>true</code> if the profile exists, <code>false</code> otherwise.
     */
+   public static boolean hasProfileInProperty(String profileName)
+   {
+      return getProfilesFromProperty().contains(profileName);
+   }
+
+   /**
+   * Indicates whether the current container has a given profile.
+   * 
+   * @param profileName profile to check
+   * @return <code>true</code> if current {@link ExoContainer} retrieved from
+   *         {@link ExoContainerContext} was started with the given profile,
+   *         <code>false</code> otherwise.
+   */
    public static boolean hasProfile(String profileName)
    {
-      return getProfiles().contains(profileName);
+     return getProfiles().contains(profileName);
    }
 
    /**

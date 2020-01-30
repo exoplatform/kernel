@@ -113,6 +113,11 @@ public class ConfigurationManagerImpl implements ConfigurationManager
       return configurations_;
    }
 
+   @Override
+   public Set<String> getProfiles() {
+     return profiles;
+   }
+
    public void addConfiguration(ServletContext context, String url) throws Exception
    {
       if (url == null)

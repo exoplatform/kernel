@@ -34,4 +34,9 @@
       </init-params>
    </component>
 
+  <component>
+    <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
+    <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
+  </component>
+
 </configuration>

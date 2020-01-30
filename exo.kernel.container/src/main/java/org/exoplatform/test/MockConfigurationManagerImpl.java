@@ -41,7 +41,7 @@ public class MockConfigurationManagerImpl extends ConfigurationManagerImpl
 
    public MockConfigurationManagerImpl(ServletContext context) throws Exception
    {
-      super(context, ExoContainer.getProfiles());
+      super(context, ExoContainer.getProfilesFromProperty());
       confDir_ = PrivilegedSystemHelper.getProperty("mock.portal.dir") + "/WEB-INF";
    }
 

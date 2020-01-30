@@ -61,6 +61,7 @@
       <javax.servlet.version>3.0.1</javax.servlet.version>
       <jgroups.version>3.6.13.Final</jgroups.version>
       <jboss-logging.version>3.3.0.Final</jboss-logging.version>
+      <jbossts.version>4.16.6.Final</jbossts.version>
       <infinispan.version>8.2.6.Final</infinispan.version>
       <org.ow2.jotm.version>2.1.9</org.ow2.jotm.version>
       <ow2-jta-1.1-spec.version>1.0.13</ow2-jta-1.1-spec.version>
@@ -104,41 +105,51 @@
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>kernel-parent</artifactId>
             <version>${project.version}</version>
             <classifier>source-release</classifier>
             <type>zip</type>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.container</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.container</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.commons</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.commons.test</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.component.common</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exo.kernel.component.cache</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v8</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exo.kernel.component.command</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
@@ -220,6 +231,11 @@
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
             <version>${infinispan.version}</version>
+         </dependency>
+         <dependency>
+           <groupId>org.jboss.jbossts</groupId>
+           <artifactId>jbossjta</artifactId>
+           <version>${jbossts.version}</version>
          </dependency>
          <dependency>
               <groupId>org.infinispan</groupId>

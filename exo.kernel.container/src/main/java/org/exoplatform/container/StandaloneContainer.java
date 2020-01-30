@@ -91,7 +91,7 @@ public class StandaloneContainer extends ExoContainer implements TopExoContainer
    private StandaloneContainer(ClassLoader configClassLoader)
    {
       //
-      configurationManager = new ConfigurationManagerImpl(configClassLoader, ExoContainer.getProfiles());
+      configurationManager = new ConfigurationManagerImpl(configClassLoader, ExoContainer.getProfilesFromProperty());
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()

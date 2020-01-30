@@ -44,6 +44,7 @@ import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
+import org.picocontainer.Startable;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -66,8 +67,7 @@ import javax.management.MBeanServer;
  * @version $Id$
  *
  */
-public class ExoCacheFactoryImpl implements ExoCacheFactory
-{
+public class ExoCacheFactoryImpl implements ExoCacheFactory, Startable {
 
    /**
     * The logger
@@ -487,6 +487,17 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       mappingCacheNameConfig.putAll(configs);
    }
 
+   @Override
+   public void start() {
+     // Nothing to start
+   }
+
+   @Override
+   public void stop() {
+     if (cacheManager != null) {
+       cacheManager.stop();
+     }
+   }
    /**
     * Returns the value of the ValueParam if and only if the value is not empty
     */
@@ -537,4 +548,5 @@ public class ExoCacheFactoryImpl implements ExoCacheFactory
       confBuilder.eviction().strategy(EvictionStrategy.NONE).size(-1).expiration()
          .lifespan(-1L).maxIdle(-1L).wakeUpInterval(60000L);
    }
+
 }

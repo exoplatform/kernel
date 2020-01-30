@@ -239,4 +239,39 @@ public final class ExoContainerContext implements java.io.Serializable
       
       attributes.put(name, value);
    }
+
+    /**
+     * Gets a service from current container.
+     *
+     * @param clazz the clazz
+     * @return the service
+     */
+    public static <T> T getService(Class<T> clazz) {
+      return getService(clazz, null);
+    }
+
+    /**
+     * Gets the service.
+     *
+     * @param clazz the class
+     * @param containerName the container's name
+     * @return the service
+     */
+    public static <T> T getService(Class<T> clazz, String containerName) {
+      ExoContainer container = getCurrentContainer();
+      if (containerName != null) {
+        container = RootContainer.getInstance().getPortalContainer(containerName);
+      }
+      if (container == null || container.getComponentInstanceOfType(clazz) == null) {
+        containerName = PortalContainer.getCurrentPortalContainerName();
+        if (containerName != null) {
+          container = RootContainer.getInstance().getPortalContainer(containerName);
+        }
+        if (container == null || container.getComponentInstanceOfType(clazz) == null) {
+          container = RootContainer.getInstance();
+        }
+      }
+      return container.getComponentInstanceOfType(clazz);
+    }
+
 }
