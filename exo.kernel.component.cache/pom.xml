@@ -27,7 +27,7 @@
    <parent>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>kernel-parent</artifactId>
-      <version>5.3.x-SNAPSHOT</version>
+      <version>5.3.5-RC01</version>
    </parent>
 
    <artifactId>exo.kernel.component.cache</artifactId>
