@@ -23,8 +23,7 @@ import eu.medsea.mimeutil.MimeUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -70,6 +69,8 @@ public class MimeTypeResolver
 
    private String defaultMimeType = "application/octet-stream";
 
+   private static final String MIMETYPES_FILE_PATH = "exo.files.mimetypes.path";
+
    public MimeTypeResolver()
    {
       try
@@ -79,14 +80,15 @@ public class MimeTypeResolver
             public Void run() throws Exception
             {
                Scanner scanner = null;
-               String mimeTypeProperties = System.getProperty("org.exoplatform.mimetypes");
-               if (mimeTypeProperties != null)
-               {
-                  InputStream stream =
-                     Thread.currentThread().getContextClassLoader().getResourceAsStream(mimeTypeProperties);
-                  if (stream != null)
-                  {
+               String mimeTypeProperties = System.getProperty(MIMETYPES_FILE_PATH);
+               if (mimeTypeProperties != null) {
+                  File mimeTypesFile = new File(mimeTypeProperties);
+                  try {
+                     InputStream stream = new FileInputStream(mimeTypesFile);
                      scanner = new Scanner(stream, "ISO-8859-1");
+                  } catch (FileNotFoundException fileNotFoundException) {
+                     // Failed to load the file, we skip to the next try
+                     LOG.debug("File Not found {}", mimeTypeProperties, fileNotFoundException);
                   }
                }
                if (scanner == null)
@@ -237,21 +239,11 @@ public class MimeTypeResolver
       String mimetype = aLine.substring(p + 1);
 
       // add mimetype
-      List<String> values = mimeTypes.get(ext);
-      if (values == null)
-      {
-         values = new ArrayList<String>();
-         mimeTypes.put(ext, values);
-      }
+      List<String> values = mimeTypes.computeIfAbsent(ext, k -> new ArrayList<>());
       values.add(mimetype);
 
       // add extension
-      values = extentions.get(mimetype);
-      if (values == null)
-      {
-         values = new ArrayList<String>();
-         extentions.put(mimetype, values);
-      }
+      values = extentions.computeIfAbsent(mimetype, k -> new ArrayList<>());
       values.add(ext);
    }
 }
