@@ -47,7 +47,7 @@
       <org.exoplatform.gatein.wci.version>6.0.x-SNAPSHOT</org.exoplatform.gatein.wci.version>
       <!-- 3rd party libraries versions -->
       <org.ogce.xpp3.version>1.1.6</org.ogce.xpp3.version>
-      <commons-beanutils.version>1.8.3</commons-beanutils.version>
+      <commons-beanutils.version>1.9.4</commons-beanutils.version>
       <commons-long.version>2.6</commons-long.version>
       <commons-chain.version>1.2</commons-chain.version>
       <commons-digester.version>2.1</commons-digester.version>
